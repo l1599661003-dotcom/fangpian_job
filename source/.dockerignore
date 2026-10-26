@@ -1,0 +1,15 @@
+# kaniko build context 排除项. 关键: node_modules — workspace 自带的会盖掉
+# 镜像内 pnpm/npm install 出的 (pnpm 软链结构), 导致 COPY . . 报
+# "cannot copy to non-directory". 见 ops(builder) dev 修复.
+node_modules
+dist
+.git
+*.log
+npm-debug.log*
+.DS_Store
+.codex
+.env.local
+.env.*.local
+tests
+test-results
+playwright.config.mjs

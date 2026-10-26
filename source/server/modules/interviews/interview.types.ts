@@ -1,0 +1,6 @@
+export interface InterviewerInput { userId: string; name: string; departmentId?: string; department?: string; roles?: string[]; rounds?: string[]; timezone?: string; maxPerDay?: number; status?: string }
+export interface AvailabilityInput { interviewerId: string; userId?: string; startAt: string; endAt: string; repeatRule?: string; source?: string }
+export interface MeetingRoomInput { name: string; location?: string; floor?: string; capacity?: number; equipment?: string[]; externalResourceId?: string; status?: string }
+export interface MeetingRoomAvailabilityQuery { startAt: string; endAt: string; roomIds?: string[]; source?: 'wecom'; roomKeyword?: string }
+export interface WecomUserSearchInput { keywords: string }
+export interface InterviewAppointmentInput { candidateId: string; applicationId?: string; positionId?: string; round: string; type?: string; mode: string; startAt: string; endAt: string; timezone?: string; location?: string; meetingUrl?: string; meetingRoomId?: string; meetingRoomSelectionId?: string; interviewerIds: string[]; interviewerWecomIds?: string[]; organizerUserId?: string; note?: string; operator?: string; publicUrl?: string; sendCandidateEmail?: boolean }

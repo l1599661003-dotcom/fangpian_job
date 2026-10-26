@@ -1,0 +1,30 @@
+# 超过 GitHub 100MB 限制的本地数据库导出，保留在本机，不进入仓库
+database/20_recruitment_candidates.csv
+database/20_recruitment_candidates.json
+database/21_recruitment_applications.json
+database/22_recruitment_interviews.csv
+database/22_recruitment_interviews.json
+database/03_resume_extraction_records.csv
+database/03_resume_extraction_records.json
+database/65_recruitment_audit_logs.csv
+database/65_recruitment_audit_logs.json
+database/94_ScheduledTaskRun.csv
+database/94_ScheduledTaskRun.json
+
+# 依赖与构建产物
+node_modules/
+dist/
+build/
+coverage/
+
+# 本地环境与密钥
+.env
+.env.local
+.env.*.local
+
+# 系统与编辑器
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.log

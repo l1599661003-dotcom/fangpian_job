@@ -1,0 +1,222 @@
+[
+  {
+    "id": "recpnk7MjXz9gbxvopr",
+    "fields": {
+      "创建时间": "2026-08-28T09:49:06.456Z",
+      "操作权限JSON": "[\"view_own_application\",\"confirm_interview\",\"submit_candidate_feedback\"]",
+      "敏感字段策略JSON": "{\"contacts\":\"self_only\",\"interviewFeedback\":false,\"salary\":\"self_only\"}",
+      "数据范围类型": "self",
+      "是否系统角色": "是",
+      "更新时间": "2026-09-14T07:42:08.547Z",
+      "版本": 1,
+      "角色名称": "候选人",
+      "角色层级": "L1",
+      "角色状态": "停用",
+      "角色编码": "candidate",
+      "角色说明": "仅查看和维护本人投递、面试及后续流程信息。",
+      "页面权限JSON": "[\"career_site\",\"candidate_center\"]"
+    },
+    "createdTime": "2026-08-28T09:49:06.484Z",
+    "lastModifiedTime": "2026-09-14T07:42:09.346Z"
+  },
+  {
+    "id": "receQY6UYdPDvDQmto0",
+    "fields": {
+      "创建时间": "2026-08-28T09:49:06.456Z",
+      "操作权限JSON": "[\"create_demand\",\"edit_candidate\",\"advance_application\",\"arrange_interview\",\"export_authorized_data\"]",
+      "敏感字段策略JSON": "{\"contacts\":\"masked\",\"interviewFeedback\":\"authorized\",\"salary\":\"masked\",\"unlock\":false}",
+      "数据范围类型": "assigned_departments",
+      "是否系统角色": "是",
+      "更新时间": "2026-10-16T15:33:56.153Z",
+      "版本": 1,
+      "角色名称": "招聘专员",
+      "角色层级": "L2",
+      "角色状态": "停用",
+      "角色编码": "recruiter",
+      "角色说明": "处理授权部门的需求、候选人、面试和内推流程。",
+      "页面权限JSON": "[\"home\",\"demands\",\"positions\",\"resume_parse\",\"candidates\",\"interviews\",\"referrals\",\"analytics\",\"points\"]"
+    },
+    "createdTime": "2026-08-28T09:49:06.593Z",
+    "lastModifiedTime": "2026-10-16T15:33:56.191Z"
+  },
+  {
+    "id": "recS6ctfbqZpkNlk8rJ",
+    "fields": {
+      "创建时间": "2026-08-28T09:49:06.456Z",
+      "操作权限JSON": "[\"view_dashboard\",\"create_demand\",\"manage_positions\",\"edit_candidate\",\"review_candidate\",\"advance_application\",\"arrange_interview\",\"manage_assessments\",\"submit_interview_feedback\",\"manage_offer\",\"review_offer\",\"manage_background\",\"manage_employee_lifecycle\",\"manage_referrals\",\"manage_messages\"]",
+      "敏感字段策略JSON": "{\"salary\":\"full\",\"contacts\":\"full\",\"resume\":\"full\"}",
+      "数据范围类型": "business_unit",
+      "是否系统角色": "是",
+      "更新时间": "2026-10-16T15:33:56.153Z",
+      "版本": 1,
+      "角色名称": "HRBP",
+      "角色层级": "L2",
+      "角色状态": "启用",
+      "角色编码": "hrbp",
+      "角色说明": "负责岗位、人才档案、面试、Offer 和内部推荐。",
+      "页面权限JSON": "[\"home\",\"positions\",\"candidates\",\"interviews\",\"offers\",\"referrals\",\"points\"]"
+    },
+    "createdTime": "2026-08-28T09:49:06.713Z",
+    "lastModifiedTime": "2026-10-16T15:33:56.310Z"
+  },
+  {
+    "id": "recNqovol2dF3iQ8wqb",
+    "fields": {
+      "创建时间": "2026-08-28T09:49:06.456Z",
+      "操作权限JSON": "[\"view_assigned_candidate_summary\",\"submit_interview_feedback\",\"review_candidate\"]",
+      "敏感字段策略JSON": "{\"salary\":\"hidden\"}",
+      "数据范围类型": "assigned_interviews",
+      "是否系统角色": "是",
+      "更新时间": "2026-09-17T02:41:37.821Z",
+      "版本": 1,
+      "角色名称": "面试官",
+      "角色层级": "L2",
+      "角色状态": "启用",
+      "角色编码": "interviewer",
+      "角色说明": "仅查看分配给本人的面试和候选人必要信息，并提交评价。",
+      "页面权限JSON": "[\"home\",\"interviews\",\"referrals\"]"
+    },
+    "createdTime": "2026-08-28T09:49:06.831Z",
+    "lastModifiedTime": "2026-09-17T02:41:38.233Z"
+  },
+  {
+    "id": "recCCUViVkDaCoRrMmA",
+    "fields": {
+      "创建时间": "2026-08-28T09:49:06.456Z",
+      "操作权限JSON": "[\"create_demand\",\"manage_positions\",\"edit_candidate\",\"advance_application\",\"arrange_interview\",\"manage_assessments\",\"manage_referrals\",\"manage_messages\",\"review_candidate\",\"submit_interview_feedback\"]",
+      "敏感字段策略JSON": "{\"salary\":\"hidden\"}",
+      "数据范围类型": "assigned_departments",
+      "是否系统角色": "是",
+      "更新时间": "2026-09-17T02:41:37.821Z",
+      "版本": 1,
+      "角色名称": "业务助理",
+      "角色层级": "L2",
+      "角色状态": "启用",
+      "角色编码": "business_manager",
+      "角色说明": "负责岗位、人才档案、面试和内部推荐。",
+      "页面权限JSON": "[\"home\",\"positions\",\"candidates\",\"interviews\",\"referrals\"]"
+    },
+    "createdTime": "2026-08-28T09:49:06.937Z",
+    "lastModifiedTime": "2026-09-17T02:41:38.112Z"
+  },
+  {
+    "id": "rec95vinXNN0S0WhcQA",
+    "fields": {
+      "创建时间": "2026-08-28T09:49:06.456Z",
+      "操作权限JSON": "[\"manage_ai_rules\",\"view_ai_metrics\",\"publish_ai_version\"]",
+      "敏感字段策略JSON": "{\"contacts\":\"hidden\",\"interviewFeedback\":\"deidentified\",\"salary\":\"hidden\",\"unlock\":false}",
+      "数据范围类型": "deidentified_all",
+      "是否系统角色": "是",
+      "更新时间": "2026-09-14T07:42:08.547Z",
+      "版本": 1,
+      "角色名称": "AI运营",
+      "角色层级": "L2",
+      "角色状态": "停用",
+      "角色编码": "ai_operations",
+      "角色说明": "维护 AI 规则、版本和复盘，不参与录用审批。",
+      "页面权限JSON": "[\"home\",\"analytics\",\"developer_center\"]"
+    },
+    "createdTime": "2026-08-28T09:49:07.061Z",
+    "lastModifiedTime": "2026-09-14T07:42:09.591Z"
+  },
+  {
+    "id": "recjeTkSV5QpUtnUwqL",
+    "fields": {
+      "创建时间": "2026-08-28T09:49:06.456Z",
+      "操作权限JSON": "[\"view_onboarding_tasks\",\"complete_resource_task\"]",
+      "敏感字段策略JSON": "{\"contacts\":\"authorized_onboarding\",\"interviewFeedback\":\"hidden\",\"salary\":\"hidden\",\"unlock\":false}",
+      "数据范围类型": "onboarding_only",
+      "是否系统角色": "是",
+      "更新时间": "2026-09-14T07:42:08.547Z",
+      "版本": 1,
+      "角色名称": "行政",
+      "角色层级": "L2",
+      "角色状态": "停用",
+      "角色编码": "administration",
+      "角色说明": "仅处理已进入入职阶段的后勤和资源任务。",
+      "页面权限JSON": "[\"home\"]"
+    },
+    "createdTime": "2026-08-28T09:49:07.179Z",
+    "lastModifiedTime": "2026-09-14T07:42:09.720Z"
+  },
+  {
+    "id": "recOQFQ24u3dSmGuCmf",
+    "fields": {
+      "创建时间": "2026-08-28T09:49:06.456Z",
+      "操作权限JSON": "[\"view_executive_analytics\",\"approve_key_demand\"]",
+      "敏感字段策略JSON": "{\"contacts\":\"hidden\",\"interviewFeedback\":\"summary_only\",\"salary\":\"range_only\",\"unlock\":false}",
+      "数据范围类型": "managed_business_units",
+      "是否系统角色": "是",
+      "更新时间": "2026-09-14T07:42:08.547Z",
+      "版本": 1,
+      "角色名称": "管理层",
+      "角色层级": "L3",
+      "角色状态": "停用",
+      "角色编码": "executive",
+      "角色说明": "查看管辖范围的招聘汇总、关键需求和审批信息。",
+      "页面权限JSON": "[\"home\",\"demands\",\"analytics\"]"
+    },
+    "createdTime": "2026-08-28T09:49:07.290Z",
+    "lastModifiedTime": "2026-09-14T07:42:09.840Z"
+  },
+  {
+    "id": "recbpy0tAkhrYwsZqf2",
+    "fields": {
+      "创建时间": "2026-08-28T09:49:06.456Z",
+      "操作权限JSON": "[\"*\"]",
+      "敏感字段策略JSON": "{\"salary\":\"full\",\"contacts\":\"full\",\"resume\":\"full\"}",
+      "数据范围类型": "all",
+      "是否系统角色": "是",
+      "更新时间": "2026-09-17T02:41:37.821Z",
+      "版本": 1,
+      "角色名称": "超级管理员",
+      "角色层级": "L4",
+      "角色状态": "启用",
+      "角色编码": "system_admin",
+      "角色说明": "拥有系统全部菜单和管理权限。",
+      "页面权限JSON": "[\"*\"]"
+    },
+    "createdTime": "2026-08-28T09:49:07.399Z",
+    "lastModifiedTime": "2026-09-17T02:44:28.980Z"
+  },
+  {
+    "id": "recmZvH0LgAnLubOhiU",
+    "fields": {
+      "创建时间": "2026-09-08T02:27:05.602Z",
+      "操作权限JSON": "[\"view_referrals\",\"create_referral_campaign\",\"submit_referral\",\"manage_referrals\"]",
+      "敏感字段策略JSON": "{\"salary\":\"hidden\"}",
+      "数据范围类型": "self",
+      "是否系统角色": "是",
+      "更新时间": "2026-09-17T02:41:37.821Z",
+      "版本": 1,
+      "角色名称": "普通员工",
+      "角色层级": "L1",
+      "角色状态": "启用",
+      "角色编码": "referrer",
+      "角色说明": "仅使用内部推荐。",
+      "页面权限JSON": "[\"referrals\"]"
+    },
+    "createdTime": "2026-09-08T02:27:05.642Z",
+    "lastModifiedTime": "2026-09-17T02:41:38.354Z"
+  },
+  {
+    "id": "recex8qdrUCcJKMCaZU",
+    "fields": {
+      "创建时间": "2026-09-30T09:03:49.537Z",
+      "操作权限JSON": "[\"view_dashboard\",\"create_demand\",\"manage_positions\",\"edit_candidate\",\"review_candidate\",\"advance_application\",\"arrange_interview\",\"manage_assessments\",\"submit_interview_feedback\",\"manage_offer\",\"review_offer\",\"manage_background\",\"manage_employee_lifecycle\",\"complete_resource_task\",\"manage_referrals\",\"manage_messages\"]",
+      "敏感字段策略JSON": "{\"salary\":\"hidden\",\"contacts\":\"hidden\",\"resume\":\"hidden\"}",
+      "数据范围类型": "assigned_departments",
+      "是否系统角色": "是",
+      "更新时间": "2026-10-09T10:18:10.354Z",
+      "版本": 1,
+      "角色名称": "部门负责人",
+      "角色层级": "L2",
+      "角色状态": "启用",
+      "角色编码": "department_leader",
+      "角色说明": "可查看员工档案所属部门组织范围内的招聘看板、岗位和招聘HR；页面及操作权限仍由管理员配置。",
+      "页面权限JSON": "[\"home\",\"positions\",\"candidates\",\"interviews\"]"
+    },
+    "createdTime": "2026-09-30T09:03:49.575Z",
+    "lastModifiedTime": "2026-10-09T10:18:10.400Z"
+  }
+]

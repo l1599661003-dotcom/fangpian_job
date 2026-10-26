@@ -1,0 +1,4258 @@
+[
+  {
+    "id": "recPaCbCM581d7CMy0T",
+    "fields": {
+      "令牌哈希": "97688dacf9d7db19c0628fde16c2dbff2699ff545eb80f32fa0e9df9a9aa386c",
+      "会话ID": "session_4d101ea448b945f69c1aaba7dd944d60",
+      "会话状态": "已退出",
+      "创建时间": "2026-08-31T07:54:11.417Z",
+      "客户端信息": "curl/8.14.1",
+      "最近访问时间": "2026-08-31T07:54:11.417Z",
+      "来源IP": "127.0.0.1",
+      "用户ID": "45c18957-6c22-46fe-a239-e3ccfa3a6ed5",
+      "用户姓名": "高子云",
+      "过期时间": "2026-09-30T07:54:11.417Z",
+      "退出时间": "2026-08-31T07:54:11.996Z"
+    },
+    "createdTime": "2026-08-31T07:54:11.447Z",
+    "lastModifiedTime": "2026-08-31T07:54:12.028Z"
+  },
+  {
+    "id": "recfl2vCmRcvahLVnEo",
+    "fields": {
+      "令牌哈希": "f8a12580e16fb8dd6cd748ea7ad4f5e5db47e2e1be23fc77b36521043fc38029",
+      "会话ID": "session_437aea3c8d804168b68accf4741f753e",
+      "会话状态": "已退出",
+      "创建时间": "2026-08-31T07:54:50.851Z",
+      "客户端信息": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.7778.96 Safari/537.36",
+      "最近访问时间": "2026-08-31T07:54:50.851Z",
+      "来源IP": "127.0.0.1",
+      "用户ID": "45c18957-6c22-46fe-a239-e3ccfa3a6ed5",
+      "用户姓名": "高子云",
+      "过期时间": "2026-09-30T07:54:50.851Z",
+      "退出时间": "2026-08-31T07:54:52.878Z"
+    },
+    "createdTime": "2026-08-31T07:54:50.881Z",
+    "lastModifiedTime": "2026-08-31T07:54:52.909Z"
+  },
+  {
+    "id": "recjfOAp5WbXS6jodkP",
+    "fields": {
+      "令牌哈希": "bbbbeebefae2fba5af438a653b3ab0475e8f040d79a6e3af1591a471e90276bb",
+      "会话ID": "session_203b96bb4d8241ca9d2a2a3b5de98ad1",
+      "会话状态": "已退出",
+      "创建时间": "2026-08-31T08:46:34.457Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0",
+      "最近访问时间": "2026-08-31T08:46:34.457Z",
+      "来源IP": "10.50.96.145",
+      "用户ID": "45c18957-6c22-46fe-a239-e3ccfa3a6ed5",
+      "用户姓名": "高子云",
+      "过期时间": "2026-09-30T08:46:34.457Z",
+      "退出时间": "2026-09-28T05:20:21.736Z"
+    },
+    "createdTime": "2026-08-31T08:46:34.488Z",
+    "lastModifiedTime": "2026-09-28T05:20:21.776Z"
+  },
+  {
+    "id": "recsb8aFjg04U3mqbFP",
+    "fields": {
+      "令牌哈希": "b60cf3e20a54eea9a191f7920c39020b8a8edfd867dcb8650b44ef99350e6cb2",
+      "会话ID": "session_5da950e0bdba472f8bb38d8f5a4ec868",
+      "会话状态": "已退出",
+      "创建时间": "2026-08-31T08:49:50.313Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-08-31T08:49:50.313Z",
+      "来源IP": "10.50.96.145",
+      "用户ID": "45c18957-6c22-46fe-a239-e3ccfa3a6ed5",
+      "用户姓名": "高子云",
+      "过期时间": "2026-09-30T08:49:50.313Z",
+      "退出时间": "2026-09-09T09:18:28.965Z"
+    },
+    "createdTime": "2026-08-31T08:49:50.346Z",
+    "lastModifiedTime": "2026-09-09T09:18:29.025Z"
+  },
+  {
+    "id": "rec99i3LRm9RTBgHfMi",
+    "fields": {
+      "令牌哈希": "7bc73faee2ffe619bfd644de02c0cb027682c0473d41f10229d0d966eb1a2e03",
+      "会话ID": "session_b5ff05f0940b48cb913e897801a99eac",
+      "会话状态": "有效",
+      "创建时间": "2026-09-02T15:47:02.016Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.6668.101 Safari/537.36 Language/zh ColorScheme/Light wxwork/5.0.10 (MicroMessenger/6.2) WindowsWechat  MailPlugin_Electron WeMail embeddisk wwmver/3.26.510.632 noMediaCs/false",
+      "最近访问时间": "2026-09-02T15:47:02.016Z",
+      "来源IP": "10.50.96.145",
+      "用户ID": "45c18957-6c22-46fe-a239-e3ccfa3a6ed5",
+      "用户姓名": "高子云",
+      "过期时间": "2026-10-02T15:47:02.016Z"
+    },
+    "createdTime": "2026-09-02T15:47:02.048Z"
+  },
+  {
+    "id": "rec7mmC5xprXG8Fm104",
+    "fields": {
+      "令牌哈希": "7d55b9f24003ff3161e6b02b5a05a67bcf567560fa876effe31c4d5ab75b552a",
+      "会话ID": "session_cc249ab3cfac4c3884ee43fca265257b",
+      "会话状态": "有效",
+      "创建时间": "2026-09-03T07:52:41.529Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-09-03T07:52:41.529Z",
+      "来源IP": "10.50.93.163",
+      "用户ID": "employee_18848131546",
+      "用户姓名": "李思奇",
+      "过期时间": "2026-10-03T07:52:41.529Z"
+    },
+    "createdTime": "2026-09-03T07:52:41.561Z"
+  },
+  {
+    "id": "rechNcokNwjLNALOsob",
+    "fields": {
+      "令牌哈希": "22b89a180972deb245ebe7073c39965bb4269fcbfdb51175489e617e13ef75c6",
+      "会话ID": "session_03bb5b89a1024ad3ace5029d19a899df",
+      "会话状态": "有效",
+      "创建时间": "2026-09-05T01:04:53.915Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0",
+      "最近访问时间": "2026-09-05T01:04:53.915Z",
+      "来源IP": "127.0.0.1",
+      "用户ID": "45c18957-6c22-46fe-a239-e3ccfa3a6ed5",
+      "用户姓名": "高子云",
+      "过期时间": "2026-10-05T01:04:53.915Z"
+    },
+    "createdTime": "2026-09-05T01:04:53.951Z"
+  },
+  {
+    "id": "recV5ieeMFiFvPUduJX",
+    "fields": {
+      "令牌哈希": "199fce21fe25059b061751bfc2dd3bdb883916f53d1dac0c6ebb80ff7af05590",
+      "会话ID": "session_a73ca5072e9e478b97e82e4868aca28b",
+      "会话状态": "已退出",
+      "创建时间": "2026-09-09T09:21:15.901Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-09-09T09:21:15.901Z",
+      "来源IP": "10.50.96.145",
+      "用户ID": "45c18957-6c22-46fe-a239-e3ccfa3a6ed5",
+      "用户姓名": "高子云",
+      "过期时间": "2026-10-09T09:21:15.901Z",
+      "退出时间": "2026-09-09T09:47:58.524Z"
+    },
+    "createdTime": "2026-09-09T09:21:15.952Z",
+    "lastModifiedTime": "2026-09-09T09:47:58.576Z"
+  },
+  {
+    "id": "rectJcLQfjNMa7UNsIX",
+    "fields": {
+      "令牌哈希": "cad0f073af83904c554b1863717f4937c4153b2f3b18e02a37ac8ca5eb89f6a1",
+      "会话ID": "session_e7e77683bdfe4567b56cc5049d0d51fe",
+      "会话状态": "已退出",
+      "创建时间": "2026-09-09T09:48:03.349Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-09-09T09:48:03.349Z",
+      "来源IP": "10.50.93.163",
+      "用户ID": "employee_13181537381",
+      "用户姓名": "张杰",
+      "过期时间": "2026-10-09T09:48:03.349Z",
+      "退出时间": "2026-09-09T10:02:30.107Z"
+    },
+    "createdTime": "2026-09-09T09:48:03.413Z",
+    "lastModifiedTime": "2026-09-09T10:02:30.154Z"
+  },
+  {
+    "id": "rec9ErODO5jK118fbam",
+    "fields": {
+      "令牌哈希": "7cc97d043f5a1dd5d1e7521157464a84c55dd86b7a922a886ad03cae4df268ea",
+      "会话ID": "session_ffe5d0e45a3847378b2b58d81255fb1f",
+      "会话状态": "已退出",
+      "创建时间": "2026-09-09T10:02:48.338Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-09-09T10:02:48.338Z",
+      "来源IP": "10.50.93.163",
+      "用户ID": "45c18957-6c22-46fe-a239-e3ccfa3a6ed5",
+      "用户姓名": "高子云",
+      "过期时间": "2026-10-09T10:02:48.338Z",
+      "退出时间": "2026-09-09T10:10:59.373Z"
+    },
+    "createdTime": "2026-09-09T10:02:48.383Z",
+    "lastModifiedTime": "2026-09-09T10:10:59.418Z"
+  },
+  {
+    "id": "recNTf8viivQPGe599c",
+    "fields": {
+      "令牌哈希": "9465a94f2460cca76b8990f2ce7882d5ba650632ca930fa7fc4be7b7ea8143bc",
+      "会话ID": "session_16e1f894897f44408ea66a6c61bb1a60",
+      "会话状态": "有效",
+      "创建时间": "2026-09-09T10:11:04.814Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-09-09T10:11:04.814Z",
+      "来源IP": "10.50.96.145",
+      "用户ID": "employee_13181537381",
+      "用户姓名": "张杰",
+      "过期时间": "2026-10-09T10:11:04.814Z"
+    },
+    "createdTime": "2026-09-09T10:11:04.857Z"
+  },
+  {
+    "id": "rechwVtGc5gc3TSZ0mv",
+    "fields": {
+      "令牌哈希": "04bff117994e0a4ec120917f2a865ea7d2cc6f653d08ce045c481dc52e164572",
+      "会话ID": "session_861e63353e1e41da89796bae785c07ec",
+      "会话状态": "已退出",
+      "创建时间": "2026-09-09T10:43:35.024Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-09-09T10:43:35.024Z",
+      "来源IP": "10.50.96.145",
+      "用户ID": "45c18957-6c22-46fe-a239-e3ccfa3a6ed5",
+      "用户姓名": "高子云",
+      "过期时间": "2026-10-09T10:43:35.024Z",
+      "退出时间": "2026-09-10T08:55:20.418Z"
+    },
+    "createdTime": "2026-09-09T10:43:35.073Z",
+    "lastModifiedTime": "2026-09-10T08:55:20.461Z"
+  },
+  {
+    "id": "recrAgBxm6KFhq12XKz",
+    "fields": {
+      "令牌哈希": "be9ea43fb601a7f7d84de20b47bed76887e1626a607d13872b3309bc9421eb88",
+      "会话ID": "session_2642efb16ddd49d988b8df08ad1e9d3c",
+      "会话状态": "有效",
+      "创建时间": "2026-09-09T10:51:40.987Z",
+      "客户端信息": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.6.2 Safari/605.1.15",
+      "最近访问时间": "2026-09-09T10:51:40.987Z",
+      "来源IP": "10.50.93.163",
+      "用户ID": "employee_13287953891",
+      "用户姓名": "张晓霞",
+      "过期时间": "2026-10-09T10:51:40.987Z"
+    },
+    "createdTime": "2026-09-09T10:51:41.031Z"
+  },
+  {
+    "id": "recuDBAbCvUsxZ6MtLE",
+    "fields": {
+      "令牌哈希": "bd9e7a4703bdb637b435b0e38c1df94750a37853381caa82d9fb2a6bcd816276",
+      "会话ID": "session_58be5caf4f6e40e9b34af120949de5aa",
+      "会话状态": "已退出",
+      "创建时间": "2026-09-10T08:55:26.803Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-09-10T08:55:26.803Z",
+      "来源IP": "10.50.93.163",
+      "用户ID": "employee_13181537381",
+      "用户姓名": "张杰",
+      "过期时间": "2026-10-10T08:55:26.803Z",
+      "退出时间": "2026-09-14T06:07:23.672Z"
+    },
+    "createdTime": "2026-09-10T08:55:26.846Z",
+    "lastModifiedTime": "2026-09-14T06:07:23.721Z"
+  },
+  {
+    "id": "recyXPyID9JNeHHwDJG",
+    "fields": {
+      "令牌哈希": "f69bcafd99c11a8240a81228865f731f111d9485ea6447002dd883a482a48f4d",
+      "会话ID": "session_40fa972c5218465a892a471a098e6b16",
+      "会话状态": "有效",
+      "创建时间": "2026-09-10T12:10:48.546Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-10-09T08:52:31.098Z",
+      "来源IP": "10.50.96.145",
+      "用户ID": "employee_17854337792",
+      "用户姓名": "郑倩",
+      "身份来源": "session",
+      "过期时间": "2026-10-10T12:10:48.546Z"
+    },
+    "createdTime": "2026-09-10T12:10:48.590Z",
+    "lastModifiedTime": "2026-10-09T08:52:31.208Z"
+  },
+  {
+    "id": "recf62AYDmzUT202zR1",
+    "fields": {
+      "令牌哈希": "f532d3336495eebbb6d55ceeef60579f9b7065259ff949c2628b21df8ff6f797",
+      "会话ID": "session_a132e890ba30446a890691e4c6fa9070",
+      "会话状态": "有效",
+      "创建时间": "2026-09-11T15:03:41.724Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-09-11T15:03:41.724Z",
+      "来源IP": "127.0.0.1",
+      "用户ID": "45c18957-6c22-46fe-a239-e3ccfa3a6ed5",
+      "用户姓名": "高子云",
+      "过期时间": "2026-10-11T15:03:41.724Z"
+    },
+    "createdTime": "2026-09-11T15:03:41.766Z"
+  },
+  {
+    "id": "recUX81NVdJV9DlmfEQ",
+    "fields": {
+      "令牌哈希": "915c6d7ce89d91ff72a8f9e951a280b8146c5cff1ee4ed7ec26e6f8f31b18a26",
+      "会话ID": "session_4ed2310a9f6b4ee081ff22220697dc0a",
+      "会话状态": "有效",
+      "创建时间": "2026-09-11T15:03:43.113Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-09-11T15:03:43.113Z",
+      "来源IP": "127.0.0.1",
+      "用户ID": "45c18957-6c22-46fe-a239-e3ccfa3a6ed5",
+      "用户姓名": "高子云",
+      "过期时间": "2026-10-11T15:03:43.113Z"
+    },
+    "createdTime": "2026-09-11T15:03:43.156Z"
+  },
+  {
+    "id": "recRaILTihXVSD6rdo9",
+    "fields": {
+      "令牌哈希": "298477c824325f20f72e48a6b2c8f6a625f6e690583ca81d16486505823951fe",
+      "会话ID": "session_3ed04fe2ceee492d9f351fa26d4b7bf5",
+      "会话状态": "已退出",
+      "创建时间": "2026-09-14T06:07:32.626Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-09-14T06:07:32.626Z",
+      "来源IP": "10.50.96.145",
+      "用户ID": "employee_13181537381",
+      "用户姓名": "张杰",
+      "过期时间": "2026-10-14T06:07:32.626Z",
+      "退出时间": "2026-09-14T06:10:16.853Z"
+    },
+    "createdTime": "2026-09-14T06:07:32.668Z",
+    "lastModifiedTime": "2026-09-14T06:10:16.902Z"
+  },
+  {
+    "id": "rec9jzLJFO26Kv4DR6P",
+    "fields": {
+      "令牌哈希": "533fe25f9180a44e07d4e988ed475cfdc8899c44944d749460190d46e656a1bf",
+      "会话ID": "session_1cbd64a046ee431e9ae28a7d6024d066",
+      "会话状态": "已退出",
+      "创建时间": "2026-09-14T06:10:23.399Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-09-14T06:10:23.399Z",
+      "来源IP": "10.50.96.145",
+      "用户ID": "45c18957-6c22-46fe-a239-e3ccfa3a6ed5",
+      "用户姓名": "高子云",
+      "过期时间": "2026-10-14T06:10:23.399Z",
+      "退出时间": "2026-09-14T06:10:40.523Z"
+    },
+    "createdTime": "2026-09-14T06:10:23.445Z",
+    "lastModifiedTime": "2026-09-14T06:10:40.566Z"
+  },
+  {
+    "id": "rec3WYXTxntwhVwgrhM",
+    "fields": {
+      "令牌哈希": "344d77da269ebf304b661bffe72df90cc082d7c2f3e485feab57062bf4921978",
+      "会话ID": "session_2c4a3ed5d2b340a8a313385335185d87",
+      "会话状态": "已退出",
+      "创建时间": "2026-09-14T06:10:45.606Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-09-14T06:10:45.606Z",
+      "来源IP": "10.50.96.145",
+      "用户ID": "employee_13181537381",
+      "用户姓名": "张杰",
+      "过期时间": "2026-10-14T06:10:45.606Z",
+      "退出时间": "2026-09-14T06:55:05.214Z"
+    },
+    "createdTime": "2026-09-14T06:10:45.648Z",
+    "lastModifiedTime": "2026-09-14T06:55:05.263Z"
+  },
+  {
+    "id": "recqlgZuSC1zzuUJjZV",
+    "fields": {
+      "令牌哈希": "f2564945b414fb96cc9af8cdbd08dc6b20a12ac4cdfe141f5d6f474208e4871f",
+      "会话ID": "session_5bf8fcd64e8d4fefb55545c881d13f84",
+      "会话状态": "已退出",
+      "创建时间": "2026-09-14T06:55:11.718Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-09-14T06:55:11.718Z",
+      "来源IP": "10.50.96.145",
+      "用户ID": "employee_13188537381",
+      "用户姓名": "张杰",
+      "过期时间": "2026-10-14T06:55:11.718Z",
+      "退出时间": "2026-09-14T06:55:36.457Z"
+    },
+    "createdTime": "2026-09-14T06:55:11.783Z",
+    "lastModifiedTime": "2026-09-14T06:55:36.506Z"
+  },
+  {
+    "id": "recLGqI16GXxaEMUZ9a",
+    "fields": {
+      "令牌哈希": "ed69c6eb0b617ec7a086d6d40c26da80c58b4ed0c9416facc12103bb1aafe691",
+      "会话ID": "session_36876e131b3c463f9b0cc083eb6a7fdc",
+      "会话状态": "已退出",
+      "创建时间": "2026-09-14T06:55:41.956Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-09-14T06:55:41.956Z",
+      "来源IP": "10.50.93.163",
+      "用户ID": "45c18957-6c22-46fe-a239-e3ccfa3a6ed5",
+      "用户姓名": "高子云",
+      "过期时间": "2026-10-14T06:55:41.956Z",
+      "退出时间": "2026-09-29T02:19:43.122Z"
+    },
+    "createdTime": "2026-09-14T06:55:41.999Z",
+    "lastModifiedTime": "2026-09-29T02:19:43.166Z"
+  },
+  {
+    "id": "recKxOSfKyy9xWHUDpF",
+    "fields": {
+      "令牌哈希": "36dfccf612651a11ac3965f5e4a40d52ad004f3a8cb7f116aebad8f663659254",
+      "会话ID": "session_97b25c32cfaa46e196c2b4dc1e6d3ced",
+      "会话状态": "已退出",
+      "创建时间": "2026-09-15T14:18:53.735Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 QQBrowser/21.5.9239.400",
+      "最近访问时间": "2026-09-15T14:18:53.735Z",
+      "来源IP": "10.50.93.163",
+      "用户ID": "employee_17854337792",
+      "用户姓名": "郑倩",
+      "过期时间": "2026-10-15T14:18:53.735Z",
+      "退出时间": "2026-09-15T14:19:17.570Z"
+    },
+    "createdTime": "2026-09-15T14:18:53.782Z",
+    "lastModifiedTime": "2026-09-15T14:19:17.617Z"
+  },
+  {
+    "id": "recwaDPyKJ4l4YZbNs1",
+    "fields": {
+      "令牌哈希": "20b644cd98d92872df2b4e1e26fce643a1fb70709e2daeaa83e6b234f4e8ed31",
+      "会话ID": "session_b2a6596e41ea41e595a9f02e697f8cf3",
+      "会话状态": "有效",
+      "创建时间": "2026-09-15T14:19:22.197Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 QQBrowser/21.5.9239.400",
+      "最近访问时间": "2026-09-15T14:19:22.197Z",
+      "来源IP": "10.50.93.163",
+      "用户ID": "employee_17854337792",
+      "用户姓名": "郑倩",
+      "过期时间": "2026-10-15T14:19:22.197Z"
+    },
+    "createdTime": "2026-09-15T14:19:22.241Z"
+  },
+  {
+    "id": "rec0n6sHQr9vTEfIHzk",
+    "fields": {
+      "令牌哈希": "da2d09612c2d77e95214f15d2a269035e00f157a116360dea14c7391be677e0f",
+      "会话ID": "session_2d103423c7e04bf7a92b4a10efc8b514",
+      "会话状态": "有效",
+      "创建时间": "2026-09-17T02:42:08.266Z",
+      "客户端信息": "curl/8.14.1",
+      "最近访问时间": "2026-09-17T02:42:08.266Z",
+      "来源IP": "127.0.0.1",
+      "用户ID": "45c18957-6c22-46fe-a239-e3ccfa3a6ed5",
+      "用户姓名": "高子云",
+      "过期时间": "2026-10-17T02:42:08.266Z"
+    },
+    "createdTime": "2026-09-17T02:42:08.308Z"
+  },
+  {
+    "id": "recMrN6vOV2pqb7VbaI",
+    "fields": {
+      "令牌哈希": "854201cdb8e6c1ed8dfb40e2047570f8a6e46a1df27cb089614d3e348c5ecd13",
+      "会话ID": "session_8dcc633f5e6c493d8fa36be33dee8a3d",
+      "会话状态": "有效",
+      "创建时间": "2026-09-17T16:41:31.546Z",
+      "客户端信息": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-10-19T12:19:50.574Z",
+      "来源IP": "10.50.96.145",
+      "用户ID": "45c18957-6c22-46fe-a239-e3ccfa3a6ed5",
+      "用户姓名": "高子云",
+      "身份来源": "session",
+      "过期时间": "2026-10-17T16:41:31.546Z"
+    },
+    "createdTime": "2026-09-17T16:41:31.611Z",
+    "lastModifiedTime": "2026-10-19T12:19:50.699Z"
+  },
+  {
+    "id": "recJfbQoPefyfdCd05E",
+    "fields": {
+      "令牌哈希": "2e782d2d9d1463865860dacccc7a4194cbdba9819f21f3bce4e894e6480f2626",
+      "会话ID": "session_fea843c0b6c34297ba35070a7281e4b9",
+      "会话状态": "有效",
+      "创建时间": "2026-09-20T13:09:03.470Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-09-20T13:09:03.470Z",
+      "来源IP": "127.0.0.1",
+      "用户ID": "45c18957-6c22-46fe-a239-e3ccfa3a6ed5",
+      "用户姓名": "高子云",
+      "过期时间": "2026-10-20T13:09:03.470Z"
+    },
+    "createdTime": "2026-09-20T13:09:03.511Z"
+  },
+  {
+    "id": "rec9VRo8ZNbsnZh3iGU",
+    "fields": {
+      "令牌哈希": "f4d5dce809f520d3ede2e5695e28925da641e6bcb5b5cf6e48b6a2f778142b75",
+      "会话ID": "session_f3a1979135384711b43ccfe1f0d45b5f",
+      "会话状态": "有效",
+      "创建时间": "2026-09-21T14:29:06.338Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.6668.101 Safari/537.36 Language/zh ColorScheme/Light wxwork/5.0.11 (MicroMessenger/6.2) WindowsWechat  MailPlugin_Electron WeMail embeddisk wwmver/3.26.511.637 noMediaCs/false",
+      "最近访问时间": "2026-09-21T14:29:06.338Z",
+      "来源IP": "10.50.96.145",
+      "用户ID": "45c18957-6c22-46fe-a239-e3ccfa3a6ed5",
+      "用户姓名": "高子云",
+      "过期时间": "2026-10-21T14:29:06.338Z"
+    },
+    "createdTime": "2026-09-21T14:29:06.384Z"
+  },
+  {
+    "id": "recRamOzDfYHaGnkAiS",
+    "fields": {
+      "令牌哈希": "d3c98dcbac1f39592c8df15b549665846a86f8949794ceb7e6c9a6b58cce29dd",
+      "会话ID": "session_98c27849dde9496c8eab03aad3526250",
+      "会话状态": "有效",
+      "创建时间": "2026-09-23T02:52:16.948Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.6668.101 Safari/537.36 Language/zh ColorScheme/Light wxwork/5.0.11 (MicroMessenger/6.2) WindowsWechat  MailPlugin_Electron WeMail embeddisk wwmver/3.26.511.637 noMediaCs/false",
+      "最近访问时间": "2026-09-23T02:52:16.948Z",
+      "来源IP": "127.0.0.1",
+      "用户ID": "employee_18848131546",
+      "用户姓名": "李思奇",
+      "过期时间": "2026-10-23T02:52:16.948Z"
+    },
+    "createdTime": "2026-09-23T02:52:16.988Z"
+  },
+  {
+    "id": "recONpRQBXE6vEDduUQ",
+    "fields": {
+      "令牌哈希": "b29fff62c5b2823cb71ad1fd2fa05e082467da09f8abf6199fdcaf437297f0d9",
+      "会话ID": "session_82c77cc739dd45dcb52b674e17add4da",
+      "会话状态": "有效",
+      "创建时间": "2026-09-23T14:36:31.386Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 QQBrowser/21.9.7011.400",
+      "最近访问时间": "2026-09-23T14:36:31.386Z",
+      "来源IP": "127.0.0.1",
+      "用户ID": "employee_18848131546",
+      "用户姓名": "李思奇",
+      "过期时间": "2026-10-23T14:36:31.386Z"
+    },
+    "createdTime": "2026-09-23T14:36:31.426Z"
+  },
+  {
+    "id": "recTcH55ZfxB8VQJOun",
+    "fields": {
+      "令牌哈希": "ff789a22931754f1c53eeb3942f664c25f4da26da8f8027327e0d2e9a6b859e0",
+      "会话ID": "session_716ce0a218ae446c81b49f9135678374",
+      "会话状态": "已退出",
+      "创建时间": "2026-09-24T06:53:50.845Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-09-24T06:53:50.845Z",
+      "来源IP": "10.52.0.141",
+      "用户ID": "employee_18848131546",
+      "用户姓名": "李思奇",
+      "过期时间": "2026-10-24T06:53:50.845Z",
+      "退出时间": "2026-09-24T06:56:09.248Z"
+    },
+    "createdTime": "2026-09-24T06:53:50.888Z",
+    "lastModifiedTime": "2026-09-24T06:56:09.297Z"
+  },
+  {
+    "id": "recD6DY0dlHjVD3bmCG",
+    "fields": {
+      "令牌哈希": "5049d68c91074f155392ba14970bc40372e8b8193f9c833545c16fc2ff752f94",
+      "会话ID": "session_72d516bab68e42659e76a1804cca76b3",
+      "会话状态": "有效",
+      "创建时间": "2026-09-24T06:56:44.223Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-09-24T06:56:44.223Z",
+      "来源IP": "10.52.0.159",
+      "用户ID": "employee_18848131546",
+      "用户姓名": "李思奇",
+      "过期时间": "2026-10-24T06:56:44.223Z"
+    },
+    "createdTime": "2026-09-24T06:56:44.266Z"
+  },
+  {
+    "id": "recQS6TTy79UPUSpZkC",
+    "fields": {
+      "令牌哈希": "8746986809f7fa93f06cd17113638c4ff48ee0446d6dc6609caaf922a6096ad5",
+      "会话ID": "session_6c1639664d3648c6b74ddba5d33525f7",
+      "会话状态": "有效",
+      "创建时间": "2026-09-24T06:59:16.669Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-10-13T07:55:02.310Z",
+      "来源IP": "10.52.0.159",
+      "用户ID": "employee_18660508236",
+      "用户姓名": "吕悦静",
+      "身份来源": "session",
+      "过期时间": "2026-10-24T06:59:16.669Z"
+    },
+    "createdTime": "2026-09-24T06:59:16.712Z",
+    "lastModifiedTime": "2026-10-13T07:55:02.426Z"
+  },
+  {
+    "id": "recOmuvQObMh1EMVuqx",
+    "fields": {
+      "令牌哈希": "8553b1dd27faea3f0602c515bdb09c99eef823b7f8c8a76cf5f539e6498306c7",
+      "会话ID": "session_5d4c72363cfb425cb3c84edbf2471381",
+      "会话状态": "有效",
+      "创建时间": "2026-09-24T09:17:34.421Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36 Edg/153.0.0.0",
+      "最近访问时间": "2026-10-20T08:14:39.368Z",
+      "来源IP": "10.52.0.159",
+      "用户ID": "employee_18053516269",
+      "用户姓名": "王雪婷",
+      "身份来源": "session",
+      "过期时间": "2026-10-24T09:17:34.421Z"
+    },
+    "createdTime": "2026-09-24T09:17:34.466Z",
+    "lastModifiedTime": "2026-10-20T08:14:39.478Z"
+  },
+  {
+    "id": "recbTBwmIOGjU7n2hUM",
+    "fields": {
+      "令牌哈希": "a198f52dc1edecfe99fd289bead477b59126ca4c33417a0a0f5af400bf0fa44f",
+      "会话ID": "session_d4d77399be71401686e17787e49baf22",
+      "会话状态": "已退出",
+      "创建时间": "2026-09-24T09:33:11.639Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0",
+      "最近访问时间": "2026-09-24T09:33:11.639Z",
+      "来源IP": "127.0.0.1",
+      "用户ID": "45c18957-6c22-46fe-a239-e3ccfa3a6ed5",
+      "用户姓名": "高子云",
+      "过期时间": "2026-10-24T09:33:11.639Z",
+      "退出时间": "2026-09-28T05:53:10.606Z"
+    },
+    "createdTime": "2026-09-24T09:33:11.682Z",
+    "lastModifiedTime": "2026-09-28T05:53:10.647Z"
+  },
+  {
+    "id": "recoDRnvbf1KFREl06G",
+    "fields": {
+      "令牌哈希": "bee8ff1b75f400374f4502872e497dc4ac2d06eb763aa5faf75a970d567f64fc",
+      "会话ID": "session_07f75b7113e6420ebbc5381f4f672bb9",
+      "会话状态": "有效",
+      "创建时间": "2026-09-24T09:44:01.416Z",
+      "客户端信息": "Mozilla/5.0 (iPhone; CPU iPhone OS 26_6_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 MicroMessenger/8.0.78(0x18004e2f) NetType/WIFI Language/zh_CN",
+      "最近访问时间": "2026-09-24T09:44:01.416Z",
+      "来源IP": "10.52.0.159",
+      "用户ID": "employee_18848131546",
+      "用户姓名": "李思奇",
+      "过期时间": "2026-10-24T09:44:01.416Z"
+    },
+    "createdTime": "2026-09-24T09:44:01.458Z"
+  },
+  {
+    "id": "reclIC3v9tMf63jMaOv",
+    "fields": {
+      "令牌哈希": "8b9deb659b7049b46f6a80426cb87ab8c7a114d645e04ec42e3b053e7248c04d",
+      "会话ID": "session_a23f7ea697cb4138a470885a980dffd2",
+      "会话状态": "有效",
+      "创建时间": "2026-09-24T09:49:40.181Z",
+      "客户端信息": "Mozilla/5.0 (Linux; Android 12; ICL-AL20 Build/HUAWEIICL-AL20; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/146.0.7680.178 Mobile Safari/537.36 XWEB/1460263 MMWEBSDK/20250205 MMWEBID/1430 wxwork/5.0.11 MicroMessenger/7.0.1 NetType/WIFI Language/zh Lang/zh ColorScheme/Light wwmver/3.26.511.636",
+      "最近访问时间": "2026-10-24T03:30:48.042Z",
+      "来源IP": "10.52.0.159",
+      "用户ID": "employee_18563869999",
+      "用户姓名": "刘金虎",
+      "身份来源": "session",
+      "过期时间": "2026-10-24T09:49:40.181Z"
+    },
+    "createdTime": "2026-09-24T09:49:40.229Z",
+    "lastModifiedTime": "2026-10-24T03:30:48.150Z"
+  },
+  {
+    "id": "rec7Z3NRJrFyOw31BFL",
+    "fields": {
+      "令牌哈希": "e60bbc4168f01546c464719def9a7be6b155961c8f1436d2eb3dcc841edfce05",
+      "会话ID": "session_27481776f412405fa621870665665b2b",
+      "会话状态": "有效",
+      "创建时间": "2026-09-24T10:00:25.355Z",
+      "客户端信息": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko)  Mobile/15E148 wxwork/5.0.11 MicroMessenger/7.0.1 Language/zh ColorScheme/Light wwmver/3.26.511.376",
+      "最近访问时间": "2026-09-24T10:00:25.355Z",
+      "来源IP": "10.52.0.159",
+      "用户ID": "employee_18848131546",
+      "用户姓名": "李思奇",
+      "过期时间": "2026-10-24T10:00:25.355Z"
+    },
+    "createdTime": "2026-09-24T10:00:25.396Z"
+  },
+  {
+    "id": "recZQuGWz0Df1byfdxi",
+    "fields": {
+      "令牌哈希": "582ed884bf50b20a5c45b0e83c71000b31c7b766cf5ac6a51580c1896c36d359",
+      "会话ID": "session_fede20ecd99b4bbf94eef7f7f7d09e27",
+      "会话状态": "已退出",
+      "创建时间": "2026-09-28T05:20:27.555Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0",
+      "最近访问时间": "2026-09-28T05:20:27.555Z",
+      "来源IP": "10.52.0.141",
+      "用户ID": "employee_19975275687",
+      "用户姓名": "孙凯",
+      "过期时间": "2026-10-28T05:20:27.555Z",
+      "退出时间": "2026-09-28T05:20:54.537Z"
+    },
+    "createdTime": "2026-09-28T05:20:27.596Z",
+    "lastModifiedTime": "2026-09-28T05:20:54.584Z"
+  },
+  {
+    "id": "recmzB3Cq1SFuu2ME98",
+    "fields": {
+      "令牌哈希": "00c933f18d1006db9f40209da809ef2d135be83c1705388db8950f5cac3a8158",
+      "会话ID": "session_3725818db96a4a688db21674e47220df",
+      "会话状态": "已退出",
+      "创建时间": "2026-09-28T05:20:58.182Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0",
+      "最近访问时间": "2026-09-28T05:20:58.182Z",
+      "来源IP": "10.52.0.141",
+      "用户ID": "45c18957-6c22-46fe-a239-e3ccfa3a6ed5",
+      "用户姓名": "高子云",
+      "过期时间": "2026-10-28T05:20:58.182Z",
+      "退出时间": "2026-09-28T06:23:28.082Z"
+    },
+    "createdTime": "2026-09-28T05:20:58.226Z",
+    "lastModifiedTime": "2026-09-28T06:23:28.124Z"
+  },
+  {
+    "id": "recy4x6BPjQHJws7M9X",
+    "fields": {
+      "令牌哈希": "345fc7e0849d8e34b0ab2960fcef1766224157e6f86bae362fc0538addd4ac46",
+      "会话ID": "session_0a66a0f8432a4e45af529cfd54683217",
+      "会话状态": "已退出",
+      "创建时间": "2026-09-28T05:53:14.053Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0",
+      "最近访问时间": "2026-09-28T05:53:14.053Z",
+      "来源IP": "127.0.0.1",
+      "用户ID": "employee_19975275687",
+      "用户姓名": "孙凯",
+      "过期时间": "2026-10-28T05:53:14.053Z",
+      "退出时间": "2026-09-28T05:53:27.587Z"
+    },
+    "createdTime": "2026-09-28T05:53:14.091Z",
+    "lastModifiedTime": "2026-09-28T05:53:27.627Z"
+  },
+  {
+    "id": "recOi8lDaUr9IaTdiq6",
+    "fields": {
+      "令牌哈希": "5833e0e03d56f3b651044eefd8cd9501a8244daa7e21a250575441e2100e3b68",
+      "会话ID": "session_00305b51a3d74c7abf3ef4255bff5dd3",
+      "会话状态": "已退出",
+      "创建时间": "2026-09-28T05:53:30.997Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0",
+      "最近访问时间": "2026-09-28T05:53:30.997Z",
+      "来源IP": "127.0.0.1",
+      "用户ID": "45c18957-6c22-46fe-a239-e3ccfa3a6ed5",
+      "用户姓名": "高子云",
+      "过期时间": "2026-10-28T05:53:30.997Z",
+      "退出时间": "2026-09-28T05:54:00.962Z"
+    },
+    "createdTime": "2026-09-28T05:53:31.038Z",
+    "lastModifiedTime": "2026-09-28T05:54:01.006Z"
+  },
+  {
+    "id": "recriKdNoqgRecaxCGa",
+    "fields": {
+      "令牌哈希": "9e1c563ad89e2510ba85df1c3a8f44c6d9539dfa1ab4298b056003e1495fd552",
+      "会话ID": "session_4eaf833e324e4951979f081ffaa80eb5",
+      "会话状态": "已退出",
+      "创建时间": "2026-09-28T05:54:09.167Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0",
+      "最近访问时间": "2026-09-28T05:54:09.167Z",
+      "来源IP": "127.0.0.1",
+      "用户ID": "employee_15376993231",
+      "用户姓名": "阚新宇",
+      "过期时间": "2026-10-28T05:54:09.167Z",
+      "退出时间": "2026-09-28T05:54:15.675Z"
+    },
+    "createdTime": "2026-09-28T05:54:09.204Z",
+    "lastModifiedTime": "2026-09-28T05:54:15.714Z"
+  },
+  {
+    "id": "rec9oSah3PpmRI4D194",
+    "fields": {
+      "令牌哈希": "3dc6da178058067dc254fb8c6a1f7e91c87a652036c269005bc4a699ebfb90c8",
+      "会话ID": "session_1c31811261b241728c54571c7e126e84",
+      "会话状态": "有效",
+      "创建时间": "2026-09-28T05:54:19.054Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0",
+      "最近访问时间": "2026-09-28T05:54:19.054Z",
+      "来源IP": "127.0.0.1",
+      "用户ID": "45c18957-6c22-46fe-a239-e3ccfa3a6ed5",
+      "用户姓名": "高子云",
+      "过期时间": "2026-10-28T05:54:19.054Z"
+    },
+    "createdTime": "2026-09-28T05:54:19.099Z"
+  },
+  {
+    "id": "recC8CcReqvD4yaqaG6",
+    "fields": {
+      "令牌哈希": "ca469655832b8819d7876032cf92b257d93836a459a1ef1feafae768f591b203",
+      "会话ID": "session_cc9bd105fe1f4a359be6894d2b96547f",
+      "会话状态": "已退出",
+      "创建时间": "2026-09-28T06:23:31.252Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0",
+      "最近访问时间": "2026-09-28T06:23:31.252Z",
+      "来源IP": "10.52.0.159",
+      "用户ID": "employee_19975275687",
+      "用户姓名": "孙凯",
+      "过期时间": "2026-10-28T06:23:31.252Z",
+      "退出时间": "2026-09-28T06:23:35.052Z"
+    },
+    "createdTime": "2026-09-28T06:23:31.293Z",
+    "lastModifiedTime": "2026-09-28T06:23:35.095Z"
+  },
+  {
+    "id": "recIUiC1vrKY4r2soSC",
+    "fields": {
+      "令牌哈希": "44ae9be8b72ff75f3588ff90a4eaa651170c6b072fb13a3842fe83317b7de6f1",
+      "会话ID": "session_5914bfb11db8416d84eefddf1a27567b",
+      "会话状态": "已退出",
+      "创建时间": "2026-09-28T06:24:00.446Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0",
+      "最近访问时间": "2026-09-28T06:24:00.446Z",
+      "来源IP": "10.52.0.141",
+      "用户ID": "employee_15376993231",
+      "用户姓名": "阚新宇",
+      "过期时间": "2026-10-28T06:24:00.446Z",
+      "退出时间": "2026-09-28T06:24:04.371Z"
+    },
+    "createdTime": "2026-09-28T06:24:00.492Z",
+    "lastModifiedTime": "2026-09-28T06:24:04.416Z"
+  },
+  {
+    "id": "reccBxRmQqQ8aszyH4N",
+    "fields": {
+      "令牌哈希": "5a4bb7267a57c7595e5010a57e9833b2c9c014188d40d6e55fbfa039796ffb76",
+      "会话ID": "session_4c85c6631e9941ffa489e423b2bfcaf2",
+      "会话状态": "已退出",
+      "创建时间": "2026-09-28T06:24:08.241Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0",
+      "最近访问时间": "2026-10-10T06:37:10.628Z",
+      "来源IP": "10.52.0.159",
+      "用户ID": "45c18957-6c22-46fe-a239-e3ccfa3a6ed5",
+      "用户姓名": "高子云",
+      "身份来源": "session",
+      "过期时间": "2026-10-28T06:24:08.241Z",
+      "退出时间": "2026-10-10T06:37:13.225Z"
+    },
+    "createdTime": "2026-09-28T06:24:08.285Z",
+    "lastModifiedTime": "2026-10-10T06:37:13.271Z"
+  },
+  {
+    "id": "recus1UfqUcecjikCbM",
+    "fields": {
+      "令牌哈希": "aad2122dde7dc856c9396d55e18739fbae8746ce308a929e331af60044844b53",
+      "会话ID": "session_040ceae14a744a218b7298565ee514de",
+      "会话状态": "有效",
+      "创建时间": "2026-09-28T06:30:11.463Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 QQBrowser/22.0.7003.400",
+      "最近访问时间": "2026-09-28T06:30:11.463Z",
+      "来源IP": "10.52.0.141",
+      "用户ID": "employee_18848131546",
+      "用户姓名": "李思奇",
+      "过期时间": "2026-10-28T06:30:11.463Z"
+    },
+    "createdTime": "2026-09-28T06:30:11.509Z"
+  },
+  {
+    "id": "recr8ozmIGrQf8LWOym",
+    "fields": {
+      "令牌哈希": "00d8cac80f357d50721cb7bf8fe4e6cb5d1284895143fe1a936462ad6391ad50",
+      "会话ID": "session_11db8f1ec9774c548049217b70a4b005",
+      "会话状态": "有效",
+      "创建时间": "2026-09-29T01:38:42.242Z",
+      "客户端信息": "Mozilla/5.0 (Linux; Android 12; GIA-AN00 Build/HONORGIA-AN00; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/146.0.7680.178 Mobile Safari/537.36 XWEB/1460263 MMWEBSDK/20250205 MMWEBID/2002 wxwork/5.0.11 MicroMessenger/7.0.1 NetType/WIFI Language/zh Lang/zh ColorScheme/Light wwmver/3.26.511.636",
+      "最近访问时间": "2026-10-15T09:38:33.400Z",
+      "来源IP": "10.52.0.159",
+      "用户ID": "employee_13188537381",
+      "用户姓名": "张杰",
+      "身份来源": "session",
+      "过期时间": "2026-10-29T01:38:42.242Z"
+    },
+    "createdTime": "2026-09-29T01:38:42.283Z",
+    "lastModifiedTime": "2026-10-15T09:38:33.506Z"
+  },
+  {
+    "id": "recH9L8i1pMn3jPE3G6",
+    "fields": {
+      "令牌哈希": "537ce6b85e4b7c0a4b178d66812768f5c5392cd82ead720fe40321fc8b75a53c",
+      "会话ID": "session_1b1324f637fc4875955e8e872d22ccd9",
+      "会话状态": "有效",
+      "创建时间": "2026-09-29T01:54:48.843Z",
+      "客户端信息": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.6.1 Mobile/15E148 Safari/604.1",
+      "最近访问时间": "2026-10-14T08:46:36.925Z",
+      "来源IP": "10.52.0.159",
+      "用户ID": "employee_18848131546",
+      "用户姓名": "李思奇",
+      "身份来源": "session",
+      "过期时间": "2026-10-29T01:54:48.843Z"
+    },
+    "createdTime": "2026-09-29T01:54:48.884Z",
+    "lastModifiedTime": "2026-10-14T08:46:37.027Z"
+  },
+  {
+    "id": "rec271Pa6IHQN5IvLKb",
+    "fields": {
+      "令牌哈希": "e3687d845e3b3cc92ec0d13470acfa5ce1b7977f4b8416738ab9df1e7947feb7",
+      "会话ID": "session_4a7efe2f77c84b1291498ad4d520c355",
+      "会话状态": "已退出",
+      "创建时间": "2026-09-29T02:19:54.345Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-09-29T02:19:54.345Z",
+      "来源IP": "10.52.0.159",
+      "用户ID": "employee_13188537381",
+      "用户姓名": "张杰",
+      "过期时间": "2026-10-29T02:19:54.345Z",
+      "退出时间": "2026-09-29T02:20:12.966Z"
+    },
+    "createdTime": "2026-09-29T02:19:54.385Z",
+    "lastModifiedTime": "2026-09-29T02:20:13.015Z"
+  },
+  {
+    "id": "rec86PNdm2P7a2rwUE7",
+    "fields": {
+      "令牌哈希": "4370361fb112980c8b31a6ec257b804a69e3eb517ca421c74155dacd1a1b7ca8",
+      "会话ID": "session_d90ec6b21d7f42a686c88ee8b3a85e7b",
+      "会话状态": "已退出",
+      "创建时间": "2026-09-29T02:20:19.618Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-09-29T02:20:19.618Z",
+      "来源IP": "10.52.0.141",
+      "用户ID": "45c18957-6c22-46fe-a239-e3ccfa3a6ed5",
+      "用户姓名": "高子云",
+      "过期时间": "2026-10-29T02:20:19.618Z",
+      "退出时间": "2026-09-29T02:21:02.420Z"
+    },
+    "createdTime": "2026-09-29T02:20:19.664Z",
+    "lastModifiedTime": "2026-09-29T02:21:02.464Z"
+  },
+  {
+    "id": "recfW4h2oLkfpicZrWk",
+    "fields": {
+      "令牌哈希": "088e71f76a80a402c022063e3cb1dd55d5f83893ae415a58a5dd6a6e47580937",
+      "会话ID": "session_fa275d556ea14cd1849bfab28d9c04d7",
+      "会话状态": "已退出",
+      "创建时间": "2026-09-29T02:21:09.171Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-09-29T02:21:09.171Z",
+      "来源IP": "10.52.0.141",
+      "用户ID": "employee_13188537381",
+      "用户姓名": "张杰",
+      "过期时间": "2026-10-29T02:21:09.171Z",
+      "退出时间": "2026-09-29T03:41:37.730Z"
+    },
+    "createdTime": "2026-09-29T02:21:09.216Z",
+    "lastModifiedTime": "2026-09-29T03:41:37.776Z"
+  },
+  {
+    "id": "recqsoUuX76bv76PWkf",
+    "fields": {
+      "令牌哈希": "1e1e3cded242d3d264ecfa4d827c06cab41e0c34ea750ec617d7a56dc87d58ad",
+      "会话ID": "session_db957dca0b784d92849a8c87620ba122",
+      "会话状态": "有效",
+      "创建时间": "2026-09-29T02:33:49.088Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.6668.101 Safari/537.36 Language/zh ColorScheme/Light wxwork/5.0.11 (MicroMessenger/6.2) WindowsWechat  MailPlugin_Electron WeMail embeddisk wwmver/3.26.511.637 noMediaCs/false",
+      "最近访问时间": "2026-09-29T02:33:49.088Z",
+      "来源IP": "10.52.0.159",
+      "用户ID": "employee_13188537381",
+      "用户姓名": "张杰",
+      "过期时间": "2026-10-29T02:33:49.088Z"
+    },
+    "createdTime": "2026-09-29T02:33:49.129Z"
+  },
+  {
+    "id": "recAeO6d3qmxbB8XuTk",
+    "fields": {
+      "令牌哈希": "7b58d0f1b0ac773f44d7f8f0a696242152335ffd4b216bc42d9faf1a82f2fca3",
+      "会话ID": "session_2030bf14130741cba927250ae6a6a6f1",
+      "会话状态": "已退出",
+      "创建时间": "2026-09-29T03:41:44.353Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-09-29T03:41:44.353Z",
+      "来源IP": "10.52.0.141",
+      "用户ID": "45c18957-6c22-46fe-a239-e3ccfa3a6ed5",
+      "用户姓名": "高子云",
+      "过期时间": "2026-10-29T03:41:44.353Z",
+      "退出时间": "2026-09-29T07:37:07.616Z"
+    },
+    "createdTime": "2026-09-29T03:41:44.395Z",
+    "lastModifiedTime": "2026-09-29T07:37:07.667Z"
+  },
+  {
+    "id": "rec2m5BJ6I6cRnpJQZ7",
+    "fields": {
+      "令牌哈希": "4026bdd883618e638add12875646538ea390b4e6ca4a08ddface33cb8eabf07c",
+      "会话ID": "session_21ca7b1095a34e0d973e9efdd5f19c0b",
+      "会话状态": "有效",
+      "创建时间": "2026-09-29T05:55:09.393Z",
+      "客户端信息": "Mozilla/5.0 (Linux; U; Android 12; zh-CN; GIA-AN00 Build/HONORGIA-AN00) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/123.0.6312.80 UCBrowser/19.1.6.1552 Mobile Safari/537.36",
+      "最近访问时间": "2026-09-29T05:55:09.393Z",
+      "来源IP": "10.52.0.141",
+      "用户ID": "employee_13188537381",
+      "用户姓名": "张杰",
+      "过期时间": "2026-10-29T05:55:09.393Z"
+    },
+    "createdTime": "2026-09-29T05:55:09.439Z"
+  },
+  {
+    "id": "recDx8AwEjCJ5oqdeGk",
+    "fields": {
+      "令牌哈希": "33793ea6912e29a2bccdf4f1c67232127637c922f1ce927c71d7d9fc26b7631c",
+      "会话ID": "session_d05e7560bb9e4ae0a6631dc8833b3a75",
+      "会话状态": "有效",
+      "创建时间": "2026-09-29T07:37:13.653Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-09-29T07:37:13.653Z",
+      "来源IP": "10.52.0.141",
+      "用户ID": "employee_13188537381",
+      "用户姓名": "张杰",
+      "过期时间": "2026-10-29T07:37:13.653Z"
+    },
+    "createdTime": "2026-09-29T07:37:13.695Z"
+  },
+  {
+    "id": "recIur2TLuKRjOLDdBO",
+    "fields": {
+      "令牌哈希": "db49ee39850d060c54a0e6bfb541506b85ece7de68a150849122d122bb8507dc",
+      "会话ID": "session_734becc2f3b9418da25080ef2057470f",
+      "会话状态": "有效",
+      "创建时间": "2026-09-29T12:31:17.246Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0",
+      "最近访问时间": "2026-09-29T12:31:17.246Z",
+      "来源IP": "127.0.0.1",
+      "用户ID": "45c18957-6c22-46fe-a239-e3ccfa3a6ed5",
+      "用户姓名": "高子云",
+      "过期时间": "2026-10-29T12:31:17.246Z"
+    },
+    "createdTime": "2026-09-29T12:31:17.285Z"
+  },
+  {
+    "id": "rec556pBiAnfDdRK1Vn",
+    "fields": {
+      "令牌哈希": "97622d007e97cce30189520c714067a49faac252f0e698059d869d06a53a8e2c",
+      "会话ID": "session_ecfae0ebd088495c8d6a647574a6eb50",
+      "会话状态": "已退出",
+      "创建时间": "2026-09-29T13:18:45.526Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-09-29T13:18:45.526Z",
+      "来源IP": "10.52.0.159",
+      "用户ID": "employee_13188537381",
+      "用户姓名": "张杰",
+      "过期时间": "2026-10-29T13:18:45.526Z",
+      "退出时间": "2026-09-29T13:19:34.857Z"
+    },
+    "createdTime": "2026-09-29T13:18:45.566Z",
+    "lastModifiedTime": "2026-09-29T13:19:34.903Z"
+  },
+  {
+    "id": "recO1geaFlRckKREx1Q",
+    "fields": {
+      "令牌哈希": "7ff285f9f99897da2e3422d01c8994b26def5db84f3e3cbc0fda9b5346f4987d",
+      "会话ID": "session_d76a7988b94447a2900d94a942b338b0",
+      "会话状态": "已退出",
+      "创建时间": "2026-09-29T13:19:43.388Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-09-29T13:19:43.388Z",
+      "来源IP": "10.52.0.159",
+      "用户ID": "45c18957-6c22-46fe-a239-e3ccfa3a6ed5",
+      "用户姓名": "高子云",
+      "过期时间": "2026-10-29T13:19:43.388Z",
+      "退出时间": "2026-09-30T09:52:16.701Z"
+    },
+    "createdTime": "2026-09-29T13:19:43.434Z",
+    "lastModifiedTime": "2026-09-30T09:52:16.744Z"
+  },
+  {
+    "id": "recYk3Nk3RTEXThcJJl",
+    "fields": {
+      "令牌哈希": "beabb0f23376efce7dc872c2e7dd83631a991c4498904d34f646aa26476ed1c1",
+      "会话ID": "session_2df544f64d154212a8c47fc001636c0a",
+      "会话状态": "有效",
+      "创建时间": "2026-09-30T09:54:13.431Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-09-30T09:54:13.431Z",
+      "来源IP": "10.52.0.159",
+      "用户ID": "employee_13188537381",
+      "用户姓名": "张杰",
+      "过期时间": "2026-10-30T09:54:13.431Z"
+    },
+    "createdTime": "2026-09-30T09:54:13.473Z"
+  },
+  {
+    "id": "recnj40lVQ1srqvBXWw",
+    "fields": {
+      "令牌哈希": "54860a3f59b4110674cd280e94e57c305378bd5a10353ad8900a5d848435a6d2",
+      "会话ID": "session_0ab93b8bdead43998481faf8c99a168f",
+      "会话状态": "有效",
+      "创建时间": "2026-09-30T10:01:53.518Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-09-30T10:01:53.518Z",
+      "来源IP": "10.52.0.141",
+      "用户ID": "45c18957-6c22-46fe-a239-e3ccfa3a6ed5",
+      "用户姓名": "高子云",
+      "过期时间": "2026-10-30T10:01:53.518Z"
+    },
+    "createdTime": "2026-09-30T10:01:53.561Z"
+  },
+  {
+    "id": "recbmS0LJEP97MaqeTm",
+    "fields": {
+      "令牌哈希": "c91e0de6b8367f0f2b74573282f0ac7c19aef013bc96252d0407ec69942bf154",
+      "会话ID": "session_87304b3116674309ac5426249f3c3820",
+      "会话状态": "有效",
+      "创建时间": "2026-09-30T10:05:10.633Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-09-30T10:05:10.633Z",
+      "来源IP": "10.52.0.141",
+      "用户ID": "45c18957-6c22-46fe-a239-e3ccfa3a6ed5",
+      "用户姓名": "高子云",
+      "过期时间": "2026-10-30T10:05:10.633Z"
+    },
+    "createdTime": "2026-09-30T10:05:10.683Z"
+  },
+  {
+    "id": "recsaKH9MmJ7E3kk4AG",
+    "fields": {
+      "令牌哈希": "dd48fdfb5a6d47686bccb04bb2bc8fc386d1c2b6d5cc769fe57fc0a947a3d36a",
+      "会话ID": "session_436bd08cd61d403a9299e5380ee3b939",
+      "会话状态": "已退出",
+      "创建时间": "2026-09-30T10:17:06.979Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-10-09T08:12:07.651Z",
+      "来源IP": "10.52.0.159",
+      "用户ID": "45c18957-6c22-46fe-a239-e3ccfa3a6ed5",
+      "用户姓名": "高子云",
+      "身份来源": "session",
+      "过期时间": "2026-10-30T10:17:06.979Z",
+      "退出时间": "2026-10-09T08:12:37.784Z"
+    },
+    "createdTime": "2026-09-30T10:17:07.026Z",
+    "lastModifiedTime": "2026-10-09T08:12:37.826Z"
+  },
+  {
+    "id": "rec6Fiane426LIFFBmU",
+    "fields": {
+      "令牌哈希": "782792e2fc3ed08175e0f9fddcb8963d5a0a86c5fb67c4d005372f065fc32a4a",
+      "会话ID": "session_17d058b5fbd14e43ae2153a38e54a3dd",
+      "会话状态": "有效",
+      "创建时间": "2026-09-30T14:23:25.918Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36 Edg/154.0.0.0",
+      "最近访问时间": "2026-09-30T14:23:25.918Z",
+      "来源IP": "10.52.0.141",
+      "用户ID": "employee_15625520910",
+      "用户姓名": "吴悠",
+      "过期时间": "2026-10-30T14:23:25.918Z"
+    },
+    "createdTime": "2026-09-30T14:23:25.960Z"
+  },
+  {
+    "id": "recWkuL5of1dAAGTMKk",
+    "fields": {
+      "令牌哈希": "e433baefee1205769940cefe895999fe9010078971f33683fb56cdd4fd1a8218",
+      "会话ID": "session_9b7cad87d37c445aa79e4762864ea2ac",
+      "会话状态": "已退出",
+      "创建时间": "2026-10-01T03:37:41.825Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0",
+      "最近访问时间": "2026-10-09T14:47:48.344Z",
+      "来源IP": "127.0.0.1",
+      "用户ID": "45c18957-6c22-46fe-a239-e3ccfa3a6ed5",
+      "用户姓名": "高子云",
+      "身份来源": "session",
+      "过期时间": "2026-10-31T03:37:41.825Z",
+      "退出时间": "2026-10-09T14:47:53.074Z"
+    },
+    "createdTime": "2026-10-01T03:37:41.864Z",
+    "lastModifiedTime": "2026-10-09T14:47:53.124Z"
+  },
+  {
+    "id": "recknAIdDRNr25ivDDk",
+    "fields": {
+      "令牌哈希": "c50c622bbc16470b20e59a6b5b1c2774fad0af86e9acedf083c24ff635bc0102",
+      "会话ID": "session_0a99722e74484cec81df7abcc1bd8d7f",
+      "会话状态": "有效",
+      "创建时间": "2026-10-07T13:59:21.611Z",
+      "客户端信息": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-10-07T13:59:21.611Z",
+      "来源IP": "10.52.0.141",
+      "用户ID": "employee_15552233446",
+      "用户姓名": "王传龙",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-07T13:59:21.654Z"
+  },
+  {
+    "id": "recjad7EYQGYHBWHzQj",
+    "fields": {
+      "令牌哈希": "5aa0efa48c7726dc86a0cbcfaca34e2e440f304dd618c6f91ce0d54671a7ed35",
+      "会话ID": "session_8510bbf6b5b742358f0260cd6b6f0cf0",
+      "会话状态": "已退出",
+      "创建时间": "2026-10-08T02:15:26.052Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 QuarkPC/7.3.5.1009",
+      "最近访问时间": "2026-10-15T08:35:03.059Z",
+      "来源IP": "10.52.0.159",
+      "用户ID": "employee_18053516269",
+      "用户姓名": "王雪婷",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z",
+      "退出时间": "2026-10-15T08:35:15.908Z"
+    },
+    "createdTime": "2026-10-08T02:15:26.095Z",
+    "lastModifiedTime": "2026-10-15T08:35:15.958Z"
+  },
+  {
+    "id": "recoQ1xsQ4CFagyNfCZ",
+    "fields": {
+      "令牌哈希": "c891333e78a87b051ba69c0e774587c7100a9e59e6a767a3e1099fd543fea138",
+      "会话ID": "session_3a6497b1616e44d58399b15883803479",
+      "会话状态": "有效",
+      "创建时间": "2026-10-08T02:27:22.532Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 QuarkPC/7.3.5.1009",
+      "最近访问时间": "2026-10-26T02:23:58.073Z",
+      "来源IP": "10.52.0.159",
+      "用户ID": "employee_15065790441",
+      "用户姓名": "黄小峰",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-08T02:27:22.581Z",
+    "lastModifiedTime": "2026-10-26T02:23:58.176Z"
+  },
+  {
+    "id": "recC1Aj9cVQC0ZH0oSo",
+    "fields": {
+      "令牌哈希": "0bc92599c77f6043736312f4d79e0c8f5d2a909bb977772c570ac614069a1f41",
+      "会话ID": "session_5b209414e6e749df9633d28b9c37cb54",
+      "会话状态": "有效",
+      "创建时间": "2026-10-08T05:26:39.851Z",
+      "客户端信息": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-10-15T03:56:55.080Z",
+      "来源IP": "10.52.0.159",
+      "用户ID": "employee_15560662672",
+      "用户姓名": "黄超",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-08T05:26:39.893Z",
+    "lastModifiedTime": "2026-10-15T03:56:55.185Z"
+  },
+  {
+    "id": "rec1QiUmB2pgbwDb4Zj",
+    "fields": {
+      "令牌哈希": "ba111fad6481bf14c2322da323f81afaa4253cdc06824ed123001fcd7e3554d9",
+      "会话ID": "session_b76324b5b7c0466e99dbecea143883f8",
+      "会话状态": "有效",
+      "创建时间": "2026-10-08T08:54:01.404Z",
+      "客户端信息": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.5.2 Safari/605.1.15",
+      "最近访问时间": "2026-10-24T12:20:58.690Z",
+      "来源IP": "10.52.0.159",
+      "用户ID": "employee_17564001258",
+      "用户姓名": "刘晓苏",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-08T08:54:01.448Z",
+    "lastModifiedTime": "2026-10-24T12:20:58.808Z"
+  },
+  {
+    "id": "recXNOo0UawWejgkmSE",
+    "fields": {
+      "令牌哈希": "40004006798c4cecd1fcb916b0dd99b7066fbc828ec209d42d6ff11b6e7c1e53",
+      "会话ID": "session_a48c7c1cd32941bebab6a21b223c0ecd",
+      "会话状态": "有效",
+      "创建时间": "2026-10-09T05:52:58.781Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-10-24T08:25:10.475Z",
+      "来源IP": "10.52.0.159",
+      "用户ID": "employee_15684152427",
+      "用户姓名": "赵慧霞",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-09T05:52:58.824Z",
+    "lastModifiedTime": "2026-10-24T08:25:10.582Z"
+  },
+  {
+    "id": "recbTyrAXDiAmmUQEdq",
+    "fields": {
+      "令牌哈希": "836beb382c86cbf887f646f125528d87ad4d4211308b5e9442863964ea05f8dd",
+      "会话ID": "session_7cdc589a13984c75817474d828a5d4a8",
+      "会话状态": "已退出",
+      "创建时间": "2026-10-09T05:54:53.837Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0",
+      "最近访问时间": "2026-10-10T01:54:09.159Z",
+      "来源IP": "10.52.0.141",
+      "用户ID": "employee_19255352955",
+      "用户姓名": "邹馨颖",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z",
+      "退出时间": "2026-10-10T01:54:15.154Z"
+    },
+    "createdTime": "2026-10-09T05:54:53.881Z",
+    "lastModifiedTime": "2026-10-10T01:54:15.202Z"
+  },
+  {
+    "id": "rec8aMJ8CQEy8SrWQVE",
+    "fields": {
+      "令牌哈希": "607b3a4229fddbef347c136db06262bd78db8f6493b9d8a35de8a957a4003185",
+      "会话ID": "identity_607b3a4229fddbef347c136db06262bd",
+      "会话状态": "有效",
+      "创建时间": "2026-10-09T08:12:01.523Z",
+      "客户端信息": "Studio 单点登录",
+      "最近访问时间": "2026-10-26T02:26:10.215Z",
+      "用户ID": "45c18957-6c22-46fe-a239-e3ccfa3a6ed5",
+      "用户姓名": "高子云",
+      "身份来源": "studio",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-09T08:12:01.730Z",
+    "lastModifiedTime": "2026-10-26T02:26:10.381Z"
+  },
+  {
+    "id": "recVNWpbNNwTtsL7Ulr",
+    "fields": {
+      "令牌哈希": "11cc8a3fe32de8bb80a40430ba80d53f9f43540dcfe71e568ad3055f91eb5b7d",
+      "会话ID": "session_4b4a76b288ed45aebe0c73f1598e3cd4",
+      "会话状态": "已退出",
+      "创建时间": "2026-10-09T08:12:43.945Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-10-09T08:12:43.945Z",
+      "来源IP": "10.52.0.141",
+      "用户ID": "employee_13188537381",
+      "用户姓名": "张杰",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z",
+      "退出时间": "2026-10-09T08:13:06.761Z"
+    },
+    "createdTime": "2026-10-09T08:12:43.987Z",
+    "lastModifiedTime": "2026-10-09T08:13:06.808Z"
+  },
+  {
+    "id": "rec9Dl72XIvf7tYY88M",
+    "fields": {
+      "令牌哈希": "73dff9248f34ba5dd2f3d724c277028a2d6187c9f80c00a88753a1592cecfafb",
+      "会话ID": "session_7129f54258d642988999a3e7514d3e50",
+      "会话状态": "已退出",
+      "创建时间": "2026-10-09T08:13:13.180Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-10-09T08:13:14.093Z",
+      "来源IP": "10.52.0.141",
+      "用户ID": "45c18957-6c22-46fe-a239-e3ccfa3a6ed5",
+      "用户姓名": "高子云",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z",
+      "退出时间": "2026-10-09T08:13:37.561Z"
+    },
+    "createdTime": "2026-10-09T08:13:13.224Z",
+    "lastModifiedTime": "2026-10-09T08:13:37.613Z"
+  },
+  {
+    "id": "recY77taUfEOqOvE36Q",
+    "fields": {
+      "令牌哈希": "291acf87a84cdddc4a155772c873a7a78680fdad68643c351384430782c63166",
+      "会话ID": "session_e56e6c490519438585e8850720111af8",
+      "会话状态": "已退出",
+      "创建时间": "2026-10-09T08:13:44.352Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-10-09T08:28:43.211Z",
+      "来源IP": "10.52.0.141",
+      "用户ID": "employee_13188537381",
+      "用户姓名": "张杰",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z",
+      "退出时间": "2026-10-09T08:29:32.110Z"
+    },
+    "createdTime": "2026-10-09T08:13:44.395Z",
+    "lastModifiedTime": "2026-10-09T08:29:32.157Z"
+  },
+  {
+    "id": "recoPg1LspyfDZ3yzJ0",
+    "fields": {
+      "令牌哈希": "0625cb6934fdbc7fef2c4176d175c8fe547758e80e8f08fe2d05d4435d05a072",
+      "会话ID": "session_e5b11d3e6998473b81f0c881a119c857",
+      "会话状态": "已退出",
+      "创建时间": "2026-10-09T08:29:37.139Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-10-09T08:59:05.421Z",
+      "来源IP": "10.52.0.141",
+      "用户ID": "45c18957-6c22-46fe-a239-e3ccfa3a6ed5",
+      "用户姓名": "高子云",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z",
+      "退出时间": "2026-10-09T08:59:41.025Z"
+    },
+    "createdTime": "2026-10-09T08:29:37.180Z",
+    "lastModifiedTime": "2026-10-09T08:59:41.072Z"
+  },
+  {
+    "id": "rec6MQuTtvYKqRAOedp",
+    "fields": {
+      "令牌哈希": "5034a12e45305a286c3c6a053aa38068889bf0eea66e074659fbd20b5c503648",
+      "会话ID": "session_6faaca11c3a24bd1b6c04d92ffc6beaa",
+      "会话状态": "已退出",
+      "创建时间": "2026-10-09T08:59:47.445Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-10-09T09:59:43.846Z",
+      "来源IP": "10.52.0.141",
+      "用户ID": "employee_13188537381",
+      "用户姓名": "张杰",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z",
+      "退出时间": "2026-10-09T09:59:50.091Z"
+    },
+    "createdTime": "2026-10-09T08:59:47.510Z",
+    "lastModifiedTime": "2026-10-09T09:59:50.141Z"
+  },
+  {
+    "id": "recOboBpjYBJpoMXQYi",
+    "fields": {
+      "令牌哈希": "7249d0fd478a5e497a41495e998334a9b4b3e73b4dac2c34cc31df09a36f1aaa",
+      "会话ID": "session_e0238666ece949dc8a80250a4981590e",
+      "会话状态": "有效",
+      "创建时间": "2026-10-09T09:52:14.446Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36 Edg/154.0.0.0",
+      "最近访问时间": "2026-10-09T11:01:08.305Z",
+      "来源IP": "10.52.0.141",
+      "用户ID": "employee_17853505506",
+      "用户姓名": "沈若男",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-09T09:52:14.490Z",
+    "lastModifiedTime": "2026-10-09T11:01:08.426Z"
+  },
+  {
+    "id": "recJ11e1YOAd0dCZo2x",
+    "fields": {
+      "令牌哈希": "9aaa5f9547c7c460ba50a17c8ddde0762725d8190ba5e03676eb7f34c6bac45e",
+      "会话ID": "session_31aa050fd0294b1a9a36b2e6d31b76e7",
+      "会话状态": "有效",
+      "创建时间": "2026-10-09T09:59:56.937Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-10-10T05:39:32.974Z",
+      "来源IP": "10.52.0.141",
+      "用户ID": "45c18957-6c22-46fe-a239-e3ccfa3a6ed5",
+      "用户姓名": "高子云",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-09T09:59:56.977Z",
+    "lastModifiedTime": "2026-10-10T05:39:33.089Z"
+  },
+  {
+    "id": "recwkVRxyUzOWeQHy0z",
+    "fields": {
+      "令牌哈希": "f36f12cf064c757686c3351794776eddc1dabaa4d50bc1e59eb14e96580f811d",
+      "会话ID": "session_9d083249ac914ec0950be48f9d34e870",
+      "会话状态": "已退出",
+      "创建时间": "2026-10-09T14:48:07.916Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0",
+      "最近访问时间": "2026-10-09T14:48:07.916Z",
+      "来源IP": "127.0.0.1",
+      "用户ID": "employee_15065790441",
+      "用户姓名": "黄小峰",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z",
+      "退出时间": "2026-10-09T14:48:20.187Z"
+    },
+    "createdTime": "2026-10-09T14:48:07.959Z",
+    "lastModifiedTime": "2026-10-09T14:48:20.229Z"
+  },
+  {
+    "id": "recMvHjlXQs3YWgbxqQ",
+    "fields": {
+      "令牌哈希": "ea4ee8cc0401b9e913a3e7782d77880b4fa93879445ee1e81d799fdadb1868c1",
+      "会话ID": "session_7871863ce69441039e675bd58c3453d1",
+      "会话状态": "已退出",
+      "创建时间": "2026-10-09T14:48:26.171Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0",
+      "最近访问时间": "2026-10-09T15:17:00.012Z",
+      "来源IP": "127.0.0.1",
+      "用户ID": "45c18957-6c22-46fe-a239-e3ccfa3a6ed5",
+      "用户姓名": "高子云",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z",
+      "退出时间": "2026-10-09T15:17:12.001Z"
+    },
+    "createdTime": "2026-10-09T14:48:26.215Z",
+    "lastModifiedTime": "2026-10-09T15:17:12.042Z"
+  },
+  {
+    "id": "recMQMX3NU4M5FO4fx9",
+    "fields": {
+      "令牌哈希": "df684cc3759b2c9b1984f853a523ba5efc8c3fbacd32b05aa2596e6b0885246f",
+      "会话ID": "session_2e7e4161b92f4518bc0af46ad4bf496d",
+      "会话状态": "已退出",
+      "创建时间": "2026-10-09T15:17:16.281Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0",
+      "最近访问时间": "2026-10-10T07:36:05.635Z",
+      "来源IP": "127.0.0.1",
+      "用户ID": "employee_15065790441",
+      "用户姓名": "黄小峰",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z",
+      "退出时间": "2026-10-10T07:36:53.922Z"
+    },
+    "createdTime": "2026-10-09T15:17:16.320Z",
+    "lastModifiedTime": "2026-10-10T07:36:53.966Z"
+  },
+  {
+    "id": "reczQj6pBIaZAqa4nNL",
+    "fields": {
+      "令牌哈希": "89dff5b698ad29eb034eeee55a7dee9c3e3344609e6dd6a481aaf44d9277e8a4",
+      "会话ID": "session_fc322cc0b08b48d0a62637a036a9fcd4",
+      "会话状态": "已退出",
+      "创建时间": "2026-10-10T01:21:33.884Z",
+      "客户端信息": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.6.2 Safari/605.1.15",
+      "最近访问时间": "2026-10-10T01:21:35.265Z",
+      "来源IP": "10.52.0.159",
+      "用户ID": "employee_13287953891",
+      "用户姓名": "张晓霞",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z",
+      "退出时间": "2026-10-10T01:22:34.837Z"
+    },
+    "createdTime": "2026-10-10T01:21:33.929Z",
+    "lastModifiedTime": "2026-10-10T01:22:34.885Z"
+  },
+  {
+    "id": "recR929JBxzrxclqQXW",
+    "fields": {
+      "令牌哈希": "06f177e518b66c77ef4577f4469150b864665c843849e768ae5bde24a1307b93",
+      "会话ID": "session_b87913ac68764eb390e35838f1ecd078",
+      "会话状态": "已退出",
+      "创建时间": "2026-10-10T01:22:59.813Z",
+      "客户端信息": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.6.2 Safari/605.1.15",
+      "最近访问时间": "2026-10-13T10:03:20.939Z",
+      "来源IP": "10.52.0.141",
+      "用户ID": "employee_17610365397",
+      "用户姓名": "张晓霞",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z",
+      "退出时间": "2026-10-13T10:03:22.332Z"
+    },
+    "createdTime": "2026-10-10T01:22:59.868Z",
+    "lastModifiedTime": "2026-10-13T10:03:22.378Z"
+  },
+  {
+    "id": "recV8KMzVkmDHqvEX2y",
+    "fields": {
+      "令牌哈希": "3ba2d72a12c9eea4f762031b803a3290060ac5d72ab61da0a8704cfd14de6df9",
+      "会话ID": "session_fb3478f9175a49668a3db84e9d9ea1a2",
+      "会话状态": "有效",
+      "创建时间": "2026-10-10T01:35:01.653Z",
+      "客户端信息": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 QuarkPC/7.3.5.1009",
+      "最近访问时间": "2026-10-20T05:43:16.485Z",
+      "来源IP": "10.52.0.141",
+      "用户ID": "employee_17647039711",
+      "用户姓名": "赵恩蒙",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-10T01:35:01.699Z",
+    "lastModifiedTime": "2026-10-20T05:43:16.611Z"
+  },
+  {
+    "id": "recU6GWihaaszGJJgNF",
+    "fields": {
+      "令牌哈希": "b97f9b890084f3b9ef8dad42c1064bd569ca4b715f582eea5bd56773bb3f996e",
+      "会话ID": "session_c1b0c8c349ec4486abbf1c2263c20618",
+      "会话状态": "有效",
+      "创建时间": "2026-10-10T01:54:23.704Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0",
+      "最近访问时间": "2026-10-15T11:39:02.892Z",
+      "来源IP": "10.52.0.159",
+      "用户ID": "employee_19255352955",
+      "用户姓名": "邹馨颖",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-10T01:54:23.743Z",
+    "lastModifiedTime": "2026-10-15T11:39:02.992Z"
+  },
+  {
+    "id": "rec6clIb4MM9HGLMwvs",
+    "fields": {
+      "令牌哈希": "3f229388f5779eca4e6a61f668c40ba0fdf2a623cff4c1958128545f41b11263",
+      "会话ID": "session_04987e5708e24ba688acd8f456c81da0",
+      "会话状态": "有效",
+      "创建时间": "2026-10-10T05:39:36.986Z",
+      "客户端信息": "Mozilla/5.0 (Linux; Android 16; 23116PN5BC Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/146.0.7680.178 Mobile Safari/537.36 XWEB/1460263 MMWEBSDK/20250205 MMWEBID/6405 wxwork/5.0.11 MicroMessenger/7.0.1 NetType/WIFI Language/zh Lang/zh ColorScheme/Light wwmver/3.26.511.636",
+      "最近访问时间": "2026-10-17T14:30:24.440Z",
+      "来源IP": "10.52.0.159",
+      "用户ID": "employee_17854337792",
+      "用户姓名": "郑倩",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-10T05:39:37.029Z",
+    "lastModifiedTime": "2026-10-17T14:30:24.549Z"
+  },
+  {
+    "id": "recpbDQ53AZiXTtayd4",
+    "fields": {
+      "令牌哈希": "95b4540fa022902f9d633d89f4012a33b0c9e718eb4a9c13db94a15f11bbb948",
+      "会话ID": "session_450ab0781d0e430d99dacd64a724da3d",
+      "会话状态": "有效",
+      "创建时间": "2026-10-10T05:40:11.254Z",
+      "客户端信息": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko)  Mobile/15E148 wxwork/5.0.11 MicroMessenger/7.0.1 Language/zh ColorScheme/Light wwmver/3.26.511.376",
+      "最近访问时间": "2026-10-13T07:27:16.356Z",
+      "来源IP": "10.52.0.159",
+      "用户ID": "employee_18865690616",
+      "用户姓名": "王川铭",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-10T05:40:11.293Z",
+    "lastModifiedTime": "2026-10-13T07:27:16.492Z"
+  },
+  {
+    "id": "recpvicPgyGrCW9hGWQ",
+    "fields": {
+      "令牌哈希": "220c40d380de9b311199f754385eae3f82e03b0dd5f5f7bfe582563992603568",
+      "会话ID": "session_419cfee6b3154985b4eba6a45796bcc2",
+      "会话状态": "有效",
+      "创建时间": "2026-10-10T05:40:13.411Z",
+      "客户端信息": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko)  Mobile/15E148 wxwork/5.0.11 MicroMessenger/7.0.1 Language/zh ColorScheme/Light wwmver/3.26.511.376",
+      "最近访问时间": "2026-10-10T06:06:15.798Z",
+      "来源IP": "10.52.0.159",
+      "用户ID": "employee_13287957162",
+      "用户姓名": "王甜雨",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-10T05:40:13.450Z",
+    "lastModifiedTime": "2026-10-10T06:06:15.907Z"
+  },
+  {
+    "id": "recQiT4JxhoJ2YbjPg6",
+    "fields": {
+      "令牌哈希": "345a6a33a2c59ccee163a17698d76b24a59f6ea915d379e520eeb5e4e93a6b7b",
+      "会话ID": "session_6fadca054c104c0c91198ce3dbfdcf58",
+      "会话状态": "有效",
+      "创建时间": "2026-10-10T05:40:38.566Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-10-10T05:40:39.793Z",
+      "来源IP": "10.52.0.141",
+      "用户ID": "employee_13188537381",
+      "用户姓名": "张杰",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-10T05:40:38.609Z",
+    "lastModifiedTime": "2026-10-10T05:40:39.898Z"
+  },
+  {
+    "id": "recyZoPRjIWsfGYQV4X",
+    "fields": {
+      "令牌哈希": "49303b81e2ededc0abbc58eb0dce5526a2172e3493607373390c5cec94522dc3",
+      "会话ID": "session_96c491d896f14cb5a09589429d57ce55",
+      "会话状态": "有效",
+      "创建时间": "2026-10-10T05:42:38.262Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-10-10T05:42:39.258Z",
+      "来源IP": "10.52.0.141",
+      "用户ID": "employee_13188537381",
+      "用户姓名": "张杰",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-10T05:42:38.304Z",
+    "lastModifiedTime": "2026-10-10T05:42:39.370Z"
+  },
+  {
+    "id": "reclq1Uzy1fDeyahzWr",
+    "fields": {
+      "令牌哈希": "01aa03219ba860cace28e214e3a66b073714265b507a38875fd94993d6f13951",
+      "会话ID": "session_b7d1e61ba4fd4661ba0592f2039df39f",
+      "会话状态": "已退出",
+      "创建时间": "2026-10-10T05:43:35.300Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-10-10T07:10:05.486Z",
+      "来源IP": "10.52.0.159",
+      "用户ID": "employee_13188537381",
+      "用户姓名": "张杰",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z",
+      "退出时间": "2026-10-10T07:10:11.597Z"
+    },
+    "createdTime": "2026-10-10T05:43:35.342Z",
+    "lastModifiedTime": "2026-10-10T07:10:11.640Z"
+  },
+  {
+    "id": "rec4avs0i4PGDyV4zQ8",
+    "fields": {
+      "令牌哈希": "2a1cb1310500e5eb940e7de5afb1ee0fc9a678e3cb6c8844168c02a14cb320a4",
+      "会话ID": "session_c722a5a63c3b4b7c81294955749da711",
+      "会话状态": "有效",
+      "创建时间": "2026-10-10T06:20:12.043Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36 Edg/127.0.0.0",
+      "最近访问时间": "2026-10-24T10:16:48.269Z",
+      "来源IP": "10.52.0.159",
+      "用户ID": "employee_13280935703",
+      "用户姓名": "黄葳",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-10T06:20:12.084Z",
+    "lastModifiedTime": "2026-10-24T10:16:48.374Z"
+  },
+  {
+    "id": "rec88JB4JFzBHIjrjbP",
+    "fields": {
+      "令牌哈希": "104ebccc9f5174e9f9233dce0ff1001c5f1ef64a4fc10503bc26ed78cf9e0f05",
+      "会话ID": "session_214195255094470490424769458dcdcb",
+      "会话状态": "已退出",
+      "创建时间": "2026-10-10T06:37:17.760Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0",
+      "最近访问时间": "2026-10-10T06:37:18.731Z",
+      "来源IP": "10.52.0.159",
+      "用户ID": "employee_15065790441",
+      "用户姓名": "黄小峰",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z",
+      "退出时间": "2026-10-10T06:37:26.426Z"
+    },
+    "createdTime": "2026-10-10T06:37:17.799Z",
+    "lastModifiedTime": "2026-10-10T06:37:26.468Z"
+  },
+  {
+    "id": "recyoaCs2oPx4rwzg1D",
+    "fields": {
+      "令牌哈希": "1a4a4e2cac828707d4d6e7ad7b23c797e0d6b192e762dbede8457d855fcef52f",
+      "会话ID": "session_032363c0ec094f7b97c39d0c815d3a1b",
+      "会话状态": "已退出",
+      "创建时间": "2026-10-10T06:37:29.663Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0",
+      "最近访问时间": "2026-10-10T06:37:29.663Z",
+      "来源IP": "10.52.0.159",
+      "用户ID": "45c18957-6c22-46fe-a239-e3ccfa3a6ed5",
+      "用户姓名": "高子云",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z",
+      "退出时间": "2026-10-10T06:37:41.208Z"
+    },
+    "createdTime": "2026-10-10T06:37:29.702Z",
+    "lastModifiedTime": "2026-10-10T06:37:41.256Z"
+  },
+  {
+    "id": "recz3KwQ7GECuAHFOU3",
+    "fields": {
+      "令牌哈希": "2828992f8070412eea868ab565a2eefa10a634909cce935fdc9695a3df1e7118",
+      "会话ID": "session_c69a7ed08a1d4338b7fa9c5638ca355e",
+      "会话状态": "已退出",
+      "创建时间": "2026-10-10T06:37:51.172Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0",
+      "最近访问时间": "2026-10-10T06:37:51.172Z",
+      "来源IP": "10.52.0.159",
+      "用户ID": "employee_19255352955",
+      "用户姓名": "邹馨颖",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z",
+      "退出时间": "2026-10-10T06:38:01.920Z"
+    },
+    "createdTime": "2026-10-10T06:37:51.211Z",
+    "lastModifiedTime": "2026-10-10T06:38:01.964Z"
+  },
+  {
+    "id": "recVNUNfXrnChfoYUGx",
+    "fields": {
+      "令牌哈希": "fce4d6eaec076b7cb006927e839b21ebb413d8831a44fe6bb6c36f32b12fc2d8",
+      "会话ID": "session_02c5a201d873450692e0e8a35251be64",
+      "会话状态": "已退出",
+      "创建时间": "2026-10-10T06:38:22.699Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0",
+      "最近访问时间": "2026-10-10T06:38:23.641Z",
+      "来源IP": "10.52.0.159",
+      "用户ID": "45c18957-6c22-46fe-a239-e3ccfa3a6ed5",
+      "用户姓名": "高子云",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z",
+      "退出时间": "2026-10-10T06:39:04.287Z"
+    },
+    "createdTime": "2026-10-10T06:38:22.738Z",
+    "lastModifiedTime": "2026-10-10T06:39:04.331Z"
+  },
+  {
+    "id": "recnl3MiCU3TUYMMUzE",
+    "fields": {
+      "令牌哈希": "ab1dcabe7e5f41aba404f73e134771749d51cfedea526497f32b7826f526778a",
+      "会话ID": "session_c83a4426fb3d48faaaa74d2b75a2f3ed",
+      "会话状态": "已退出",
+      "创建时间": "2026-10-10T06:39:09.327Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0",
+      "最近访问时间": "2026-10-10T06:39:20.629Z",
+      "来源IP": "10.52.0.159",
+      "用户ID": "employee_15684152427",
+      "用户姓名": "赵慧霞",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z",
+      "退出时间": "2026-10-10T06:39:21.418Z"
+    },
+    "createdTime": "2026-10-10T06:39:09.368Z",
+    "lastModifiedTime": "2026-10-10T06:39:21.480Z"
+  },
+  {
+    "id": "recWknsBE9xnkXJdcX9",
+    "fields": {
+      "令牌哈希": "3befa92ffd6eecddcd05b3c8bcc7acfb66f194603ea74952d8774822ef0ce8d7",
+      "会话ID": "session_d403477353a04d4f972c7ecc479b80dc",
+      "会话状态": "有效",
+      "创建时间": "2026-10-10T06:39:24.327Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0",
+      "最近访问时间": "2026-10-25T14:15:30.705Z",
+      "来源IP": "10.52.0.141",
+      "用户ID": "45c18957-6c22-46fe-a239-e3ccfa3a6ed5",
+      "用户姓名": "高子云",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-10T06:39:24.368Z",
+    "lastModifiedTime": "2026-10-25T14:15:30.818Z"
+  },
+  {
+    "id": "recd1PqSicZJTdRWUYi",
+    "fields": {
+      "令牌哈希": "fab643b33da1ef0d1b75948fd73ee02315e67035fbb80e479c5ce10680c18b2a",
+      "会话ID": "session_84912fd2645349a39797ae22c868500a",
+      "会话状态": "已退出",
+      "创建时间": "2026-10-10T07:10:16.998Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-10-12T06:05:35.183Z",
+      "来源IP": "10.52.0.141",
+      "用户ID": "45c18957-6c22-46fe-a239-e3ccfa3a6ed5",
+      "用户姓名": "高子云",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z",
+      "退出时间": "2026-10-12T06:05:39.603Z"
+    },
+    "createdTime": "2026-10-10T07:10:17.041Z",
+    "lastModifiedTime": "2026-10-12T06:05:39.652Z"
+  },
+  {
+    "id": "recpqjfY1t2qWB6eqg2",
+    "fields": {
+      "令牌哈希": "62306a2394628bb19ce5507f192675011e67520de3ec6f342f1a96c89d095472",
+      "会话ID": "session_ac22a744dd1642ee83a01f8eb352b1c5",
+      "会话状态": "有效",
+      "创建时间": "2026-10-10T07:30:30.489Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36 Edg/154.0.0.0",
+      "最近访问时间": "2026-10-23T03:23:05.569Z",
+      "来源IP": "10.52.0.159",
+      "用户ID": "employee_18563869999",
+      "用户姓名": "刘金虎",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-10T07:30:30.533Z",
+    "lastModifiedTime": "2026-10-23T03:23:05.682Z"
+  },
+  {
+    "id": "rec3AxL4fLJHVlARcX6",
+    "fields": {
+      "令牌哈希": "9ed3d90cbec4928329557479cfe44f0d1634cda38b60067c81ec4e0d00ab3627",
+      "会话ID": "session_91611947274a4512a032cb1b827ebc01",
+      "会话状态": "有效",
+      "创建时间": "2026-10-10T07:32:32.345Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.6668.101 Safari/537.36 Language/zh ColorScheme/Light wxwork/5.0.11 (MicroMessenger/6.2) WindowsWechat  MailPlugin_Electron WeMail embeddisk wwmver/3.26.511.637 noMediaCs/false",
+      "最近访问时间": "2026-10-10T07:32:33.164Z",
+      "来源IP": "10.52.0.159",
+      "用户ID": "employee_18563869999",
+      "用户姓名": "刘金虎",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-10T07:32:32.390Z",
+    "lastModifiedTime": "2026-10-10T07:32:33.284Z"
+  },
+  {
+    "id": "reciUFkTA2ZVI02Ix7j",
+    "fields": {
+      "令牌哈希": "4acafb6a80c064ed89d0835bbdaddf224994c520fb26f6cc44311343f65312c4",
+      "会话ID": "session_e496b669e256428fa110eba5dde6464f",
+      "会话状态": "有效",
+      "创建时间": "2026-10-10T07:33:53.938Z",
+      "客户端信息": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Language/zh ColorScheme/Light DistType/publish-store wxwork/5.0.10 (MicroMessenger/6.2) WeChat/2.0.4 wwmver/3.26.510.608 Safari/605.1.15",
+      "最近访问时间": "2026-10-10T07:33:55.015Z",
+      "来源IP": "10.52.0.159",
+      "用户ID": "employee_15963511376",
+      "用户姓名": "邓童予",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-10T07:33:53.981Z",
+    "lastModifiedTime": "2026-10-10T07:33:55.118Z"
+  },
+  {
+    "id": "rect17Tq5c1dWeBTMB4",
+    "fields": {
+      "令牌哈希": "7144994568d50c051a5f638fe771d099f03e846de96e2eb40412350b8d7fb115",
+      "会话ID": "session_f4552fd1965e428ca6cd9fb25d77e8b4",
+      "会话状态": "有效",
+      "创建时间": "2026-10-10T07:36:56.609Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0",
+      "最近访问时间": "2026-10-15T09:56:35.671Z",
+      "来源IP": "127.0.0.1",
+      "用户ID": "45c18957-6c22-46fe-a239-e3ccfa3a6ed5",
+      "用户姓名": "高子云",
+      "身份来源": "session",
+      "过期时间": "2027-11-18T01:19:48.639Z"
+    },
+    "createdTime": "2026-10-10T07:36:56.649Z",
+    "lastModifiedTime": "2026-10-15T09:56:35.783Z"
+  },
+  {
+    "id": "rec2x7lbEazZoS709zB",
+    "fields": {
+      "令牌哈希": "e3fba3e681753f4c951f6d78ea1cff04da14ecb65d17b051c065117c88265b03",
+      "会话ID": "session_79072dacb1bf49a4bd1a799e45cffbeb",
+      "会话状态": "有效",
+      "创建时间": "2026-10-12T02:23:59.890Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.6668.101 Safari/537.36 Language/zh ColorScheme/Light wxwork/5.0.11 (MicroMessenger/6.2) WindowsWechat  MailPlugin_Electron WeMail embeddisk wwmver/3.26.511.637 noMediaCs/false",
+      "最近访问时间": "2026-10-12T02:24:01.306Z",
+      "来源IP": "10.52.0.159",
+      "用户ID": "employee_15966960983",
+      "用户姓名": "司曜菲",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-12T02:24:00.011Z",
+    "lastModifiedTime": "2026-10-12T02:24:01.414Z"
+  },
+  {
+    "id": "recNZWIEsTpVLxYoArS",
+    "fields": {
+      "令牌哈希": "fd1aae2341413ebacfd022c11858d07dc8b0112a928b2af79486b8765f69948d",
+      "会话ID": "session_ab0d5a20509d46d7b6063c5570573735",
+      "会话状态": "有效",
+      "创建时间": "2026-10-12T02:24:15.007Z",
+      "客户端信息": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Language/zh ColorScheme/Light DistType/publish-store wxwork/5.0.2 (MicroMessenger/6.2) WeChat/2.0.4 wwmver/3.26.502.607 Safari/605.1.15",
+      "最近访问时间": "2026-10-12T02:24:15.976Z",
+      "来源IP": "10.52.0.159",
+      "用户ID": "employee_15192240109",
+      "用户姓名": "唐佳琦",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-12T02:24:15.067Z",
+    "lastModifiedTime": "2026-10-12T02:24:16.075Z"
+  },
+  {
+    "id": "recHTACSu7PP8hli5Lk",
+    "fields": {
+      "令牌哈希": "45fb24aadc09d0b7ff20ba996fd33a4bc5615d6f05fea9553a25a6f72da4b2ae",
+      "会话ID": "session_87a0d725473f495eafd66896347753f6",
+      "会话状态": "有效",
+      "创建时间": "2026-10-12T02:34:33.023Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.6668.101 Safari/537.36 Language/zh ColorScheme/Light wxwork/5.0.11 (MicroMessenger/6.2) WindowsWechat  MailPlugin_Electron WeMail embeddisk wwmver/3.26.511.637 noMediaCs/false",
+      "最近访问时间": "2026-10-12T02:34:34.048Z",
+      "来源IP": "10.52.0.159",
+      "用户ID": "employee_18865690616",
+      "用户姓名": "王川铭",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-12T02:34:33.067Z",
+    "lastModifiedTime": "2026-10-12T02:34:34.149Z"
+  },
+  {
+    "id": "recOQl0zTpLQfHALaGo",
+    "fields": {
+      "令牌哈希": "56927024b5e5f861ebbdff748ff3ac1da65d1b4ca225a7a3cf9641b2261180c4",
+      "会话ID": "session_cc51483f581a4c2287457c336a13a710",
+      "会话状态": "有效",
+      "创建时间": "2026-10-12T02:35:55.957Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36 Edg/155.0.0.0",
+      "最近访问时间": "2026-10-12T02:37:08.008Z",
+      "来源IP": "10.52.0.159",
+      "用户ID": "employee_18865690616",
+      "用户姓名": "王川铭",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-12T02:35:56.003Z",
+    "lastModifiedTime": "2026-10-12T02:37:08.121Z"
+  },
+  {
+    "id": "recWKPViHs4GhFRV2No",
+    "fields": {
+      "令牌哈希": "7ca1ab204576bc42ead32a2b0e40971e4811199908897d52975b4c674da78e98",
+      "会话ID": "session_952b6858377244ada0c925b7638da1fe",
+      "会话状态": "有效",
+      "创建时间": "2026-10-12T03:53:02.310Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.6668.101 Safari/537.36 Language/zh ColorScheme/Light wxwork/5.0.11 (MicroMessenger/6.2) WindowsWechat  MailPlugin_Electron WeMail embeddisk wwmver/3.26.511.637 noMediaCs/false",
+      "最近访问时间": "2026-10-12T03:53:03.200Z",
+      "来源IP": "10.52.0.141",
+      "用户ID": "employee_18553566058",
+      "用户姓名": "王亚雯",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-12T03:53:02.352Z",
+    "lastModifiedTime": "2026-10-12T03:53:03.309Z"
+  },
+  {
+    "id": "recfsxTE9fAUWnPWhmo",
+    "fields": {
+      "令牌哈希": "9f64dda22fdbd0c3b9e1a6ffa8b2efbcdfd41ec67c3242f09c64f9792ea9f6b9",
+      "会话ID": "session_dc536ce4103a4226b5fd42719e98d0fc",
+      "会话状态": "已退出",
+      "创建时间": "2026-10-12T06:05:44.587Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-10-12T06:05:44.587Z",
+      "来源IP": "10.52.0.159",
+      "用户ID": "employee_13188537381",
+      "用户姓名": "张杰",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z",
+      "退出时间": "2026-10-12T06:05:51.220Z"
+    },
+    "createdTime": "2026-10-12T06:05:44.629Z",
+    "lastModifiedTime": "2026-10-12T06:05:51.270Z"
+  },
+  {
+    "id": "recZt3PMjCkaPIwDkVO",
+    "fields": {
+      "令牌哈希": "ae0577726d50d208820acf55f0ecd957f25f9bf6748226f4681ebe9465fa7326",
+      "会话ID": "session_dbd59399e38c440a92621c9aeac34575",
+      "会话状态": "有效",
+      "创建时间": "2026-10-12T06:06:00.492Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-10-13T07:51:22.131Z",
+      "来源IP": "10.52.0.159",
+      "用户ID": "45c18957-6c22-46fe-a239-e3ccfa3a6ed5",
+      "用户姓名": "高子云",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-12T06:06:00.534Z",
+    "lastModifiedTime": "2026-10-13T07:51:22.237Z"
+  },
+  {
+    "id": "recQ0gNUFtwvvGnRVIK",
+    "fields": {
+      "令牌哈希": "efb8d2fd1ae6ddbc908d937238de58e1f131ceab8ae91853c98b1ce61e20b391",
+      "会话ID": "session_8717067674bc43b492544f0c463ef8aa",
+      "会话状态": "有效",
+      "创建时间": "2026-10-12T07:15:55.556Z",
+      "客户端信息": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36 NetType/WIFI MicroMessenger/7.0.20.1781(0x6700143B) MacWechat/3.8.7(0x13080712) UnifiedPCMacWechat(0xf2641850) XWEB/19708 Flue",
+      "最近访问时间": "2026-10-12T07:18:36.375Z",
+      "来源IP": "10.52.0.159",
+      "用户ID": "employee_15192240109",
+      "用户姓名": "唐佳琦",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-12T07:15:55.598Z",
+    "lastModifiedTime": "2026-10-12T07:18:36.497Z"
+  },
+  {
+    "id": "recAw8jRUsjOLWDj5z8",
+    "fields": {
+      "令牌哈希": "93c54e2fe4e667058408b650fcc151d9404b61ad35e5bacaa966795eea7a6849",
+      "会话ID": "session_2e708c64b03c436e94ae9697f5f4a69d",
+      "会话状态": "有效",
+      "创建时间": "2026-10-12T07:16:06.284Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36 Edg/154.0.0.0",
+      "最近访问时间": "2026-10-12T07:22:11.702Z",
+      "来源IP": "10.52.0.159",
+      "用户ID": "employee_19712033695",
+      "用户姓名": "王松雪",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-12T07:16:06.324Z",
+    "lastModifiedTime": "2026-10-12T07:22:11.818Z"
+  },
+  {
+    "id": "rec2IHih9x28jEXYuoJ",
+    "fields": {
+      "令牌哈希": "6f389968e0e88a5ae763def02be1c74e34dcb56275878c690ec052a9e34f4d4b",
+      "会话ID": "session_aac01ae276c843e19908600efeb3b9ed",
+      "会话状态": "有效",
+      "创建时间": "2026-10-12T07:16:28.764Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 NetType/WIFI MicroMessenger/7.0.20.1781(0x6700143B) WindowsWechat(0x63090a13) UnifiedPCWindowsWechat(0xf2541f0d) XWEB/25715 Flue",
+      "最近访问时间": "2026-10-12T07:18:02.984Z",
+      "来源IP": "10.52.0.141",
+      "用户ID": "employee_15666468973",
+      "用户姓名": "李凯",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-12T07:16:28.810Z",
+    "lastModifiedTime": "2026-10-12T07:18:03.085Z"
+  },
+  {
+    "id": "recZFBDbwtbaSu00jNt",
+    "fields": {
+      "令牌哈希": "e3366f576ec987e5131007304c6246da614157d5e9fca567436c7d87160d5b9f",
+      "会话ID": "session_af7b38a290ea45b3acde41e3bdbe9338",
+      "会话状态": "有效",
+      "创建时间": "2026-10-12T07:17:05.206Z",
+      "客户端信息": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko)  Mobile/15E148 wxwork/5.0.11 MicroMessenger/7.0.1 Language/zh ColorScheme/Dark wwmver/3.26.511.376",
+      "最近访问时间": "2026-10-12T07:50:58.710Z",
+      "来源IP": "10.52.0.159",
+      "用户ID": "employee_18766597268",
+      "用户姓名": "张翔宇",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-12T07:17:05.248Z",
+    "lastModifiedTime": "2026-10-12T07:50:58.883Z"
+  },
+  {
+    "id": "recbWt9o7b8mnDnHGNm",
+    "fields": {
+      "令牌哈希": "9e64f30e1e51142a1cbda4a1e301f6a7ca5f0db31feaf3c8da4496d9b472ad05",
+      "会话ID": "session_f88a4caa26774af1ba5741d77d3b94df",
+      "会话状态": "有效",
+      "创建时间": "2026-10-12T07:17:52.349Z",
+      "客户端信息": "Mozilla/5.0 (Linux; Android 16; V2548A Build/BP2A.250605.031.A3_V000L1; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/146.0.7680.178 Mobile Safari/537.36 XWEB/1460263 MMWEBSDK/20250205 MMWEBID/9079 wxwork/5.0.11 MicroMessenger/7.0.1 NetType/WIFI Language/zh Lang/zh ColorScheme/Light wwmver/3.26.511.636",
+      "最近访问时间": "2026-10-12T07:17:53.377Z",
+      "来源IP": "10.52.0.159",
+      "用户ID": "employee_15666647112",
+      "用户姓名": "刘柏汐",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-12T07:17:52.391Z",
+    "lastModifiedTime": "2026-10-12T07:17:53.493Z"
+  },
+  {
+    "id": "recujrtnH126o0wp1z1",
+    "fields": {
+      "令牌哈希": "6210aeecf53f820057cab0923ad3ae070a5019c73fd851b9567bffd3e4e165aa",
+      "会话ID": "session_011ced94f34b4ec3816639ca6eb54965",
+      "会话状态": "有效",
+      "创建时间": "2026-10-12T07:18:00.813Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0",
+      "最近访问时间": "2026-10-12T07:18:02.200Z",
+      "来源IP": "10.52.0.141",
+      "用户ID": "employee_13021605280",
+      "用户姓名": "刘竹馨",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-12T07:18:00.855Z",
+    "lastModifiedTime": "2026-10-12T07:18:02.350Z"
+  },
+  {
+    "id": "recLLYLI2sNpbSAKE5N",
+    "fields": {
+      "令牌哈希": "e5916e551fbbdd8dd300df9b3cab327dd3897e49fb9af1d4512bf9cc09ada2d1",
+      "会话ID": "session_7df6ebad5bd04147b268301363ce003b",
+      "会话状态": "有效",
+      "创建时间": "2026-10-12T07:18:07.762Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 NetType/WIFI MicroMessenger/7.0.20.1781(0x6700143B) WindowsWechat(0x63090a13) UnifiedPCWindowsWechat(0xf2541f32) XWEB/25773 Flue",
+      "最近访问时间": "2026-10-12T07:18:08.796Z",
+      "来源IP": "10.52.0.159",
+      "用户ID": "employee_15963503237",
+      "用户姓名": "于松玲",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-12T07:18:07.804Z",
+    "lastModifiedTime": "2026-10-12T07:18:08.910Z"
+  },
+  {
+    "id": "recMssenCebej0s1eqh",
+    "fields": {
+      "令牌哈希": "c91e2eb04ef90a01050c09211f17e6c6f0ce6934da78d8e5ba4b49bbf0a70fd9",
+      "会话ID": "session_72d608f8ce6d4ec6b5ee6bd634dd2738",
+      "会话状态": "有效",
+      "创建时间": "2026-10-12T07:18:39.191Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 NetType/WIFI MicroMessenger/7.0.20.1781(0x6700143B) WindowsWechat(0x63090a13) UnifiedPCWindowsWechat(0xf2541f0d) XWEB/25715 Flue",
+      "最近访问时间": "2026-10-12T07:18:40.173Z",
+      "来源IP": "10.52.0.159",
+      "用户ID": "employee_13181604467",
+      "用户姓名": "杨雯婷",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-12T07:18:39.233Z",
+    "lastModifiedTime": "2026-10-12T07:18:40.286Z"
+  },
+  {
+    "id": "recnNyzGkaHS6dGYUfb",
+    "fields": {
+      "令牌哈希": "397ab1be9aa787efcd459755d12aaf9ba3bd7330ab4166abb9a22a8550f39aeb",
+      "会话ID": "session_f4ef4ca692f24f16af23332b18756b00",
+      "会话状态": "有效",
+      "创建时间": "2026-10-12T07:19:50.350Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-10-13T01:25:23.807Z",
+      "来源IP": "10.52.0.159",
+      "用户ID": "employee_19323168697",
+      "用户姓名": "郭佳琦",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-12T07:19:50.393Z",
+    "lastModifiedTime": "2026-10-13T01:25:23.925Z"
+  },
+  {
+    "id": "recrdvN4KnR4UpfwzHQ",
+    "fields": {
+      "令牌哈希": "96c3e4345bc0a97b0b5728418ac57f1e73ccc4dce9d169c952ec0cf46bab542e",
+      "会话ID": "session_bffc4579704a4d3aac7925d3c5ddc608",
+      "会话状态": "有效",
+      "创建时间": "2026-10-12T07:23:27.934Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 NetType/WIFI MicroMessenger/7.0.20.1781(0x6700143B) WindowsWechat(0x63090a13) UnifiedPCWindowsWechat(0xf2541f0d) XWEB/25715 Flue",
+      "最近访问时间": "2026-10-12T07:26:18.568Z",
+      "来源IP": "10.52.0.159",
+      "用户ID": "employee_15567618225",
+      "用户姓名": "韩湘",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-12T07:23:27.976Z",
+    "lastModifiedTime": "2026-10-12T07:26:18.679Z"
+  },
+  {
+    "id": "recJsCEgflRADppZ6PW",
+    "fields": {
+      "令牌哈希": "dcfe1bb820cddf2a585d866902b91ea3105e98f290bfd7ed084cf3c7b43946f4",
+      "会话ID": "session_b90afa9092dd47d6940f046988f4577e",
+      "会话状态": "有效",
+      "创建时间": "2026-10-12T07:24:05.236Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 NetType/WIFI MicroMessenger/7.0.20.1781(0x6700143B) WindowsWechat(0x63090a13) UnifiedPCWindowsWechat(0xf2541f35) XWEB/25799 Flue",
+      "最近访问时间": "2026-10-12T13:01:01.558Z",
+      "来源IP": "10.52.0.141",
+      "用户ID": "employee_18888216877",
+      "用户姓名": "苑文佳",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-12T07:24:05.293Z",
+    "lastModifiedTime": "2026-10-12T13:01:01.669Z"
+  },
+  {
+    "id": "rec85vQ8lRbcb9ICz6n",
+    "fields": {
+      "令牌哈希": "a60d0e05e85a693d552980e1eae0edbfd751088434856321334f637599fb8928",
+      "会话ID": "session_8f588ecd78ec4e76ab4bd5ed05d0ed22",
+      "会话状态": "有效",
+      "创建时间": "2026-10-12T07:26:37.519Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36 Edg/155.0.0.0",
+      "最近访问时间": "2026-10-19T12:24:43.200Z",
+      "来源IP": "10.52.0.141",
+      "用户ID": "employee_17353508121",
+      "用户姓名": "孟令珅",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-12T07:26:37.562Z",
+    "lastModifiedTime": "2026-10-19T12:24:43.294Z"
+  },
+  {
+    "id": "reczyRSLmT409r7ndMj",
+    "fields": {
+      "令牌哈希": "1902829d97888e32e47abb8ed2543a50a193e237427a3b428e4a8c9ec628fef1",
+      "会话ID": "session_ba05164d9a2f4905b6f4cf1fb30fcd20",
+      "会话状态": "有效",
+      "创建时间": "2026-10-12T07:34:03.658Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 NetType/WIFI MicroMessenger/7.0.20.1781(0x6700143B) WindowsWechat(0x63090a13) UnifiedPCWindowsWechat(0xf2541f32) XWEB/25773 Flue",
+      "最近访问时间": "2026-10-12T07:37:46.869Z",
+      "来源IP": "10.52.0.141",
+      "用户ID": "employee_19563093464",
+      "用户姓名": "孙子怡",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-12T07:34:03.703Z",
+    "lastModifiedTime": "2026-10-12T07:37:46.978Z"
+  },
+  {
+    "id": "recKyoTqNmjBhTMy87m",
+    "fields": {
+      "令牌哈希": "8c07debef3783ff78b63c662882454bb98f384fb39c6aa7851f17494ea18f7d5",
+      "会话ID": "session_bcbe4ed14330491fa75e2ebafd67f9fa",
+      "会话状态": "有效",
+      "创建时间": "2026-10-12T07:36:10.010Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36 Edg/155.0.0.0",
+      "最近访问时间": "2026-10-12T07:48:55.998Z",
+      "来源IP": "10.52.0.159",
+      "用户ID": "employee_13845658379",
+      "用户姓名": "穆昕宜",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-12T07:36:10.055Z",
+    "lastModifiedTime": "2026-10-12T07:48:56.121Z"
+  },
+  {
+    "id": "recmuzRkvPMyahKxEUG",
+    "fields": {
+      "令牌哈希": "d6f7415cfd9c42f68a0a8fdddf81aef4375d14a85c095a13c953f52e5b390d9b",
+      "会话ID": "session_99568234a65d4e00a9ce3b1baf940d8b",
+      "会话状态": "有效",
+      "创建时间": "2026-10-12T07:46:36.116Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-10-12T09:40:00.227Z",
+      "来源IP": "10.52.0.141",
+      "用户ID": "employee_18239711150",
+      "用户姓名": "位小蛋",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-12T07:46:36.159Z",
+    "lastModifiedTime": "2026-10-12T09:40:00.372Z"
+  },
+  {
+    "id": "recNiYpu4JLp6NGESYV",
+    "fields": {
+      "令牌哈希": "ef5ff359ff0f0a2b813c41afd827f830c5abaae5ac0b4e22e6045dbdbe0ab9c7",
+      "会话ID": "session_518a0df6843747ae8419f2dc46226d35",
+      "会话状态": "有效",
+      "创建时间": "2026-10-12T07:52:42.149Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 NetType/WIFI MicroMessenger/7.0.20.1781(0x6700143B) WindowsWechat(0x63090a13) UnifiedPCWindowsWechat(0xf2541f0d) XWEB/25715 Flue",
+      "最近访问时间": "2026-10-12T08:20:28.660Z",
+      "来源IP": "10.52.0.159",
+      "用户ID": "employee_13256802729",
+      "用户姓名": "张冉",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-12T07:52:42.224Z",
+    "lastModifiedTime": "2026-10-12T08:20:28.771Z"
+  },
+  {
+    "id": "rec60Um78ZJGm7QFDvE",
+    "fields": {
+      "令牌哈希": "9cb4df8f12c329659f861dbae1411de74a665145cfb5dc6ac564d085a433a116",
+      "会话ID": "session_871e1eaa4d6f4e04845321993ac0f1f0",
+      "会话状态": "有效",
+      "创建时间": "2026-10-12T09:51:31.148Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 NetType/WIFI MicroMessenger/7.0.20.1781(0x6700143B) WindowsWechat(0x63090a13) UnifiedPCWindowsWechat(0xf2541f33) XWEB/25773 Flue",
+      "最近访问时间": "2026-10-12T09:53:13.728Z",
+      "来源IP": "10.52.0.159",
+      "用户ID": "employee_15666647112",
+      "用户姓名": "刘柏汐",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-12T09:51:31.187Z",
+    "lastModifiedTime": "2026-10-12T09:53:13.841Z"
+  },
+  {
+    "id": "recZP4E4GpD32TgEi63",
+    "fields": {
+      "令牌哈希": "3b35dec6f5037207f226b8c19db25029b3618aeb434baec0d7d2e97c177342de",
+      "会话ID": "session_9f14c991677b46128c1eb41abcafb1b3",
+      "会话状态": "有效",
+      "创建时间": "2026-10-12T09:54:49.161Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.6668.101 Safari/537.36 Language/zh ColorScheme/Light wxwork/5.0.11 (MicroMessenger/6.2) WindowsWechat  MailPlugin_Electron WeMail embeddisk wwmver/3.26.511.637 noMediaCs/false",
+      "最近访问时间": "2026-10-12T09:54:50.247Z",
+      "来源IP": "10.52.0.141",
+      "用户ID": "employee_15065790441",
+      "用户姓名": "黄小峰",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-12T09:54:49.200Z",
+    "lastModifiedTime": "2026-10-12T09:54:50.339Z"
+  },
+  {
+    "id": "rect19siHvZlfyl00os",
+    "fields": {
+      "令牌哈希": "8986b2a74a859f3e62930d12d25b2dd3ffda60215ae7be901785f593f4241c45",
+      "会话ID": "session_a880b241374f4758a8258087d196745d",
+      "会话状态": "有效",
+      "创建时间": "2026-10-12T13:14:57.958Z",
+      "客户端信息": "Mozilla/5.0 (Linux; Android 16; V2528A Build/BP2A.250605.031.A3_V000L1; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/146.0.7680.178 Mobile Safari/537.36 XWEB/1460263 MMWEBSDK/20250205 MMWEBID/8535 wxwork/5.0.10 MicroMessenger/7.0.1 NetType/WIFI Language/zh Lang/zh ColorScheme/Light wwmver/3.26.510.636",
+      "最近访问时间": "2026-10-12T13:14:59.148Z",
+      "来源IP": "10.52.0.141",
+      "用户ID": "employee_15063879040",
+      "用户姓名": "刘芙蓉",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-12T13:14:57.998Z",
+    "lastModifiedTime": "2026-10-12T13:14:59.259Z"
+  },
+  {
+    "id": "recjdjM1vluuwd7rmT7",
+    "fields": {
+      "令牌哈希": "e9df0f71947f2c0a0269856a63ccc7b38d9625f850c4d2254ed2c3103679a9b7",
+      "会话ID": "session_a1d85af80f764bf4819293357e05c595",
+      "会话状态": "已退出",
+      "创建时间": "2026-10-13T01:55:45.966Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36 Edg/155.0.0.0",
+      "最近访问时间": "2026-10-13T03:26:34.588Z",
+      "来源IP": "10.52.0.141",
+      "用户ID": "employee_19712029118",
+      "用户姓名": "袁章",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z",
+      "退出时间": "2026-10-13T03:26:43.012Z"
+    },
+    "createdTime": "2026-10-13T01:55:46.008Z",
+    "lastModifiedTime": "2026-10-13T03:26:43.058Z"
+  },
+  {
+    "id": "recGKBdR0AXyLuhYkdH",
+    "fields": {
+      "令牌哈希": "3b6819f1b73f88220349fce6d3d940082d2e2cf6dc5c8baea4350ab97532fb2b",
+      "会话ID": "session_9d09faa1c0e94106bfcf054c14ba4514",
+      "会话状态": "有效",
+      "创建时间": "2026-10-13T02:22:30.764Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36 Edg/127.0.0.0",
+      "最近访问时间": "2026-10-22T05:41:45.347Z",
+      "来源IP": "10.52.0.141",
+      "用户ID": "employee_19558960751",
+      "用户姓名": "石蓉",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-13T02:22:30.806Z",
+    "lastModifiedTime": "2026-10-22T05:41:45.455Z"
+  },
+  {
+    "id": "recpbR9O2L4XgQDMjtl",
+    "fields": {
+      "令牌哈希": "ecdbd6e0ee3eb391d98841e0a5505f961627b3af1e903b71acb67adb051a7447",
+      "会话ID": "session_ae9abb1c0c944c298d9635740f43a869",
+      "会话状态": "有效",
+      "创建时间": "2026-10-13T03:56:31.751Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.6668.101 Safari/537.36 Language/zh ColorScheme/Light wxwork/5.0.11 (MicroMessenger/6.2) WindowsWechat  MailPlugin_Electron WeMail embeddisk wwmver/3.26.511.637 noMediaCs/false",
+      "最近访问时间": "2026-10-13T03:56:32.808Z",
+      "来源IP": "10.52.0.159",
+      "用户ID": "employee_15625520910",
+      "用户姓名": "吴悠",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-13T03:56:31.794Z",
+    "lastModifiedTime": "2026-10-13T03:56:32.924Z"
+  },
+  {
+    "id": "recIhMhrsKSaOfFf3XA",
+    "fields": {
+      "令牌哈希": "19cccf3f36c83c75fd84b9f9b72025a8c7601dea4a5420542b6e3eca2eedeaa1",
+      "会话ID": "session_30b877a316ac47d28f14b12d082c0f2c",
+      "会话状态": "有效",
+      "创建时间": "2026-10-13T04:31:03.045Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36 Edg/155.0.0.0",
+      "最近访问时间": "2026-10-13T13:25:21.299Z",
+      "来源IP": "10.52.0.141",
+      "用户ID": "employee_19712029118",
+      "用户姓名": "袁章",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-13T04:31:03.085Z",
+    "lastModifiedTime": "2026-10-13T13:25:21.402Z"
+  },
+  {
+    "id": "recY9qSCEbEhZPwTqJp",
+    "fields": {
+      "令牌哈希": "ad4011f20fc2aae448b2c82741204a6375ccbce5737d8b8eef9fd172593829e5",
+      "会话ID": "session_ff47012cca2a433dbc76d9ec5e87e91e",
+      "会话状态": "有效",
+      "创建时间": "2026-10-13T06:08:17.983Z",
+      "客户端信息": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko)  Mobile/15E148 wxwork/5.0.12 MicroMessenger/7.0.1 Language/zh ColorScheme/Light wwmver/3.26.511.377",
+      "最近访问时间": "2026-10-13T06:08:19.824Z",
+      "来源IP": "10.52.0.141",
+      "用户ID": "employee_18848131546",
+      "用户姓名": "李思奇",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-13T06:08:18.036Z",
+    "lastModifiedTime": "2026-10-13T06:08:19.930Z"
+  },
+  {
+    "id": "recJKxAOOZtSAhayeNs",
+    "fields": {
+      "令牌哈希": "c42a2927523a2e960628bcf821a0bf86d89539d0d1780d4de06786be63c4dbef",
+      "会话ID": "session_cab8195118f34d33b6c7d078171b052f",
+      "会话状态": "有效",
+      "创建时间": "2026-10-13T06:12:03.900Z",
+      "客户端信息": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-10-24T07:11:02.712Z",
+      "来源IP": "10.52.0.141",
+      "用户ID": "employee_13287957162",
+      "用户姓名": "王甜雨",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-13T06:12:03.943Z",
+    "lastModifiedTime": "2026-10-24T07:11:02.821Z"
+  },
+  {
+    "id": "rechcOyNpZ1njEiDyU1",
+    "fields": {
+      "令牌哈希": "68e4069a3d7d9d1c97a185eb3f773b193d210ddc47c9a9abf804521fdf57efe6",
+      "会话ID": "session_534ea3b9fb2240bca35e3c2d6bdd9509",
+      "会话状态": "有效",
+      "创建时间": "2026-10-13T09:41:44.435Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-10-13T09:47:02.379Z",
+      "来源IP": "10.52.0.159",
+      "用户ID": "employee_18660508236",
+      "用户姓名": "吕悦静",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-13T09:41:44.477Z",
+    "lastModifiedTime": "2026-10-13T09:47:02.493Z"
+  },
+  {
+    "id": "recoefy8F4Q9kewf3Bw",
+    "fields": {
+      "令牌哈希": "5bff53ae2d28143c00e32cde6b52bb18ff106035ec24a270da25ee631a22b321",
+      "会话ID": "session_ad3a407c8fb04606b03dbacc3c294310",
+      "会话状态": "有效",
+      "创建时间": "2026-10-13T09:48:25.241Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-10-13T10:36:39.616Z",
+      "来源IP": "10.52.0.159",
+      "用户ID": "employee_18660508236",
+      "用户姓名": "吕悦静",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-13T09:48:25.284Z",
+    "lastModifiedTime": "2026-10-13T10:36:39.725Z"
+  },
+  {
+    "id": "recLJD32uEs8DlDswIy",
+    "fields": {
+      "令牌哈希": "c6ef5d2660a0cc11c47371a8665727078c3fa74de9a5eba498e82ca8acd6e228",
+      "会话ID": "session_ddcaa470d3584e9499e40d61df2439ea",
+      "会话状态": "有效",
+      "创建时间": "2026-10-13T10:03:33.066Z",
+      "客户端信息": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.6.2 Safari/605.1.15",
+      "最近访问时间": "2026-10-13T10:37:59.746Z",
+      "来源IP": "10.52.0.141",
+      "用户ID": "employee_13287953891",
+      "用户姓名": "张晓霞",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-13T10:03:33.136Z",
+    "lastModifiedTime": "2026-10-13T10:37:59.856Z"
+  },
+  {
+    "id": "recB5A1iMGJVVaO9L68",
+    "fields": {
+      "令牌哈希": "138adba5bb044ae99eae0ec6b3d13ebc142b5261470a7363e1c60aaadc6551b6",
+      "会话ID": "session_80f457f119d544c9bc60ac46f6f7c268",
+      "会话状态": "有效",
+      "创建时间": "2026-10-13T10:38:04.392Z",
+      "客户端信息": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.6.2 Safari/605.1.15",
+      "最近访问时间": "2026-10-13T10:40:32.495Z",
+      "来源IP": "10.52.0.141",
+      "用户ID": "employee_13287953891",
+      "用户姓名": "张晓霞",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-13T10:38:04.439Z",
+    "lastModifiedTime": "2026-10-13T10:40:32.605Z"
+  },
+  {
+    "id": "recfYGdb1hnGKKuBb37",
+    "fields": {
+      "令牌哈希": "3b8e014a6b04b67716fb02715c5974d40a62296dbe80f13c9b85303d17766a5e",
+      "会话ID": "session_749a6166ac7a44ada4ed3a926e0f2af2",
+      "会话状态": "已退出",
+      "创建时间": "2026-10-13T10:43:10.036Z",
+      "客户端信息": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.6.2 Safari/605.1.15",
+      "最近访问时间": "2026-10-16T13:28:15.940Z",
+      "来源IP": "10.52.0.141",
+      "用户ID": "employee_13287953891",
+      "用户姓名": "张晓霞",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z",
+      "退出时间": "2026-10-16T13:28:37.260Z"
+    },
+    "createdTime": "2026-10-13T10:43:10.080Z",
+    "lastModifiedTime": "2026-10-16T13:28:37.308Z"
+  },
+  {
+    "id": "recXNE6dibh6kzvYR5y",
+    "fields": {
+      "令牌哈希": "33818914d2a29c336e736c2c0a33cf13cab83032c5cbe01dd02766b250e36617",
+      "会话ID": "session_97daac98729f4e0faa295b8052a3f7b8",
+      "会话状态": "有效",
+      "创建时间": "2026-10-13T11:01:35.133Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-10-13T11:08:23.941Z",
+      "来源IP": "10.52.0.159",
+      "用户ID": "employee_13188537381",
+      "用户姓名": "张杰",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-13T11:01:35.175Z",
+    "lastModifiedTime": "2026-10-13T11:08:24.078Z"
+  },
+  {
+    "id": "recEkvNWDxGljSz3Pve",
+    "fields": {
+      "令牌哈希": "e646a5848bdd28658994066de82c6b017c2d62d91389da4db49c7a867f4058e7",
+      "会话ID": "session_aa262734edf742fd94e8e604ed3ed647",
+      "会话状态": "已退出",
+      "创建时间": "2026-10-13T11:12:19.080Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-10-14T14:01:06.793Z",
+      "来源IP": "10.52.0.141",
+      "用户ID": "employee_13188537381",
+      "用户姓名": "张杰",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z",
+      "退出时间": "2026-10-14T14:01:15.267Z"
+    },
+    "createdTime": "2026-10-13T11:12:19.123Z",
+    "lastModifiedTime": "2026-10-14T14:01:15.309Z"
+  },
+  {
+    "id": "recwVIIvPvsfzz0pRTO",
+    "fields": {
+      "令牌哈希": "590ceb831a23d33759cef6262450ea6b2cbfa4256ffbf6b6473dd8048a678a1a",
+      "会话ID": "session_2eba24485d01426bbf240804b826c5ae",
+      "会话状态": "有效",
+      "创建时间": "2026-10-13T12:01:18.477Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-10-14T02:53:20.313Z",
+      "来源IP": "10.52.0.141",
+      "用户ID": "employee_18660508236",
+      "用户姓名": "吕悦静",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-13T12:01:18.516Z",
+    "lastModifiedTime": "2026-10-14T02:53:20.421Z"
+  },
+  {
+    "id": "recFC5T3xuzTghGnUPs",
+    "fields": {
+      "令牌哈希": "a0ea25477d1e5ddf8c90f04605e4ece0c4a0a8611adabeb54c1beb848ce2e0df",
+      "会话ID": "session_8f86a278cc494c5492aa97f7a4e592e3",
+      "会话状态": "已退出",
+      "创建时间": "2026-10-14T01:17:59.032Z",
+      "客户端信息": "rf-auth-debug",
+      "最近访问时间": "2026-10-14T01:20:59.512Z",
+      "来源IP": "127.0.0.1",
+      "用户ID": "45c18957-6c22-46fe-a239-e3ccfa3a6ed5",
+      "用户姓名": "高子云",
+      "身份来源": "session",
+      "过期时间": "2027-11-18T01:20:59.570Z",
+      "退出时间": "2026-10-14T01:22:30.000Z"
+    },
+    "createdTime": "2026-10-14T01:17:59.072Z",
+    "lastModifiedTime": "2026-10-14T01:21:31.664Z"
+  },
+  {
+    "id": "rec0EtECvqLgSGA531n",
+    "fields": {
+      "令牌哈希": "ca47b7556c6625ca535a23b42cdddd5286e15070d5faf55d6dc6edf36222cde2",
+      "会话ID": "session_19bf3273f59b4001bacef01b67c1eb50",
+      "会话状态": "已退出",
+      "创建时间": "2026-10-14T01:18:05.548Z",
+      "客户端信息": "rf-auth-debug",
+      "最近访问时间": "2026-10-14T01:18:05.548Z",
+      "来源IP": "10.52.0.141",
+      "用户ID": "45c18957-6c22-46fe-a239-e3ccfa3a6ed5",
+      "用户姓名": "高子云",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z",
+      "退出时间": "2026-10-14T01:22:30.000Z"
+    },
+    "createdTime": "2026-10-14T01:18:05.586Z",
+    "lastModifiedTime": "2026-10-14T01:21:31.824Z"
+  },
+  {
+    "id": "recVlEzBZ2BplCFeHiu",
+    "fields": {
+      "令牌哈希": "c08b23572617d88438ae086c9bcc445946e554607250507d2a2258bc0bcfbd8d",
+      "会话ID": "session_bae6fc66f8d0412088330e644b71d42a",
+      "会话状态": "有效",
+      "创建时间": "2026-10-14T01:19:33.028Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-10-14T01:21:25.573Z",
+      "来源IP": "10.52.0.159",
+      "用户ID": "45c18957-6c22-46fe-a239-e3ccfa3a6ed5",
+      "用户姓名": "高子云",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-14T01:19:33.071Z",
+    "lastModifiedTime": "2026-10-14T01:21:25.721Z"
+  },
+  {
+    "id": "recbtg1PR4inBCGcxz9",
+    "fields": {
+      "令牌哈希": "f4174e0c811af1cc35cf51a868cb3c5018c7118b47852aea8f1a765721a10426",
+      "会话ID": "session_121ae2259e7847b49de86cb4e1525f3e",
+      "会话状态": "已退出",
+      "创建时间": "2026-10-14T01:20:21.916Z",
+      "客户端信息": "rf-auth-debug",
+      "最近访问时间": "2026-10-14T01:20:21.916Z",
+      "来源IP": "10.52.0.159",
+      "用户ID": "45c18957-6c22-46fe-a239-e3ccfa3a6ed5",
+      "用户姓名": "高子云",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z",
+      "退出时间": "2026-10-14T01:22:30.000Z"
+    },
+    "createdTime": "2026-10-14T01:20:21.957Z",
+    "lastModifiedTime": "2026-10-14T01:21:31.966Z"
+  },
+  {
+    "id": "recyManp2Vtve8R2lq3",
+    "fields": {
+      "令牌哈希": "2308a1812c8d08079bf144b814422233cdb7e714c4b1838e46ad21d06ca074fe",
+      "会话ID": "session_59c96bc348f94b9794956b79768b0548",
+      "会话状态": "有效",
+      "创建时间": "2026-10-14T02:53:28.104Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-10-14T02:55:18.090Z",
+      "来源IP": "10.52.0.141",
+      "用户ID": "employee_18660508236",
+      "用户姓名": "吕悦静",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-14T02:53:28.147Z",
+    "lastModifiedTime": "2026-10-14T02:55:18.207Z"
+  },
+  {
+    "id": "recSMsUmE4qzPlx1BRq",
+    "fields": {
+      "令牌哈希": "548a5c4cc8a49dfa79352e3c460f3c80b3a37bf435b51236d33595d01edb2d49",
+      "会话ID": "session_aac2ad9eec8b4568b6ba93502b50eceb",
+      "会话状态": "有效",
+      "创建时间": "2026-10-14T02:55:32.877Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-10-14T12:58:00.693Z",
+      "来源IP": "10.52.0.159",
+      "用户ID": "employee_18660508236",
+      "用户姓名": "吕悦静",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-14T02:55:32.918Z",
+    "lastModifiedTime": "2026-10-14T12:58:00.900Z"
+  },
+  {
+    "id": "recb7e7qpwZnTGn1evV",
+    "fields": {
+      "令牌哈希": "ffb4b560fdd29b1e0e9d5bd59da7e12c3d285b86b7d8cd3ad18c121b0955c613",
+      "会话ID": "session_40258f420e844031925274bf94c6b5e6",
+      "会话状态": "有效",
+      "创建时间": "2026-10-14T10:10:21.810Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 QuarkPC/7.3.5.1010",
+      "最近访问时间": "2026-10-19T03:02:24.993Z",
+      "来源IP": "10.52.0.159",
+      "用户ID": "employee_18553566058",
+      "用户姓名": "王亚雯",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-14T10:10:21.853Z",
+    "lastModifiedTime": "2026-10-19T03:02:25.102Z"
+  },
+  {
+    "id": "recabiv55T4A1ep7sAY",
+    "fields": {
+      "令牌哈希": "723427b07fd3b5cb6373619b028af816211ec978fab19f1418e87fe536d4d011",
+      "会话ID": "session_25f47b533f984c75afaa9d46906aa60d",
+      "会话状态": "有效",
+      "创建时间": "2026-10-14T12:49:57.876Z",
+      "客户端信息": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 NetType/WIFI MicroMessenger/7.0.20.1781(0x6700143B) MacWechat/3.8.7(0x13080712) UnifiedPCMacWechat(0xf2641d55) XWEB/25511 Flue",
+      "最近访问时间": "2026-10-14T12:51:51.881Z",
+      "来源IP": "10.52.0.159",
+      "用户ID": "employee_15022319673",
+      "用户姓名": "李喆",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-14T12:49:57.917Z",
+    "lastModifiedTime": "2026-10-14T12:51:51.995Z"
+  },
+  {
+    "id": "recbNNxDMz95F5YY4WV",
+    "fields": {
+      "令牌哈希": "ced66312ea590d60eddf2a4ccbedbd5e8b4ae60a7f05f3153abcf0992928bb86",
+      "会话ID": "session_7e70750edc7a47589f85676a8fc0602d",
+      "会话状态": "有效",
+      "创建时间": "2026-10-14T12:59:06.987Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-10-26T02:26:23.058Z",
+      "来源IP": "10.52.0.141",
+      "用户ID": "employee_18660508236",
+      "用户姓名": "吕悦静",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-14T12:59:07.027Z",
+    "lastModifiedTime": "2026-10-26T02:26:23.164Z"
+  },
+  {
+    "id": "recw7pDULuZEn47AeE7",
+    "fields": {
+      "令牌哈希": "bcd55129c34155b5cdf05a99dbb8942d0b8e9e6b3dab6cb6d792e7c0a22cbc13",
+      "会话ID": "session_1e16fb6f2b3d45a1a0c3bf9a31a2ec85",
+      "会话状态": "有效",
+      "创建时间": "2026-10-14T14:03:55.685Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-10-24T11:05:16.509Z",
+      "来源IP": "10.52.0.159",
+      "用户ID": "employee_13188537381",
+      "用户姓名": "张杰",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-14T14:03:55.730Z",
+    "lastModifiedTime": "2026-10-24T11:05:16.635Z"
+  },
+  {
+    "id": "recNb5Sm7Dl72nZficU",
+    "fields": {
+      "令牌哈希": "704172a22f08090fb24eb4547eb89a7bd08c449c7556e6621dfdf53b0e11b6c7",
+      "会话ID": "session_77c8fdbf855542b086b4f144e4b42a8d",
+      "会话状态": "有效",
+      "创建时间": "2026-10-14T16:34:09.317Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-10-14T16:38:34.078Z",
+      "来源IP": "127.0.0.1",
+      "用户ID": "employee_13188537381",
+      "用户姓名": "张杰",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-14T16:34:09.353Z",
+    "lastModifiedTime": "2026-10-14T16:38:34.172Z"
+  },
+  {
+    "id": "recO9zNFTlSboRnL9ir",
+    "fields": {
+      "令牌哈希": "1e643b8d257b7ed612eb625043fdcee6d82bf08f609334506401ab299c28a6bf",
+      "会话ID": "session_4101fb5e484e4a29aa6488e3169accaf",
+      "会话状态": "有效",
+      "创建时间": "2026-10-15T01:57:03.022Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 QuarkPC/7.3.5.1009",
+      "最近访问时间": "2026-10-15T02:50:01.713Z",
+      "来源IP": "10.52.1.24",
+      "用户ID": "employee_15666647112",
+      "用户姓名": "刘柏汐",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-15T01:57:03.063Z",
+    "lastModifiedTime": "2026-10-15T02:50:01.821Z"
+  },
+  {
+    "id": "rec4SRZS7LseZseA6LP",
+    "fields": {
+      "令牌哈希": "5bf85dc6bfc5d394235ec016d43565cad51c507d9a9fb6f0e2222eea48aa52a7",
+      "会话ID": "session_c362d95c4c5743eda5e3cce283855101",
+      "会话状态": "有效",
+      "创建时间": "2026-10-15T02:01:54.685Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-10-15T03:04:58.171Z",
+      "来源IP": "127.0.0.1",
+      "用户ID": "employee_13188537381",
+      "用户姓名": "张杰",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-15T02:01:54.723Z",
+    "lastModifiedTime": "2026-10-15T03:04:58.274Z"
+  },
+  {
+    "id": "recaaZcL99OG12EJ03E",
+    "fields": {
+      "令牌哈希": "68be711fc85606ec37bde96123844171e3d53b41a293c83771d8d087cf7ead6d",
+      "会话ID": "session_78bfb60b249e4dae90b2a7d9a7905915",
+      "会话状态": "有效",
+      "创建时间": "2026-10-15T02:18:07.422Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-10-15T02:20:54.757Z",
+      "来源IP": "10.50.98.40",
+      "用户ID": "employee_18305357014",
+      "用户姓名": "梁玥",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-15T02:18:07.466Z",
+    "lastModifiedTime": "2026-10-15T02:20:54.857Z"
+  },
+  {
+    "id": "receq9xF1OAlHrtJE7U",
+    "fields": {
+      "令牌哈希": "505813d1ec89034e2b82e917d5253ad2cbc7a83fcb6f0c6b6bdb616dce5dc468",
+      "会话ID": "session_86998dc93fee474fbfa755e36ddd103c",
+      "会话状态": "已退出",
+      "创建时间": "2026-10-15T08:35:36.712Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 QuarkPC/7.4.0.1013",
+      "最近访问时间": "2026-10-15T09:11:14.542Z",
+      "来源IP": "10.52.1.24",
+      "用户ID": "employee_18053516269",
+      "用户姓名": "王雪婷",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z",
+      "退出时间": "2026-10-15T09:11:33.239Z"
+    },
+    "createdTime": "2026-10-15T08:35:36.764Z",
+    "lastModifiedTime": "2026-10-15T09:11:33.284Z"
+  },
+  {
+    "id": "recvDOJRmeuleXk57Ev",
+    "fields": {
+      "令牌哈希": "be8a101a8033d872ea35b7de8240b2f57e829c74e237b67ded473ce4202fbcdd",
+      "会话ID": "session_89c6a95b97204382a2ae909d67fba8e6",
+      "会话状态": "已退出",
+      "创建时间": "2026-10-15T09:11:46.544Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 QuarkPC/7.4.0.1013",
+      "最近访问时间": "2026-10-19T06:20:50.025Z",
+      "来源IP": "10.50.98.40",
+      "用户ID": "employee_15560662672",
+      "用户姓名": "黄超",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z",
+      "退出时间": "2026-10-19T06:20:54.648Z"
+    },
+    "createdTime": "2026-10-15T09:11:46.586Z",
+    "lastModifiedTime": "2026-10-19T06:20:54.700Z"
+  },
+  {
+    "id": "recKGcGdr2wSqmjysYx",
+    "fields": {
+      "令牌哈希": "445fb80a6443f91a60e5993873b66d686f76bd82ee77212cfc2ecdff2039cfc6",
+      "会话ID": "session_55641cea5afc443cb3209cb4b2afc849",
+      "会话状态": "有效",
+      "创建时间": "2026-10-15T09:28:16.840Z",
+      "客户端信息": "curl/8.14.1",
+      "最近访问时间": "2026-10-15T09:28:16.840Z",
+      "来源IP": "127.0.0.1",
+      "用户ID": "45c18957-6c22-46fe-a239-e3ccfa3a6ed5",
+      "用户姓名": "高子云",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-15T09:28:16.877Z"
+  },
+  {
+    "id": "reccBGTOD2PEQVduiXV",
+    "fields": {
+      "令牌哈希": "08140a5deadfbf2e4820584b5b719941cae7f6458f35b85912705b05821887d0",
+      "会话ID": "session_317d7497a4894682b682321f665c2641",
+      "会话状态": "有效",
+      "创建时间": "2026-10-15T09:28:22.946Z",
+      "客户端信息": "curl/8.14.1",
+      "最近访问时间": "2026-10-15T09:28:22.946Z",
+      "来源IP": "127.0.0.1",
+      "用户ID": "45c18957-6c22-46fe-a239-e3ccfa3a6ed5",
+      "用户姓名": "高子云",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-15T09:28:22.985Z"
+  },
+  {
+    "id": "recNGFFTBFoYsAaMudk",
+    "fields": {
+      "令牌哈希": "674c72adb9843739cc8e33c042ec850e7202b7961315a74beee9b2c09a2fe1e2",
+      "会话ID": "session_eead8ef70a5e4a67a24f7545c6f492e1",
+      "会话状态": "已退出",
+      "创建时间": "2026-10-15T09:30:03.161Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-10-22T07:50:41.032Z",
+      "来源IP": "10.50.98.40",
+      "用户ID": "employee_18848131546",
+      "用户姓名": "李思奇",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z",
+      "退出时间": "2026-10-22T07:50:43.535Z"
+    },
+    "createdTime": "2026-10-15T09:30:03.211Z",
+    "lastModifiedTime": "2026-10-22T07:50:43.580Z"
+  },
+  {
+    "id": "rec84oA51AY1nDIxiT0",
+    "fields": {
+      "令牌哈希": "1c5b2ce06451625aa45a1fd0fedbbf5123828eda33b09246666ae7ab0d7742ed",
+      "会话ID": "session_9abc4379b9eb4020a320776f4ab16b8e",
+      "会话状态": "有效",
+      "创建时间": "2026-10-15T11:03:26.932Z",
+      "客户端信息": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko)  Mobile/15E148 wxwork/5.0.12 MicroMessenger/7.0.1 Language/zh ColorScheme/Light wwmver/3.26.511.377",
+      "最近访问时间": "2026-10-15T11:03:27.990Z",
+      "来源IP": "10.50.98.40",
+      "用户ID": "employee_18848131546",
+      "用户姓名": "李思奇",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-15T11:03:26.974Z",
+    "lastModifiedTime": "2026-10-15T11:03:28.086Z"
+  },
+  {
+    "id": "recWMmXpz9HoXFedlQ0",
+    "fields": {
+      "令牌哈希": "8fa039ef45b5e3aff9919daa4f38d9866adcea50c7ebe9da28be1ad9ea96a3ae",
+      "会话ID": "session_7e7d080deb0445c58fecfbbf4eadc53c",
+      "会话状态": "有效",
+      "创建时间": "2026-10-15T15:39:54.144Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36 Edg/155.0.0.0",
+      "最近访问时间": "2026-10-23T08:58:18.984Z",
+      "来源IP": "10.52.1.24",
+      "用户ID": "45c18957-6c22-46fe-a239-e3ccfa3a6ed5",
+      "用户姓名": "高子云",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-15T15:39:54.182Z",
+    "lastModifiedTime": "2026-10-23T08:58:19.107Z"
+  },
+  {
+    "id": "rec3eXyNlufoysiCFWk",
+    "fields": {
+      "令牌哈希": "39dbd2820b356fe679c0658dff34abeeb6184a6fed98792eed0468465d3b1bc5",
+      "会话ID": "session_8e23ab3cdfcb4eec8c3f9954a91e17eb",
+      "会话状态": "有效",
+      "创建时间": "2026-10-16T01:47:18.992Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36 Edg/135.0.0.0",
+      "最近访问时间": "2026-10-16T01:50:58.044Z",
+      "来源IP": "10.50.98.40",
+      "用户ID": "employee_18153544292",
+      "用户姓名": "黄川夏",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-16T01:47:19.033Z",
+    "lastModifiedTime": "2026-10-16T01:50:58.172Z"
+  },
+  {
+    "id": "recAPkv69tmqGsSQL7r",
+    "fields": {
+      "令牌哈希": "1de7315ad4c7584f800708117f92743ce15f8dc2cab704006ea98d892bf3daa1",
+      "会话ID": "session_b02fa62bb61647828a1c8ad4b8cb97e3",
+      "会话状态": "有效",
+      "创建时间": "2026-10-16T01:53:31.068Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36 Edg/155.0.0.0",
+      "最近访问时间": "2026-10-26T01:11:00.856Z",
+      "来源IP": "10.50.98.40",
+      "用户ID": "employee_18953703826",
+      "用户姓名": "李冰洁",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-16T01:53:31.120Z",
+    "lastModifiedTime": "2026-10-26T01:11:00.966Z"
+  },
+  {
+    "id": "recagQZFd2Bibqglgnw",
+    "fields": {
+      "令牌哈希": "4a4d4883e20701a2c003f404714d38ae46f1df6bf2c43191191f32afb94cb700",
+      "会话ID": "session_045a65b2ab514ab1a734688de73821b7",
+      "会话状态": "有效",
+      "创建时间": "2026-10-16T01:59:34.186Z",
+      "客户端信息": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_6_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko)  Mobile/15E148 wxwork/5.0.10 MicroMessenger/7.0.1 Language/zh ColorScheme/Light wwmver/3.26.510.373",
+      "最近访问时间": "2026-10-16T02:04:55.310Z",
+      "来源IP": "10.50.98.40",
+      "用户ID": "45c18957-6c22-46fe-a239-e3ccfa3a6ed5",
+      "用户姓名": "高子云",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-16T01:59:34.230Z",
+    "lastModifiedTime": "2026-10-16T02:04:55.407Z"
+  },
+  {
+    "id": "reclwKTLv0Z03apQT8F",
+    "fields": {
+      "令牌哈希": "c51edf735de6491176f9cf6f452880ec6c757a86f5461cadcdc566bb5f9211fa",
+      "会话ID": "session_c1d8625ee7474d979af7e9337e31c975",
+      "会话状态": "有效",
+      "创建时间": "2026-10-16T02:03:04.504Z",
+      "客户端信息": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko)  Mobile/15E148 wxwork/5.0.12 MicroMessenger/7.0.1 Language/zh ColorScheme/Light wwmver/3.26.511.377",
+      "最近访问时间": "2026-10-16T02:07:07.560Z",
+      "来源IP": "10.50.98.40",
+      "用户ID": "employee_13287957162",
+      "用户姓名": "王甜雨",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-16T02:03:04.548Z",
+    "lastModifiedTime": "2026-10-16T02:07:07.677Z"
+  },
+  {
+    "id": "recKKhzd9fevA1QN14Q",
+    "fields": {
+      "令牌哈希": "1c6cd31a5b56bb72a352122c0ead32f87bef1ff75f3f464ebeb6418c4da227db",
+      "会话ID": "session_43f4c80ec74c4a8eab6636f636aa45e2",
+      "会话状态": "有效",
+      "创建时间": "2026-10-16T02:14:35.609Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36 Edg/155.0.0.0",
+      "最近访问时间": "2026-10-20T06:40:51.761Z",
+      "来源IP": "10.50.98.40",
+      "用户ID": "employee_18563481688",
+      "用户姓名": "朱隆端",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-16T02:14:35.654Z",
+    "lastModifiedTime": "2026-10-20T06:40:51.884Z"
+  },
+  {
+    "id": "rec63oZrvs85if9lkGl",
+    "fields": {
+      "令牌哈希": "bf816bed6bb6a8249bd660a9bf63170a2a8fa66629c3ccfbc7fcb4e0a8ef5d2f",
+      "会话ID": "session_f192b690652f42369b814f9df419f3c6",
+      "会话状态": "有效",
+      "创建时间": "2026-10-16T05:43:34.025Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36 Edg/155.0.0.0",
+      "最近访问时间": "2026-10-16T05:43:35.016Z",
+      "来源IP": "10.52.1.24",
+      "用户ID": "employee_19327603296",
+      "用户姓名": "孔绣芃",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-16T05:43:34.062Z",
+    "lastModifiedTime": "2026-10-16T05:43:35.118Z"
+  },
+  {
+    "id": "recjVHQLaNowOpshHBw",
+    "fields": {
+      "令牌哈希": "98ebe2db405af0f779ee4b1fcf146f8cfd3117d0dd507b35251f9ef117b6252d",
+      "会话ID": "session_18ded26d7e4c46118acb4cd2204da00b",
+      "会话状态": "有效",
+      "创建时间": "2026-10-16T06:18:12.513Z",
+      "客户端信息": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Language/zh ColorScheme/Light DistType/publish-store wxwork/5.0.12 (MicroMessenger/6.2) WeChat/2.0.4 wwmver/3.26.511.614 Safari/605.1.15",
+      "最近访问时间": "2026-10-16T06:18:13.915Z",
+      "来源IP": "10.50.98.40",
+      "用户ID": "employee_15563833671",
+      "用户姓名": "周文博",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-16T06:18:12.553Z",
+    "lastModifiedTime": "2026-10-16T06:18:14.024Z"
+  },
+  {
+    "id": "recY8GEv1kv1wYchDMP",
+    "fields": {
+      "令牌哈希": "0bd2f199d91181f9589970aa4a6f6bd1a0eb3ed5f2ed6af52bff399ad6432a53",
+      "会话ID": "session_eeb0027d0b794bd38262c539215f67ae",
+      "会话状态": "有效",
+      "创建时间": "2026-10-16T08:21:42.598Z",
+      "客户端信息": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Language/zh ColorScheme/Light DistType/publish-store wxwork/5.0.12 (MicroMessenger/6.2) WeChat/2.0.4 wwmver/3.26.511.614 Safari/605.1.15",
+      "最近访问时间": "2026-10-16T08:36:17.726Z",
+      "来源IP": "10.50.98.40",
+      "用户ID": "employee_17564001258",
+      "用户姓名": "刘晓苏",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-16T08:21:42.638Z",
+    "lastModifiedTime": "2026-10-16T08:36:17.840Z"
+  },
+  {
+    "id": "recP0JFtpDFN51lvOC2",
+    "fields": {
+      "令牌哈希": "c65bc3f45766cdbbbedb72680e42aaf78c5cb84111d35600b373ab47506a0f0f",
+      "会话ID": "session_5596d224784d43a3b84a129bf939f88e",
+      "会话状态": "有效",
+      "创建时间": "2026-10-16T08:36:12.995Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-10-21T08:28:06.347Z",
+      "来源IP": "10.50.98.40",
+      "用户ID": "employee_15666468973",
+      "用户姓名": "李凯",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-16T08:36:13.035Z",
+    "lastModifiedTime": "2026-10-21T08:28:06.459Z"
+  },
+  {
+    "id": "recL9FBvHsR2S6T1tbP",
+    "fields": {
+      "令牌哈希": "dac021b9e83b13e256fb03021d55279c56d41ac9b83c5777626edbc5dd5c0328",
+      "会话ID": "session_09c9feecdaab429098ee28fda01747f9",
+      "会话状态": "有效",
+      "创建时间": "2026-10-16T13:28:46.521Z",
+      "客户端信息": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.6.2 Safari/605.1.15",
+      "最近访问时间": "2026-10-24T10:02:18.572Z",
+      "来源IP": "10.52.1.24",
+      "用户ID": "employee_13287953891",
+      "用户姓名": "张晓霞",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-16T13:28:46.562Z",
+    "lastModifiedTime": "2026-10-24T10:02:18.668Z"
+  },
+  {
+    "id": "recRiKvNUFdtAMexJEn",
+    "fields": {
+      "令牌哈希": "8892c38b73c987bfbf5082e0d0b35615c42869271e2eb088b2dcbb1123e1d5ee",
+      "会话ID": "session_c2f3ba7eeb3440ad9727f305380f1f46",
+      "会话状态": "有效",
+      "创建时间": "2026-10-16T14:55:23.335Z",
+      "客户端信息": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko)  Mobile/15E148 wxwork/5.0.12 MicroMessenger/7.0.1 Language/zh ColorScheme/Light wwmver/3.26.511.377",
+      "最近访问时间": "2026-10-16T14:55:24.413Z",
+      "来源IP": "10.52.1.24",
+      "用户ID": "employee_15065790441",
+      "用户姓名": "黄小峰",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-16T14:55:23.374Z",
+    "lastModifiedTime": "2026-10-16T14:55:24.511Z"
+  },
+  {
+    "id": "rec5FiNy3QXJ5DP7Z0r",
+    "fields": {
+      "令牌哈希": "8c98941b71d8c549cad060f92bfe107cfd65b69c6954dcd04672ca4899b89bb6",
+      "会话ID": "session_fab80f0e2ffe404e9138c39e4b77f41c",
+      "会话状态": "有效",
+      "创建时间": "2026-10-17T02:27:22.202Z",
+      "客户端信息": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36 NetType/WIFI MicroMessenger/7.0.20.1781(0x6700143B) MacWechat/3.8.7(0x13080712) UnifiedPCMacWechat(0xf26412f1) XWEB/16816 Flue",
+      "最近访问时间": "2026-10-19T09:31:44.919Z",
+      "来源IP": "10.50.98.40",
+      "用户ID": "employee_15615882481",
+      "用户姓名": "王姝贤",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-17T02:27:22.243Z",
+    "lastModifiedTime": "2026-10-19T09:31:45.032Z"
+  },
+  {
+    "id": "rec8WvIV7rDPUIfnhNn",
+    "fields": {
+      "令牌哈希": "e8b8f79bd937d22acadcde2dace926e34422d984be08a302f9aefba2c44d4674",
+      "会话ID": "session_237e916da00943faadfa051431402db6",
+      "会话状态": "有效",
+      "创建时间": "2026-10-17T05:58:35.954Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-10-22T03:56:28.583Z",
+      "来源IP": "10.52.1.24",
+      "用户ID": "employee_19255352955",
+      "用户姓名": "邹馨颖",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-17T05:58:35.994Z",
+    "lastModifiedTime": "2026-10-22T03:56:28.695Z"
+  },
+  {
+    "id": "recBsXEx0R1yI4ss7sk",
+    "fields": {
+      "令牌哈希": "9bab0cd29097fbf04e5782fc7c4f6571e5ef69eb003e85e76ffcb0375d8af82d",
+      "会话ID": "session_903a4311203241b9983460a6a47f66a9",
+      "会话状态": "有效",
+      "创建时间": "2026-10-17T12:18:04.176Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 SLBrowser/9.0.8.9131 SLBChan/25 SLBVPV/64-bit",
+      "最近访问时间": "2026-10-17T12:35:16.197Z",
+      "来源IP": "10.52.1.24",
+      "用户ID": "employee_18753553757",
+      "用户姓名": "娄天悦",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-17T12:18:04.223Z",
+    "lastModifiedTime": "2026-10-17T12:35:16.314Z"
+  },
+  {
+    "id": "rec0yEqaz1Jeir7Tpws",
+    "fields": {
+      "令牌哈希": "fecce38855ab0300c6adb72f6198e5ebe2b81c22070ad872b21c680a26ed7d31",
+      "会话ID": "session_c438b82c43e04b6b8865fba5d902299a",
+      "会话状态": "有效",
+      "创建时间": "2026-10-17T13:58:56.303Z",
+      "客户端信息": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko)  Mobile/15E148 wxwork/5.0.12 MicroMessenger/7.0.1 Language/zh ColorScheme/Light wwmver/3.26.511.377",
+      "最近访问时间": "2026-10-17T13:58:57.449Z",
+      "来源IP": "10.52.1.24",
+      "用户ID": "employee_17853505506",
+      "用户姓名": "沈若男",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-17T13:58:56.348Z",
+    "lastModifiedTime": "2026-10-17T13:58:57.560Z"
+  },
+  {
+    "id": "recZSRPSvd8LUfdAt8T",
+    "fields": {
+      "令牌哈希": "9b1b831f00435a00f94052c52e77c1835bc8fcf1638cb0ead47f2d833bf0aac3",
+      "会话ID": "session_37d242584a8f42a68d088cde6a9d3076",
+      "会话状态": "有效",
+      "创建时间": "2026-10-18T14:17:09.071Z",
+      "客户端信息": "curl/8.14.1",
+      "最近访问时间": "2026-10-18T14:17:09.071Z",
+      "来源IP": "127.0.0.1",
+      "用户ID": "employee_17353508121",
+      "用户姓名": "孟令珅",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-18T14:17:09.109Z"
+  },
+  {
+    "id": "recBWdjyYl4liX1TGzP",
+    "fields": {
+      "令牌哈希": "8981fc4c94d8938b8b8e3ab480868497fe2600c3e99033684b42247259678594",
+      "会话ID": "session_c923d4783f7d47719154a4bf6197228d",
+      "会话状态": "有效",
+      "创建时间": "2026-10-18T14:17:36.814Z",
+      "客户端信息": "curl/8.14.1",
+      "最近访问时间": "2026-10-18T14:17:36.814Z",
+      "来源IP": "127.0.0.1",
+      "用户ID": "employee_17353508121",
+      "用户姓名": "孟令珅",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-18T14:17:36.856Z"
+  },
+  {
+    "id": "rec6PK0cup5fvSlZSJF",
+    "fields": {
+      "令牌哈希": "83bac51b5a26e8a866b371f3f47525f4bd69085653a62d68166689cbd988acab",
+      "会话ID": "session_c0998c84c0544acebc1748f81572d6fe",
+      "会话状态": "有效",
+      "创建时间": "2026-10-18T14:17:49.578Z",
+      "客户端信息": "curl/8.14.1",
+      "最近访问时间": "2026-10-18T14:17:49.578Z",
+      "来源IP": "127.0.0.1",
+      "用户ID": "45c18957-6c22-46fe-a239-e3ccfa3a6ed5",
+      "用户姓名": "高子云",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-18T14:17:49.619Z"
+  },
+  {
+    "id": "recqpexxVTey5dy89UW",
+    "fields": {
+      "令牌哈希": "52ef16b206eb20a1e939e7851c2ecb94d97e4a7cdc10b18f5cc5d1256bbfbacb",
+      "会话ID": "session_67a46cec33a147039b628fe27224ef96",
+      "会话状态": "有效",
+      "创建时间": "2026-10-18T14:18:53.455Z",
+      "客户端信息": "curl/8.14.1",
+      "最近访问时间": "2026-10-18T14:18:53.455Z",
+      "来源IP": "127.0.0.1",
+      "用户ID": "employee_17353508121",
+      "用户姓名": "孟令珅",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-18T14:18:53.501Z"
+  },
+  {
+    "id": "recKuclNdDiVBOib4IO",
+    "fields": {
+      "令牌哈希": "fcb4de5c8937cc0bc83f54b3a2431dec2776c887ba2760ac7f549eaee47d1e2f",
+      "会话ID": "session_ca8b533d5b9f49428c793f1aed587347",
+      "会话状态": "有效",
+      "创建时间": "2026-10-19T01:46:42.486Z",
+      "客户端信息": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_6_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko)  Mobile/15E148 wxwork/5.0.12 MicroMessenger/7.0.1 Language/zh ColorScheme/Light wwmver/3.26.511.377",
+      "最近访问时间": "2026-10-19T01:51:00.537Z",
+      "来源IP": "10.52.1.24",
+      "用户ID": "employee_15666050704",
+      "用户姓名": "逄昆鹏",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-19T01:46:42.527Z",
+    "lastModifiedTime": "2026-10-19T01:51:00.796Z"
+  },
+  {
+    "id": "recg4BzjZOhLD4i8SLk",
+    "fields": {
+      "令牌哈希": "42fd6d83c4a89385a54a836c01eb4eb576b39aaad02ba660d056332782fbff99",
+      "会话ID": "session_166f1b5c26344f18b12305f8306ba594",
+      "会话状态": "有效",
+      "创建时间": "2026-10-19T02:02:17.526Z",
+      "客户端信息": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko)  Mobile/15E148 wxwork/5.0.12 MicroMessenger/7.0.1 Language/zh ColorScheme/Light wwmver/3.26.511.377",
+      "最近访问时间": "2026-10-19T02:09:47.221Z",
+      "来源IP": "10.50.98.40",
+      "用户ID": "employee_18865557382",
+      "用户姓名": "王晓燕",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-19T02:02:17.567Z",
+    "lastModifiedTime": "2026-10-19T02:09:47.328Z"
+  },
+  {
+    "id": "recEv9xM5bir8BuW6fU",
+    "fields": {
+      "令牌哈希": "8e17a4134b855b972442db1cb02d77e2fb519db3da373f8a84f32d5063266fab",
+      "会话ID": "session_1be18ebf812b41f38b0b279cd6c72c6d",
+      "会话状态": "有效",
+      "创建时间": "2026-10-19T05:18:55.149Z",
+      "客户端信息": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Language/zh ColorScheme/Light DistType/publish-website wxwork/5.0.12 (MicroMessenger/6.2) WeChat/2.0.4 wwmver/3.26.511.614 Safari/605.1.15",
+      "最近访问时间": "2026-10-21T13:16:45.794Z",
+      "来源IP": "10.52.1.24",
+      "用户ID": "employee_15254596180",
+      "用户姓名": "于静平",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-19T05:18:55.188Z",
+    "lastModifiedTime": "2026-10-21T13:16:45.893Z"
+  },
+  {
+    "id": "recL8Dpu9ai4xQxnbbB",
+    "fields": {
+      "令牌哈希": "3283e667338b2b4e2f6694c89f8625e0fad3a03f17f7ee1687d6509b66fda858",
+      "会话ID": "session_75a0be6e73fe4f6594df6e9b4a537635",
+      "会话状态": "已退出",
+      "创建时间": "2026-10-19T06:21:01.584Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 QuarkPC/7.4.0.1013",
+      "最近访问时间": "2026-10-19T07:00:49.493Z",
+      "来源IP": "10.52.1.24",
+      "用户ID": "employee_18053516269",
+      "用户姓名": "王雪婷",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z",
+      "退出时间": "2026-10-19T07:01:19.436Z"
+    },
+    "createdTime": "2026-10-19T06:21:01.629Z",
+    "lastModifiedTime": "2026-10-19T07:01:19.483Z"
+  },
+  {
+    "id": "reckiQNERVUsWtDZvkW",
+    "fields": {
+      "令牌哈希": "c70983f2f91e0466c46137c30dd326beacdb59d8622518f25204e3059f5d8873",
+      "会话ID": "session_159267b198074d10b4bc02edf37ff33b",
+      "会话状态": "有效",
+      "创建时间": "2026-10-19T08:41:56.124Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.6668.101 Safari/537.36 Language/zh ColorScheme/Light wxwork/5.0.12 (MicroMessenger/6.2) WindowsWechat  MailPlugin_Electron WeMail embeddisk wwmver/3.26.511.637 noMediaCs/false",
+      "最近访问时间": "2026-10-19T09:47:29.774Z",
+      "来源IP": "10.52.1.24",
+      "用户ID": "employee_17353508121",
+      "用户姓名": "孟令珅",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-19T08:41:56.167Z",
+    "lastModifiedTime": "2026-10-19T09:47:29.881Z"
+  },
+  {
+    "id": "recgPvi0bxLuvYUcukY",
+    "fields": {
+      "令牌哈希": "10d817a68a9ac295217085afd9db76516c58f7eda96e30c45ac5223e0aa69b49",
+      "会话ID": "session_80729a80543d4c5ab9c93097d1b4220f",
+      "会话状态": "有效",
+      "创建时间": "2026-10-19T09:31:26.885Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36 Edg/135.0.0.0",
+      "最近访问时间": "2026-10-19T10:00:35.641Z",
+      "来源IP": "10.50.98.40",
+      "用户ID": "employee_19323168661",
+      "用户姓名": "屠文博",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-19T09:31:26.928Z",
+    "lastModifiedTime": "2026-10-19T10:00:35.742Z"
+  },
+  {
+    "id": "recejEgGudARCR9fLRd",
+    "fields": {
+      "令牌哈希": "1c016a68216d9c4ea6d95e14278a7837415eee7d701d63518431dda006aea129",
+      "会话ID": "session_76bb0a6503e846c4882dd016b324e8ad",
+      "会话状态": "有效",
+      "创建时间": "2026-10-19T10:11:32.178Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-10-19T10:33:19.833Z",
+      "来源IP": "10.50.98.40",
+      "用户ID": "employee_18660052939",
+      "用户姓名": "于瀚",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-19T10:11:32.222Z",
+    "lastModifiedTime": "2026-10-19T10:33:19.949Z"
+  },
+  {
+    "id": "recLohzboKys333YMuj",
+    "fields": {
+      "令牌哈希": "d91fddc509c5846e63ed52ec15296740c826eee0ddc30607b3eb3123fb6643c2",
+      "会话ID": "session_73fa650480144e3194b857aa5c014697",
+      "会话状态": "有效",
+      "创建时间": "2026-10-19T10:38:36.387Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-10-19T11:21:02.215Z",
+      "来源IP": "127.0.0.1",
+      "用户ID": "45c18957-6c22-46fe-a239-e3ccfa3a6ed5",
+      "用户姓名": "高子云",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-19T10:38:36.426Z",
+    "lastModifiedTime": "2026-10-19T11:21:02.356Z"
+  },
+  {
+    "id": "recEG2VsEoUlnBKR7yG",
+    "fields": {
+      "令牌哈希": "d622cef4eb7326615d9c03b5547e44b3207c058910295ca46304837519812aed",
+      "会话ID": "session_44fb5cf374dd49e18aec174fb22055f6",
+      "会话状态": "有效",
+      "创建时间": "2026-10-19T10:53:57.154Z",
+      "客户端信息": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 NetType/WIFI MicroMessenger/7.0.20.1781(0x6700143B) MacWechat/3.8.7(0x13080712) UnifiedPCMacWechat(0xf2641d55) XWEB/25511 Flue",
+      "最近访问时间": "2026-10-19T10:53:58.335Z",
+      "来源IP": "10.50.98.40",
+      "用户ID": "employee_15022319673",
+      "用户姓名": "李喆",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-19T10:53:57.199Z",
+    "lastModifiedTime": "2026-10-19T10:53:58.461Z"
+  },
+  {
+    "id": "recWtenbsaCxdNx2SpF",
+    "fields": {
+      "令牌哈希": "b0a3301eb9407bf8c21d7722dfaf8ac24f076caca550f5822d89ebf71671aa74",
+      "会话ID": "session_ef62aba3ed25406097c613479cfd365e",
+      "会话状态": "有效",
+      "创建时间": "2026-10-19T11:47:15.821Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 QuarkPC/7.4.0.1013",
+      "最近访问时间": "2026-10-21T11:04:54.421Z",
+      "来源IP": "10.50.98.40",
+      "用户ID": "employee_18053516269",
+      "用户姓名": "王雪婷",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-19T11:47:15.868Z",
+    "lastModifiedTime": "2026-10-21T11:04:54.563Z"
+  },
+  {
+    "id": "recyFUgwaJxDwPGrBBK",
+    "fields": {
+      "令牌哈希": "91c3ae1de45e6761c9e2bad2d4852889583308de3b21ddb089a02d3b96748a75",
+      "会话ID": "session_63c8cbc37ba54fd7b9cb158eb74b3efa",
+      "会话状态": "有效",
+      "创建时间": "2026-10-19T12:04:58.212Z",
+      "客户端信息": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko)  Mobile/15E148 wxwork/5.0.12 MicroMessenger/7.0.1 Language/zh ColorScheme/Dark wwmver/3.26.511.377",
+      "最近访问时间": "2026-10-21T02:16:07.716Z",
+      "来源IP": "10.50.98.40",
+      "用户ID": "employee_15666468973",
+      "用户姓名": "李凯",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-19T12:04:58.255Z",
+    "lastModifiedTime": "2026-10-21T02:16:07.830Z"
+  },
+  {
+    "id": "recUtnbfo6ecpYCgZyr",
+    "fields": {
+      "令牌哈希": "996aa9137a593290236de06e264addbe7cbd8ff14cb0f5d757fdffc3d08c1f0f",
+      "会话ID": "session_f2fa06f3bde24b7f8d1347d0964adb6e",
+      "会话状态": "有效",
+      "创建时间": "2026-10-19T12:05:59.582Z",
+      "客户端信息": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko)  Mobile/15E148 wxwork/5.0.12 MicroMessenger/7.0.1 Language/zh ColorScheme/Dark wwmver/3.26.511.377",
+      "最近访问时间": "2026-10-19T12:06:01.040Z",
+      "来源IP": "10.52.1.24",
+      "用户ID": "employee_15506495195",
+      "用户姓名": "侯诺亚",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-19T12:05:59.622Z",
+    "lastModifiedTime": "2026-10-19T12:06:01.150Z"
+  },
+  {
+    "id": "recPAAcU9CdzwRMJ5vq",
+    "fields": {
+      "令牌哈希": "8b4918adc9850ac462aa078f08bcfcbc78f7805be34574a63eaf607e517ad89b",
+      "会话ID": "session_f3d35b5e023244c8b7fb2a114c9ee216",
+      "会话状态": "有效",
+      "创建时间": "2026-10-19T12:14:15.641Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-10-19T14:44:38.524Z",
+      "来源IP": "127.0.0.1",
+      "用户ID": "45c18957-6c22-46fe-a239-e3ccfa3a6ed5",
+      "用户姓名": "高子云",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-19T12:14:15.679Z",
+    "lastModifiedTime": "2026-10-19T14:44:38.658Z"
+  },
+  {
+    "id": "rec4Ks9PiIEYnpZfHO1",
+    "fields": {
+      "令牌哈希": "0500df270de8d4decf03457e0db5cc33c48abcab3c7a5a4fbd61920ac1f62386",
+      "会话ID": "session_d96ed6fac5cb404bb09ecc79809788c0",
+      "会话状态": "有效",
+      "创建时间": "2026-10-19T14:22:46.741Z",
+      "客户端信息": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Language/zh ColorScheme/Light DistType/publish-website wxwork/5.0.12 (MicroMessenger/6.2) WeChat/2.0.4 wwmver/3.26.511.614 Safari/605.1.15",
+      "最近访问时间": "2026-10-19T14:22:47.688Z",
+      "来源IP": "10.50.98.40",
+      "用户ID": "employee_17862807655",
+      "用户姓名": "张晗",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-19T14:22:46.787Z",
+    "lastModifiedTime": "2026-10-19T14:22:47.795Z"
+  },
+  {
+    "id": "recHtauTVGLyHZX5Q6N",
+    "fields": {
+      "令牌哈希": "7fbe2a65c37bca9b76698edbc68e33feac049cf6a275c0778f6e9491964d8edd",
+      "会话ID": "session_10185319f8384aa3bcb7abe3efe66494",
+      "会话状态": "有效",
+      "创建时间": "2026-10-19T14:23:55.755Z",
+      "客户端信息": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.6.2 Safari/605.1.15",
+      "最近访问时间": "2026-10-21T03:27:58.182Z",
+      "来源IP": "10.52.1.24",
+      "用户ID": "employee_17862807655",
+      "用户姓名": "张晗",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-19T14:23:55.797Z",
+    "lastModifiedTime": "2026-10-21T03:27:58.279Z"
+  },
+  {
+    "id": "recCmGD2b6wNnw9ik8G",
+    "fields": {
+      "令牌哈希": "a5da3ca972464ad1ee4f86794afbc2a19eefddaedf3d7a05cbcd040ed2a57f46",
+      "会话ID": "session_efe0afc0a0a64b5288ee58429ac933b5",
+      "会话状态": "有效",
+      "创建时间": "2026-10-19T15:04:48.588Z",
+      "客户端信息": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Language/zh ColorScheme/Light DistType/publish-store wxwork/4.1.36 (MicroMessenger/6.2) WeChat/2.0.4 wwmver/3.26.36.623 Safari/605.1.15",
+      "最近访问时间": "2026-10-19T15:04:48.588Z",
+      "来源IP": "10.50.98.40",
+      "用户ID": "employee_15064584461",
+      "用户姓名": "林颖",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-19T15:04:48.627Z"
+  },
+  {
+    "id": "recILjz7EvFKwJ16OBU",
+    "fields": {
+      "令牌哈希": "b204c5cc186eb44b1d4656cde61ad4d26253bf6320f9d274c632bcac723f79d0",
+      "会话ID": "session_b4aea09f2afb4c82bc21f08e5460e9d3",
+      "会话状态": "有效",
+      "创建时间": "2026-10-19T15:05:19.863Z",
+      "客户端信息": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-10-19T15:06:46.869Z",
+      "来源IP": "10.50.98.40",
+      "用户ID": "employee_15064584461",
+      "用户姓名": "林颖",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-19T15:05:19.904Z",
+    "lastModifiedTime": "2026-10-19T15:06:47.002Z"
+  },
+  {
+    "id": "recODLBSBWKQ4jgmwZj",
+    "fields": {
+      "令牌哈希": "6a197e624ec75918edfb3e7972adb3c62ea4b2b8e12cb90e2eea6868e2b7a096",
+      "会话ID": "session_af953f3f09944e289f1e23fd3d0dc73c",
+      "会话状态": "已退出",
+      "创建时间": "2026-10-19T16:55:41.852Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-10-19T16:57:05.345Z",
+      "来源IP": "127.0.0.1",
+      "用户ID": "employee_18848131546",
+      "用户姓名": "李思奇",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z",
+      "退出时间": "2026-10-19T16:57:05.951Z"
+    },
+    "createdTime": "2026-10-19T16:55:41.890Z",
+    "lastModifiedTime": "2026-10-19T16:57:05.991Z"
+  },
+  {
+    "id": "recXbVWEYNjak0HYiXm",
+    "fields": {
+      "令牌哈希": "dfbeb1e3f167360f75ae40768b83ac73750427b36a0d351f6912b5b2143172b5",
+      "会话ID": "session_bdbb54feadee442f93bf726b26164ef8",
+      "会话状态": "有效",
+      "创建时间": "2026-10-19T16:57:18.150Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-10-19T17:11:01.427Z",
+      "来源IP": "127.0.0.1",
+      "用户ID": "45c18957-6c22-46fe-a239-e3ccfa3a6ed5",
+      "用户姓名": "高子云",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-19T16:57:18.194Z",
+    "lastModifiedTime": "2026-10-19T17:11:01.570Z"
+  },
+  {
+    "id": "recixllcdXoxovG5edU",
+    "fields": {
+      "令牌哈希": "ebf35b953777ee1ed1f23263f457fac99a9bbedcd8263e3250e65d749b70926a",
+      "会话ID": "session_79b3142b72b948dba6cfddb9514d81a1",
+      "会话状态": "有效",
+      "创建时间": "2026-10-20T02:06:19.534Z",
+      "客户端信息": "Mozilla/5.0 (Linux; Android 12; NOH-AN00 Build/HUAWEINOH-AN00; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/146.0.7680.178 Mobile Safari/537.36 XWEB/1460263 MMWEBSDK/20250205 MMWEBID/5104 wxwork/5.0.12 MicroMessenger/7.0.1 NetType/WIFI Language/zh Lang/zh ColorScheme/Light wwmver/3.26.511.637",
+      "最近访问时间": "2026-10-20T02:06:20.692Z",
+      "来源IP": "10.50.98.40",
+      "用户ID": "employee_19975275687",
+      "用户姓名": "孙凯",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-20T02:06:19.578Z",
+    "lastModifiedTime": "2026-10-20T02:06:20.826Z"
+  },
+  {
+    "id": "reckFRUGF5KjkV4ywcQ",
+    "fields": {
+      "令牌哈希": "2359fc30026ed5ecc0474cfe96be68236c5b9cafe51d43038ce0203bf1458176",
+      "会话ID": "session_dfcca09072844b6797ed6725dd12372e",
+      "会话状态": "有效",
+      "创建时间": "2026-10-20T02:43:31.742Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.6668.101 Safari/537.36 Language/zh ColorScheme/Light wxwork/5.0.12 (MicroMessenger/6.2) WindowsWechat  MailPlugin_Electron WeMail embeddisk wwmver/3.26.511.637 noMediaCs/false",
+      "最近访问时间": "2026-10-20T02:43:32.896Z",
+      "来源IP": "10.52.1.24",
+      "用户ID": "employee_15625520910",
+      "用户姓名": "吴悠",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-20T02:43:31.813Z",
+    "lastModifiedTime": "2026-10-20T02:43:33.021Z"
+  },
+  {
+    "id": "recRrLOVpCM9S8o9cb4",
+    "fields": {
+      "令牌哈希": "bb58e7f21760529cc744fde72115088452511bc3cd9edc3be5565b4578f769bd",
+      "会话ID": "session_934122df6c06421593b85765f439742d",
+      "会话状态": "有效",
+      "创建时间": "2026-10-20T02:45:14.353Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36 Edg/155.0.0.0",
+      "最近访问时间": "2026-10-22T05:14:07.724Z",
+      "来源IP": "10.52.1.24",
+      "用户ID": "employee_15625520910",
+      "用户姓名": "吴悠",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-20T02:45:14.408Z",
+    "lastModifiedTime": "2026-10-22T05:14:07.839Z"
+  },
+  {
+    "id": "reczmQyvvAdE8rxTyPI",
+    "fields": {
+      "令牌哈希": "73beae668ae5d7a149069683142f2f79dcb4db87d7456dc9989534605eaccb34",
+      "会话ID": "session_2d38d195a52c400a80e123e20f507aaa",
+      "会话状态": "有效",
+      "创建时间": "2026-10-20T02:57:02.495Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.6668.101 Safari/537.36 Language/zh ColorScheme/Light wxwork/5.0.12 (MicroMessenger/6.2) WindowsWechat  MailPlugin_Electron WeMail embeddisk wwmver/3.26.511.637 noMediaCs/false",
+      "最近访问时间": "2026-10-20T02:57:03.535Z",
+      "来源IP": "10.52.1.24",
+      "用户ID": "employee_19975275687",
+      "用户姓名": "孙凯",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-20T02:57:02.572Z",
+    "lastModifiedTime": "2026-10-20T02:57:03.649Z"
+  },
+  {
+    "id": "reclHhSNCbMTI9gHLEY",
+    "fields": {
+      "令牌哈希": "082a719f60e0084eb0b2bc914dc91aeeab1b49832e75ac27739cf58c86bd3ff0",
+      "会话ID": "session_034177ad3040454d868acf7509990454",
+      "会话状态": "有效",
+      "创建时间": "2026-10-20T03:04:02.989Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 6.2; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.5304.110 Safari/537.36 Language/zh ColorScheme/Light wxwork/5.0.12 (MicroMessenger/6.2) WindowsWechat  MailPlugin_Electron WeMail embeddisk wwmver/3.26.511.637 noMediaCs/true",
+      "最近访问时间": "2026-10-20T03:04:04.090Z",
+      "来源IP": "10.50.98.40",
+      "用户ID": "employee_13853518520",
+      "用户姓名": "曲仕林",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-20T03:04:03.033Z",
+    "lastModifiedTime": "2026-10-20T03:04:04.204Z"
+  },
+  {
+    "id": "recSNnqC1qzqLgBXb8f",
+    "fields": {
+      "令牌哈希": "94757588b22cc1bb2074ed56377d1b1ce465228dfaf51d9af234c311f2b5f942",
+      "会话ID": "session_54e063a517d64419878d393ad3243644",
+      "会话状态": "有效",
+      "创建时间": "2026-10-20T03:48:55.669Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.6668.101 Safari/537.36 Language/zh ColorScheme/Light wxwork/5.0.12 (MicroMessenger/6.2) WindowsWechat  MailPlugin_Electron WeMail embeddisk wwmver/3.26.511.637 noMediaCs/false",
+      "最近访问时间": "2026-10-20T03:48:56.536Z",
+      "来源IP": "10.52.1.24",
+      "用户ID": "employee_15966960983",
+      "用户姓名": "司曜菲",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-20T03:48:55.724Z",
+    "lastModifiedTime": "2026-10-20T03:48:56.636Z"
+  },
+  {
+    "id": "recKqs9Rzhjdgma0O9w",
+    "fields": {
+      "令牌哈希": "48bfdaf6bad4b654876e4d2ee698a940035a337bf0b6f8b86dd3794f183dcaed",
+      "会话ID": "session_db28e81cf3574e6ab6ae61f7f1224089",
+      "会话状态": "有效",
+      "创建时间": "2026-10-20T05:03:57.913Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.6668.101 Safari/537.36 Language/zh ColorScheme/Light wxwork/5.0.12 (MicroMessenger/6.2) WindowsWechat  MailPlugin_Electron WeMail embeddisk wwmver/3.26.511.637 noMediaCs/false",
+      "最近访问时间": "2026-10-20T05:03:58.899Z",
+      "来源IP": "10.52.1.24",
+      "用户ID": "employee_17853505506",
+      "用户姓名": "沈若男",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-20T05:03:57.956Z",
+    "lastModifiedTime": "2026-10-20T05:03:59.011Z"
+  },
+  {
+    "id": "recxH51p4K8lMei4r30",
+    "fields": {
+      "令牌哈希": "c90bb13e9dbbb9f3a7019bc338f59321fdb70263d989b882f5863b221d257d26",
+      "会话ID": "session_094c035a2cde483b8531d991f2066110",
+      "会话状态": "有效",
+      "创建时间": "2026-10-20T06:32:57.560Z",
+      "客户端信息": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.5 Safari/605.1.15",
+      "最近访问时间": "2026-10-23T02:24:01.155Z",
+      "来源IP": "10.52.1.24",
+      "用户ID": "employee_15563833671",
+      "用户姓名": "周文博",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-20T06:32:57.602Z",
+    "lastModifiedTime": "2026-10-23T02:24:01.274Z"
+  },
+  {
+    "id": "recbfDPw5GnxYs7tlM3",
+    "fields": {
+      "令牌哈希": "f78adb986d73d630b9cf54deff321801fb6876980b7314a4bb330eea9c77e1e2",
+      "会话ID": "session_a5c2b6ce6dcc4d7f93f0159c210711c2",
+      "会话状态": "有效",
+      "创建时间": "2026-10-20T08:02:43.927Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-10-24T09:07:39.437Z",
+      "来源IP": "10.50.98.40",
+      "用户ID": "employee_19712066827",
+      "用户姓名": "吕照亮",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-20T08:02:43.970Z",
+    "lastModifiedTime": "2026-10-24T09:07:39.556Z"
+  },
+  {
+    "id": "recBKP8GGeQ2QNT96GG",
+    "fields": {
+      "令牌哈希": "e7f3184bcd8b083e3af182ffc4c9895644b44d3f3cfdeea89b1afa6b4351b2ac",
+      "会话ID": "session_95f13cc245a847ac9e6eeb4fd36c07a3",
+      "会话状态": "有效",
+      "创建时间": "2026-10-20T10:38:02.577Z",
+      "客户端信息": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Language/zh ColorScheme/Light DistType/publish-store wxwork/5.0.11 (MicroMessenger/6.2) WeChat/2.0.4 wwmver/3.26.511.614 Safari/605.1.15",
+      "最近访问时间": "2026-10-20T10:38:03.587Z",
+      "来源IP": "10.50.98.40",
+      "用户ID": "employee_13287953891",
+      "用户姓名": "张晓霞",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-20T10:38:02.629Z",
+    "lastModifiedTime": "2026-10-20T10:38:03.693Z"
+  },
+  {
+    "id": "recJhYwiIXpR0MSED2V",
+    "fields": {
+      "令牌哈希": "f5dfb82f8f66cf6c524dfcf1556cec4e51e86b6fb997309a7d081a34335e76f8",
+      "会话ID": "session_d21527745ded46d09a8bb3d44b03ea11",
+      "会话状态": "有效",
+      "创建时间": "2026-10-21T02:06:30.160Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 NetType/WIFI MicroMessenger/7.0.20.1781(0x6700143B) WindowsWechat(0x63090a13) UnifiedPCWindowsWechat(0xf2541f0d) XWEB/25715 Flue",
+      "最近访问时间": "2026-10-21T02:15:09.321Z",
+      "来源IP": "10.50.98.40",
+      "用户ID": "employee_17861719299",
+      "用户姓名": "魏小雨",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-21T02:06:30.211Z",
+    "lastModifiedTime": "2026-10-21T02:15:09.431Z"
+  },
+  {
+    "id": "recDBoIj3cPaazKlaky",
+    "fields": {
+      "令牌哈希": "d78b5b551a05a9a4bb2ecf7a4fb87a5dee7170effe35405a8eed44d90ab711d9",
+      "会话ID": "session_4cea530c0bce459ab597f16b15ad9583",
+      "会话状态": "有效",
+      "创建时间": "2026-10-21T03:35:58.799Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-10-21T03:35:59.870Z",
+      "来源IP": "10.52.1.24",
+      "用户ID": "employee_13022724688",
+      "用户姓名": "修月磊",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-21T03:35:58.841Z",
+    "lastModifiedTime": "2026-10-21T03:35:59.972Z"
+  },
+  {
+    "id": "recMmI3WKUWwXzzC6b2",
+    "fields": {
+      "令牌哈希": "85e1b08b8af3757959d8672432e7dc7ce5957b6fa538d3c00dc6338c6f3ab986",
+      "会话ID": "session_d041491f51e54870b83dbcc28a76530d",
+      "会话状态": "有效",
+      "创建时间": "2026-10-21T03:40:02.597Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 QuarkPC/7.4.0.1015",
+      "最近访问时间": "2026-10-21T03:52:56.163Z",
+      "来源IP": "10.50.98.40",
+      "用户ID": "employee_15853591983",
+      "用户姓名": "刘广存",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-21T03:40:02.640Z",
+    "lastModifiedTime": "2026-10-21T03:52:56.272Z"
+  },
+  {
+    "id": "recMKzeZhSWOR4G0APy",
+    "fields": {
+      "令牌哈希": "68436434a16418baea39273ee8b934557226214c72b26727b8b21854168639f7",
+      "会话ID": "session_ab1431ef339c4d05b8c66c7dadf31552",
+      "会话状态": "有效",
+      "创建时间": "2026-10-21T06:28:06.415Z",
+      "客户端信息": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 NetType/WIFI MicroMessenger/7.0.20.1781(0x6700143B) MacWechat/3.8.7(0x13080712) UnifiedPCMacWechat(0xf2641d55) XWEB/25511 Flue",
+      "最近访问时间": "2026-10-21T06:28:07.592Z",
+      "来源IP": "10.50.98.40",
+      "用户ID": "employee_15064584461",
+      "用户姓名": "林颖",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-21T06:28:06.457Z",
+    "lastModifiedTime": "2026-10-21T06:28:07.699Z"
+  },
+  {
+    "id": "rec6ed7HVnRmf7gAX4Y",
+    "fields": {
+      "令牌哈希": "e5557774468d5397c60846b562e30f8d0da7cd09d4da2835479dbabc36ccdc6f",
+      "会话ID": "session_ede39ba926cd47348ac7feeb791c0466",
+      "会话状态": "有效",
+      "创建时间": "2026-10-21T07:21:01.751Z",
+      "客户端信息": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko)  Mobile/15E148 wxwork/5.0.12 MicroMessenger/7.0.1 Language/zh ColorScheme/Light wwmver/3.26.511.377",
+      "最近访问时间": "2026-10-21T07:21:18.041Z",
+      "来源IP": "10.50.98.40",
+      "用户ID": "employee_13287957162",
+      "用户姓名": "王甜雨",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-21T07:21:01.792Z",
+    "lastModifiedTime": "2026-10-21T07:21:18.181Z"
+  },
+  {
+    "id": "recDdzBhhDpIHMpkP6l",
+    "fields": {
+      "令牌哈希": "709d8bc5f978c2d577cb11137ac2aabcf7eb9697f70bcd0c4784dc0e6e5760d0",
+      "会话ID": "session_192f78798f914111b0f2bea31879cb01",
+      "会话状态": "有效",
+      "创建时间": "2026-10-21T08:24:54.324Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-10-24T08:29:37.686Z",
+      "来源IP": "10.52.1.24",
+      "用户ID": "employee_15625520910",
+      "用户姓名": "吴悠",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-21T08:24:54.372Z",
+    "lastModifiedTime": "2026-10-24T08:29:37.807Z"
+  },
+  {
+    "id": "recubcnhxUaC0UJY8ER",
+    "fields": {
+      "令牌哈希": "f42bb766e400bbd1ad5ee198e8e5d3f5bf3a7fbe2da2be9cf02ee50411a821a1",
+      "会话ID": "session_ec22d20785374a53bbb3e2c241944da7",
+      "会话状态": "有效",
+      "创建时间": "2026-10-21T12:04:39.607Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.6668.101 Safari/537.36 Language/zh ColorScheme/Light wxwork/5.0.12 (MicroMessenger/6.2) WindowsWechat  MailPlugin_Electron WeMail embeddisk wwmver/3.26.511.637 noMediaCs/false",
+      "最近访问时间": "2026-10-21T12:04:40.790Z",
+      "来源IP": "10.52.1.24",
+      "用户ID": "employee_15966960983",
+      "用户姓名": "司曜菲",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-21T12:04:39.647Z",
+    "lastModifiedTime": "2026-10-21T12:04:40.936Z"
+  },
+  {
+    "id": "recrBc9ZCDZlcgjUsEc",
+    "fields": {
+      "令牌哈希": "8e8445ed84b85a73ae18ca4912c6f52a4ddde703d5f319223b077b16882e7e59",
+      "会话ID": "session_8b51e65b1e984eaab44bef15cfd63751",
+      "会话状态": "有效",
+      "创建时间": "2026-10-22T03:42:43.499Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 NetType/WIFI MicroMessenger/7.0.20.1781(0x6700143B) WindowsWechat(0x63090a13) UnifiedPCWindowsWechat(0xf2541f38) XWEB/25799 Flue",
+      "最近访问时间": "2026-10-22T10:06:10.997Z",
+      "来源IP": "10.50.98.40",
+      "用户ID": "employee_17853542897",
+      "用户姓名": "郝玮炜",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-22T03:42:43.548Z",
+    "lastModifiedTime": "2026-10-22T10:06:11.117Z"
+  },
+  {
+    "id": "recq59tB6nau1CIAMZt",
+    "fields": {
+      "令牌哈希": "cf06939804cfb3b590191a0cab0781e24180b2bd8d74233eb526945c54e3c441",
+      "会话ID": "session_3d83d139f84d4d96a3a569cfae7f6e43",
+      "会话状态": "有效",
+      "创建时间": "2026-10-22T05:17:25.310Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36 Edg/155.0.0.0",
+      "最近访问时间": "2026-10-23T07:35:27.509Z",
+      "来源IP": "10.50.98.40",
+      "用户ID": "employee_15966960983",
+      "用户姓名": "司曜菲",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-22T05:17:25.354Z",
+    "lastModifiedTime": "2026-10-23T07:35:27.617Z"
+  },
+  {
+    "id": "recVJBRW509NFSV9Rzf",
+    "fields": {
+      "令牌哈希": "66b760e6c3ede5c871abd91644b7249d6891bc32611195a95f107d7ea5f70351",
+      "会话ID": "session_83c505b146554011904d14e7736d9344",
+      "会话状态": "有效",
+      "创建时间": "2026-10-22T07:50:56.869Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36",
+      "最近访问时间": "2026-10-24T07:48:06.394Z",
+      "来源IP": "10.52.1.24",
+      "用户ID": "45c18957-6c22-46fe-a239-e3ccfa3a6ed5",
+      "用户姓名": "高子云",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-22T07:50:56.914Z",
+    "lastModifiedTime": "2026-10-24T07:48:06.517Z"
+  },
+  {
+    "id": "rec7WvrpVF26WqC4J2z",
+    "fields": {
+      "令牌哈希": "c2e9607231f0b9e93cc3d1d6c3eb576b1753734d795b8e13406dce498fa061a0",
+      "会话ID": "session_64e2ec05db844ec1b087ea0a619cd96f",
+      "会话状态": "有效",
+      "创建时间": "2026-10-22T08:17:26.446Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0",
+      "最近访问时间": "2026-10-26T02:16:52.454Z",
+      "来源IP": "10.52.1.24",
+      "用户ID": "employee_17853542897",
+      "用户姓名": "郝玮炜",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-22T08:17:26.522Z",
+    "lastModifiedTime": "2026-10-26T02:16:52.569Z"
+  },
+  {
+    "id": "rec0J6cY4zR1HXaParR",
+    "fields": {
+      "令牌哈希": "365070b8d057234f1c049b570e9870a1ee4e49e2444275b7405598e907c9e367",
+      "会话ID": "session_ad316704447945c79e500f96a517e8af",
+      "会话状态": "有效",
+      "创建时间": "2026-10-23T11:40:10.900Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36 Edg/155.0.0.0",
+      "最近访问时间": "2026-10-23T11:43:03.860Z",
+      "来源IP": "10.52.1.24",
+      "用户ID": "employee_17353508121",
+      "用户姓名": "孟令珅",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-23T11:40:10.945Z",
+    "lastModifiedTime": "2026-10-23T11:43:03.978Z"
+  },
+  {
+    "id": "rec37qfY8Zcqu1DXDnk",
+    "fields": {
+      "令牌哈希": "1e95f8a41df10a177b2b806b426a2f416ea8a765a61181f6e521822c2f623b24",
+      "会话ID": "session_5d38d35ebba64247a708520b01bdf3a4",
+      "会话状态": "有效",
+      "创建时间": "2026-10-24T02:12:36.908Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 NetType/WIFI MicroMessenger/7.0.20.1781(0x6700143B) WindowsWechat(0x63090a13) UnifiedPCWindowsWechat(0xf2541f38) XWEB/25799 Flue",
+      "最近访问时间": "2026-10-24T02:14:57.766Z",
+      "来源IP": "10.52.1.24",
+      "用户ID": "employee_15169870087",
+      "用户姓名": "马良钰",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-24T02:12:36.953Z",
+    "lastModifiedTime": "2026-10-24T02:14:57.881Z"
+  },
+  {
+    "id": "recUipbQvdovJlsTfTK",
+    "fields": {
+      "令牌哈希": "e2e00e9df39f34f4daf035a8b97fdf50465e62454382c4ff2a29d5a69eefff14",
+      "会话ID": "session_b483ba5f7e974c0c8b70e5c39a9e3a5e",
+      "会话状态": "有效",
+      "创建时间": "2026-10-24T04:38:49.024Z",
+      "客户端信息": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko)  Mobile/15E148 wxwork/5.0.13 MicroMessenger/7.0.1 Language/zh ColorScheme/Light wwmver/3.26.511.377",
+      "最近访问时间": "2026-10-24T04:38:50.320Z",
+      "来源IP": "10.52.1.24",
+      "用户ID": "employee_15666468973",
+      "用户姓名": "李凯",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-24T04:38:49.067Z",
+    "lastModifiedTime": "2026-10-24T04:38:50.436Z"
+  },
+  {
+    "id": "recigcv3YgJBzhiAs3P",
+    "fields": {
+      "令牌哈希": "2d6d5a04150d3701f05b5874fedf443cf35850270be51b2384de39d243a3f52a",
+      "会话ID": "session_dc41ef1c17f94de3bc96cb383d46d568",
+      "会话状态": "有效",
+      "创建时间": "2026-10-24T08:57:41.711Z",
+      "客户端信息": "Mozilla/5.0 (linux; Android 13; Phone; OpenHarmony 7.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36  ArkWeb/7.0.0.107 Mobile MicroMessenger/7.0.1 wxwork/5.0.11 wwhmos/0.9.19.560 wwbuildver/10000 NetType/4G Language/zh ColorScheme/Light",
+      "最近访问时间": "2026-10-24T08:59:08.454Z",
+      "来源IP": "10.50.98.40",
+      "用户ID": "employee_18660052939",
+      "用户姓名": "于瀚",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-24T08:57:41.755Z",
+    "lastModifiedTime": "2026-10-24T08:59:08.568Z"
+  },
+  {
+    "id": "recvCw3YYTHsfIg1wz6",
+    "fields": {
+      "令牌哈希": "ab38a12d03ac8e73bc0d3be21927989f95bc1b42cb723bf985c68820f39f8054",
+      "会话ID": "session_02b58247534b496eb4cad790a5330731",
+      "会话状态": "有效",
+      "创建时间": "2026-10-24T11:25:03.719Z",
+      "客户端信息": "Mozilla/5.0 (Linux; Android 12; FOA-AL00 Build/HUAWEIFOA-AL00; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/146.0.7680.178 Mobile Safari/537.36 XWEB/1460263 MMWEBSDK/20250205 MMWEBID/4758 wxwork/5.0.12 MicroMessenger/7.0.1 NetType/WIFI Language/zh Lang/zh ColorScheme/Light wwmver/3.26.511.637",
+      "最近访问时间": "2026-10-24T11:25:04.880Z",
+      "来源IP": "10.50.98.40",
+      "用户ID": "employee_13054500376",
+      "用户姓名": "王翔",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-24T11:25:03.757Z",
+    "lastModifiedTime": "2026-10-24T11:25:04.998Z"
+  },
+  {
+    "id": "rec0n6FtkR6oqc6D7hz",
+    "fields": {
+      "令牌哈希": "7426c3dccb085d29caa854630426de45dabbf9cf8499a25bba7f865c1d9f8bf0",
+      "会话ID": "session_aeee68ca2f6b41dc92c8bd1e0503867d",
+      "会话状态": "有效",
+      "创建时间": "2026-10-24T11:25:55.615Z",
+      "客户端信息": "Mozilla/5.0 (Linux; Android 16; V2528A Build/BP2A.250605.031.A3_V000L1; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/150.0.7871.189 Mobile Safari/537.36 XWEB/1500145 MMWEBSDK/20260604 MMWEBID/8395 REV/0008494008e8e42cbdff2daaf1c8c118ecf15e9a MicroMessenger/8.0.77.3160(0x28004D3B) WeChat/arm64 Weixin NetType/5G Language/zh_CN ABI/arm64",
+      "最近访问时间": "2026-10-24T11:29:43.753Z",
+      "来源IP": "10.52.1.24",
+      "用户ID": "employee_15063879040",
+      "用户姓名": "刘芙蓉",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-24T11:25:55.652Z",
+    "lastModifiedTime": "2026-10-24T11:29:43.867Z"
+  },
+  {
+    "id": "reckj5bJO2Q0LNkR4GM",
+    "fields": {
+      "令牌哈希": "d0935841864053d0acb706425c4d73f143228b4be7fab28d16ceef1d641c0fbc",
+      "会话ID": "session_343012be91b04be4ba41cf4d9657b739",
+      "会话状态": "有效",
+      "创建时间": "2026-10-24T11:26:06.680Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 NetType/WIFI MicroMessenger/7.0.20.1781(0x6700143B) WindowsWechat(0x63090a13) UnifiedPCWindowsWechat(0xf2541d41) XWEB/25560 Flue",
+      "最近访问时间": "2026-10-24T12:29:52.052Z",
+      "来源IP": "10.52.1.24",
+      "用户ID": "employee_13054500376",
+      "用户姓名": "王翔",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-24T11:26:06.718Z",
+    "lastModifiedTime": "2026-10-24T12:29:52.158Z"
+  },
+  {
+    "id": "recdbkiWVuqa37yAb50",
+    "fields": {
+      "令牌哈希": "c57bf71b75fa4a62db767792a9d44817e48daecf7a885cee0a1fe45fab8897bc",
+      "会话ID": "session_97f910c5d0ad41c68d27175cba331b26",
+      "会话状态": "有效",
+      "创建时间": "2026-10-24T11:26:18.140Z",
+      "客户端信息": "Mozilla/5.0 (Linux; Android 16; V2528A Build/BP2A.250605.031.A3_V000L1; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/150.0.7871.189 Mobile Safari/537.36 XWEB/1500145 MMWEBSDK/20260901 MMWEBID/948 REV/06263cd8d12bc7ed44f6afc9afe7cec2bc5df4be MicroMessenger/8.0.78.3180(0x28004E3A) WeChat/arm64 Weixin NetType/5G Language/zh_CN ABI/arm64",
+      "最近访问时间": "2026-10-24T11:29:07.647Z",
+      "来源IP": "10.52.1.24",
+      "用户ID": "employee_19712005630",
+      "用户姓名": "主丽萍",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-24T11:26:18.184Z",
+    "lastModifiedTime": "2026-10-24T11:29:07.776Z"
+  },
+  {
+    "id": "rec6eplilBf9kVaMdnl",
+    "fields": {
+      "令牌哈希": "279909c1bb4727f88f4035315b248d3c3408c8aea1e65289d15170d3d5a7a34c",
+      "会话ID": "session_154b57b50d094d65bbb2fde5c67f3004",
+      "会话状态": "有效",
+      "创建时间": "2026-10-24T11:29:21.617Z",
+      "客户端信息": "Mozilla/5.0 (Linux; Android 16; V2528A Build/BP2A.250605.031.A3_V000L1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.7680.178 Mobile Safari/537.36 VivoBrowser/31.1.3.1",
+      "最近访问时间": "2026-10-24T11:29:22.645Z",
+      "来源IP": "10.52.1.24",
+      "用户ID": "employee_15063879040",
+      "用户姓名": "刘芙蓉",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-24T11:29:21.659Z",
+    "lastModifiedTime": "2026-10-24T11:29:22.755Z"
+  },
+  {
+    "id": "rec6rgbh95yoal4cPnR",
+    "fields": {
+      "令牌哈希": "ac7ad520995031e7acb8eea40f1235c91f9daefdecb2bc1d3add57f3fd9d7de2",
+      "会话ID": "session_f7bc6d87741e42f59b7971251c46a24c",
+      "会话状态": "有效",
+      "创建时间": "2026-10-24T11:30:16.383Z",
+      "客户端信息": "Mozilla/5.0 (Linux; Android 16; V2528A Build/BP2A.250605.031.A3_V000L1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.7680.178 Mobile Safari/537.36 VivoBrowser/31.0.20.0",
+      "最近访问时间": "2026-10-24T11:30:18.845Z",
+      "来源IP": "10.50.98.40",
+      "用户ID": "employee_19712005630",
+      "用户姓名": "主丽萍",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-24T11:30:16.424Z",
+    "lastModifiedTime": "2026-10-24T11:30:18.964Z"
+  },
+  {
+    "id": "recvDOqUJOAYlCtXbnW",
+    "fields": {
+      "令牌哈希": "9a9330ef2fb595d15984522bc479e879b53fa1ce550393880db3f565d6de5b4c",
+      "会话ID": "session_ca2631df5d35490cace821f56c9809ce",
+      "会话状态": "有效",
+      "创建时间": "2026-10-25T05:13:12.071Z",
+      "客户端信息": "Mozilla/5.0 (Linux; Android 12; FOA-AL00 Build/HUAWEIFOA-AL00; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/150.0.7871.189 Mobile Safari/537.36 XWEB/1500145 MMWEBSDK/20260902 MMWEBID/6902 REV/e2483f049ea799eaaf8a9783b7bd52beb7d9ade0 MicroMessenger/8.0.79.3200(0x28004FBE) WeChat/arm64 Weixin NetType/WIFI Language/zh_CN ABI/arm64",
+      "最近访问时间": "2026-10-25T05:13:36.169Z",
+      "来源IP": "10.52.1.24",
+      "用户ID": "employee_13054500376",
+      "用户姓名": "王翔",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-25T05:13:12.114Z",
+    "lastModifiedTime": "2026-10-25T05:13:36.302Z"
+  },
+  {
+    "id": "recWp2G8yQE6JQJjg8w",
+    "fields": {
+      "令牌哈希": "5db0f56456eaed82167238ab442f069a8794c4da03f70064497d453ed0d95996",
+      "会话ID": "session_c50d9f3e79e843e8aa0d8281c8602e25",
+      "会话状态": "有效",
+      "创建时间": "2026-10-26T01:38:32.600Z",
+      "客户端信息": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0",
+      "最近访问时间": "2026-10-26T01:40:05.780Z",
+      "来源IP": "10.50.98.40",
+      "用户ID": "employee_15065843957",
+      "用户姓名": "马延浩",
+      "身份来源": "session",
+      "过期时间": "2099-12-31T23:59:59.999Z"
+    },
+    "createdTime": "2026-10-26T01:38:32.639Z",
+    "lastModifiedTime": "2026-10-26T01:40:05.884Z"
+  }
+]

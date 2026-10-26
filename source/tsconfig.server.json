@@ -1,0 +1,21 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "outDir": "./dist",
+    "rootDir": "./server",
+    "declaration": false,
+    "removeComments": true,
+    "sourceMap": false
+  },
+  "include": ["server/**/*"],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "source-app",
+    "server/platform/tasks.ts",
+    "server/platform/tianji-viewer.ts",
+    "server/tasks/**/*"
+  ]
+}

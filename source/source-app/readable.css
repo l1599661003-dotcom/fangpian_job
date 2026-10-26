@@ -1,0 +1,4037 @@
+/* 手机端(760px及以下)只抬字号与行高；布局类声明仅在平板及以上生效，不覆盖手机端的响应式布局。 */
+
+/* 全站可读性修正。放在所有样式之后，只抬字号、行高和表单尺寸，不改布局。 */
+
+@media (min-width: 761px) {
+  .page {
+    gap: 16px !important;
+  }
+}
+
+@media (min-width: 761px) {
+  .page-head {
+    display: flex !important;
+    align-items: flex-end !important;
+    justify-content: space-between !important;
+    gap: 16px !important;
+    min-height: 0 !important;
+    padding: 4px 2px 8px !important;
+  }
+}
+
+.page-head h1 {
+  color: #2c271f !important;
+  font-size: 28px !important;
+  font-weight: 750 !important;
+  letter-spacing: 0 !important;
+  line-height: 1.2 !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    .page-head h1 {
+      margin: 0 !important;
+    }
+  }
+}
+
+.page-head p {
+  color: #8d8272 !important;
+  font-size: 13px !important;
+  line-height: 1.65 !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    .page-head p {
+      max-width: 760px !important;
+      margin: 6px 0 0 !important;
+    }
+  }
+}
+
+@media (min-width: 761px) {
+  .rf-page-kicker {
+    display: none !important;
+  }
+}
+
+@media (min-width: 761px) {
+  .head-actions,
+.rf-job-head-actions {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: 8px !important;
+    flex-wrap: wrap !important;
+  }
+}
+
+.page-head .btn-primary,
+.page-head .btn-secondary,
+.page-head .btn-soft,
+.page-head .btn-danger,
+#page-jobs .rf-job-head-actions .btn-primary,
+#page-jobs .rf-job-head-actions .btn-soft {
+  border-radius: 10px !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  box-shadow: none !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    .page-head .btn-primary,
+.page-head .btn-secondary,
+.page-head .btn-soft,
+.page-head .btn-danger,
+#page-jobs .rf-job-head-actions .btn-primary,
+#page-jobs .rf-job-head-actions .btn-soft {
+      min-height: 40px !important;
+      padding: 0 16px !important;
+      transform: none !important;
+    }
+  }
+}
+
+.page-head .btn-primary,
+#page-jobs .rf-job-head-actions .btn-primary {
+  border: 0 !important;
+  background: #8e6e25 !important;
+  color: #fff !important;
+}
+
+.page-head .btn-secondary,
+.page-head .btn-soft,
+#page-jobs .rf-job-head-actions .btn-soft {
+  border: 1px solid #e4d8c2 !important;
+  background: #fff !important;
+  color: #6d5a32 !important;
+}
+
+.card,
+.panel-card,
+.metric-card,
+.chart-card,
+.ops-card,
+.side-card,
+.info-card,
+.list-card,
+.warn-card,
+.warning-box {
+  border: 1px solid #eadfca !important;
+  border-radius: 14px !important;
+  background: #fff !important;
+  box-shadow: none !important;
+}
+
+.panel-head h2,
+.panel-head h3,
+.card h2,
+.card h3 {
+  color: #2c271f !important;
+  font-size: 16px !important;
+  font-weight: 750 !important;
+}
+
+.panel-head p,
+.card > p {
+  color: #8d8272 !important;
+  font-size: 12px !important;
+  line-height: 1.6 !important;
+}
+
+@media (min-width: 761px) {
+  .metric-card,
+.overview-metric-grid article,
+.stats-grid article {
+    min-height: 112px !important;
+    padding: 16px 18px !important;
+  }
+}
+
+.metric-card strong,
+.metric-card b,
+.overview-metric-grid strong,
+.stats-grid strong {
+  color: #2c271f !important;
+  font-size: 28px !important;
+  line-height: 1.1 !important;
+}
+
+.metric-card span,
+.metric-card small,
+.overview-metric-grid span,
+.stats-grid span {
+  color: #8d8272 !important;
+  font-size: 12px !important;
+}
+
+table {
+  color: #2c271f !important;
+  font-size: 13px !important;
+}
+
+th {
+  color: #8d8272 !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+}
+
+td {
+  color: #2c271f !important;
+  font-size: 13px !important;
+}
+
+@media (max-width: 860px) {
+  @media (min-width: 761px) and (max-width: 860px) {
+    .page-head {
+      align-items: stretch !important;
+      flex-direction: column !important;
+    }
+  }
+
+  @media (min-width: 761px) and (max-width: 860px) {
+    .head-actions,
+  .rf-job-head-actions {
+      justify-content: flex-start !important;
+    }
+  }
+}
+
+@media (min-width: 761px) {
+  #page-points.active {
+    gap: 16px !important;
+  }
+}
+
+#page-points .page-head h1 {
+  color: #2c271f !important;
+  font-size: 28px !important;
+}
+
+#page-points .page-head p {
+  color: #8d8272 !important;
+  font-size: 13px !important;
+  line-height: 1.6 !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    #page-points .page-head p {
+      max-width: 720px !important;
+    }
+  }
+}
+
+#page-points [data-points-refresh] {
+  border: 1px solid #e4d8c2 !important;
+  border-radius: 10px !important;
+  background: #fff !important;
+  color: #6d5a32 !important;
+  font-size: 13px !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    #page-points [data-points-refresh] {
+      min-height: 40px !important;
+      padding: 0 16px !important;
+    }
+  }
+}
+
+@media (min-width: 761px) {
+  #page-points .points-page-body {
+    display: grid !important;
+    gap: 14px !important;
+  }
+}
+
+@media (min-width: 761px) {
+  #page-points .points-summary {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+  }
+}
+
+#page-points .points-summary article {
+  border: 1px solid #eadfca !important;
+  border-radius: 14px !important;
+  background: #fff !important;
+  box-shadow: none !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    #page-points .points-summary article {
+      min-height: 108px !important;
+      padding: 16px 18px !important;
+    }
+  }
+}
+
+@media (min-width: 761px) {
+  #page-points .points-summary article::before {
+    display: none !important;
+  }
+}
+
+#page-points .points-summary span,
+#page-points .points-board header small,
+#page-points .points-rules header small {
+  color: #8d8272 !important;
+  font-size: 12px !important;
+  font-weight: 650 !important;
+  letter-spacing: 0 !important;
+}
+
+#page-points .points-summary strong {
+  color: #2c271f !important;
+  font-size: 30px !important;
+  font-weight: 750 !important;
+  line-height: 1 !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    #page-points .points-summary strong {
+      display: block !important;
+      margin-top: 6px !important;
+    }
+  }
+}
+
+#page-points .points-summary small {
+  color: #8d8272 !important;
+  font-size: 12px !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    #page-points .points-summary small {
+      display: block !important;
+      margin-top: 8px !important;
+    }
+  }
+}
+
+@media (min-width: 761px) {
+  #page-points .points-layout {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) 300px !important;
+    gap: 14px !important;
+    align-items: start !important;
+  }
+}
+
+#page-points .points-board,
+#page-points .points-rules {
+  border: 1px solid #eadfca !important;
+  border-radius: 14px !important;
+  background: #fff !important;
+  box-shadow: none !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    #page-points .points-board,
+#page-points .points-rules {
+      display: grid !important;
+      gap: 14px !important;
+      min-width: 0 !important;
+      padding: 16px !important;
+    }
+  }
+}
+
+@media (min-width: 761px) {
+  #page-points .points-board > header,
+#page-points .points-rules > header {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 12px !important;
+    padding: 0 !important;
+  }
+}
+
+#page-points .points-board > header strong,
+#page-points .points-rules > header strong {
+  color: #2c271f !important;
+  font-size: 16px !important;
+}
+
+#page-points .points-board > header > span {
+  color: #8d8272 !important;
+  font-size: 12px !important;
+}
+
+@media (min-width: 761px) {
+  #page-points .points-podium {
+    display: grid !important;
+    grid-template-columns: 1.15fr .92fr .92fr !important;
+    gap: 10px !important;
+  }
+}
+
+#page-points .points-podium article {
+  border: 1px solid #eadfca !important;
+  border-radius: 14px !important;
+  background: #fbf8f2 !important;
+  text-align: left !important;
+  box-shadow: none !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    #page-points .points-podium article {
+      display: grid !important;
+      align-content: center !important;
+      justify-items: start !important;
+      min-height: 132px !important;
+      padding: 16px !important;
+    }
+  }
+}
+
+#page-points .points-podium article.first {
+  border-color: #d7b56a !important;
+  background: #fffaf0 !important;
+}
+
+#page-points .points-podium em {
+  color: #8e6e25 !important;
+  font-size: 12px !important;
+  font-style: normal !important;
+  font-weight: 750 !important;
+}
+
+#page-points .points-podium strong {
+  color: #2c271f !important;
+  font-size: 18px !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    #page-points .points-podium strong {
+      max-width: 100% !important;
+      margin-top: 8px !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+      white-space: nowrap !important;
+    }
+  }
+}
+
+#page-points .points-podium small {
+  color: #8d8272 !important;
+  font-size: 12px !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    #page-points .points-podium small {
+      max-width: 100% !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+      white-space: nowrap !important;
+    }
+  }
+}
+
+#page-points .points-podium b {
+  color: #8e6e25 !important;
+  font-size: 26px !important;
+  line-height: 1 !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    #page-points .points-podium b {
+      margin-top: 12px !important;
+    }
+  }
+}
+
+#page-points .points-podium b i {
+  color: #a39480 !important;
+  font-size: 12px !important;
+  font-style: normal !important;
+  font-weight: 650 !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    #page-points .points-podium b i {
+      margin-left: 3px !important;
+    }
+  }
+}
+
+#page-points .points-table {
+  border: 1px solid #eadfca !important;
+  border-radius: 12px !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    #page-points .points-table {
+      display: grid !important;
+      overflow: hidden !important;
+    }
+  }
+}
+
+#page-points .points-table-head,
+#page-points .points-rank-card {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: #fff !important;
+  box-shadow: none !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    #page-points .points-table-head,
+#page-points .points-rank-card {
+      display: grid !important;
+      grid-template-columns: 64px minmax(0, 1.4fr) 72px 72px 72px 92px !important;
+      align-items: center !important;
+      gap: 8px !important;
+      min-width: 0 !important;
+      padding: 12px 14px !important;
+    }
+  }
+}
+
+#page-points .points-table-head {
+  background: #fbf8f2 !important;
+  color: #8d8272 !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+}
+
+#page-points .points-rank-card {
+  border-top: 1px solid #f0e7d8 !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    #page-points .points-rank-card {
+      grid-template-areas: "rank person interview offer onboard score" "detail detail detail detail detail detail" !important;
+    }
+  }
+}
+
+@media (min-width: 761px) {
+  #page-points .points-rank-number {
+    grid-area: rank !important;
+  }
+}
+@media (min-width: 761px) {
+  #page-points .points-person {
+    grid-area: person !important;
+  }
+}
+@media (min-width: 761px) {
+  #page-points .points-rank-card > b:nth-of-type(1) {
+    grid-area: interview !important;
+  }
+}
+@media (min-width: 761px) {
+  #page-points .points-rank-card > b:nth-of-type(2) {
+    grid-area: offer !important;
+  }
+}
+@media (min-width: 761px) {
+  #page-points .points-rank-card > b:nth-of-type(3) {
+    grid-area: onboard !important;
+  }
+}
+@media (min-width: 761px) {
+  #page-points .points-score {
+    grid-area: score !important;
+  }
+}
+@media (min-width: 761px) {
+  #page-points .points-detail,
+#page-points .points-detail-spacer {
+    grid-area: detail !important;
+  }
+}
+
+#page-points .points-rank-number {
+  border-radius: 10px !important;
+  background: #f4efe6 !important;
+  color: #6d5a32 !important;
+  font-size: 14px !important;
+  font-weight: 750 !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    #page-points .points-rank-number {
+      display: grid !important;
+      width: 32px !important;
+      height: 32px !important;
+      place-items: center !important;
+    }
+  }
+}
+
+#page-points .points-rank-number.rank-1 { background: #8e6e25 !important; color: #fff !important; }
+#page-points .points-rank-number.rank-2,
+#page-points .points-rank-number.rank-3 { background: #f3e4c4 !important; color: #8e6e25 !important; }
+
+@media (min-width: 761px) {
+  #page-points .points-person {
+    display: grid !important;
+    min-width: 0 !important;
+  }
+}
+
+#page-points .points-person strong {
+  color: #2c271f !important;
+  font-size: 14px !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    #page-points .points-person strong {
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+      white-space: nowrap !important;
+    }
+  }
+}
+
+#page-points .points-person small {
+  color: #8d8272 !important;
+  font-size: 12px !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    #page-points .points-person small {
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+      white-space: nowrap !important;
+    }
+  }
+}
+
+#page-points .points-rank-card > b {
+  color: #4e4538 !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+}
+
+#page-points .points-score {
+  color: #8e6e25 !important;
+  font-size: 22px !important;
+  line-height: 1 !important;
+  text-align: right !important;
+}
+
+#page-points .points-score small {
+  color: #a39480 !important;
+  font-size: 12px !important;
+  font-weight: 650 !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    #page-points .points-score small {
+      margin-left: 2px !important;
+    }
+  }
+}
+
+@media (min-width: 761px) {
+  #page-points .points-detail {
+    margin-top: 8px !important;
+  }
+}
+
+#page-points .points-detail summary {
+  color: #6d5a32 !important;
+  font-size: 12px !important;
+  cursor: pointer !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    #page-points .points-detail summary {
+      width: max-content !important;
+    }
+  }
+}
+
+@media (min-width: 761px) {
+  #page-points .points-detail div {
+    display: grid !important;
+    gap: 6px !important;
+    margin-top: 8px !important;
+  }
+}
+
+#page-points .points-detail p {
+  border-radius: 8px !important;
+  background: #fbf8f2 !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    #page-points .points-detail p {
+      display: grid !important;
+      grid-template-columns: minmax(0, 1fr) auto !important;
+      gap: 2px 12px !important;
+      margin: 0 !important;
+      padding: 8px 10px !important;
+    }
+  }
+}
+
+#page-points .points-detail span {
+  color: #2c271f !important;
+  font-size: 13px !important;
+}
+
+#page-points .points-detail b {
+  color: #8e6e25 !important;
+  font-size: 13px !important;
+}
+
+#page-points .points-detail small {
+  color: #8d8272 !important;
+  font-size: 12px !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    #page-points .points-detail small {
+      grid-column: 1 / -1 !important;
+    }
+  }
+}
+
+@media (min-width: 761px) {
+  #page-points .points-detail-spacer {
+    display: none !important;
+  }
+}
+
+#page-points .points-rules article {
+  border: 1px solid #eadfca !important;
+  border-radius: 12px !important;
+  background: #fbf8f2 !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    #page-points .points-rules article {
+      display: grid !important;
+      gap: 10px !important;
+      padding: 12px !important;
+    }
+  }
+}
+
+#page-points .points-rules article strong {
+  color: #2c271f !important;
+  font-size: 14px !important;
+}
+
+@media (min-width: 761px) {
+  #page-points .points-rules article div {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+}
+
+#page-points .points-rules article span {
+  color: #8d8272 !important;
+  font-size: 12px !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    #page-points .points-rules article span {
+      display: grid !important;
+      gap: 2px !important;
+    }
+  }
+}
+
+#page-points .points-rules article b {
+  color: #8e6e25 !important;
+  font-size: 18px !important;
+  line-height: 1 !important;
+}
+
+#page-points .points-rules > p,
+#page-points .points-empty p {
+  color: #8d8272 !important;
+  font-size: 12px !important;
+  line-height: 1.7 !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    #page-points .points-rules > p,
+#page-points .points-empty p {
+      margin: 0 !important;
+    }
+  }
+}
+
+#page-points .points-empty {
+  text-align: center !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    #page-points .points-empty {
+      padding: 28px 8px !important;
+    }
+  }
+}
+
+#page-points .points-empty strong {
+  color: #2c271f !important;
+  font-size: 16px !important;
+}
+
+@media (max-width: 1100px) {
+  @media (min-width: 761px) and (max-width: 1100px) {
+    #page-points .points-summary,
+  #page-points .points-layout,
+  #page-points .points-podium {
+      grid-template-columns: 1fr !important;
+    }
+  }
+
+  @media (min-width: 761px) and (max-width: 1100px) {
+    #page-points .points-table {
+      overflow-x: auto !important;
+    }
+  }
+
+  @media (min-width: 761px) and (max-width: 1100px) {
+    #page-points .points-table-head,
+  #page-points .points-rank-card {
+      min-width: 680px !important;
+    }
+  }
+}
+
+body {
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+body :is(#talent-app, .rf-dialog, .rf-public-assessment, .rf-public-referral) :is(p, li, td, dd, label, small, em, article, section) {
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+body :is(#talent-app, .rf-dialog) :is(th, .rf-review-title strong, .section-title, h3) {
+  font-size: 14px;
+}
+
+body :is(#talent-app, .rf-dialog) h2 {
+  font-size: 20px;
+  line-height: 1.3;
+}
+
+body :is(#talent-app, .rf-dialog) :is(button, .btn-soft, .btn-primary) {
+  font-size: 13px;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body :is(#talent-app, .rf-dialog) :is(button, .btn-soft, .btn-primary) {
+      min-height: 36px;
+    }
+  }
+}
+
+body .rf-dialog .rf-dialog-form > label {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog .rf-dialog-form > label {
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 8px !important;
+      min-width: 0 !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+  }
+}
+
+body .rf-dialog .rf-dialog-form > label > span {
+  color: #4e4538 !important;
+  font-size: 13px !important;
+  font-weight: 650 !important;
+  line-height: 1.4 !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog .rf-dialog-form > label > span {
+      display: block !important;
+      margin: 0 !important;
+    }
+  }
+}
+
+body .rf-dialog .rf-dialog-form > label > span b {
+  color: #c85c48 !important;
+  font-weight: 700 !important;
+}
+
+body .rf-dialog .rf-dialog-form > label.is-invalid :is(input, select, textarea),
+body .rf-dialog .rf-dialog-form > label.is-invalid .rf-combobox-field {
+  border-color: #c85c48 !important;
+  background: #fff8f7 !important;
+  box-shadow: 0 0 0 3px rgba(200, 92, 72, .14) !important;
+}
+
+body .rf-dialog .rf-demand-error {
+  color: #c85c48 !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  line-height: 1.4 !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog .rf-demand-error {
+      display: flex !important;
+      align-items: center;
+      gap: 6px;
+      margin: 0 !important;
+    }
+  }
+}
+
+body .rf-dialog .rf-demand-error::before {
+  content: "!";
+  border-radius: 50%;
+  background: #c85c48;
+  color: #fff;
+  font-size: 11px;
+  line-height: 16px;
+  text-align: center;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog .rf-demand-error::before {
+      display: grid;
+      width: 16px;
+      height: 16px;
+      place-items: center;
+    }
+  }
+}
+
+@media (min-width: 761px) {
+  body .rf-dialog .rf-demand-error[hidden] {
+    display: none !important;
+  }
+}
+
+body .rf-dialog .rf-combobox-field {
+  border: 1px solid #ddd3c2 !important;
+  border-radius: 10px !important;
+  background: #fff !important;
+  box-shadow: inset 0 1px 2px rgba(70, 54, 28, .04) !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog .rf-combobox-field {
+      min-height: 44px !important;
+    }
+  }
+}
+
+body .rf-dialog .rf-combobox-field:hover {
+  border-color: #c9b98a !important;
+}
+
+body .rf-dialog .rf-combobox-field:focus-within {
+  border-color: #8e6e25 !important;
+  box-shadow: 0 0 0 3px rgba(142, 110, 37, .16) !important;
+}
+
+body .rf-dialog .rf-combobox-input {
+  color: #2c271f !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog .rf-combobox-input {
+      min-height: 42px !important;
+      padding: 0 14px !important;
+    }
+  }
+}
+
+body .rf-dialog .rf-combobox-input::placeholder {
+  color: #b3aa9c !important;
+}
+
+body .rf-dialog .rf-combobox-option {
+  font-size: 14px !important;
+}
+
+body .rf-dialog :is(input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"]):not(.rf-combobox-input), select:not(.rf-combobox-native), textarea) {
+  box-sizing: border-box;
+  color: #2c271f !important;
+  border: 1px solid #ddd3c2 !important;
+  border-radius: 10px !important;
+  outline: 0;
+  background-color: #fff !important;
+  box-shadow: inset 0 1px 2px rgba(70, 54, 28, .04);
+  font-size: 14px !important;
+  line-height: 1.5;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog :is(input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"]):not(.rf-combobox-input), select:not(.rf-combobox-native), textarea) {
+      width: 100%;
+      min-height: 44px !important;
+      padding: 10px 14px !important;
+    }
+  }
+}
+
+body .rf-dialog :is(input, textarea)::placeholder {
+  color: #b3aa9c;
+}
+
+body .rf-dialog :is(input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"]), select, textarea):hover {
+  border-color: #c9b98a !important;
+}
+
+body .rf-dialog :is(input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"]), select, textarea):focus {
+  border-color: #8e6e25 !important;
+  box-shadow: 0 0 0 3px rgba(142, 110, 37, .16) !important;
+}
+
+body .rf-dialog select {
+  background-image: linear-gradient(45deg, transparent 50%, #8e6e25 50%), linear-gradient(135deg, #8e6e25 50%, transparent 50%);
+  background-position: calc(100% - 18px) 19px, calc(100% - 12px) 19px;
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+  appearance: none;
+  cursor: pointer;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog select {
+      padding-right: 36px !important;
+    }
+  }
+}
+
+body .rf-dialog textarea {
+  resize: vertical;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog textarea {
+      min-height: 112px !important;
+    }
+  }
+}
+
+body .rf-dialog :is(.rf-dialog-form label > span, .rf-dialog-form label span, .rf-dialog-form label > strong) {
+  color: #4e4538 !important;
+  font-size: 13px !important;
+  font-weight: 650;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog :is(.rf-dialog-form label > span, .rf-dialog-form label span, .rf-dialog-form label > strong) {
+      margin-bottom: 8px;
+    }
+  }
+}
+
+body .rf-dialog :is(.rf-dialog-form label > small, .rf-dialog-message, .rf-dialog-head p) {
+  color: #8d8272 !important;
+  font-size: 12px !important;
+  line-height: 1.5;
+}
+
+body .rf-dialog .rf-dialog-head h2 {
+  color: #2c271f !important;
+  font-family: "Source Han Serif CN", serif;
+  font-size: 26px !important;
+  line-height: 1.25;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog .rf-dialog-head h2 {
+      margin: 6px 0 !important;
+    }
+  }
+}
+
+body .rf-dialog .rf-dialog-head > div > span,
+body .rf-dialog .rf-dialog-head span:first-child {
+  color: #8e6e25 !important;
+  font-size: 11px !important;
+  font-weight: 800;
+  letter-spacing: .16em;
+}
+
+body .rf-dialog-backdrop {
+  background: rgba(42, 34, 22, .46) !important;
+  backdrop-filter: blur(4px) !important;
+}
+
+body .rf-dialog:not(.full):not(.rf-job-vue-dialog):not(.rf-full-detail-dialog) {
+  border: 0 !important;
+  border-radius: 18px !important;
+  background: #f6f1e6 !important;
+  box-shadow: 0 28px 70px rgba(42, 32, 16, .22) !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog:not(.full):not(.rf-job-vue-dialog):not(.rf-full-detail-dialog) {
+      width: min(760px, calc(100vw - 48px));
+      padding: 8px !important;
+    }
+  }
+}
+
+@media (min-width: 761px) {
+  body .rf-dialog.wide:not(.full):not(.rf-full-detail-dialog) {
+    width: min(980px, calc(100vw - 48px));
+  }
+}
+
+@media (min-width: 761px) {
+  body .rf-dialog:not(.full):not(.rf-job-vue-dialog):not(.rf-full-detail-dialog) > :not(.rf-dialog-close):not(.rf-job-vue) {
+    margin-right: 18px;
+    margin-left: 18px;
+  }
+}
+
+@media (min-width: 761px) {
+  body .rf-dialog:not(.full):not(.rf-job-vue-dialog):not(.rf-full-detail-dialog) > .rf-dialog-head {
+    margin-top: 16px;
+  }
+}
+
+@media (min-width: 761px) {
+  body .rf-dialog:not(.full):not(.rf-job-vue-dialog):not(.rf-full-detail-dialog) > :last-child {
+    margin-bottom: 16px;
+  }
+}
+
+body .rf-dialog .rf-dialog-close {
+  border: 1px solid #e6dcc8 !important;
+  border-radius: 10px !important;
+  background: #fff !important;
+  color: #6f675b !important;
+  font-size: 18px !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog .rf-dialog-close {
+      top: 16px !important;
+      right: 16px !important;
+      width: 32px !important;
+      height: 32px !important;
+    }
+  }
+}
+
+body .rf-dialog .rf-dialog-close:hover {
+  border-color: #c9b98a !important;
+  color: #2c271f !important;
+}
+
+body .rf-dialog .rf-dialog-head {
+  border-bottom: 0 !important;
+  background: transparent !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog .rf-dialog-head {
+      align-items: flex-start;
+      gap: 16px;
+      padding-right: 42px;
+      padding-bottom: 0 !important;
+    }
+  }
+}
+
+body .rf-dialog .rf-dialog-head h2,
+body .rf-dialog:not(.rf-job-vue-dialog) h2 {
+  color: #2c271f !important;
+  font-family: "Source Han Serif CN", serif !important;
+  font-size: 24px !important;
+  line-height: 1.25 !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog .rf-dialog-head h2,
+body .rf-dialog:not(.rf-job-vue-dialog) h2 {
+      margin: 6px 0 !important;
+    }
+  }
+}
+
+body .rf-dialog .rf-dialog-head p {
+  color: #8a8072 !important;
+  font-size: 13px !important;
+  line-height: 1.6 !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog .rf-dialog-head p {
+      max-width: 620px;
+      margin-top: 4px !important;
+    }
+  }
+}
+
+@media (min-width: 761px) {
+  body .rf-dialog .rf-dialog-form,
+body #page-resume-archive .rf-dialog-form {
+    gap: 16px 18px !important;
+    margin-top: 18px;
+  }
+}
+
+body .rf-dialog .rf-dialog-form :is(label, section, fieldset, aside),
+body #page-resume-archive .rf-dialog-form :is(label, section, fieldset, aside) {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog .rf-dialog-form :is(label, section, fieldset, aside),
+body #page-resume-archive .rf-dialog-form :is(label, section, fieldset, aside) {
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 8px !important;
+      min-width: 0 !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+  }
+}
+
+body .rf-dialog .rf-dialog-form :is(label, section, fieldset, aside) > span,
+body #page-resume-archive .rf-dialog-form :is(label, section, fieldset, aside) > span {
+  color: #4e4538 !important;
+  font-size: 13px !important;
+  font-weight: 650 !important;
+  line-height: 1.4 !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog .rf-dialog-form :is(label, section, fieldset, aside) > span,
+body #page-resume-archive .rf-dialog-form :is(label, section, fieldset, aside) > span {
+      display: block !important;
+      margin: 0 !important;
+    }
+  }
+}
+
+body .rf-dialog .rf-dialog-form :is(label, section, fieldset, aside) > span b,
+body #page-resume-archive .rf-dialog-form :is(label, section, fieldset, aside) > span b {
+  color: #c85c48 !important;
+}
+
+body #page-resume-archive :is(.rf-talent-filter-panel, .rf-profile) :is(label, .rf-field) {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body #page-resume-archive :is(.rf-talent-filter-panel, .rf-profile) :is(label, .rf-field) {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      min-width: 0;
+      padding: 0;
+    }
+  }
+}
+
+body #page-resume-archive :is(.rf-talent-filter-panel, .rf-profile) :is(label, .rf-field) > span {
+  color: #4e4538;
+  font-size: 13px;
+  font-weight: 650;
+  line-height: 1.4;
+}
+
+body .rf-dialog .rf-dialog-actions {
+  border-top: 1px solid #efe7d8 !important;
+  background: transparent !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog .rf-dialog-actions {
+      display: flex !important;
+      align-items: center;
+      justify-content: flex-end !important;
+      flex-direction: row !important;
+      gap: 10px;
+      margin-top: 20px !important;
+      margin-right: 0 !important;
+      margin-left: 0 !important;
+      padding: 16px 0 0 !important;
+    }
+  }
+}
+
+body .rf-dialog .rf-dialog-actions > :is(button, a) {
+  border-radius: 10px !important;
+  font-size: 14px !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog .rf-dialog-actions > :is(button, a) {
+      width: auto !important;
+      min-height: 40px !important;
+      padding: 0 16px !important;
+    }
+  }
+}
+
+body .rf-dialog .rf-dialog-actions .btn-primary {
+  border: 0 !important;
+  background: #8e6e25 !important;
+  color: #fff !important;
+  box-shadow: none !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog .rf-dialog-actions .btn-primary {
+      margin-left: 0;
+    }
+  }
+}
+
+body .rf-dialog .rf-dialog-actions .btn-primary:hover {
+  background: #74591c !important;
+}
+
+body .rf-dialog .rf-dialog-actions .btn-soft {
+  border: 1px solid #e4d8c2 !important;
+  background: #fff !important;
+  color: #4e4538 !important;
+}
+
+body .rf-dialog .rf-dialog-message.error {
+  color: #b42318 !important;
+  font-size: 13px !important;
+  font-weight: 650;
+  text-align: left;
+}
+
+@media (min-width: 761px) {
+  body .rf-dialog.rf-demand-dialog {
+    width: min(820px, calc(100vw - 48px));
+  }
+}
+
+body .rf-dialog.rf-demand-dialog .rf-dialog-head h2 {
+  font-size: 24px;
+}
+
+body .rf-dialog.rf-demand-dialog .rf-demand-ai-panel {
+  border: 1px solid #eadfca;
+  border-radius: 12px;
+  background: #fbf7ef;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog.rf-demand-dialog .rf-demand-ai-panel {
+      padding: 16px;
+    }
+  }
+}
+
+body .rf-dialog.rf-demand-dialog .rf-demand-ai-head strong {
+  font-size: 15px;
+}
+
+body .rf-dialog.rf-demand-dialog .rf-demand-ai-head p,
+body .rf-dialog.rf-demand-dialog .rf-demand-ai-tools small,
+body .rf-dialog.rf-demand-dialog #rf-demand-transcript-status {
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+body .rf-dialog.rf-job-vue-dialog h2 {
+  font-size: 26px;
+}
+
+body .rf-job-vue :is(p, small) {
+  font-size: 13px;
+}
+
+body .rf-job-field > small {
+  font-size: 12px;
+}
+
+/* 意向沟通 */
+body .rf-dialog .rf-comm-transcript {
+  border: 1px solid #eadfca !important;
+  border-radius: 12px !important;
+  background: #fbf7ef !important;
+}
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog .rf-comm-transcript {
+      display: grid !important;
+      gap: 10px !important;
+      margin: 18px 0 0 !important;
+      padding: 16px !important;
+    }
+  }
+}
+
+body .rf-dialog .rf-comm-transcript > label > span {
+  color: #4e4538 !important;
+  font-size: 13px !important;
+  font-weight: 650 !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog .rf-comm-transcript > label > span {
+      margin: 0 !important;
+    }
+  }
+}
+
+body .rf-dialog .rf-comm-transcript textarea {
+  font-size: 14px !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog .rf-comm-transcript textarea {
+      min-height: 96px !important;
+    }
+  }
+}
+
+@media (min-width: 761px) {
+  body .rf-dialog .rf-comm-transcript-actions {
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+  }
+}
+
+body .rf-dialog .rf-comm-transcript-actions small,
+body .rf-dialog .rf-comm-transcript-actions small.error {
+  color: #8d8272 !important;
+  font-size: 13px !important;
+  line-height: 1.5 !important;
+}
+
+body .rf-dialog .rf-dialog-form > label.is-invalid :is(input, select, textarea),
+body .rf-dialog .rf-dialog-form .rf-comm-hr-picker.is-invalid :is(input, select, textarea),
+body .rf-dialog .rf-dialog-form > label.is-invalid .rf-combobox-field,
+body .rf-dialog .rf-dialog-form .rf-comm-hr-picker.is-invalid .rf-combobox-field {
+  border-color: #d92d20 !important;
+  background: #fff !important;
+  box-shadow: 0 0 0 3px rgba(217, 45, 32, .12) !important;
+}
+
+body .rf-dialog .rf-dialog-form .rf-schedule-error {
+  color: #b42318 !important;
+  font-size: 12px !important;
+  line-height: 1.5 !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog .rf-dialog-form .rf-schedule-error {
+      display: block !important;
+      margin: 0 !important;
+    }
+  }
+}
+
+@media (min-width: 761px) {
+  body .rf-dialog .rf-dialog-form .rf-schedule-error[hidden] {
+    display: none !important;
+  }
+}
+
+body .rf-dialog .rf-dialog-form span b,
+body .rf-dialog .rf-comm-hr-picker > label b {
+  color: #d92d20 !important;
+}
+
+body .rf-dialog .rf-comm-transcript-actions small.error {
+  color: #b42318 !important;
+}
+
+@media (min-width: 761px) {
+  body .rf-dialog .rf-communication-layout {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) 280px !important;
+    gap: 16px !important;
+    align-items: start !important;
+    margin-top: 16px !important;
+  }
+}
+
+body .rf-dialog .rf-communication-layout > section,
+body .rf-dialog .rf-communication-layout > aside {
+  border: 1px solid #efe7d8 !important;
+  border-radius: 12px !important;
+  background: #fff !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog .rf-communication-layout > section,
+body .rf-dialog .rf-communication-layout > aside {
+      padding: 16px !important;
+    }
+  }
+}
+
+body .rf-dialog .rf-dialog-form .rf-comm-hr-picker {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog .rf-dialog-form .rf-comm-hr-picker {
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 8px !important;
+      padding: 0 !important;
+    }
+  }
+}
+
+@media (min-width: 761px) {
+  body .rf-dialog .rf-dialog-form .rf-comm-hr-picker > label > span {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    width: max-content !important;
+    max-width: 100% !important;
+    white-space: nowrap !important;
+  }
+}
+
+@media (min-width: 761px) {
+  body .rf-dialog .rf-dialog-form .rf-comm-hr-picker > small:not(.rf-schedule-error) {
+    display: none !important;
+  }
+}
+
+@media (min-width: 761px) {
+  body .rf-dialog .rf-dialog-form .rf-comm-hr-picker .rf-combobox,
+body .rf-dialog .rf-dialog-form .rf-comm-hr-picker select {
+    min-height: 44px !important;
+  }
+}
+
+@media (min-width: 761px) {
+  body .rf-dialog .rf-communication-log {
+    max-height: 620px !important;
+  }
+}
+
+body .rf-dialog .rf-communication-log strong,
+body .rf-dialog .rf-review-title strong {
+  color: #2c271f !important;
+  font-size: 14px !important;
+}
+
+body .rf-dialog .rf-communication-log p,
+body .rf-dialog .rf-communication-log small,
+body .rf-dialog .rf-review-title small {
+  color: #8d8272 !important;
+  font-size: 12px !important;
+  line-height: 1.5 !important;
+}
+
+@media (max-width: 860px) {
+  @media (min-width: 761px) and (max-width: 860px) {
+    body .rf-dialog .rf-communication-layout {
+      grid-template-columns: 1fr !important;
+    }
+  }
+}
+
+/* 约面：字段放在同一张表里，不再按 01–04 分段 */
+@media (min-width: 761px) {
+  body .rf-dialog.rf-invitation-editor .rf-invitation-section-title {
+    display: none !important;
+  }
+}
+
+@media (min-width: 761px) {
+  body .rf-dialog.rf-invitation-editor .rf-schedule-workspace {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) 280px !important;
+    align-items: start !important;
+    gap: 16px !important;
+    margin-top: 16px !important;
+  }
+}
+
+body .rf-dialog.rf-invitation-editor .rf-schedule-history {
+  border: 1px solid #efe7d8 !important;
+  border-radius: 12px !important;
+  background: #fff !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog.rf-invitation-editor .rf-schedule-history {
+      display: grid !important;
+      align-content: start !important;
+      gap: 12px !important;
+      min-height: 180px !important;
+      margin: 0 !important;
+      padding: 16px !important;
+    }
+  }
+}
+
+@media (min-width: 761px) {
+  body .rf-dialog.rf-invitation-editor .rf-schedule-history header {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 8px !important;
+  }
+}
+
+body .rf-dialog.rf-invitation-editor .rf-schedule-history header b {
+  color: #2c271f !important;
+  font-size: 15px !important;
+}
+
+body .rf-dialog.rf-invitation-editor .rf-schedule-history header span,
+body .rf-dialog.rf-invitation-editor .rf-schedule-history-empty {
+  color: #8d8272 !important;
+  font-size: 12px !important;
+}
+
+@media (min-width: 761px) {
+  body .rf-dialog.rf-invitation-editor .rf-schedule-history > div {
+    display: grid !important;
+    gap: 10px !important;
+    max-height: 560px !important;
+    overflow: auto !important;
+  }
+}
+
+body .rf-dialog.rf-invitation-editor .rf-schedule-history article {
+  border-top: 1px solid #f1eadf !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog.rf-invitation-editor .rf-schedule-history article {
+      display: grid !important;
+      grid-template-columns: 58px minmax(0, 1fr) !important;
+      gap: 10px !important;
+      padding: 10px 0 !important;
+    }
+  }
+}
+
+body .rf-dialog.rf-invitation-editor .rf-schedule-history time {
+  color: #8e6e25 !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog.rf-invitation-editor .rf-schedule-history time {
+      display: grid !important;
+      align-content: start !important;
+    }
+  }
+}
+
+@media (min-width: 761px) {
+  body .rf-dialog.rf-invitation-editor .rf-schedule-history time strong,
+body .rf-dialog.rf-invitation-editor .rf-schedule-history time span,
+body .rf-dialog.rf-invitation-editor .rf-schedule-history article p,
+body .rf-dialog.rf-invitation-editor .rf-schedule-history article small {
+    display: block !important;
+  }
+}
+
+@media (min-width: 761px) {
+  body .rf-dialog.rf-invitation-editor .rf-schedule-history article div {
+    min-width: 0 !important;
+  }
+}
+
+body .rf-dialog.rf-invitation-editor .rf-schedule-history article strong {
+  color: #2c271f !important;
+  font-size: 13px !important;
+}
+
+body .rf-dialog.rf-invitation-editor .rf-schedule-history article em {
+  color: #8e6e25 !important;
+  font-size: 12px !important;
+  font-style: normal !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog.rf-invitation-editor .rf-schedule-history article em {
+      margin-left: 6px !important;
+    }
+  }
+}
+
+body .rf-dialog.rf-invitation-editor .rf-schedule-history article p,
+body .rf-dialog.rf-invitation-editor .rf-schedule-history article small {
+  color: #6f6454 !important;
+  font-size: 12px !important;
+  line-height: 1.45 !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog.rf-invitation-editor .rf-schedule-history article p,
+body .rf-dialog.rf-invitation-editor .rf-schedule-history article small {
+      margin: 3px 0 0 !important;
+    }
+  }
+}
+
+@media (max-width: 980px) {
+  @media (min-width: 761px) and (max-width: 980px) {
+    body .rf-dialog.rf-invitation-editor .rf-schedule-workspace {
+      grid-template-columns: 1fr !important;
+    }
+  }
+}
+
+body .rf-dialog.rf-invitation-editor .rf-schedule-main {
+  border: 1px solid #efe7d8 !important;
+  border-radius: 12px !important;
+  background: #fff !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog.rf-invitation-editor .rf-schedule-main {
+      display: grid !important;
+      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+      gap: 14px 16px !important;
+      margin: 0 !important;
+      padding: 16px !important;
+    }
+  }
+}
+
+@media (min-width: 761px) {
+  body .rf-dialog.rf-invitation-editor .rf-invitation-person {
+    display: none !important;
+  }
+}
+
+body .rf-dialog.rf-invitation-editor .rf-invitation-person input[readonly] {
+  border: 1px solid #ddd3c2 !important;
+  border-radius: 10px !important;
+  background: #fbf7ef !important;
+  color: #2c271f !important;
+  font-size: 14px !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog.rf-invitation-editor .rf-invitation-person input[readonly] {
+      min-height: 44px !important;
+      padding: 0 14px !important;
+    }
+  }
+}
+
+body .rf-dialog.rf-invitation-editor .rf-schedule-time {
+  border: 0 !important;
+  background: transparent !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog.rf-invitation-editor .rf-schedule-time {
+      display: grid !important;
+      grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+      gap: 12px !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+  }
+}
+
+body .rf-dialog.rf-invitation-editor .rf-schedule-time > label {
+  border: 0 !important;
+  background: transparent !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog.rf-invitation-editor .rf-schedule-time > label {
+      min-width: 0 !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+  }
+}
+
+body .rf-dialog.rf-invitation-editor .rf-interview-time-preview,
+body .rf-dialog.rf-invitation-editor #rf-interview-time-preview {
+  color: #6f6454 !important;
+  font-size: 13px !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog.rf-invitation-editor .rf-interview-time-preview,
+body .rf-dialog.rf-invitation-editor #rf-interview-time-preview {
+      grid-column: 1 / -1 !important;
+      margin: 0 !important;
+    }
+  }
+}
+
+@media (min-width: 761px) {
+  body .rf-dialog.rf-invitation-editor .rf-room-query {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+  }
+}
+
+@media (min-width: 761px) {
+  body .rf-dialog.rf-invitation-editor .rf-room-query .rf-combobox,
+body .rf-dialog.rf-invitation-editor .rf-room-query select {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+  }
+}
+
+body .rf-dialog.rf-invitation-editor .rf-room-query .btn-soft {
+  border-radius: 10px !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog.rf-invitation-editor .rf-room-query .btn-soft {
+      flex: 0 0 auto !important;
+      min-height: 44px !important;
+      padding: 0 16px !important;
+    }
+  }
+}
+
+@media (min-width: 761px) {
+  body .rf-dialog.rf-invitation-editor .rf-interview-room-field,
+body .rf-dialog.rf-invitation-editor .rf-interviewer-field {
+    grid-column: 1 / -1 !important;
+  }
+}
+
+body .rf-dialog.rf-invitation-editor .is-invalid :is(input, select, textarea),
+body .rf-dialog.rf-invitation-editor .is-invalid .rf-combobox-field {
+  border-color: #d92d20 !important;
+  box-shadow: 0 0 0 3px rgba(217, 45, 32, 0.12) !important;
+}
+
+body .rf-dialog.rf-invitation-editor .rf-schedule-error {
+  color: #b42318 !important;
+  font-size: 12px !important;
+  line-height: 1.5 !important;
+}
+
+body .rf-dialog.rf-invitation-editor .rf-schedule-main span b {
+  color: #d92d20 !important;
+}
+
+body .rf-dialog .rf-room-availability-panel {
+  border: 1px solid #eadfca !important;
+  border-radius: 12px !important;
+  background: #fbf7ef !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog .rf-room-availability-panel {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      gap: 12px !important;
+      margin: 0 !important;
+      padding: 14px 16px !important;
+    }
+  }
+}
+
+body .rf-dialog .rf-room-availability-panel strong {
+  color: #2c271f !important;
+  font-size: 14px !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog .rf-room-availability-panel strong {
+      display: block !important;
+    }
+  }
+}
+
+body .rf-dialog .rf-room-availability-panel small {
+  color: #8d8272 !important;
+  font-size: 12px !important;
+  line-height: 1.5 !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog .rf-room-availability-panel small {
+      display: block !important;
+      margin-top: 4px !important;
+    }
+  }
+}
+
+@media (min-width: 761px) {
+  body .rf-dialog .rf-room-availability-panel > div:last-child {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+}
+
+body .rf-dialog .rf-interviewer-picker {
+  border: 0 !important;
+  background: transparent !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog .rf-interviewer-picker {
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+  }
+}
+
+body .rf-dialog .rf-interviewer-picker > legend {
+  color: #4e4538 !important;
+  font-size: 13px !important;
+  font-weight: 650 !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog .rf-interviewer-picker > legend {
+      margin-bottom: 8px !important;
+    }
+  }
+}
+
+body .rf-dialog .rf-interviewer-trigger {
+  border: 1px solid #ddd3c2 !important;
+  border-radius: 10px !important;
+  background: #fff !important;
+  color: #2c271f !important;
+  font-size: 14px !important;
+  cursor: pointer !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog .rf-interviewer-trigger {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      min-height: 44px !important;
+      padding: 0 14px !important;
+    }
+  }
+}
+
+body .rf-dialog .rf-interviewer-menu {
+  border: 1px solid #eadfca !important;
+  border-radius: 12px !important;
+  background: #fff !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog .rf-interviewer-menu {
+      margin-top: 8px !important;
+      padding: 12px !important;
+    }
+  }
+}
+
+@media (min-width: 761px) {
+  body .rf-dialog .rf-combobox-chip {
+    display: inline-flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    flex-wrap: nowrap !important;
+    width: auto !important;
+    max-width: 100%;
+    white-space: nowrap !important;
+  }
+}
+
+@media (min-width: 761px) {
+  body .rf-dialog .rf-combobox-chip b {
+    display: inline !important;
+    width: auto !important;
+    white-space: nowrap !important;
+  }
+}
+
+body .rf-dialog .rf-combobox-chip button {
+  font-size: 12px !important;
+  line-height: 16px !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog .rf-combobox-chip button {
+      display: inline-grid !important;
+      width: 16px !important;
+      min-width: 16px !important;
+      height: 16px !important;
+      min-height: 16px !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      flex: 0 0 16px !important;
+    }
+  }
+}
+
+body .rf-dialog .rf-dialog-form > label.rf-send-email-option {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  text-align: left !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog .rf-dialog-form > label.rf-send-email-option {
+      display: flex !important;
+      flex-direction: row !important;
+      align-items: center !important;
+      justify-content: flex-start !important;
+      gap: 8px !important;
+      grid-column: 1 / -1 !important;
+      justify-self: start !important;
+      width: max-content !important;
+      max-width: 100% !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+  }
+}
+
+@media (min-width: 761px) {
+  body .rf-dialog .rf-send-email-option input {
+    width: 16px !important;
+    height: 16px !important;
+    margin: 0 !important;
+    flex: 0 0 auto !important;
+  }
+}
+
+body .rf-dialog .rf-send-email-option span {
+  color: #4e4538 !important;
+  font-size: 14px !important;
+  font-weight: 650 !important;
+  line-height: 1.5 !important;
+  text-align: left !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog .rf-send-email-option span {
+      display: inline !important;
+    }
+  }
+}
+
+body .rf-dialog .rf-send-email-option small {
+  color: #8d8272 !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog .rf-send-email-option small {
+      display: inline !important;
+      margin: 0 0 0 8px !important;
+    }
+  }
+}
+
+@media (min-width: 761px) {
+  body .rf-dialog.rf-invitation-editor .rf-schedule-time output,
+body .rf-dialog.rf-invitation-editor #rf-interview-time-preview {
+    display: none !important;
+  }
+}
+
+body .rf-dialog .rf-invitation-flow-note {
+  border: 1px solid #eadfca !important;
+  border-radius: 12px !important;
+  background: #fbf7ef !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog .rf-invitation-flow-note {
+      display: flex !important;
+      align-items: flex-start !important;
+      gap: 10px !important;
+      margin: 0 !important;
+      padding: 14px 16px !important;
+    }
+  }
+}
+
+body .rf-dialog .rf-send-email-option span,
+body .rf-dialog .rf-invitation-flow-note {
+  color: #4e4538 !important;
+  font-size: 14px !important;
+  line-height: 1.5 !important;
+}
+
+body .rf-dialog .rf-send-email-option small {
+  color: #8d8272 !important;
+  font-size: 12px !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog .rf-send-email-option small {
+      display: block !important;
+      margin-top: 4px !important;
+    }
+  }
+}
+
+body .rf-dialog.rf-invitation-editor {
+  box-shadow: none !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog.rf-invitation-editor {
+      width: min(1180px, calc(100vw - 32px)) !important;
+      display: flex !important;
+      flex-direction: column !important;
+      overflow: auto !important;
+    }
+  }
+}
+
+body .rf-dialog.rf-invitation-editor .rf-schedule-actions {
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog.rf-invitation-editor .rf-schedule-actions {
+      position: static !important;
+      grid-column: 1 / -1 !important;
+      justify-content: flex-end !important;
+      margin: 4px 0 0 !important;
+      padding: 0 !important;
+    }
+  }
+}
+
+body .rf-dialog.rf-invitation-editor .rf-schedule-actions .btn-primary {
+  box-shadow: none !important;
+}
+
+/* 面试题 */
+body .rf-dialog .qb-review-summary {
+  border: 1px solid #eadfca !important;
+  border-radius: 12px !important;
+  background: #fbf7ef !important;
+  color: #6f6454 !important;
+  font-size: 13px !important;
+}
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog .qb-review-summary {
+      display: flex !important;
+      flex-wrap: wrap !important;
+      align-items: center !important;
+      gap: 8px 16px !important;
+      margin: 16px 0 0 !important;
+      padding: 14px 16px !important;
+    }
+  }
+}
+
+body .rf-dialog .qb-review-summary strong {
+  color: #2c271f !important;
+  font-size: 16px !important;
+}
+
+@media (min-width: 761px) {
+  body .rf-dialog .qb-card-actions {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    justify-content: flex-end !important;
+    gap: 8px !important;
+    margin: 12px 0 !important;
+  }
+}
+
+body .rf-dialog .rf-interview-question-review,
+body .rf-dialog .qb-empty {
+  color: #4e4538 !important;
+  font-size: 14px !important;
+  line-height: 1.6 !important;
+}
+
+body .rf-dialog .rf-interview-question-review article,
+body .rf-dialog .qb-card {
+  border: 1px solid #efe7d8 !important;
+  border-radius: 12px !important;
+  background: #fff !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog .rf-interview-question-review article,
+body .rf-dialog .qb-card {
+      margin: 0 0 10px !important;
+      padding: 14px 16px !important;
+    }
+  }
+}
+
+body .rf-dialog #rf-interview-question-export-message {
+  color: #8d8272 !important;
+  font-size: 12px !important;
+}
+
+/* 面试评价 */
+@media (min-width: 761px) {
+  body .rf-dialog.rf-feedback-dialog .rf-feedback-summary {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+    margin: 16px 0 0 !important;
+  }
+}
+
+body .rf-dialog.rf-feedback-dialog .rf-feedback-summary article {
+  border: 1px solid #eadfca !important;
+  border-radius: 12px !important;
+  background: #fbf7ef !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog.rf-feedback-dialog .rf-feedback-summary article {
+      padding: 14px 16px !important;
+    }
+  }
+}
+
+body .rf-dialog.rf-feedback-dialog .rf-feedback-summary span {
+  color: #8d8272 !important;
+  font-size: 12px !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog.rf-feedback-dialog .rf-feedback-summary span {
+      display: block !important;
+    }
+  }
+}
+
+body .rf-dialog.rf-feedback-dialog .rf-feedback-summary strong {
+  color: #2c271f !important;
+  font-size: 16px !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog.rf-feedback-dialog .rf-feedback-summary strong {
+      display: block !important;
+      margin-top: 4px !important;
+    }
+  }
+}
+
+@media (min-width: 761px) {
+  body .rf-dialog.rf-feedback-dialog .rf-feedback-workspace {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) 280px !important;
+    gap: 16px !important;
+    align-items: start !important;
+    margin-top: 16px !important;
+  }
+}
+
+body .rf-dialog.rf-feedback-dialog .rf-feedback-compose,
+body .rf-dialog.rf-feedback-dialog .rf-feedback-history-panel {
+  border: 1px solid #efe7d8 !important;
+  border-radius: 12px !important;
+  background: #fff !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog.rf-feedback-dialog .rf-feedback-compose,
+body .rf-dialog.rf-feedback-dialog .rf-feedback-history-panel {
+      padding: 16px !important;
+    }
+  }
+}
+
+body .rf-dialog.rf-feedback-dialog .rf-feedback-ai-panel {
+  border: 1px solid #eadfca !important;
+  border-radius: 12px !important;
+  background: #fbf7ef !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog.rf-feedback-dialog .rf-feedback-ai-panel {
+      display: grid !important;
+      gap: 10px !important;
+      margin: 0 0 4px !important;
+      padding: 14px !important;
+    }
+  }
+}
+
+@media (min-width: 761px) {
+  body .rf-dialog.rf-feedback-dialog .rf-feedback-ai-panel textarea {
+    min-height: 120px !important;
+  }
+}
+
+@media (min-width: 761px) {
+  body .rf-dialog.rf-feedback-dialog .rf-feedback-submit-actions {
+    justify-content: flex-end !important;
+  }
+}
+
+body .rf-dialog.rf-feedback-dialog #rf-feedback-interviewer-count,
+body .rf-dialog.rf-feedback-dialog #rf-feedback-transcript-status {
+  color: #8d8272 !important;
+  font-size: 12px !important;
+  line-height: 1.5 !important;
+}
+
+/* Offer */
+@media (min-width: 761px) {
+  body .rf-dialog .rf-offer-metrics,
+body .rf-dialog .rf-offer-overview {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)) !important;
+    gap: 12px !important;
+    margin: 16px 0 0 !important;
+  }
+}
+
+body .rf-dialog .rf-offer-metrics article,
+body .rf-dialog .rf-offer-form-card,
+body .rf-dialog .rf-offer-record {
+  border: 1px solid #efe7d8 !important;
+  border-radius: 12px !important;
+  background: #fff !important;
+  color: #2c271f !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog .rf-offer-metrics article,
+body .rf-dialog .rf-offer-form-card,
+body .rf-dialog .rf-offer-record {
+      padding: 14px 16px !important;
+    }
+  }
+}
+
+body .rf-dialog .rf-offer-metrics span,
+body .rf-dialog .rf-offer-record small,
+body .rf-dialog .rf-offer-empty {
+  color: #8d8272 !important;
+  font-size: 12px !important;
+  line-height: 1.5 !important;
+}
+
+body .rf-dialog .rf-offer-metrics strong,
+body .rf-dialog .rf-offer-record strong {
+  color: #2c271f !important;
+  font-size: 16px !important;
+}
+
+@media (min-width: 761px) {
+  body .rf-dialog .rf-offer-list {
+    display: grid !important;
+    gap: 10px !important;
+    margin-top: 12px !important;
+  }
+}
+
+@media (min-width: 761px) {
+  body .rf-dialog .rf-offer-form-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 14px 16px !important;
+  }
+}
+
+body .rf-dialog .rf-offer-form-card label,
+body .rf-dialog .rf-offer-create-form label {
+  border: 0 !important;
+  background: transparent !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog .rf-offer-form-card label,
+body .rf-dialog .rf-offer-create-form label {
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 8px !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+  }
+}
+
+@media (min-width: 761px) {
+  body .rf-dialog .rf-offer-actions,
+body .rf-dialog .rf-offer-preview-send {
+    display: flex !important;
+    justify-content: flex-end !important;
+    gap: 8px !important;
+    margin-top: 16px !important;
+  }
+}
+
+body .rf-dialog .rf-offer-preview-document {
+  border: 1px solid #eadfca !important;
+  border-radius: 12px !important;
+  background: #fff !important;
+  color: #2c271f !important;
+  font-size: 14px !important;
+  line-height: 1.65 !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog .rf-offer-preview-document {
+      padding: 18px !important;
+    }
+  }
+}
+
+@media (max-width: 860px) {
+  @media (min-width: 761px) and (max-width: 860px) {
+    body .rf-dialog.rf-invitation-editor .rf-schedule-time,
+  body .rf-dialog.rf-feedback-dialog .rf-feedback-summary,
+  body .rf-dialog.rf-feedback-dialog .rf-feedback-workspace,
+  body .rf-dialog .rf-offer-form-grid {
+      grid-template-columns: 1fr !important;
+    }
+  }
+
+  @media (min-width: 761px) and (max-width: 860px) {
+    body .rf-dialog .rf-room-availability-panel {
+      flex-direction: column !important;
+      align-items: stretch !important;
+    }
+  }
+}
+
+@media (min-width: 761px) {
+  body .rf-dialog .rf-review-metrics {
+    display: grid !important;
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+    margin-top: 16px !important;
+  }
+}
+
+body .rf-dialog .rf-review-metrics article {
+  border: 1px solid #eadfca !important;
+  border-radius: 12px !important;
+  background: #fff !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog .rf-review-metrics article {
+      min-width: 0 !important;
+      padding: 14px 16px !important;
+    }
+  }
+}
+
+body .rf-dialog .rf-review-metrics span {
+  color: #8d8272 !important;
+  font-size: 12px !important;
+}
+
+body .rf-dialog .rf-review-metrics strong {
+  color: #2c271f !important;
+  font-size: 24px !important;
+  line-height: 1.2 !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog .rf-review-metrics strong {
+      margin-top: 4px !important;
+    }
+  }
+}
+
+@media (min-width: 761px) {
+  body .rf-dialog .rf-review-layout {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) 280px !important;
+    gap: 16px !important;
+    margin-top: 16px !important;
+  }
+}
+
+body .rf-dialog .rf-review-layout > section,
+body .rf-dialog .rf-review-layout > aside {
+  border: 1px solid #eadfca !important;
+  border-radius: 12px !important;
+  background: #fff !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog .rf-review-layout > section,
+body .rf-dialog .rf-review-layout > aside {
+      overflow: hidden !important;
+    }
+  }
+}
+
+body .rf-dialog .rf-review-title {
+  background: #fff !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog .rf-review-title {
+      padding: 14px 16px !important;
+    }
+  }
+}
+
+body .rf-dialog .rf-review-title strong {
+  color: #2c271f !important;
+  font-size: 15px !important;
+}
+
+body .rf-dialog .rf-review-title small {
+  color: #8d8272 !important;
+  font-size: 12px !important;
+}
+
+@media (min-width: 761px) {
+  body .rf-dialog .rf-review-list > article {
+    grid-template-columns: minmax(180px, 1fr) 72px minmax(110px, .8fr) auto auto !important;
+    gap: 12px !important;
+    padding: 14px 16px !important;
+  }
+}
+
+body .rf-dialog .rf-review-person > span {
+  border-radius: 10px !important;
+  background: #f6f1e6 !important;
+  color: #8e6e25 !important;
+  font-size: 16px !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog .rf-review-person > span {
+      width: 40px !important;
+      height: 40px !important;
+    }
+  }
+}
+
+body .rf-dialog .rf-review-person strong {
+  color: #2c271f !important;
+  font-size: 14px !important;
+}
+
+body .rf-dialog .rf-review-person small,
+body .rf-dialog .rf-review-score small,
+body .rf-dialog .rf-followup-list span,
+body .rf-dialog .rf-followup-list small {
+  color: #8d8272 !important;
+  font-size: 12px !important;
+}
+
+body .rf-dialog .rf-review-score b {
+  color: #8e6e25 !important;
+  font-size: 22px !important;
+}
+
+body .rf-dialog .rf-review-flags span,
+body .rf-dialog .rf-review-flags em {
+  border-radius: 999px !important;
+  font-size: 12px !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog .rf-review-flags span,
+body .rf-dialog .rf-review-flags em {
+      padding: 4px 8px !important;
+    }
+  }
+}
+
+body .rf-dialog .rf-review-list > article > button,
+body .rf-dialog .rf-followup-list button {
+  border-radius: 8px !important;
+  font-size: 13px !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog .rf-review-list > article > button,
+body .rf-dialog .rf-followup-list button {
+      min-height: 36px !important;
+    }
+  }
+}
+
+body .rf-dialog .rf-review-list > article > button {
+  background: #8e6e25 !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog .rf-review-list > article > button {
+      padding: 0 12px !important;
+    }
+  }
+}
+
+body .rf-dialog .rf-review-list > article > button.soft {
+  color: #4e4538 !important;
+  border: 1px solid #ddd3c2 !important;
+  background: #fff !important;
+}
+
+body .rf-dialog .rf-followup-list strong {
+  color: #2c271f !important;
+  font-size: 14px !important;
+}
+
+@media (min-width: 761px) {
+  body .rf-dialog .rf-review-evidence {
+    gap: 16px !important;
+  }
+}
+
+body .rf-dialog .rf-review-evidence section {
+  border: 1px solid #eadfca !important;
+  border-radius: 12px !important;
+  background: #fff !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog .rf-review-evidence section {
+      padding: 16px !important;
+    }
+  }
+}
+
+body .rf-dialog .rf-review-evidence section > strong {
+  color: #2c271f !important;
+  font-size: 15px !important;
+}
+
+body .rf-dialog .rf-review-evidence ul,
+body .rf-dialog .rf-review-evidence p,
+body .rf-dialog .rf-review-evidence label {
+  color: #4e4538 !important;
+  font-size: 13px !important;
+  line-height: 1.6 !important;
+}
+
+body .rf-dialog .rf-review-form {
+  border: 1px solid #eadfca !important;
+  border-radius: 12px !important;
+  background: #fff !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog .rf-review-form {
+      display: grid !important;
+      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+      gap: 14px 16px !important;
+      margin-top: 16px !important;
+      padding: 16px !important;
+    }
+  }
+}
+
+body .rf-dialog .rf-review-form > label {
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog .rf-review-form > label {
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 8px !important;
+      min-width: 0 !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+  }
+}
+
+@media (min-width: 761px) {
+  body .rf-dialog .rf-review-form > label.wide,
+body .rf-dialog .rf-review-actions,
+body .rf-dialog .rf-review-form > .rf-dialog-message {
+    grid-column: 1 / -1 !important;
+  }
+}
+
+body .rf-dialog .rf-review-form > label > span {
+  color: #4e4538 !important;
+  font-size: 13px !important;
+  font-weight: 650 !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog .rf-review-form > label > span {
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 4px !important;
+      width: max-content !important;
+      margin: 0 !important;
+      white-space: nowrap !important;
+    }
+  }
+}
+
+body .rf-dialog .rf-review-form textarea {
+  resize: vertical !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog .rf-review-form textarea {
+      min-height: 96px !important;
+    }
+  }
+}
+
+body .rf-dialog .rf-review-actions {
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog .rf-review-actions {
+      position: static !important;
+      display: flex !important;
+      justify-content: flex-end !important;
+      gap: 8px !important;
+      margin: 4px 0 0 !important;
+      padding: 0 !important;
+    }
+  }
+}
+
+@media (max-width: 860px) {
+  @media (min-width: 761px) and (max-width: 860px) {
+    body .rf-dialog .rf-review-metrics,
+  body .rf-dialog .rf-review-layout,
+  body .rf-dialog .rf-review-evidence,
+  body .rf-dialog .rf-review-form,
+  body .rf-dialog .rf-review-list > article {
+      grid-template-columns: 1fr !important;
+    }
+  }
+}
+
+@media (min-width: 761px) {
+  body .rf-dialog:has(.rf-wecom-send-dialog) {
+    width: min(760px, calc(100vw - 32px)) !important;
+    height: auto !important;
+    max-height: calc(100vh - 48px) !important;
+  }
+}
+
+@media (min-width: 761px) {
+  body .rf-dialog .rf-wecom-send-dialog {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 16px !important;
+    max-width: none !important;
+    margin: 0 !important;
+  }
+}
+
+body .rf-dialog .rf-wecom-response-panel {
+  border: 1px solid #eadfca !important;
+  border-radius: 12px !important;
+  background: #fff !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog .rf-wecom-response-panel {
+      margin: 0 !important;
+      padding: 16px !important;
+    }
+  }
+}
+
+@media (min-width: 761px) {
+  body .rf-dialog .rf-wecom-response-panel > header {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    margin-bottom: 12px !important;
+  }
+}
+
+body .rf-dialog .rf-wecom-response-panel > header strong {
+  color: #2c271f !important;
+  font-size: 15px !important;
+}
+
+body .rf-dialog .rf-wecom-response-panel > header small,
+body .rf-dialog .rf-wecom-no-response {
+  color: #8d8272 !important;
+  font-size: 13px !important;
+}
+
+body .rf-dialog .rf-wecom-no-response {
+  border: 1px dashed #e4d8c2 !important;
+  border-radius: 10px !important;
+  background: #fbf8f2 !important;
+  text-align: center !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog .rf-wecom-no-response {
+      padding: 28px 16px !important;
+    }
+  }
+}
+
+body .rf-dialog .rf-wecom-send-footer {
+  border: 1px solid #eadfca !important;
+  border-radius: 12px !important;
+  background: #fff !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog .rf-wecom-send-footer {
+      display: grid !important;
+      grid-template-columns: 1fr !important;
+      gap: 14px !important;
+      align-items: stretch !important;
+      margin: 0 !important;
+      padding: 16px !important;
+    }
+  }
+}
+
+@media (min-width: 761px) {
+  body .rf-dialog .rf-wecom-send-settings {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+  }
+}
+
+body .rf-dialog .rf-wecom-channel-picker {
+  border: 0 !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog .rf-wecom-channel-picker {
+      display: flex !important;
+      flex-wrap: wrap !important;
+      align-items: center !important;
+      gap: 18px !important;
+      min-height: 0 !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+  }
+}
+
+body .rf-dialog .rf-wecom-send-settings .rf-wecom-channel-picker label {
+  border: 0 !important;
+  background: transparent !important;
+  color: #4e4538 !important;
+  font-size: 14px !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog .rf-wecom-send-settings .rf-wecom-channel-picker label {
+      display: inline-flex !important;
+      flex-direction: row !important;
+      align-items: center !important;
+      gap: 8px !important;
+      width: max-content !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      white-space: nowrap !important;
+    }
+  }
+}
+
+body .rf-dialog .rf-wecom-channel-picker input {
+  accent-color: #8e6e25 !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog .rf-wecom-channel-picker input {
+      width: 16px !important;
+      height: 16px !important;
+      margin: 0 !important;
+    }
+  }
+}
+
+body .rf-dialog .rf-wecom-send-footer .rf-wecom-webhook-input {
+  border: 0 !important;
+  background: transparent !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog .rf-wecom-send-footer .rf-wecom-webhook-input {
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 8px !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+  }
+}
+
+body .rf-dialog .rf-wecom-send-footer .rf-wecom-webhook-input span {
+  color: #4e4538 !important;
+  font-size: 13px !important;
+  font-weight: 650 !important;
+}
+
+body .rf-dialog .rf-wecom-send-actions {
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog .rf-wecom-send-actions {
+      position: static !important;
+      display: flex !important;
+      justify-content: flex-end !important;
+      gap: 8px !important;
+      margin: 2px 0 0 !important;
+      padding: 0 !important;
+    }
+  }
+}
+
+@media (min-width: 761px) {
+  body .rf-dialog .rf-wecom-send-footer .rf-dialog-message {
+    margin: 0 !important;
+  }
+}
+
+body .rf-offer-create-form {
+  border: 1px solid #eadfca !important;
+  border-radius: 12px !important;
+  background: #fff !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-offer-create-form {
+      display: grid !important;
+      gap: 16px !important;
+      margin-top: 16px !important;
+      padding: 16px !important;
+    }
+  }
+}
+
+@media (min-width: 761px) {
+  body .rf-offer-create-form .rf-offer-form-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 14px 16px !important;
+  }
+}
+
+@media (min-width: 761px) {
+  body .rf-dialog .rf-offer-create-form label.wide,
+body .rf-dialog .rf-offer-create-form .rf-offer-actions,
+body .rf-dialog .rf-offer-create-form > .rf-dialog-message {
+    grid-column: 1 / -1 !important;
+  }
+}
+
+body .rf-dialog .rf-offer-create-form #rf-offer-template-note {
+  color: #8d8272 !important;
+  font-size: 12px !important;
+  line-height: 1.5 !important;
+}
+
+body .rf-offer-create-form label {
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-offer-create-form label {
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 8px !important;
+      min-width: 0 !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+  }
+}
+
+body .rf-offer-create-form label > span {
+  color: #4e4538 !important;
+  font-size: 13px !important;
+  font-weight: 650 !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-offer-create-form label > span {
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 4px !important;
+      width: max-content !important;
+      max-width: 100% !important;
+      margin: 0 !important;
+      white-space: nowrap !important;
+    }
+  }
+}
+
+body .rf-offer-create-form label > span b {
+  color: #d92d20 !important;
+}
+
+@media (min-width: 761px) {
+  body .rf-offer-create-form .rf-offer-actions {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 12px !important;
+    margin: 2px 0 0 !important;
+  }
+}
+
+@media (min-width: 761px) {
+  body .rf-offer-create-form .rf-offer-actions > div {
+    display: flex !important;
+    justify-content: flex-end !important;
+    gap: 8px !important;
+    margin-left: auto !important;
+  }
+}
+
+@media (min-width: 761px) {
+  body .rf-dialog .rf-offer-create-form label.rf-offer-email-toggle,
+body .rf-offer-create-form label.rf-offer-email-toggle {
+    display: inline-flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 8px !important;
+    width: max-content !important;
+    white-space: nowrap !important;
+  }
+}
+
+@media (min-width: 761px) {
+  body .rf-offer-create-form label.rf-offer-email-toggle > span {
+    display: inline !important;
+    width: auto !important;
+    white-space: nowrap !important;
+  }
+}
+
+body .rf-offer-create-form .rf-offer-email-toggle input {
+  accent-color: #8e6e25 !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-offer-create-form .rf-offer-email-toggle input {
+      width: 16px !important;
+      height: 16px !important;
+      min-height: 0 !important;
+      margin: 0 !important;
+    }
+  }
+}
+
+body .rf-offer-create-form .rf-offer-optional-toggle {
+  color: #8d8272 !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-offer-create-form .rf-offer-optional-toggle {
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 6px !important;
+      margin-left: 8px !important;
+    }
+  }
+}
+
+@media (max-width: 860px) {
+  @media (min-width: 761px) and (max-width: 860px) {
+    body .rf-offer-create-form .rf-offer-form-grid,
+  body .rf-offer-create-form .rf-offer-actions {
+      grid-template-columns: 1fr !important;
+    }
+  }
+
+  @media (min-width: 761px) and (max-width: 860px) {
+    body .rf-offer-create-form .rf-offer-actions {
+      align-items: stretch !important;
+      flex-direction: column !important;
+    }
+  }
+}
+
+body .rf-dialog .rf-ai-correction-form,
+body .rf-dialog .rf-match-correction-form,
+body .rf-dialog .rf-resume-review-form,
+body .rf-dialog .rf-dialog-form:has(.rf-background-checks),
+body .rf-dialog .rf-dialog-form:has(#rf-bg-provider),
+body .rf-dialog .rf-dialog-form:has(#rf-bg-auth-status),
+body .rf-dialog .rf-dialog-form:has(#rf-bg-contact-name),
+body .rf-dialog .rf-dialog-form:has(#rf-bg-verify-type),
+body .rf-dialog .rf-dialog-form:has(#rf-bg-risk-type),
+body .rf-dialog .rf-dialog-form:has(#rf-bg-package),
+body .rf-dialog .rf-dialog-form:has(#rf-bg-conclusion),
+body .rf-dialog .rf-dialog-form:has(#rf-talent-name) {
+  border: 1px solid #eadfca !important;
+  border-radius: 12px !important;
+  background: #fff !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog .rf-ai-correction-form,
+body .rf-dialog .rf-match-correction-form,
+body .rf-dialog .rf-resume-review-form,
+body .rf-dialog .rf-dialog-form:has(.rf-background-checks),
+body .rf-dialog .rf-dialog-form:has(#rf-bg-provider),
+body .rf-dialog .rf-dialog-form:has(#rf-bg-auth-status),
+body .rf-dialog .rf-dialog-form:has(#rf-bg-contact-name),
+body .rf-dialog .rf-dialog-form:has(#rf-bg-verify-type),
+body .rf-dialog .rf-dialog-form:has(#rf-bg-risk-type),
+body .rf-dialog .rf-dialog-form:has(#rf-bg-package),
+body .rf-dialog .rf-dialog-form:has(#rf-bg-conclusion),
+body .rf-dialog .rf-dialog-form:has(#rf-talent-name) {
+      display: grid !important;
+      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+      gap: 14px 16px !important;
+      margin-top: 16px !important;
+      padding: 16px !important;
+    }
+  }
+}
+
+@media (min-width: 761px) {
+  body .rf-dialog .rf-ai-correction-scores {
+    display: contents !important;
+  }
+}
+
+body .rf-dialog .rf-ai-correction-form > label,
+body .rf-dialog .rf-match-correction-form > label,
+body .rf-dialog .rf-resume-review-form > label,
+body .rf-dialog .rf-dialog-form:is(:has(#rf-talent-name), :has(.rf-background-checks), :has(#rf-bg-auth-status), :has(#rf-bg-contact-name), :has(#rf-bg-verify-type), :has(#rf-bg-risk-type), :has(#rf-bg-package), :has(#rf-bg-conclusion)) > label {
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog .rf-ai-correction-form > label,
+body .rf-dialog .rf-match-correction-form > label,
+body .rf-dialog .rf-resume-review-form > label,
+body .rf-dialog .rf-dialog-form:is(:has(#rf-talent-name), :has(.rf-background-checks), :has(#rf-bg-auth-status), :has(#rf-bg-contact-name), :has(#rf-bg-verify-type), :has(#rf-bg-risk-type), :has(#rf-bg-package), :has(#rf-bg-conclusion)) > label {
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 8px !important;
+      min-width: 0 !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+  }
+}
+
+@media (min-width: 761px) {
+  body .rf-dialog .rf-ai-correction-form > label.wide,
+body .rf-dialog .rf-match-correction-form > label.wide,
+body .rf-dialog .rf-resume-review-form > label.wide,
+body .rf-dialog .rf-dialog-form:is(:has(#rf-talent-name), :has(.rf-background-checks), :has(#rf-bg-auth-status), :has(#rf-bg-contact-name), :has(#rf-bg-verify-type), :has(#rf-bg-risk-type), :has(#rf-bg-package), :has(#rf-bg-conclusion)) > label.wide,
+body .rf-dialog .rf-dialog-form:is(:has(#rf-talent-name), :has(.rf-background-checks), :has(#rf-bg-auth-status), :has(#rf-bg-contact-name), :has(#rf-bg-verify-type), :has(#rf-bg-risk-type), :has(#rf-bg-package), :has(#rf-bg-conclusion)) > .rf-boundary-note {
+    grid-column: 1 / -1 !important;
+  }
+}
+
+body .rf-dialog .rf-ai-correction-form label > span,
+body .rf-dialog .rf-match-correction-form label > span,
+body .rf-dialog .rf-resume-review-form label > span,
+body .rf-dialog .rf-dialog-form:is(:has(#rf-talent-name), :has(.rf-background-checks), :has(#rf-bg-auth-status), :has(#rf-bg-contact-name), :has(#rf-bg-verify-type), :has(#rf-bg-risk-type), :has(#rf-bg-package), :has(#rf-bg-conclusion)) label > span {
+  color: #4e4538 !important;
+  font-size: 13px !important;
+  font-weight: 650 !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog .rf-ai-correction-form label > span,
+body .rf-dialog .rf-match-correction-form label > span,
+body .rf-dialog .rf-resume-review-form label > span,
+body .rf-dialog .rf-dialog-form:is(:has(#rf-talent-name), :has(.rf-background-checks), :has(#rf-bg-auth-status), :has(#rf-bg-contact-name), :has(#rf-bg-verify-type), :has(#rf-bg-risk-type), :has(#rf-bg-package), :has(#rf-bg-conclusion)) label > span {
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 4px !important;
+      width: max-content !important;
+      max-width: 100% !important;
+      margin: 0 !important;
+      white-space: nowrap !important;
+    }
+  }
+}
+
+body .rf-dialog .rf-ai-correction-form label > span b,
+body .rf-dialog .rf-match-correction-form label > span b,
+body .rf-dialog .rf-resume-review-form label > span b,
+body .rf-dialog .rf-dialog-form:has(#rf-talent-name) label > span b,
+body .rf-dialog .rf-dialog-form:has(#rf-bg-package) label > span b {
+  color: #d92d20 !important;
+}
+
+@media (min-width: 761px) {
+  body .rf-dialog .rf-background-checks {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px 16px !important;
+  }
+}
+
+@media (min-width: 761px) {
+  body .rf-dialog .rf-background-checks label {
+    display: inline-flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 8px !important;
+    width: max-content !important;
+    white-space: nowrap !important;
+  }
+}
+
+body .rf-dialog .rf-msg-confirm {
+  color: #4e4538 !important;
+  font-size: 13px !important;
+  line-height: 1.5 !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog .rf-msg-confirm {
+      display: flex !important;
+      flex-direction: row !important;
+      align-items: flex-start !important;
+      gap: 8px !important;
+      margin-top: 12px !important;
+    }
+  }
+}
+
+body .rf-dialog:has(.rf-ai-correction-form) .rf-dialog-actions,
+body .rf-dialog:has(.rf-match-correction-form) .rf-dialog-actions,
+body .rf-dialog:has(.rf-resume-review-form) .rf-dialog-actions,
+body .rf-dialog:has(#rf-talent-name) .rf-dialog-actions,
+body .rf-dialog:has(.rf-background-checks) .rf-dialog-actions,
+body .rf-dialog:has(#rf-bg-action-message) .rf-dialog-actions {
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog:has(.rf-ai-correction-form) .rf-dialog-actions,
+body .rf-dialog:has(.rf-match-correction-form) .rf-dialog-actions,
+body .rf-dialog:has(.rf-resume-review-form) .rf-dialog-actions,
+body .rf-dialog:has(#rf-talent-name) .rf-dialog-actions,
+body .rf-dialog:has(.rf-background-checks) .rf-dialog-actions,
+body .rf-dialog:has(#rf-bg-action-message) .rf-dialog-actions {
+      position: static !important;
+      justify-content: flex-end !important;
+      margin-top: 16px !important;
+      padding: 0 !important;
+    }
+  }
+}
+
+@media (max-width: 860px) {
+  @media (min-width: 761px) and (max-width: 860px) {
+    body .rf-dialog .rf-ai-correction-form,
+  body .rf-dialog .rf-match-correction-form,
+  body .rf-dialog .rf-resume-review-form,
+  body .rf-dialog .rf-background-checks,
+  body .rf-dialog .rf-dialog-form:is(:has(#rf-talent-name), :has(.rf-background-checks), :has(#rf-bg-auth-status), :has(#rf-bg-contact-name), :has(#rf-bg-verify-type), :has(#rf-bg-risk-type), :has(#rf-bg-package), :has(#rf-bg-conclusion)) {
+      grid-template-columns: 1fr !important;
+    }
+  }
+}
+
+body .rf-dialog .rf-question-sheet {
+  border: 1px solid #eadfca !important;
+  border-radius: 12px !important;
+  background: #fff !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog .rf-question-sheet {
+      display: grid !important;
+      gap: 12px !important;
+      margin-top: 16px !important;
+      padding: 16px !important;
+    }
+  }
+}
+
+@media (min-width: 761px) {
+  body .rf-dialog .rf-question-sheet .qb-review-summary {
+    margin: 0 !important;
+  }
+}
+
+@media (min-width: 761px) {
+  body .rf-dialog .qb-question-cards {
+    display: grid !important;
+    gap: 10px !important;
+  }
+}
+
+@media (min-width: 761px) {
+  body .rf-dialog .qb-card {
+    display: grid !important;
+    grid-template-columns: 42px minmax(0, 1fr) !important;
+    gap: 12px !important;
+    align-items: start !important;
+  }
+}
+
+body .rf-dialog .qb-card-number {
+  border-radius: 10px !important;
+  background: #f6f1e6 !important;
+  color: #8e6e25 !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog .qb-card-number {
+      display: grid !important;
+      place-items: center !important;
+      width: 42px !important;
+      height: 42px !important;
+    }
+  }
+}
+
+body .rf-dialog .qb-card h3 {
+  color: #2c271f !important;
+  font-size: 15px !important;
+  line-height: 1.5 !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog .qb-card h3 {
+      margin: 6px 0 0 !important;
+    }
+  }
+}
+
+@media (min-width: 761px) {
+  body .rf-dialog .qb-tags {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+  }
+}
+
+body .rf-dialog .qb-tags span {
+  border-radius: 999px !important;
+  background: #f6f1e6 !important;
+  color: #6f6454 !important;
+  font-size: 12px !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog .qb-tags span {
+      padding: 2px 8px !important;
+    }
+  }
+}
+
+@media (min-width: 761px) {
+  body .rf-dialog .rf-question-sheet .qb-card-actions {
+    justify-content: flex-end !important;
+    margin: 4px 0 0 !important;
+  }
+}
+
+@media (min-width: 761px) {
+  body .rf-dialog.rf-feedback-dialog .rf-feedback-dialog-form {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 14px 16px !important;
+  }
+}
+
+@media (min-width: 761px) {
+  body .rf-dialog.rf-feedback-dialog .rf-feedback-dialog-form > .wide,
+body .rf-dialog.rf-feedback-dialog .rf-feedback-dialog-form > .rf-feedback-ai-panel {
+    grid-column: 1 / -1 !important;
+  }
+}
+
+body .rf-dialog.rf-feedback-dialog .rf-feedback-dialog-form > label {
+  border: 0 !important;
+  background: transparent !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog.rf-feedback-dialog .rf-feedback-dialog-form > label {
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 8px !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+  }
+}
+
+body .rf-dialog.rf-feedback-dialog .rf-feedback-dialog-form > label > span {
+  color: #4e4538 !important;
+  font-size: 13px !important;
+  font-weight: 650 !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog.rf-feedback-dialog .rf-feedback-dialog-form > label > span {
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 4px !important;
+      width: max-content !important;
+      max-width: 100% !important;
+      white-space: nowrap !important;
+    }
+  }
+}
+
+body .rf-dialog.rf-feedback-dialog .rf-feedback-dialog-form > label > span b {
+  color: #d92d20 !important;
+}
+
+body .rf-dialog.rf-feedback-dialog .rf-feedback-dialog-form > label.is-invalid select,
+body .rf-dialog.rf-feedback-dialog .rf-feedback-dialog-form > label.is-invalid textarea,
+body .rf-dialog.rf-feedback-dialog .rf-feedback-dialog-form > label.is-invalid .rf-combobox-input,
+body .rf-dialog.rf-feedback-dialog .rf-feedback-ai-panel.is-invalid textarea {
+  border-color: #d92d20 !important;
+  box-shadow: 0 0 0 3px rgba(217, 45, 32, .12) !important;
+}
+
+body .rf-dialog.rf-feedback-dialog .rf-feedback-submit-actions {
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    body .rf-dialog.rf-feedback-dialog .rf-feedback-submit-actions {
+      position: static !important;
+      grid-column: 1 / -1 !important;
+      justify-content: flex-end !important;
+      margin-top: 4px !important;
+      padding: 0 !important;
+    }
+  }
+}
+
+@media (max-width: 860px) {
+  @media (min-width: 761px) and (max-width: 860px) {
+    body .rf-dialog.rf-feedback-dialog .rf-feedback-dialog-form,
+  body .rf-dialog.rf-feedback-dialog .rf-feedback-workspace,
+  body .rf-dialog.rf-feedback-dialog .rf-feedback-summary {
+      grid-template-columns: 1fr !important;
+    }
+  }
+}
+
+@media (min-width: 761px) {
+  #page-resume-archive .rf-talent-cards {
+    overflow-x: hidden !important;
+    padding-bottom: 16px !important;
+  }
+}
+
+@media (min-width: 761px) {
+  #page-resume-archive .rf-talent-cards .rf-talent-candidate {
+    grid-template-columns: 66px minmax(0, .82fr) minmax(0, 1fr) minmax(126px, 154px) !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    height: auto !important;
+    min-height: 196px !important;
+    overflow: hidden !important;
+    white-space: normal !important;
+    padding-bottom: 30px !important;
+  }
+}
+
+@media (max-width: 1180px) {
+  @media (min-width: 761px) and (max-width: 1180px) {
+    #page-resume-archive .rf-talent-cards .rf-talent-candidate {
+      grid-template-columns: 58px minmax(0, 1fr) minmax(120px, 150px) !important;
+      grid-template-areas: "avatar main side" "avatar resume resume" !important;
+    }
+  }
+
+  #page-resume-archive .rf-talent-card-resume {
+    border-left: 0 !important;
+  }
+
+  @media (min-width: 761px) and (max-width: 1180px) {
+    @media (min-width: 761px) and (min-width: 761px) and (max-width: 1180px) {
+      #page-resume-archive .rf-talent-card-resume {
+        padding-top: 8px !important;
+        padding-left: 0 !important;
+      }
+    }
+  }
+}
+
+#page-resume-archive .rf-talent-dashboard {
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    #page-resume-archive .rf-talent-dashboard {
+      display: grid !important;
+      grid-template-columns: minmax(320px, .82fr) minmax(0, 1.2fr) !important;
+      gap: 16px !important;
+      align-items: stretch !important;
+      padding: 0 !important;
+    }
+  }
+}
+
+#page-resume-archive .rf-talent-dashboard-summary {
+  border: 1px solid #eadfca !important;
+  border-right: 1px solid #eadfca !important;
+  border-radius: 14px !important;
+  background: #fff !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    #page-resume-archive .rf-talent-dashboard-summary {
+      display: grid !important;
+      grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+      grid-row: auto !important;
+      align-items: stretch !important;
+      min-height: 118px !important;
+      padding: 18px 8px !important;
+    }
+  }
+}
+
+#page-resume-archive .rf-talent-dashboard-summary article,
+#page-resume-archive .rf-talent-dashboard-summary button {
+  border-right: 1px solid #f1e7d4 !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    #page-resume-archive .rf-talent-dashboard-summary article,
+#page-resume-archive .rf-talent-dashboard-summary button {
+      min-height: 82px !important;
+      padding: 8px 12px !important;
+    }
+  }
+}
+
+#page-resume-archive .rf-talent-dashboard-summary article:last-child,
+#page-resume-archive .rf-talent-dashboard-summary button:last-child {
+  border-right: 0 !important;
+}
+
+#page-resume-archive .rf-talent-dashboard-summary strong {
+  color: #2c271f !important;
+  font-size: 28px !important;
+  line-height: 1.1 !important;
+}
+
+#page-resume-archive .rf-talent-dashboard-summary span {
+  color: #8d8272 !important;
+  font-size: 12px !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    #page-resume-archive .rf-talent-dashboard-summary span {
+      margin-top: 6px !important;
+    }
+  }
+}
+
+#page-resume-archive .rf-talent-filter-panel {
+  border: 1px solid #eadfca !important;
+  border-radius: 14px !important;
+  background: #fff !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    #page-resume-archive .rf-talent-filter-panel {
+      display: grid !important;
+      gap: 14px !important;
+      padding: 16px 18px !important;
+    }
+  }
+}
+
+@media (min-width: 761px) {
+  #page-resume-archive .rf-talent-filter-heading {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 12px !important;
+  }
+}
+
+#page-resume-archive .rf-talent-filter-heading strong {
+  color: #2c271f !important;
+  font-size: 16px !important;
+}
+
+@media (min-width: 761px) {
+  #page-resume-archive .rf-talent-filter-actions {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: 8px !important;
+    min-width: 0 !important;
+  }
+}
+
+@media (min-width: 761px) {
+  #page-resume-archive .rf-talent-filter-panel .rf-talent-list-tools {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    margin: 2px 0 0 !important;
+  }
+}
+
+#page-resume-archive .rf-talent-filter-panel .rf-list-search {
+  border: 1px solid #ddd3c2 !important;
+  border-radius: 10px !important;
+  background: #fff !important;
+  box-shadow: inset 0 1px 2px rgba(66, 49, 24, .04) !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    #page-resume-archive .rf-talent-filter-panel .rf-list-search {
+      position: relative !important;
+      display: flex !important;
+      flex: 1 1 auto !important;
+      flex-direction: row !important;
+      flex-wrap: nowrap !important;
+      align-items: center !important;
+      justify-content: flex-start !important;
+      gap: 8px !important;
+      width: auto !important;
+      min-width: 0 !important;
+      height: 44px !important;
+      min-height: 44px !important;
+      margin: 0 !important;
+      padding: 0 14px !important;
+    }
+  }
+}
+
+#page-resume-archive .rf-talent-filter-panel .rf-list-search i {
+  color: #8d8272 !important;
+  font-size: 16px !important;
+  font-style: normal !important;
+  line-height: 1 !important;
+  pointer-events: none !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    #page-resume-archive .rf-talent-filter-panel .rf-list-search i {
+      position: static !important;
+      flex: 0 0 auto !important;
+      z-index: 1 !important;
+      margin-right: 8px !important;
+      transform: none !important;
+    }
+  }
+}
+
+#page-resume-archive .rf-talent-filter-panel .rf-list-search input {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+  color: #2c271f !important;
+  font-size: 14px !important;
+  line-height: 42px !important;
+  text-align: left !important;
+  outline: none !important;
+  -webkit-appearance: none !important;
+  appearance: none !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    #page-resume-archive .rf-talent-filter-panel .rf-list-search input {
+      flex: 1 1 auto !important;
+      width: 100% !important;
+      height: 42px !important;
+      min-width: 0 !important;
+      min-height: 0 !important;
+      padding: 0 !important;
+    }
+  }
+}
+
+#page-resume-archive .rf-talent-filter-panel .rf-list-search input::placeholder {
+  color: #a39888 !important;
+  font-size: 14px !important;
+  opacity: 1 !important;
+}
+
+#page-resume-archive .rf-talent-filter-panel .rf-list-search:focus-within {
+  border-color: #c6a967 !important;
+  box-shadow: 0 0 0 3px rgba(142, 110, 37, .16) !important;
+}
+
+#page-resume-archive .rf-talent-filter-panel .rf-list-search-submit,
+#page-resume-archive .rf-talent-filter-panel #rf-refresh {
+  border-radius: 10px !important;
+  font-size: 13px !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    #page-resume-archive .rf-talent-filter-panel .rf-list-search-submit,
+#page-resume-archive .rf-talent-filter-panel #rf-refresh {
+      min-height: 36px !important;
+      padding: 0 14px !important;
+      white-space: nowrap !important;
+    }
+  }
+}
+
+#page-resume-archive .rf-talent-filter-panel #rf-refresh {
+  border: 1px solid #e4d8c2 !important;
+  background: #fff !important;
+  color: #6d5a32 !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    #page-resume-archive .rf-talent-filter-panel #rf-refresh {
+      width: 36px !important;
+      padding: 0 !important;
+    }
+  }
+}
+
+#page-resume-archive .rf-talent-filter-heading span {
+  color: #8d8272 !important;
+  font-size: 12px !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    #page-resume-archive .rf-talent-filter-heading span {
+      display: block !important;
+      margin-top: 3px !important;
+    }
+  }
+}
+
+@media (min-width: 761px) {
+  #page-resume-archive .rf-talent-filter-tools,
+#page-resume-archive .rf-talent-advanced-row {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 12px 14px !important;
+  }
+}
+
+#page-resume-archive .rf-filter-reset,
+#page-resume-archive .rf-advanced-filter {
+  border: 1px solid #e4d8c2 !important;
+  border-radius: 10px !important;
+  background: #fff !important;
+  color: #6d5a32 !important;
+  font-size: 13px !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    #page-resume-archive .rf-filter-reset,
+#page-resume-archive .rf-advanced-filter {
+      min-height: 36px !important;
+      padding: 0 12px !important;
+      white-space: nowrap !important;
+    }
+  }
+}
+
+@media (max-width: 1180px) {
+  @media (min-width: 761px) and (max-width: 1180px) {
+    #page-resume-archive .rf-talent-dashboard,
+  #page-resume-archive .rf-talent-filter-tools,
+  #page-resume-archive .rf-talent-advanced-row {
+      grid-template-columns: 1fr !important;
+    }
+  }
+
+  @media (min-width: 761px) and (max-width: 1180px) {
+    #page-resume-archive .rf-talent-dashboard-summary {
+      grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+    }
+  }
+}
+
+#page-resume-archive .rf-talent-pager {
+  border-top: 1px solid #eadfca !important;
+  background: #fffdfa !important;
+  box-shadow: none !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    #page-resume-archive .rf-talent-pager {
+      display: grid !important;
+      grid-template-columns: auto auto minmax(0, 1fr) auto auto !important;
+      gap: 10px !important;
+      align-items: center !important;
+      min-height: 68px !important;
+      margin-top: 4px !important;
+      padding: 12px 16px !important;
+    }
+  }
+}
+
+#page-resume-archive .rf-talent-pager button {
+  border: 1px solid #e4d8c2 !important;
+  border-radius: 10px !important;
+  background: #fff !important;
+  color: #6d5a32 !important;
+  font-size: 13px !important;
+  font-weight: 650 !important;
+  line-height: 1 !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    #page-resume-archive .rf-talent-pager button {
+      min-width: 76px !important;
+      min-height: 40px !important;
+      padding: 0 14px !important;
+      white-space: nowrap !important;
+    }
+  }
+}
+
+#page-resume-archive .rf-talent-pager button:hover:not(:disabled) {
+  border-color: #c6a967 !important;
+  background: #fbf7ef !important;
+}
+
+#page-resume-archive .rf-talent-pager button:disabled {
+  color: #b7ad9e !important;
+  background: #f7f4ee !important;
+  cursor: not-allowed !important;
+}
+
+#page-resume-archive .rf-talent-pager span {
+  color: #4e4538 !important;
+  font-size: 14px !important;
+  font-weight: 650 !important;
+  line-height: 1.35 !important;
+  text-align: center !important;
+}
+
+#page-resume-archive .rf-talent-pager small {
+  color: #8d8272 !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+}
+
+@media (min-width: 761px) {
+  @media (min-width: 761px) and (min-width: 761px) {
+    #page-resume-archive .rf-talent-pager small {
+      display: block !important;
+      margin-top: 2px !important;
+    }
+  }
+}
+
+@media (min-width: 761px) {
+  #page-resume-archive .rf-talent-card-main,
+#page-resume-archive .rf-talent-tags {
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+}
+
+@media (min-width: 761px) {
+  #page-resume-archive .rf-talent-tags {
+    margin-bottom: 4px !important;
+  }
+}
+
+@media (min-width: 761px) {
+  #page-resume-archive .rf-talent-tags span {
+    max-width: 100% !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+}
+

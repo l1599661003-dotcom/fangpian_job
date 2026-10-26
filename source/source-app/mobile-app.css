@@ -1,0 +1,596 @@
+.rf-appbar,
+.rf-app-tabs,
+.rf-app-shortcuts,
+.rf-mobile-disclosure > button {
+  display: none;
+}
+
+.rf-mobile-disclosure {
+  display: contents;
+}
+
+.rf-app-menu:not([open]) {
+  display: none;
+}
+
+@media (max-width: 760px) {
+  :root {
+    --rf-app-primary: #2c5045;
+    --rf-app-soft: #e9f0eb;
+    --rf-app-line: #e8ebe5;
+    --rf-mobile-gutter: 16px;
+  }
+
+  body #talent-app .sidebar,
+  body #talent-app .topbar {
+    display: none !important;
+  }
+
+  body #talent-app .content {
+    min-height: calc(100dvh - 66px);
+    padding: 18px 16px calc(96px + env(safe-area-inset-bottom)) !important;
+    background: #f5f6f2 !important;
+  }
+
+  body #talent-app .rf-appbar {
+    position: sticky;
+    top: 0;
+    z-index: 65;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 66px;
+    padding: max(10px, env(safe-area-inset-top)) 16px 10px;
+    border-bottom: 1px solid var(--rf-app-line);
+    background: #fffefa;
+  }
+
+  .rf-appbar > div {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .rf-appbar small,
+  .rf-appbar strong {
+    display: block;
+  }
+
+  .rf-appbar small {
+    color: #847b67;
+    font-size: 10px;
+    letter-spacing: .12em;
+  }
+
+  .rf-appbar strong {
+    margin-top: 3px;
+    color: #263e35;
+    font-size: 21px;
+    font-weight: 700;
+  }
+
+  .rf-appbar button,
+  .rf-app-menu header > button {
+    display: grid;
+    place-items: center;
+    flex: 0 0 44px;
+    width: 44px;
+    height: 44px;
+    padding: 10px;
+    border: 1px solid var(--rf-app-line);
+    border-radius: 14px;
+    background: #f8f8f3;
+    color: var(--rf-app-primary);
+    cursor: pointer;
+  }
+
+  .rf-appbar button[hidden],
+  .rf-app-menu button[hidden],
+  body #talent-app .rf-app-tabs[hidden] {
+    display: none;
+  }
+
+  :is(.rf-appbar, .rf-app-tabs, .rf-app-menu, .rf-app-shortcuts, .rf-mobile-disclosure) svg {
+    display: block;
+    flex-shrink: 0;
+    width: 23px;
+    height: 23px;
+  }
+
+  body #talent-app .rf-app-tabs {
+    position: fixed;
+    z-index: 70;
+    inset: auto 0 0;
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
+    padding: 8px 10px calc(8px + env(safe-area-inset-bottom));
+    border-top: 1px solid #e0e6dd;
+    background: #fffefa;
+    box-shadow: 0 -3px 20px rgba(33, 53, 41, .035);
+  }
+
+  .rf-app-tabs button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    min-width: 0;
+    min-height: 54px;
+    padding: 4px;
+    border: 0;
+    border-radius: 14px;
+    background: transparent;
+    color: #7d8278;
+    font: 12px "OPPO Sans 4.0", sans-serif;
+    cursor: pointer;
+  }
+
+  .rf-app-tabs button[aria-current="page"] {
+    background: var(--rf-app-soft);
+    color: #244a3d;
+    font-weight: 700;
+  }
+
+  body:has(#rf-talent-dialog) #talent-app .rf-app-tabs,
+  body:has(#rf-talent-dialog) #talent-app .rf-appbar,
+  body.rf-mobile-input-focus #talent-app .rf-app-tabs {
+    display: none;
+  }
+
+  body.rf-mobile-input-focus #talent-app .rf-appbar {
+    position: relative;
+  }
+
+  body .rf-app-menu {
+    box-sizing: border-box;
+    inset: auto 0 0;
+    width: 100%;
+    max-width: 100%;
+    max-height: calc(100dvh - 20px);
+    margin: 0;
+    padding: 22px 20px calc(24px + env(safe-area-inset-bottom));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    border: 0;
+    border-radius: 28px 28px 0 0;
+    background: #f8f9f5;
+    color: #293b32;
+    font-family: "OPPO Sans 4.0", "Source Han Sans CN", sans-serif;
+  }
+
+  .rf-app-menu::backdrop {
+    background: rgba(22, 36, 29, .4);
+    backdrop-filter: blur(3px);
+  }
+
+  .rf-app-menu header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+
+  .rf-app-menu header small {
+    font-size: 10px;
+    letter-spacing: .14em;
+    color: #8b805e;
+  }
+
+  .rf-app-menu h2 {
+    margin: 6px 0 0;
+    font-size: 24px;
+  }
+
+  .rf-app-menu header > button {
+    font-size: 25px;
+  }
+
+  .rf-app-account {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    border-radius: 18px;
+    background: var(--rf-app-primary);
+    color: #fff;
+  }
+
+  .rf-app-account > span {
+    display: grid;
+    place-items: center;
+    flex: 0 0 44px;
+    height: 44px;
+    border: 1px solid #9baf9f;
+    border-radius: 14px;
+    font-size: 21px;
+  }
+
+  .rf-app-account strong,
+  .rf-app-account small {
+    display: block;
+    overflow-wrap: anywhere;
+  }
+
+  .rf-app-account small {
+    margin-top: 5px;
+    color: #d9e3d9;
+    font-size: 12px;
+  }
+
+  .rf-app-menu h3 {
+    margin: 22px 0 10px;
+    color: #7c8275;
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  .rf-app-menu section > div {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .rf-app-menu section button {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    min-width: 0;
+    min-height: 60px;
+    padding: 12px;
+    border: 1px solid var(--rf-app-line);
+    border-radius: 14px;
+    background: #fff;
+    color: #33493d;
+    text-align: left;
+    font: 14px "OPPO Sans 4.0", sans-serif;
+    cursor: pointer;
+  }
+
+  .rf-app-menu section button i {
+    margin-left: auto;
+    color: #a1ac9f;
+    font-style: normal;
+  }
+
+  .rf-app-menu section button[aria-current="page"] {
+    border-color: #9caf99;
+    background: var(--rf-app-soft);
+  }
+
+  .rf-app-menu footer {
+    display: flex;
+    gap: 10px;
+    margin-top: 22px;
+  }
+
+  .rf-app-menu footer button {
+    flex: 1;
+    min-height: 48px;
+    border: 1px solid #dce2d7;
+    border-radius: 12px;
+    background: #fff;
+    color: #4e5c4e;
+    font-size: 14px;
+    cursor: pointer;
+  }
+
+  .rf-app-menu footer [data-mobile-logout] {
+    color: #a14c3d;
+  }
+
+  :is(.rf-app-menu, .rf-appbar, .rf-app-tabs, .rf-app-shortcuts, .rf-mobile-disclosure) button:focus-visible {
+    outline: 2px solid #8b702d;
+    outline-offset: 3px;
+  }
+
+  body #talent-app .page-head,
+  body #page-resume-archive .rf-workbench-head {
+    padding-bottom: 14px !important;
+    gap: 12px !important;
+  }
+
+  body #talent-app .page-head h1,
+  body #talent-app .page-head .rf-page-kicker {
+    display: none;
+  }
+
+  body #talent-app .page-head p {
+    margin: 0 !important;
+    color: #7c8378 !important;
+    font-size: 13px !important;
+    line-height: 1.6 !important;
+  }
+
+  body #talent-app .page .head-actions,
+  body #talent-app .page .rf-job-head-actions {
+    display: flex !important;
+    flex-wrap: wrap;
+    gap: 8px !important;
+  }
+
+  body #talent-app .page :is(.head-actions, .rf-job-head-actions) > button {
+    flex: 1;
+    width: auto !important;
+    min-width: 100px !important;
+  }
+
+  body #talent-app .page .btn-primary,
+  body .rf-dialog .btn-primary {
+    border-color: var(--rf-app-primary) !important;
+    background: var(--rf-app-primary) !important;
+  }
+
+  body #talent-app .rf-app-shortcuts {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+    margin: 2px 0 18px;
+  }
+
+  body #talent-app .rf-app-shortcuts button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 9px;
+    min-width: 0;
+    padding: 14px 4px;
+    border: 1px solid #e6eadd;
+    border-radius: 18px;
+    background: #fffefa;
+    color: #405b47;
+    font-size: 12px !important;
+  }
+
+  body #talent-app .rf-app-shortcuts svg {
+    width: 24px;
+    height: 24px;
+    color: #987c38;
+  }
+
+  body #page-overview .overview-filter-bar {
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    align-items: center;
+  }
+
+  body #page-overview .overview-filter-bar > label {
+    grid-column: auto;
+  }
+
+  body #page-overview .overview-filter-bar > span {
+    display: none;
+  }
+
+  body #page-overview .overview-filter-bar button {
+    width: auto !important;
+    min-width: 78px !important;
+  }
+
+  body #page-overview .overview-metric-card {
+    min-height: 108px !important;
+    padding: 12px !important;
+  }
+
+  body #page-resume-archive .rf-talent-dashboard-summary {
+    display: flex !important;
+    gap: 0 !important;
+    overflow-x: auto;
+    padding: 12px 4px !important;
+    border: 1px solid var(--rf-app-line);
+    border-radius: 16px;
+    background: #fff;
+  }
+
+  body #page-jobs .rf-job-summary {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 6px !important;
+  }
+
+  body #page-jobs .rf-job-summary > article {
+    display: block !important;
+    min-height: 80px !important;
+    padding: 12px 4px !important;
+    text-align: center;
+  }
+
+  body #page-jobs .rf-job-summary .rf-job-summary-mark {
+    display: none !important;
+  }
+
+  body #page-jobs .rf-job-summary small {
+    font-size: 11px !important;
+  }
+
+  body #page-jobs .rf-job-toolbar .filter-chip {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center;
+  }
+
+  body #page-jobs .rf-job-toolbar .filter-chip > span {
+    flex: 0 0 60px;
+  }
+
+  body #page-jobs .rf-job-toolbar .filter-chip > input {
+    flex: 1;
+    min-width: 0 !important;
+    width: 100% !important;
+    text-align: left !important;
+  }
+
+  body #page-resume-archive .rf-talent-dashboard-summary > * {
+    flex: 1 0 60px;
+    min-width: 0;
+    padding: 4px 6px !important;
+    border: 0;
+    border-radius: 0;
+    background: transparent !important;
+    text-align: center;
+  }
+
+  body #page-resume-archive .rf-talent-dashboard-summary > * + * {
+    border-left: 1px solid var(--rf-app-line);
+  }
+
+  body #page-resume-archive .rf-talent-dashboard-summary strong {
+    font-size: 22px !important;
+    color: #365744;
+  }
+
+  body #page-resume-archive .rf-talent-dashboard-summary span {
+    font-size: 11px !important;
+    white-space: nowrap;
+  }
+
+  body #talent-app .rf-mobile-disclosure {
+    display: block;
+    margin-block: 10px;
+    border: 1px solid var(--rf-app-line);
+    border-radius: 14px;
+    background: #fff;
+  }
+
+  body #talent-app .rf-mobile-disclosure > button {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    min-height: 48px;
+    padding: 10px 14px;
+    border: 0;
+    border-radius: 14px;
+    background: transparent;
+    color: #465848;
+    text-align: left;
+  }
+
+  .rf-mobile-disclosure > button > span:last-child {
+    margin-left: auto;
+    color: #8a8169;
+  }
+
+  body #talent-app .rf-mobile-disclosure[data-collapsed="true"] > :not(button) {
+    display: none !important;
+  }
+
+  body #page-resume-archive .rf-talent-filter-panel {
+    border: 0 !important;
+    box-shadow: none !important;
+  }
+
+  body #page-resume-archive #rf-search-submit {
+    min-width: 56px !important;
+    padding-inline: 10px !important;
+    white-space: nowrap;
+  }
+
+  body #talent-app .rf-mobile-record-table,
+  body #talent-app .rf-mobile-record-table tbody {
+    display: block;
+    width: 100%;
+    min-width: 0 !important;
+    border: 0;
+  }
+
+  body #talent-app .rf-mobile-record-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  body #talent-app .rf-mobile-record-table tbody tr {
+    display: block;
+    margin: 0 0 12px;
+    padding: 8px 12px;
+    border: 1px solid var(--rf-app-line);
+    border-radius: 16px;
+    background: #fff;
+  }
+
+  body #talent-app .rf-mobile-record-table tbody td {
+    display: grid;
+    grid-template-columns: minmax(68px, .35fr) minmax(0, 1fr);
+    align-items: start;
+    gap: 6px 12px;
+    width: auto !important;
+    min-width: 0 !important;
+    padding: 10px 0 !important;
+    border: 0;
+    border-bottom: 1px solid #f0f2eb;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    text-align: left;
+  }
+
+  body #talent-app .rf-mobile-record-table tbody td::before {
+    content: attr(data-mobile-label);
+    grid-column: 1;
+    grid-row: 1 / span 20;
+    color: #89907f;
+    font-size: 12px;
+    line-height: 1.7;
+  }
+
+  body #talent-app .rf-mobile-record-table tbody td > * {
+    grid-column: 2;
+    max-width: 100%;
+  }
+
+  body #talent-app .rf-mobile-record-table tbody td:last-child {
+    border-bottom: 0;
+  }
+
+  body .rf-dialog-backdrop {
+    padding: 0 !important;
+    align-items: stretch !important;
+  }
+
+  body .rf-dialog,
+  body .rf-dialog.wide,
+  body .rf-dialog.full,
+  body .rf-dialog:has(.rf-schedule-time) {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    border-radius: 0 !important;
+    border: 0 !important;
+    margin: 0 !important;
+    padding-top: max(16px, env(safe-area-inset-top)) !important;
+    background: #f9faf6 !important;
+  }
+
+  body .rf-dialog > .rf-dialog-close {
+    position: sticky !important;
+    top: 0 !important;
+    float: right !important;
+    z-index: 25;
+    margin: 0 0 -44px !important;
+    background: #fff !important;
+    border: 1px solid #e1e5da !important;
+    border-radius: 12px !important;
+  }
+
+  body .rf-dialog .rf-dialog-head {
+    min-height: 44px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--rf-app-line);
+  }
+
+  body .rf-dialog .rf-dialog-head > div > span {
+    display: none;
+  }
+
+  body .rf-dialog .rf-dialog-head h2 {
+    color: #2c4739;
+    font-family: "OPPO Sans 4.0", sans-serif;
+    font-size: 21px !important;
+  }
+
+  body .rf-dialog .rf-dialog-actions {
+    gap: 10px !important;
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+  }
+}

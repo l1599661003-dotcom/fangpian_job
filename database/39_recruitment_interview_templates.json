@@ -1,0 +1,53 @@
+[
+  {
+    "id": "rec69AxGX2biuwYlu0D",
+    "fields": {
+      "候选人类型": "应届生",
+      "创建人": "系统",
+      "创建时间": "2026-09-28T07:54:01.988Z",
+      "更新时间": "2026-09-28T07:54:01.989Z",
+      "模板名称": "应届生结构化面试清单",
+      "模板状态": "启用",
+      "版本": 1,
+      "维度JSON": "[{\"key\":\"professional\",\"label\":\"专业能力\",\"weight\":30},{\"key\":\"communication\",\"label\":\"沟通能力\",\"weight\":20},{\"key\":\"execution\",\"label\":\"执行能力\",\"weight\":20},{\"key\":\"culture\",\"label\":\"文化匹配\",\"weight\":15},{\"key\":\"potential\",\"label\":\"发展潜力\",\"weight\":15}]",
+      "适用轮次": "一面",
+      "问题JSON": "[{\"dimension\":\"学习潜力\",\"question\":\"请讲一次你快速学习新知识并完成任务的经历。\",\"followUp\":\"目标、行动、结果分别是什么？\",\"observation\":\"学习方法和复盘能力\",\"id\":\"q1\"},{\"dimension\":\"沟通协作\",\"question\":\"请讲一次团队意见不一致时你如何推进。\",\"observation\":\"倾听、表达和共识\",\"id\":\"q2\"}]",
+      "面试模板ID": "interviewtpl_85b0ea7290094dd7a60a"
+    },
+    "createdTime": "2026-09-28T07:54:02.030Z"
+  },
+  {
+    "id": "reczNjjtyiqiYyAbk9o",
+    "fields": {
+      "候选人类型": "社招",
+      "创建人": "系统",
+      "创建时间": "2026-09-28T07:54:02.125Z",
+      "更新时间": "2026-09-28T07:54:02.125Z",
+      "模板名称": "社招一面问题模板",
+      "模板状态": "启用",
+      "版本": 1,
+      "维度JSON": "[{\"key\":\"professional\",\"label\":\"专业能力\",\"weight\":30},{\"key\":\"communication\",\"label\":\"沟通能力\",\"weight\":20},{\"key\":\"execution\",\"label\":\"执行能力\",\"weight\":20},{\"key\":\"culture\",\"label\":\"文化匹配\",\"weight\":15},{\"key\":\"potential\",\"label\":\"发展潜力\",\"weight\":15}]",
+      "适用轮次": "一面",
+      "问题JSON": "[{\"dimension\":\"专业能力\",\"question\":\"请说明与你应聘岗位最相关的项目和量化结果。\",\"followUp\":\"你的个人贡献占比是多少？\",\"observation\":\"事实、数据和归因\",\"id\":\"q1\"},{\"dimension\":\"离职动因\",\"question\":\"最近一次考虑离职的主要原因是什么？\",\"observation\":\"动机一致性\",\"id\":\"q2\"}]",
+      "面试模板ID": "interviewtpl_0a4f5dfed9e24ca89797"
+    },
+    "createdTime": "2026-09-28T07:54:02.168Z"
+  },
+  {
+    "id": "recpXwnwuZMcizNW4Kx",
+    "fields": {
+      "候选人类型": "社招",
+      "创建人": "系统",
+      "创建时间": "2026-09-28T07:54:02.248Z",
+      "更新时间": "2026-09-28T07:54:02.248Z",
+      "模板名称": "社招二面问题模板",
+      "模板状态": "启用",
+      "版本": 1,
+      "维度JSON": "[{\"key\":\"professional\",\"label\":\"专业能力\",\"weight\":30},{\"key\":\"communication\",\"label\":\"沟通能力\",\"weight\":20},{\"key\":\"execution\",\"label\":\"执行能力\",\"weight\":20},{\"key\":\"culture\",\"label\":\"文化匹配\",\"weight\":15},{\"key\":\"potential\",\"label\":\"发展潜力\",\"weight\":15}]",
+      "适用轮次": "二面",
+      "问题JSON": "[{\"dimension\":\"业务判断\",\"question\":\"面对目标冲突和资源不足，你如何排序并承担结果？\",\"observation\":\"业务判断和担当\",\"id\":\"q1\"},{\"dimension\":\"管理能力\",\"question\":\"请讲一次带队达成困难目标的经历。\",\"followUp\":\"如何分工、反馈和纠偏？\",\"observation\":\"管理闭环\",\"id\":\"q2\"}]",
+      "面试模板ID": "interviewtpl_8e7b02291d0a4390a324"
+    },
+    "createdTime": "2026-09-28T07:54:02.293Z"
+  }
+]

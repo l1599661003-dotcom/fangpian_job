@@ -1,0 +1,89 @@
+[
+  {
+    "name": "AI岗位匹配补全",
+    "description": "补漏：为最新简历缺失AI分析或当前评分为0的人才批量生成评分、岗位匹配和标签",
+    "cron": "0 19 * * *",
+    "schedule": "每天 03:00（北京时间）",
+    "file": "server/tasks/batch-ai-analysis.task.ts",
+    "line": 26,
+    "enabled_in_code": "yes"
+  },
+  {
+    "name": "每日招聘需求录入提醒",
+    "description": "每天晚上6点向已启用的部门负责人发送招聘需求录入提醒和直达链接",
+    "cron": "0 18 * * *",
+    "schedule": "每天 18:00",
+    "file": "server/tasks/daily-demand-reminder.task.ts",
+    "line": 67,
+    "enabled_in_code": "yes"
+  },
+  {
+    "name": "每日部门岗位达成看板",
+    "description": "每天晚上9点生成部门岗位达成长图，并以图片消息推送到人才群",
+    "cron": "0 21 * * *",
+    "schedule": "每天 21:00",
+    "file": "server/tasks/daily-hiring-dashboard.task.ts",
+    "line": 184,
+    "enabled_in_code": "yes"
+  },
+  {
+    "name": "每日招聘动态推送",
+    "description": "每天晚上6点汇总当日简历入库、面试场次、Offer、入职和来源分类，并推送到企微群",
+    "cron": "0 18 * * *",
+    "schedule": "每天 18:00",
+    "file": "server/tasks/daily-recruitment-activity-push.task.ts",
+    "line": 143,
+    "enabled_in_code": "yes"
+  },
+  {
+    "name": "每日企微简历推送",
+    "description": "每天20点汇总当天批量入库简历，并补发评分达标且尚未发送的评审通知",
+    "cron": "0 20 * * *",
+    "schedule": "每天 20:00",
+    "file": "server/tasks/daily-wecom-resume-push.task.ts",
+    "line": 56,
+    "enabled_in_code": "no"
+  },
+  {
+    "name": "面试前10分钟双向提醒",
+    "description": "每分钟检查已确认面试；开始前10分钟提醒面试官，开始前一天早上9点邮件提醒候选人，失败重试，取消和改期按最新安排处理",
+    "cron": "* * * * *",
+    "schedule": "每分钟检查面试时间提醒",
+    "file": "server/tasks/recruitment-flow.task.ts",
+    "line": 73,
+    "enabled_in_code": "yes"
+  },
+  {
+    "name": "招聘流程自动推进",
+    "description": "面试题预生成补偿、面试结束后评价入口、每日评价催填、评价完成交接HR填写Offer和入职提醒",
+    "cron": "*/10 * * * *",
+    "schedule": "每10分钟",
+    "file": "server/tasks/recruitment-flow.task.ts",
+    "line": 84,
+    "enabled_in_code": "yes"
+  },
+  {
+    "name": "八方背调报告同步",
+    "description": "按天拉取八方锦程背调报告，并回写到对应背调任务",
+    "cron": "0 */6 * * *",
+    "schedule": "每6小时",
+    "file": "server/tasks/sync-gdbf-background-reports.task.ts",
+    "line": 3,
+    "enabled_in_code": "yes"
+  },
+  {
+    "name": "",
+    "cron": "15 18 * * *",
+    "schedule": "每天 18:15",
+    "file": "tests/task-dashboard.test.mjs",
+    "line": 15,
+    "enabled_in_code": "no"
+  },
+  {
+    "name": "",
+    "cron": "0 9 * * *",
+    "file": "tests/task-dashboard.test.mjs",
+    "line": 38,
+    "enabled_in_code": "no"
+  }
+]

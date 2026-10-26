@@ -1,0 +1,121 @@
+# 人才管理系统 · 应用导出
+
+- 应用 ID: 01M0HW28HH2GK7FFH4Y76DJTJB
+- 版本: 1.0.93
+- 导出时间: 2026-10-26 10:26:11 (北京时间)
+- 源码版本(git tree): 2a55856c8be35a9a916b1b11ea2d6bc0d502a267
+- 导出内容: 代码 / 数据库 / 上传文件地址 / 配置文件 / 版本记录 / 部署说明
+
+## 目录
+
+- `CHANGELOG.md` 应用档案与更新记录: 应用概况、发布与访问、每个版本的更新说明、代码备份、本次导出概况(每个包都带)。
+- `source/` 工作区源码, 共 398 个文件。只含纳入版本管理的文件: `.gitignore` 排除的内容(如 `.env.local`、`node_modules`、构建产物)不在包内, 需要时请自行补齐。
+- `database/` 数据库, 共 97 张表。`schema.json` 为表与字段定义; 每张表一份 `.csv`(可直接用 Excel 打开)和一份 `.json`(原始记录)。多选、关联、附件等复杂字段在 CSV 里是 JSON 文本。
+  - example_notes: 0 行
+  - resume_api_settings: 4 行
+  - resume_extraction_records: 1524 行
+  - recruitment_demands: 1 行
+  - recruitment_demand_owner_events: 0 行
+  - recruitment_positions: 93 行
+  - recruitment_demand_approval_events: 0 行
+  - recruitment_position_versions: 76 行
+  - recruitment_collection_tasks: 12 行
+  - recruitment_collection_task_events: 12 行
+  - recruitment_channels: 0 行
+  - recruitment_position_channels: 0 行
+  - recruitment_candidates: 1504 行
+  - recruitment_candidate_duplicate_cases: 2218 行
+  - recruitment_candidate_merge_events: 0 行
+  - recruitment_candidate_owner_events: 0 行
+  - recruitment_candidate_contact_locks: 1 行
+  - recruitment_applications: 1719 行
+  - recruitment_stage_events: 2204 行
+  - recruitment_candidate_tags: 39116 行
+  - recruitment_ai_assessments: 2678 行
+  - recruitment_job_matches: 8303 行
+  - recruitment_communications: 20 行
+  - recruitment_candidate_reviews: 5 行
+  - recruitment_communication_templates: 4 行
+  - recruitment_question_bank: 524 行
+  - recruitment_assessment_templates: 0 行
+  - recruitment_assessment_invites: 0 行
+  - recruitment_assessment_answers: 0 行
+  - recruitment_assessment_events: 0 行
+  - recruitment_assessment_reviews: 0 行
+  - recruitment_interviews: 44 行
+  - recruitment_interviewer_pool: 0 行
+  - recruitment_interviewer_availability: 0 行
+  - recruitment_meeting_rooms: 24 行
+  - recruitment_interview_sync_events: 54 行
+  - recruitment_interview_invite_templates: 2 行
+  - recruitment_interview_feedback: 42 行
+  - recruitment_interview_templates: 3 行
+  - recruitment_interview_notes: 23 行
+  - recruitment_interview_decisions: 0 行
+  - recruitment_salary_benchmarks: 0 行
+  - recruitment_offers: 23 行
+  - recruitment_offer_versions: 28 行
+  - recruitment_offer_approval_events: 0 行
+  - recruitment_offer_templates: 2 行
+  - recruitment_offer_send_events: 14 行
+  - recruitment_offer_negotiations: 0 行
+  - recruitment_background_checks: 6 行
+  - recruitment_background_contacts: 0 行
+  - recruitment_background_verifications: 0 行
+  - recruitment_background_risks: 0 行
+  - recruitment_background_events: 12 行
+  - recruitment_onboarding_cases: 18 行
+  - recruitment_onboarding_documents: 0 行
+  - recruitment_onboarding_tasks: 85 行
+  - recruitment_probation_reviews: 54 行
+  - recruitment_offboarding_cases: 0 行
+  - recruitment_exit_interviews: 0 行
+  - recruitment_followups: 0 行
+  - recruitment_employee_lifecycle_events: 35 行
+  - recruitment_referrals: 108 行
+  - recruitment_referral_rewards: 0 行
+  - recruitment_tasks: 783 行
+  - recruitment_audit_logs: 37941 行
+  - resume_api_usage_logs: 0 行
+  - recruitment_roles: 11 行
+  - recruitment_user_roles: 456 行
+  - recruitment_referral_campaigns: 42 行
+  - recruitment_referral_reward_rules: 0 行
+  - recruitment_referral_events: 114 行
+  - recruitment_stage_rules: 24 行
+  - recruitment_stage_sla_events: 0 行
+  - recruitment_message_templates: 8 行
+  - recruitment_messages: 279 行
+  - recruitment_message_send_events: 2640 行
+  - recruitment_message_trigger_rules: 0 行
+  - recruitment_message_trigger_runs: 0 行
+  - recruitment_task_events: 0 行
+  - recruitment_candidate_rating_events: 0 行
+  - recruitment_report_exports: 0 行
+  - recruitment_users: 370 行
+  - recruitment_organization_units: 200 行
+  - recruitment_sensitive_access_requests: 0 行
+  - recruitment_resume_versions: 1696 行
+  - resume_batch_imports: 131 行
+  - resume_batch_import_items: 3286 行
+  - recruitment_login_sessions: 238 行
+  - recruitment_talent_review_shares: 193 行
+  - recruitment_talent_review_responses: 23 行
+  - recruitment_interview_mail_events: 78 行
+  - recruitment_interview_candidate_forms: 14 行
+  - ScheduledTasks: 8 行
+  - ScheduledTaskRuns: 44895 行
+  - __health_probe__: 0 行
+  - recruitment_monthly_demands: 47 行
+  - recruitment_public_links: 178 行
+- `files/manifest.csv` 关联文件的下载地址清单(不含文件本体): 文件 0 个、应用运行时上传 5500 个、数据库附件 0 个。
+- `config/` 配置文件: `env.example` 列出应用用到的 18 个环境变量(**值已脱敏**, 部署时需自行填写),`app.json` 为应用基础配置。
+  - `apis.csv` / `apis.json` 接口清单, 共 309 个(从源码扫出, 含方法、路径与代码位置; 「平台框架」类在离开平台后随框架一并改造)。
+  - `scheduled-tasks.csv` / `.json` 定时任务, 共 10 个(按代码里的定义; 在平台上改过的执行频率与启停状态记在应用数据库的 `ScheduledTasks` 表里, 勾选「数据库」时一并导出)。
+- `versions/` 版本记录: 最近 20 个版本(`versions.csv` / `versions.json`)。
+  - 最近 20 次代码备份(`backups.csv` / `backups.json`): 备份时间、类型与对应的代码提交。
+- `DEPLOY.md` 本地运行与私有化部署说明。
+
+**下载地址在 2026-10-27 10:26(北京时间)前有效**, 过期后请回到平台重新导出以获取新地址。数据库附件的地址由数据库服务签发, 有效期可能更短。
+
+不含运行日志与访问统计。导出内容含业务数据, 请妥善保管。

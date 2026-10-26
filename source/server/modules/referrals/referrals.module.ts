@@ -1,0 +1,2 @@
+import{Module}from'@nestjs/common';import{DatabaseModule}from'../database/database.module';import{ResumesModule}from'../resumes/resumes.module';import{PublicReferralsController}from'./public-referrals.controller';import{ReferralsController}from'./referrals.controller';import{ReferralsService}from'./referrals.service';
+@Module({imports:[DatabaseModule,ResumesModule],controllers:[ReferralsController,PublicReferralsController],providers:[ReferralsService]})export class ReferralsModule{}

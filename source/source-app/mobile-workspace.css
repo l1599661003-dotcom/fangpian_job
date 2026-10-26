@@ -1,0 +1,450 @@
+@media (max-width: 760px) {
+  :root {
+    --rf-mobile-gutter: 16px;
+    --rf-surface: #fffefa;
+    --rf-ink: #302b23;
+    --rf-muted: #746b5e;
+    --rf-line: #e7e1d6;
+    --rf-accent: #976d20;
+    --rf-accent-soft: #f8eed9;
+  }
+
+  body,
+  body #talent-app .content,
+  body:has(.resumeflow-page.active) .content {
+    background: #f5f3ee !important;
+    background-image: none !important;
+    font-family: "OPPO Sans 4.0", "Source Han Sans CN", sans-serif;
+    color: var(--rf-ink);
+  }
+
+  body #talent-app .content {
+    padding-top: 24px !important;
+  }
+
+  body #talent-app .sidebar {
+    position: relative !important;
+    padding: max(10px, env(safe-area-inset-top)) 12px 10px !important;
+    border-radius: 0 !important;
+    background: #342e23 !important;
+    box-shadow: none !important;
+  }
+
+  body #talent-app .brand {
+    padding: 0 2px 10px !important;
+  }
+
+  body #talent-app .brand-logo {
+    width: 30px !important;
+    height: 30px !important;
+  }
+
+  body #talent-app .brand-copy strong {
+    font-size: 15px !important;
+  }
+
+  body #talent-app .brand-copy::after {
+    content: "招聘 · 面试 · 入职";
+    font-size: 11px;
+    letter-spacing: .08em;
+  }
+
+  body #talent-app .nav-group {
+    gap: 6px !important;
+    scrollbar-width: thin;
+    scrollbar-color: #7d6a46 transparent;
+  }
+
+  body #talent-app .nav-item {
+    border-radius: 10px !important;
+    padding-inline: 12px !important;
+    border-color: transparent !important;
+    background: transparent !important;
+    color: #e8e0d0 !important;
+  }
+
+  body #talent-app .nav-item.active {
+    background: #f0d69b !important;
+    color: #392b14 !important;
+    box-shadow: none !important;
+  }
+
+  body #talent-app .nav-text {
+    font-size: 14px !important;
+    font-weight: 600 !important;
+  }
+
+  body #talent-app .topbar {
+    background: #fffefa !important;
+    padding-block: 8px !important;
+    box-shadow: none !important;
+    border-bottom: 1px solid var(--rf-line) !important;
+  }
+
+  body #talent-app .current-user-card {
+    max-width: 65%;
+    padding: 2px !important;
+    border: 0;
+    background: transparent !important;
+  }
+
+  body #talent-app .current-user-meta strong {
+    font-size: 13px;
+  }
+
+  body #talent-app .current-user-meta span {
+    font-size: 12px;
+  }
+
+  body #talent-app :is(.access-entry, [data-auth-logout]) {
+    min-height: 44px !important;
+    font-size: 13px !important;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  body #talent-app [data-auth-logout] {
+    min-width: 44px;
+  }
+
+  body #talent-app .page-head,
+  body #page-resume-archive .rf-workbench-head {
+    padding: 0 0 20px !important;
+    gap: 16px !important;
+  }
+
+  body #talent-app .page-head::before,
+  body #page-resume-archive .rf-workbench-head::before {
+    content: none !important;
+  }
+
+  body #talent-app .page-head h1,
+  body #page-resume-archive .rf-workbench-head h1 {
+    font-family: "Source Han Serif CN", serif;
+    font-size: 26px !important;
+    line-height: 1.4 !important;
+    letter-spacing: -.02em;
+  }
+
+  body #talent-app .page-head p,
+  body #page-resume-archive .rf-workbench-head p {
+    margin-top: 8px !important;
+    font-size: 14px !important;
+    line-height: 1.7 !important;
+    color: #746b5e !important;
+  }
+
+  body #talent-app .rf-page-kicker {
+    margin-bottom: 6px;
+    font-size: 11px !important;
+    letter-spacing: .12em;
+  }
+
+  body #talent-app .page :is(p, td, th, dd, label),
+  body :is(.rf-dialog, .rf-public-assessment, .rf-public-referral) :is(p, label, dd) {
+    font-size: 14px !important;
+    line-height: 1.65 !important;
+  }
+
+  body #talent-app .page small,
+  body :is(.rf-dialog, .rf-public-assessment, .rf-public-referral) small {
+    font-size: 13px !important;
+    line-height: 1.6 !important;
+  }
+
+  body #talent-app .page :is(button, .btn-soft, .btn-primary),
+  body :is(.rf-dialog, .rf-public-assessment, .rf-public-referral) button {
+    box-sizing: border-box;
+    max-width: 100%;
+    min-height: 44px !important;
+    scroll-margin-block: 16px;
+    font-family: "OPPO Sans 4.0", "Source Han Sans CN", sans-serif;
+    font-size: 14px !important;
+    line-height: 1.45 !important;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  body :is(#talent-app, .rf-dialog, .rf-public-assessment, .rf-public-referral) .btn-primary {
+    min-height: 48px !important;
+    border: 1px solid #89631e !important;
+    border-radius: 12px !important;
+    background: #976d20 !important;
+    color: #fff !important;
+    box-shadow: none !important;
+    font-weight: 650;
+  }
+
+  body :is(#talent-app, .rf-dialog, .rf-public-assessment) :is(.btn-soft, .btn-secondary) {
+    border-color: #ded6c7 !important;
+    border-radius: 12px !important;
+    background: #fffefa !important;
+    color: #5a4b32 !important;
+    box-shadow: none !important;
+  }
+
+  body :is(#talent-app, .rf-dialog, .rf-public-assessment) :is(button, a, input, select, textarea):focus-visible {
+    outline: 2px solid #976d20 !important;
+    outline-offset: 3px;
+  }
+
+  body :is(#talent-app, .rf-dialog, .rf-public-assessment) button:disabled {
+    cursor: not-allowed;
+  }
+
+  body #talent-app .page :is(input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]), select),
+  body :is(.rf-dialog, .rf-public-assessment) :is(input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]), select) {
+    box-sizing: border-box;
+    min-width: 0;
+    min-height: 48px !important;
+    max-width: 100%;
+    border-radius: 10px !important;
+    font-size: 16px !important;
+  }
+
+  body :is(#talent-app, .rf-dialog, .rf-public-assessment) textarea {
+    box-sizing: border-box;
+    min-height: 120px !important;
+    max-width: 100%;
+    padding: 12px !important;
+    border-radius: 10px !important;
+    font-size: 16px !important;
+    line-height: 1.7 !important;
+    resize: vertical;
+  }
+
+  body :is(#talent-app, .rf-dialog, .rf-public-assessment) input:is([type="checkbox"], [type="radio"]) {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    min-height: 20px !important;
+    accent-color: #976d20;
+  }
+
+  body #talent-app .page :is(.panel-card, .card, .info-card, .chart-card, .rf-task-card, .rf-api-card, .rf-analytics-card, .rf-offer-page-head, .rf-offer-form-card, .rf-job-card) {
+    border: 1px solid var(--rf-line) !important;
+    border-radius: 16px !important;
+    background: #fffefa !important;
+    box-shadow: 0 3px 12px rgba(50, 40, 20, .025) !important;
+  }
+
+  body #talent-app .page :is(.panel-head, .rf-tasks-section-title, .rf-analytics-card > header) strong {
+    font-size: 17px !important;
+    line-height: 1.5 !important;
+  }
+
+  body #talent-app .page :is(.toolbar, .rf-job-toolbar, .analysis-filter-bar, .schedule-filter-bar) {
+    padding: 14px !important;
+    border: 1px solid var(--rf-line) !important;
+    background: #fffefa !important;
+    box-shadow: none !important;
+  }
+
+  body #talent-app .page .filter-chip {
+    padding: 8px 10px !important;
+    gap: 4px;
+    background: #f8f6f1 !important;
+  }
+
+  body #talent-app .page :is(.filter-chip > span, .rf-job-summary span, .rf-job-summary em, .rf-talent-dashboard-summary span, .rf-task-meta, .rf-task-status, .rf-task-template-config, .interview-agenda-item small, .interview-agenda-item em, .rf-review-metrics span) {
+    font-size: 13px !important;
+    line-height: 1.6 !important;
+  }
+
+  body #talent-app .page :is(.overview-metric-card, .metric-card, .rf-job-summary > article, .rf-review-metrics > article) {
+    min-height: 96px !important;
+    padding: 14px !important;
+    border: 1px solid var(--rf-line) !important;
+    border-radius: 14px !important;
+    background: #fffefa !important;
+    box-shadow: none !important;
+  }
+
+  body #page-overview .overview-metric-card:first-child {
+    grid-column: auto !important;
+  }
+
+  body #page-overview .overview-metric-card {
+    grid-template-columns: minmax(0, 1fr) 28px !important;
+    gap: 8px !important;
+    align-items: center;
+  }
+
+  body #page-overview .overview-metric-card::before {
+    grid-column: 2;
+    grid-row: 1;
+    margin: 0;
+  }
+
+  body #page-overview .overview-metric-card > strong {
+    grid-column: 1;
+    grid-row: 1;
+    font-size: 14px !important;
+    line-height: 1.5 !important;
+  }
+
+  body #page-overview .overview-metric-card > .metric-number {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+
+  body #page-overview .overview-metric-card > small {
+    grid-row: 3;
+    white-space: normal;
+  }
+
+  body #page-overview .overview-metric-card :is(.metric-label, .metric-note, small) {
+    font-size: 13px !important;
+    line-height: 1.5 !important;
+  }
+
+  body #page-overview .overview-metric-card .metric-number {
+    font-family: "OPPO Sans 4.0", sans-serif;
+    font-size: 28px !important;
+    line-height: 1.2 !important;
+  }
+
+  body #page-resume-archive .rf-archive-list,
+  body #page-resume-archive .rf-talent-cards,
+  body #page-overview .overview-hiring-board,
+  body #page-analytics #analytics-content {
+    height: auto !important;
+    max-height: none !important;
+    overflow-y: visible !important;
+  }
+
+  body #talent-app .page :is(.rf-task-card, .rf-tasks-list, .rf-tasks-runs, .rf-api-intro, .rf-api-cards section) {
+    padding: 16px !important;
+    border: 1px solid var(--rf-line);
+    border-radius: 16px;
+    background: #fffefa;
+  }
+
+  body #talent-app .page .rf-task-card-head strong {
+    font-size: 17px !important;
+    overflow-wrap: anywhere;
+  }
+
+  body #talent-app .page :is(.rf-dialog-empty, .rf-empty) {
+    padding: 28px 16px !important;
+    border: 1px dashed #d9cfbd;
+    border-radius: 14px;
+    background: #faf8f3;
+  }
+
+  body #talent-app .page :is(.rf-analytics-table, .table-wrap, .referral-table-wrap) {
+    scrollbar-width: thin;
+    scrollbar-color: #b5a78e #f2eee5;
+  }
+
+  body #talent-app .page :is(td, th) {
+    padding: 12px !important;
+  }
+
+  body #page-settings .info-card .warn-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 12px;
+  }
+
+  body #page-settings .info-card .warn-row button {
+    min-width: 76px;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  body .rf-dialog-backdrop {
+    background: rgba(40, 35, 25, .38) !important;
+    backdrop-filter: blur(3px) !important;
+  }
+
+  body .rf-dialog .rf-dialog-head {
+    margin-bottom: 18px;
+  }
+
+  body .rf-dialog .rf-dialog-head h2 {
+    font-size: 22px !important;
+    line-height: 1.4 !important;
+  }
+
+  body .rf-dialog :is(.rf-dialog-form label > span, .rf-demand-ai-head strong) {
+    font-size: 14px !important;
+    line-height: 1.6 !important;
+  }
+
+  body .rf-dialog .rf-dialog-form {
+    gap: 16px !important;
+  }
+
+  body .rf-public-assessment,
+  body .rf-referral-brand-page,
+  body .rf-public-referral {
+    color: var(--rf-ink);
+    font-family: "OPPO Sans 4.0", "Source Han Sans CN", sans-serif;
+  }
+
+  body .rf-public-preparation-form > section {
+    padding-top: 20px;
+    padding-bottom: 20px;
+  }
+
+  body .rf-public-form-title strong {
+    font-size: 17px !important;
+  }
+
+  body .rf-public-preparation-actions {
+    padding-bottom: calc(24px + env(safe-area-inset-bottom)) !important;
+    border-top: 1px solid var(--rf-line);
+    background: #faf8f3;
+  }
+
+  body .auth-story {
+    background: #342e23 !important;
+  }
+
+  body .auth-panel {
+    background: #fffefa;
+  }
+
+  body .auth-panel :is(input, button) {
+    min-height: 48px;
+    font-size: 16px;
+  }
+
+  body .auth-panel :is(p, small) {
+    font-size: 14px;
+    line-height: 1.65;
+  }
+
+  body .review-page {
+    padding-bottom: calc(24px + env(safe-area-inset-bottom));
+  }
+
+  body .review-brand-hero {
+    height: 170px;
+  }
+
+  body .review-page :is(.resume-head small, .resume-facts span, .resume-head-caption) {
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  body .review-page :is(.resume-section .content, .review-summary p, .review-action > p) {
+    font-size: 15px;
+    line-height: 1.8;
+  }
+
+  body .review-page :is(.decision-grid button, .submit-review, .review-form input, .review-form select, .review-form textarea) {
+    min-height: 48px;
+    border-radius: 10px;
+  }
+}
+
+@media (max-width: 360px) {
+  :root {
+    --rf-mobile-gutter: 12px;
+  }
+
+  body #talent-app .page :is(.head-actions, .rf-job-head-actions) {
+    grid-template-columns: 1fr !important;
+  }
+}

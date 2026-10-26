@@ -1,0 +1,11 @@
+﻿任务名,说明,cron(北京时间),执行频率,代码里是否生效,代码位置
+AI岗位匹配补全,补漏：为最新简历缺失AI分析或当前评分为0的人才批量生成评分、岗位匹配和标签,0 19 * * *,每天 03:00（北京时间）,是,server/tasks/batch-ai-analysis.task.ts:26
+每日招聘需求录入提醒,每天晚上6点向已启用的部门负责人发送招聘需求录入提醒和直达链接,0 18 * * *,每天 18:00,是,server/tasks/daily-demand-reminder.task.ts:67
+每日部门岗位达成看板,每天晚上9点生成部门岗位达成长图，并以图片消息推送到人才群,0 21 * * *,每天 21:00,是,server/tasks/daily-hiring-dashboard.task.ts:184
+每日招聘动态推送,每天晚上6点汇总当日简历入库、面试场次、Offer、入职和来源分类，并推送到企微群,0 18 * * *,每天 18:00,是,server/tasks/daily-recruitment-activity-push.task.ts:143
+每日企微简历推送,每天20点汇总当天批量入库简历，并补发评分达标且尚未发送的评审通知,0 20 * * *,每天 20:00,否(未在 server/tasks/index.ts 引入),server/tasks/daily-wecom-resume-push.task.ts:56
+面试前10分钟双向提醒,每分钟检查已确认面试；开始前10分钟提醒面试官，开始前一天早上9点邮件提醒候选人，失败重试，取消和改期按最新安排处理,* * * * *,每分钟检查面试时间提醒,是,server/tasks/recruitment-flow.task.ts:73
+招聘流程自动推进,面试题预生成补偿、面试结束后评价入口、每日评价催填、评价完成交接HR填写Offer和入职提醒,*/10 * * * *,每10分钟,是,server/tasks/recruitment-flow.task.ts:84
+八方背调报告同步,按天拉取八方锦程背调报告，并回写到对应背调任务,0 */6 * * *,每6小时,是,server/tasks/sync-gdbf-background-reports.task.ts:3
+,,15 18 * * *,每天 18:15,否(未在 server/tasks/index.ts 引入),tests/task-dashboard.test.mjs:15
+,,0 9 * * *,,否(未在 server/tasks/index.ts 引入),tests/task-dashboard.test.mjs:38

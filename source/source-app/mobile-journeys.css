@@ -1,0 +1,257 @@
+.rf-mobile-form-map,
+.rf-mobile-writer-tools,
+.rf-mobile-jump { display: none; }
+
+@media screen and (max-width: 760px) {
+  :root {
+    --mobile-ink: #273f34;
+    --mobile-muted: #6d796f;
+    --mobile-primary: #2c5045;
+    --mobile-paper: #fffefa;
+    --mobile-canvas: #f5f6f2;
+    --mobile-line: #dfe6dc;
+  }
+
+  body { font-family: "OPPO Sans 4.0", "Source Han Sans CN", sans-serif; }
+  .rf-mobile-form-map {
+    display: block;
+    grid-column: 1 / -1;
+    margin: 0 0 18px;
+    padding: 14px;
+    border: 1px solid var(--mobile-line);
+    border-radius: 16px;
+    background: #edf2eb;
+    color: var(--mobile-ink);
+  }
+  .rf-mobile-form-map > div:first-child { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; justify-content: space-between; }
+  .rf-mobile-form-map strong { font-size: 13px; line-height: 1.6; }
+  body .rf-mobile-form-map button,
+  body .rf-mobile-writer-tools button {
+    min-height: 44px;
+    padding: 8px 12px;
+    border: 1px solid var(--mobile-line);
+    border-radius: 10px;
+    background: var(--mobile-paper);
+    color: var(--mobile-primary);
+    font: 14px "OPPO Sans 4.0", sans-serif;
+    cursor: pointer;
+  }
+  .rf-mobile-form-map button[hidden] { display: none; }
+  .rf-mobile-section-links { display: flex; gap: 8px; overflow-x: auto; margin-top: 10px; scrollbar-width: thin; }
+  .rf-mobile-section-links button { flex-shrink: 0; max-width: 220px; text-align: left; }
+  .rf-mobile-field-index { margin-top: 10px; }
+  .rf-mobile-field-index summary { min-height: 44px; padding: 10px 0; font-size: 14px; cursor: pointer; }
+  .rf-mobile-field-index > div { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .rf-mobile-field-index button { min-width: 0; white-space: normal; text-align: left; }
+  .rf-mobile-writer-tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; margin-block: 8px 14px; }
+  .rf-mobile-writer-tools span { color: var(--mobile-muted); font-size: 12px; }
+  body :is(#talent-app, .rf-dialog, .rf-public-assessment) textarea.rf-mobile-writing { min-height: 52dvh !important; max-height: none !important; }
+  body .rf-mobile-jump {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 48px;
+    padding: 10px 16px;
+    border: 1px solid var(--mobile-line);
+    border-radius: 12px;
+    background: var(--mobile-primary);
+    color: white;
+    font: 15px "OPPO Sans 4.0", sans-serif;
+    cursor: pointer;
+  }
+  .rf-mobile-jump:focus-visible,
+  .rf-mobile-form-map button:focus-visible { outline: 3px solid #a18b51; outline-offset: 2px; }
+  [id^="rf-mobile-section-"], #review-action, #rf-referral-form { scroll-margin-top: 20px; }
+
+  body.rf-public-assessment-body { background: var(--mobile-canvas) !important; color: var(--mobile-ink); }
+  body.rf-public-assessment-body *, body .review-page * { box-sizing: border-box; }
+  body .rf-mobile-form-map, body .rf-mobile-section-links { min-width: 0; max-width: 100%; }
+  body :is(.rf-public-assessment, .rf-public-offer, .rf-public-interview, .rf-public-referral) {
+    box-sizing: border-box;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: 100dvh;
+    margin: 0 !important;
+    padding: max(20px, env(safe-area-inset-top)) 16px max(28px, env(safe-area-inset-bottom)) !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: var(--mobile-canvas) !important;
+    overflow-wrap: anywhere;
+  }
+  body :is(.rf-public-assessment, .rf-public-offer, .rf-public-interview) > header {
+    display: block !important;
+    position: static !important;
+    min-height: 0 !important;
+    padding: 18px !important;
+    margin-bottom: 18px;
+    border: 1px solid var(--mobile-line) !important;
+    border-radius: 18px !important;
+    background: var(--mobile-paper) !important;
+    color: var(--mobile-ink) !important;
+  }
+  body :is(.rf-public-assessment, .rf-public-offer, .rf-public-interview) h1 {
+    margin: 8px 0 12px !important;
+    color: var(--mobile-ink) !important;
+    font: 700 25px/1.35 "OPPO Sans 4.0", sans-serif !important;
+  }
+  body :is(.rf-public-assessment, .rf-public-offer, .rf-public-interview) > header p { font-size: 14px !important; line-height: 1.7 !important; color: var(--mobile-muted) !important; }
+  body .rf-public-invite-mark { display: none; }
+  body .rf-public-invite-hero::after { display: none; }
+  body.rf-public-communication-body .rf-public-communication-hero::after { display: none; }
+  body .rf-mobile-offer-note { display: grid; gap: 8px; margin-block: 16px; color: var(--mobile-ink); font-size: 14px; }
+  body .rf-public-confirmation-state { margin-bottom: 16px; border: 1px solid var(--mobile-line); border-radius: 16px; background: #edf2eb; }
+  body .rf-public-preparation-intro { padding: 16px !important; margin-bottom: 16px; }
+  body .auth-shell { border-color: var(--mobile-line); background: var(--mobile-paper); }
+  body .auth-primary { background: var(--mobile-primary) !important; color: white; min-height: 48px; }
+  body #rf-talent-dialog .btn-primary,
+  body #talent-app .page .btn-primary {
+    background: var(--mobile-primary) !important;
+    border-color: var(--mobile-primary) !important;
+    color: white !important;
+  }
+  body .rf-public-communication-candidate { margin-top: 14px; padding: 12px !important; border-radius: 12px; }
+  body :is(.rf-public-preparation-form, .rf-public-communication-scroll, .rf-public-referral-form, .rf-public-offer-grid, .rf-public-interview-card) {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 16px !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+  body :is(.rf-public-preparation-form > section, .rf-public-communication-scroll > section, .rf-public-question, .rf-public-referral-form-section, .rf-public-offer-grid > div, .rf-public-interview-card > div, .rf-public-reschedule) {
+    min-width: 0;
+    padding: 16px !important;
+    border: 1px solid var(--mobile-line) !important;
+    border-radius: 16px !important;
+    background: var(--mobile-paper) !important;
+  }
+  body .rf-public-interview-card {
+    gap: 0 !important;
+    padding: 4px 16px !important;
+    background: var(--mobile-paper) !important;
+    border: 1px solid var(--mobile-line) !important;
+    border-radius: 18px;
+    margin-bottom: 16px;
+  }
+  body .rf-public-interview-card > div {
+    padding: 14px 0 !important;
+    border: 0 !important;
+    border-bottom: 1px solid var(--mobile-line) !important;
+    border-radius: 0 !important;
+  }
+  body .rf-public-interview-card > div:last-child { border-bottom: 0 !important; }
+  body :is(.rf-public-interview-card, .rf-public-offer-grid) span { font-size: 13px !important; line-height: 1.6; color: var(--mobile-muted); }
+  body :is(.rf-public-interview-card, .rf-public-offer-grid) strong { display: block; font-size: 17px !important; line-height: 1.6; color: var(--mobile-ink); }
+  body :is(.rf-public-interview-card, .rf-public-offer-grid) small { display: block; font-size: 13px !important; line-height: 1.6; color: var(--mobile-muted); }
+  body .rf-public-offer-grid { padding: 0 !important; border: 0 !important; background: transparent !important; }
+  body .rf-public-confirmation-state :is(span, p, small) { font-size: 13px !important; line-height: 1.7; }
+  body .rf-public-confirmation-state strong { font: 700 17px/1.6 "OPPO Sans 4.0", sans-serif; color: var(--mobile-ink); }
+  body .rf-public-confirmation-state > i { background: var(--mobile-primary); box-shadow: none; }
+  body :is(.rf-public-preparation-intro, .rf-public-preparation-actions) :is(b, strong) { font-size: 15px !important; }
+  body :is(.rf-public-preparation-intro, .rf-public-preparation-actions) :is(span, small) { font-size: 13px !important; line-height: 1.6; }
+  body .rf-public-assessment > header aside { margin-top: 12px; padding: 10px 0; }
+  body .rf-public-assessment > header aside :is(span, small) { font-size: 13px; }
+  body .rf-public-question header strong { font-size: 16px !important; line-height: 1.6; }
+  body .rf-public-question :is(header small, p) { font-size: 13px !important; line-height: 1.7; }
+  body .rf-ref-track { padding: 20px !important; background: var(--mobile-paper); border-radius: 18px; }
+  body .rf-ref-track h1 { font-size: 23px; line-height: 1.5; }
+  body .rf-ref-track :is(p, small, aside) { font-size: 14px !important; line-height: 1.7; }
+  body :is(.rf-public-preparation-grid, .rf-onboarding-review-grid) { grid-template-columns: minmax(0, 1fr) !important; gap: 16px !important; }
+  body :is(.rf-public-assessment, .rf-public-offer, .rf-public-interview, .rf-public-referral) :is(input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]), select, textarea) {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    min-height: 48px;
+    font: 16px/1.6 "OPPO Sans 4.0", sans-serif !important;
+    border: 1px solid #cbd6c9;
+    border-radius: 12px;
+    padding: 11px 12px;
+    color: var(--mobile-ink);
+    background: white;
+    scroll-margin-block: 24px;
+  }
+  body :is(.rf-public-assessment, .rf-public-offer, .rf-public-interview, .rf-public-referral) textarea { min-height: 140px; resize: vertical; }
+  body :is(.rf-public-assessment, .rf-public-offer, .rf-public-interview, .rf-public-referral) label > span { font-size: 14px !important; line-height: 1.6; }
+  body :is(.rf-public-preparation-actions, .rf-public-offer-actions, .rf-public-assessment > footer) {
+    position: static !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px;
+    padding: 16px !important;
+    background: var(--mobile-paper) !important;
+    border: 1px solid var(--mobile-line) !important;
+    border-radius: 16px;
+  }
+  body :is(.rf-public-assessment, .rf-public-offer, .rf-public-interview, .rf-public-referral) button,
+  body .rf-public-offer-actions a { min-height: 48px; font-size: 15px !important; white-space: normal; }
+  body :is(.rf-public-assessment, .rf-public-offer, .rf-public-interview, .rf-public-referral) .btn-primary { background: var(--mobile-primary) !important; color: white !important; border-color: var(--mobile-primary) !important; }
+  body :is(.rf-public-success, .rf-public-failed, .review-error, .review-success) { padding: 28px 18px !important; border-radius: 18px; background: var(--mobile-paper); text-align: center; line-height: 1.8; }
+  body [id^="rf-public-"][id$="message"]:not(:empty) { padding: 14px; border: 1px solid var(--mobile-line); border-radius: 12px; background: #edf2eb; font-size: 14px; line-height: 1.7; }
+  body .rf-public-options label { min-height: 48px; padding: 12px; }
+  body .rf-public-options input { width: 22px; height: 22px; flex-shrink: 0; accent-color: var(--mobile-primary); }
+
+  body .review-page { padding: 16px 16px 28px; background: var(--mobile-canvas); }
+  body .review-brand-hero { height: 130px; min-height: 0; border-radius: 18px; }
+  body .review-toolbar { display: flex; flex-wrap: wrap; gap: 10px; }
+  body .review-toolbar > * { flex: 1 1 auto; }
+  body .resume-paper, body .review-action { padding: 18px; border: 1px solid var(--mobile-line); border-radius: 18px; box-shadow: none; }
+  body .resume-section { padding-block: 18px; }
+  body .resume-section .content, body .review-summary p { font-size: 15px; line-height: 1.8; }
+  body .decision-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+  body .decision-grid button, body .submit-review { min-height: 48px; font-size: 16px; }
+  body .decision-grid button.active, body .submit-review { background: var(--mobile-primary); color: white; border-color: var(--mobile-primary); }
+  body .review-form input { min-height: 48px; font-size: 16px; }
+  body .review-inline-message:not(:empty) { padding: 14px; color: #9a392f; background: #fff0e9; border-radius: 12px; line-height: 1.6; }
+  body .rf-xhs-public-hero { min-height: 160px !important; height: 180px !important; border-radius: 18px; overflow: hidden; }
+  body .rf-xhs-public-hero .rf-mobile-jump { position: absolute; bottom: 12px; right: 12px; }
+  body .rf-ref-position-card .rf-mobile-jump { width: 100%; margin-top: 14px; }
+  body .rf-ref-consent { display: flex; align-items: flex-start; gap: 12px; }
+  body .rf-ref-consent input { width: 24px; height: 24px; flex-shrink: 0; accent-color: var(--mobile-primary); }
+
+  body #talent-app .analysis-tabs { display: flex !important; flex-wrap: nowrap !important; overflow-x: auto; gap: 8px; padding: 8px !important; }
+  body #talent-app #page-analytics .analysis-tabs { flex-wrap: wrap !important; overflow-x: hidden; }
+  body #talent-app .analysis-tabs > * { flex: 0 0 auto; min-height: 48px; }
+  body #talent-app .rf-job-batch-bar.rf-mobile-batch-empty > div { display: none !important; }
+  body #talent-app .rf-job-batch-bar { padding: 12px !important; }
+  body #talent-app .rf-job-batch-bar > div { display: flex !important; flex-wrap: wrap; gap: 8px; }
+  body #talent-app .rf-job-batch-bar > div button { flex: 1 1 100px; }
+  body #talent-app :is(.rf-api-layout, .rf-tasks-layout, .rf-background-layout, .rf-life-layout, .rf-access-layout) { grid-template-columns: minmax(0, 1fr) !important; }
+  body .rf-dialog :is(.rf-background-layout, .rf-life-layout, .rf-evaluation-layout) { display: grid; grid-template-columns: minmax(0, 1fr) !important; }
+  body .rf-dialog :is(.rf-background-list, .rf-life-list, .rf-evaluation-list) { height: auto !important; max-height: none !important; overflow: visible !important; }
+  body #talent-app :is(.rf-api-card pre, pre code) { max-width: 100%; overflow-x: auto; white-space: pre-wrap; overflow-wrap: anywhere; }
+  body .rf-dialog :is(.rf-dialog-form, .rf-review-evidence, .rf-background-columns, .rf-offer-form-grid) { min-width: 0; grid-template-columns: minmax(0, 1fr) !important; }
+  body .rf-dialog :is(.rf-dialog-form > label, .rf-dialog-form > section) { min-width: 0; }
+  body .rf-dialog .rf-mobile-form-map { grid-column: 1 / -1; }
+  body #page-settings .info-card { padding: 18px !important; border-radius: 18px; }
+  body #page-settings .info-card h3 { font-size: 17px; color: var(--mobile-ink); }
+  body #page-settings .info-card p { font-size: 14px; line-height: 1.7; }
+  body :is(.rf-task-edit-actions, .rf-access-user-actions, .rf-offer-actions, .rf-api-actions) { flex-wrap: wrap; gap: 10px; }
+  body :is(.rf-task-edit-actions, .rf-access-user-actions, .rf-offer-actions, .rf-api-actions) button { min-height: 48px; font-size: 14px; }
+
+  body .page-shell { width: 100%; max-width: none; padding: 0 16px 28px; background: var(--mobile-canvas); }
+  body .site-header { position: static; display: flex; flex-wrap: wrap; padding: 16px 0; gap: 14px; }
+  body .top-nav { display: flex; order: 3; width: 100%; flex-wrap: nowrap; overflow-x: auto; gap: 8px; }
+  body .top-nav a { flex-shrink: 0; padding: 12px; border: 1px solid var(--mobile-line); border-radius: 12px; background: var(--mobile-paper); }
+  body .page-shell :is(.hero, .job-toolbar, .twin-section, .progress-section, .progress-form, .job-grid) { grid-template-columns: minmax(0, 1fr); }
+  body .page-shell .hero { padding: 24px 0; gap: 20px; }
+  body .page-shell h1 { font-size: 32px; line-height: 1.3; }
+  body .page-shell h2 { font-size: 24px; }
+  body .page-shell .section { padding-block: 28px; }
+  body .page-shell :is(input, select, button, .button-primary, .button-secondary) { min-height: 48px; font-size: 16px; }
+  body .page-shell .button-primary { background: var(--mobile-primary); color: white; }
+  body .page-shell .job-card { border-radius: 18px; background: var(--mobile-paper); padding: 18px; }
+  body .page-shell .job-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  body:has(#bookingForm) { --blue: #2c5045; --blue-2: #edf2eb; background: var(--mobile-canvas); }
+  body:has(#bookingForm) .top { display: none; }
+  body:has(#bookingForm) .notice { display: block; font-size: 13px; background: #edf2eb; border-color: var(--mobile-line); color: var(--mobile-ink); }
+  body:has(#bookingForm) .notice b { display: block; margin-bottom: 6px; }
+  body:has(#bookingForm) :is(button, input, select) { min-height: 48px; font-size: 16px; }
+  body:has(#bookingForm) .legend { flex-wrap: wrap; gap: 10px; }
+  body:has(#bookingForm) .panel-head { position: static; padding: 18px 16px; }
+  body:has(#bookingForm) .form { padding: 16px; }
+  body:has(#bookingForm) .form-footer { display: grid; grid-template-columns: 1fr 1fr; }
+  body:has(#bookingForm) .availability::before { display: block; padding: 12px; content: '左右滑动查看时段 · 点击空闲时段预订'; color: var(--mobile-muted); font-size: 13px; }
+}

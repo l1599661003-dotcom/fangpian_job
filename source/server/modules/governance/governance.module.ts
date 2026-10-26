@@ -1,0 +1,2 @@
+import{Module}from'@nestjs/common';import{DatabaseModule}from'../database/database.module';import{TalentsModule}from'../talents/talents.module';import{GovernanceController}from'./governance.controller';import{GovernanceService}from'./governance.service';
+@Module({imports:[DatabaseModule,TalentsModule],controllers:[GovernanceController],providers:[GovernanceService],exports:[GovernanceService]})export class GovernanceModule{}

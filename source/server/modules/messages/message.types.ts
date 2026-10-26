@@ -1,0 +1,3 @@
+export interface MessageTemplateInput{name:string;category:string;channel:'企业微信群'|'企业微信单聊'|'Owner通知';audience:string;content:string;sensitivePolicy?:string;operator?:string}
+export interface MessagePreviewInput{templateId?:string;category:string;channel:'企业微信群'|'企业微信单聊'|'Owner通知';recipientType:string;recipientAddress?:string;candidateId?:string;objectType?:string;objectId?:string;content?:string;variables?:Record<string,unknown>;operator?:string;operatorUserId?:string}
+export interface MessageRuleInput{name:string;eventType:string;conditions:Record<string,unknown>;templateId:string;channel:'企业微信群'|'企业微信单聊'|'Owner通知';recipientType:string;recipientAddress?:string;mode:'仅生成草稿'|'自动发送';status?:'启用'|'停用';priority?:number;operator?:string}

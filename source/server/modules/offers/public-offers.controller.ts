@@ -1,0 +1,2 @@
+import{Body,Controller,Get,Param,Post}from'@nestjs/common';import{OffersService}from'./offers.service';
+@Controller('api/public/offers')export class PublicOffersController{constructor(private readonly offers:OffersService){}@Get(':token')get(@Param('token')t:string){return this.offers.publicOffer(t)}@Post(':token/respond')respond(@Param('token')t:string,@Body()b:{response:'accept'|'reject';note?:string}){return this.offers.respond(t,b)}}

@@ -1,0 +1,31 @@
+{
+  "agent_backend": "codex",
+  "app_mode": "fullstack",
+  "created_at": "2026-08-21T09:57:34.897373Z",
+  "description": "这是我之前开发的智能招聘平台，附件压缩包是我底层开发和数据，请解读并帮我还原所有的功能，并列出接下来还有哪些待开发的项目清单。",
+  "env_keys": [
+    "APP_PUBLIC_URL",
+    "GDBF_ADMIN_PASSWORD",
+    "GDBF_ADMIN_USER_NAME",
+    "GDBF_API_BASE",
+    "GDBF_ORGAN_ID",
+    "GDBF_PASSWORD",
+    "GDBF_PRIVATE_KEY",
+    "GDBF_PUBLIC_KEY",
+    "GDBF_SIGN_SCHEME",
+    "GDBF_USER_EMAIL",
+    "GDBF_USER_NAME",
+    "TIANJI_RECRUITMENT_APPROVER_WECHAT_ID",
+    "TIANJI_WEIXIN_USER_MESSAGE_URL",
+    "WECOM_DAILY_RECRUITMENT_WEBHOOK_KEY",
+    "WECOM_MEETING_MCP_URL",
+    "WECOM_RECRUITMENT_APPROVER_USER_ID",
+    "WECOM_TALENT_GROUP_WEBHOOK_KEY",
+    "WECOM_TALENT_REVIEW_WEBHOOK_KEY"
+  ],
+  "has_database": true,
+  "id": "01M0HW28HH2GK7FFH4Y76DJTJB",
+  "name": "人才管理系统",
+  "slug": "r5vd-1031",
+  "visibility": "public"
+}

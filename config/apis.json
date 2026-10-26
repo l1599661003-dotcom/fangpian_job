@@ -1,0 +1,1861 @@
+[
+  {
+    "method": "GET",
+    "path": "/api/access/administration",
+    "file": "server/modules/database/access-admin.controller.ts",
+    "line": 12
+  },
+  {
+    "method": "POST",
+    "path": "/api/access/apply",
+    "file": "server/modules/database/access.controller.ts",
+    "line": 57
+  },
+  {
+    "method": "POST",
+    "path": "/api/access/heartbeat",
+    "file": "server/modules/database/access.controller.ts",
+    "line": 52
+  },
+  {
+    "method": "POST",
+    "path": "/api/access/login",
+    "file": "server/modules/database/access.controller.ts",
+    "line": 38
+  },
+  {
+    "method": "GET",
+    "path": "/api/access/login-activity",
+    "file": "server/modules/database/access-admin.controller.ts",
+    "line": 13
+  },
+  {
+    "method": "POST",
+    "path": "/api/access/logout",
+    "file": "server/modules/database/access.controller.ts",
+    "line": 45
+  },
+  {
+    "method": "GET",
+    "path": "/api/access/me",
+    "file": "server/modules/database/access.controller.ts",
+    "line": 23
+  },
+  {
+    "method": "POST",
+    "path": "/api/access/organizations",
+    "file": "server/modules/database/access-admin.controller.ts",
+    "line": 14
+  },
+  {
+    "method": "POST",
+    "path": "/api/access/profile",
+    "file": "server/modules/database/access.controller.ts",
+    "line": 64
+  },
+  {
+    "method": "POST",
+    "path": "/api/access/role-bindings",
+    "file": "server/modules/database/access-admin.controller.ts",
+    "line": 19
+  },
+  {
+    "method": "POST",
+    "path": "/api/access/role-bindings/:id/revoke",
+    "file": "server/modules/database/access-admin.controller.ts",
+    "line": 25
+  },
+  {
+    "method": "POST",
+    "path": "/api/access/role-bindings/batch",
+    "file": "server/modules/database/access-admin.controller.ts",
+    "line": 20
+  },
+  {
+    "method": "POST",
+    "path": "/api/access/roles",
+    "file": "server/modules/database/access-admin.controller.ts",
+    "line": 21
+  },
+  {
+    "method": "POST",
+    "path": "/api/access/roles/:code",
+    "file": "server/modules/database/access-admin.controller.ts",
+    "line": 22
+  },
+  {
+    "method": "POST",
+    "path": "/api/access/roles/:code/permissions",
+    "file": "server/modules/database/access-admin.controller.ts",
+    "line": 24
+  },
+  {
+    "method": "POST",
+    "path": "/api/access/roles/:code/status",
+    "file": "server/modules/database/access-admin.controller.ts",
+    "line": 23
+  },
+  {
+    "method": "POST",
+    "path": "/api/access/sensitive-requests",
+    "file": "server/modules/database/access-admin.controller.ts",
+    "line": 26
+  },
+  {
+    "method": "POST",
+    "path": "/api/access/sensitive-requests/:id/decision",
+    "file": "server/modules/database/access-admin.controller.ts",
+    "line": 27
+  },
+  {
+    "method": "POST",
+    "path": "/api/access/users",
+    "file": "server/modules/database/access-admin.controller.ts",
+    "line": 15
+  },
+  {
+    "method": "POST",
+    "path": "/api/access/users/batch",
+    "file": "server/modules/database/access-admin.controller.ts",
+    "line": 16
+  },
+  {
+    "method": "POST",
+    "path": "/api/access/users/tianji/sync",
+    "file": "server/modules/database/access-admin.controller.ts",
+    "line": 18
+  },
+  {
+    "method": "POST",
+    "path": "/api/access/users/wecom/sync",
+    "file": "server/modules/database/access-admin.controller.ts",
+    "line": 17
+  },
+  {
+    "method": "GET",
+    "path": "/api/analytics/dashboard",
+    "file": "server/modules/analytics/analytics.controller.ts",
+    "line": 11
+  },
+  {
+    "method": "GET",
+    "path": "/api/analytics/definitions",
+    "file": "server/modules/analytics/analytics.controller.ts",
+    "line": 12
+  },
+  {
+    "method": "GET",
+    "path": "/api/analytics/drilldown",
+    "file": "server/modules/analytics/analytics.controller.ts",
+    "line": 13
+  },
+  {
+    "method": "GET",
+    "path": "/api/analytics/export",
+    "file": "server/modules/analytics/analytics.controller.ts",
+    "line": 14
+  },
+  {
+    "method": "GET",
+    "path": "/api/assessments/bank",
+    "file": "server/modules/assessments/question-bank.controller.ts",
+    "line": 15
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/assessments/bank/:id",
+    "file": "server/modules/assessments/question-bank.controller.ts",
+    "line": 27
+  },
+  {
+    "method": "POST",
+    "path": "/api/assessments/bank/import",
+    "file": "server/modules/assessments/question-bank.controller.ts",
+    "line": 20
+  },
+  {
+    "method": "GET",
+    "path": "/api/assessments/candidates/:candidateId/context",
+    "file": "server/modules/assessments/assessments.controller.ts",
+    "line": 66
+  },
+  {
+    "method": "POST",
+    "path": "/api/assessments/invites",
+    "file": "server/modules/assessments/assessments.controller.ts",
+    "line": 63
+  },
+  {
+    "method": "GET",
+    "path": "/api/assessments/questions",
+    "file": "server/modules/assessments/assessments.controller.ts",
+    "line": 15
+  },
+  {
+    "method": "POST",
+    "path": "/api/assessments/questions",
+    "file": "server/modules/assessments/assessments.controller.ts",
+    "line": 23
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/assessments/questions/:questionId",
+    "file": "server/modules/assessments/assessments.controller.ts",
+    "line": 26
+  },
+  {
+    "method": "GET",
+    "path": "/api/assessments/submissions",
+    "file": "server/modules/assessments/assessments.controller.ts",
+    "line": 69
+  },
+  {
+    "method": "GET",
+    "path": "/api/assessments/submissions/:inviteId",
+    "file": "server/modules/assessments/assessments.controller.ts",
+    "line": 72
+  },
+  {
+    "method": "POST",
+    "path": "/api/assessments/submissions/:inviteId/review",
+    "file": "server/modules/assessments/assessments.controller.ts",
+    "line": 75
+  },
+  {
+    "method": "GET",
+    "path": "/api/assessments/templates",
+    "file": "server/modules/assessments/assessments.controller.ts",
+    "line": 34
+  },
+  {
+    "method": "POST",
+    "path": "/api/assessments/templates",
+    "file": "server/modules/assessments/assessments.controller.ts",
+    "line": 37
+  },
+  {
+    "method": "POST",
+    "path": "/api/assessments/templates/:templateId/publish",
+    "file": "server/modules/assessments/assessments.controller.ts",
+    "line": 60
+  },
+  {
+    "method": "POST",
+    "path": "/api/assessments/templates/generate-draft",
+    "file": "server/modules/assessments/assessments.controller.ts",
+    "line": 51
+  },
+  {
+    "method": "GET",
+    "path": "/api/background-checks",
+    "file": "server/modules/background-checks/background-checks.controller.ts",
+    "line": 12
+  },
+  {
+    "method": "POST",
+    "path": "/api/background-checks",
+    "file": "server/modules/background-checks/background-checks.controller.ts",
+    "line": 13
+  },
+  {
+    "method": "POST",
+    "path": "/api/background-checks/:id/authorization",
+    "file": "server/modules/background-checks/background-checks.controller.ts",
+    "line": 14
+  },
+  {
+    "method": "POST",
+    "path": "/api/background-checks/:id/conclusion",
+    "file": "server/modules/background-checks/background-checks.controller.ts",
+    "line": 23
+  },
+  {
+    "method": "POST",
+    "path": "/api/background-checks/:id/contacts",
+    "file": "server/modules/background-checks/background-checks.controller.ts",
+    "line": 15
+  },
+  {
+    "method": "POST",
+    "path": "/api/background-checks/:id/evidence",
+    "file": "server/modules/background-checks/background-checks.controller.ts",
+    "line": 18
+  },
+  {
+    "method": "POST",
+    "path": "/api/background-checks/:id/external-request",
+    "file": "server/modules/background-checks/background-checks.controller.ts",
+    "line": 19
+  },
+  {
+    "method": "POST",
+    "path": "/api/background-checks/:id/external-result",
+    "file": "server/modules/background-checks/background-checks.controller.ts",
+    "line": 21
+  },
+  {
+    "method": "POST",
+    "path": "/api/background-checks/:id/generate-report",
+    "file": "server/modules/background-checks/background-checks.controller.ts",
+    "line": 22
+  },
+  {
+    "method": "POST",
+    "path": "/api/background-checks/:id/risks",
+    "file": "server/modules/background-checks/background-checks.controller.ts",
+    "line": 17
+  },
+  {
+    "method": "POST",
+    "path": "/api/background-checks/:id/sync-external",
+    "file": "server/modules/background-checks/background-checks.controller.ts",
+    "line": 20
+  },
+  {
+    "method": "POST",
+    "path": "/api/background-checks/:id/verifications",
+    "file": "server/modules/background-checks/background-checks.controller.ts",
+    "line": 16
+  },
+  {
+    "method": "GET",
+    "path": "/api/background-checks/packages",
+    "file": "server/modules/background-checks/background-checks.controller.ts",
+    "line": 10
+  },
+  {
+    "method": "POST",
+    "path": "/api/background-checks/sync-reports",
+    "file": "server/modules/background-checks/background-checks.controller.ts",
+    "line": 11
+  },
+  {
+    "method": "GET",
+    "path": "/api/employee-lifecycle",
+    "file": "server/modules/employee-lifecycle/employee-lifecycle.controller.ts",
+    "line": 2
+  },
+  {
+    "method": "GET",
+    "path": "/api/employee-lifecycle/analytics",
+    "file": "server/modules/employee-lifecycle/employee-lifecycle.controller.ts",
+    "line": 2
+  },
+  {
+    "method": "POST",
+    "path": "/api/employee-lifecycle/followups/:id/record",
+    "file": "server/modules/employee-lifecycle/employee-lifecycle.controller.ts",
+    "line": 2
+  },
+  {
+    "method": "POST",
+    "path": "/api/employee-lifecycle/followups/generate",
+    "file": "server/modules/employee-lifecycle/employee-lifecycle.controller.ts",
+    "line": 2
+  },
+  {
+    "method": "POST",
+    "path": "/api/employee-lifecycle/offboarding",
+    "file": "server/modules/employee-lifecycle/employee-lifecycle.controller.ts",
+    "line": 2
+  },
+  {
+    "method": "POST",
+    "path": "/api/employee-lifecycle/offboarding/:id/complete",
+    "file": "server/modules/employee-lifecycle/employee-lifecycle.controller.ts",
+    "line": 2
+  },
+  {
+    "method": "POST",
+    "path": "/api/employee-lifecycle/offboarding/:id/interview",
+    "file": "server/modules/employee-lifecycle/employee-lifecycle.controller.ts",
+    "line": 2
+  },
+  {
+    "method": "POST",
+    "path": "/api/employee-lifecycle/offboarding/:id/question-bank/retry",
+    "file": "server/modules/employee-lifecycle/employee-lifecycle.controller.ts",
+    "line": 2
+  },
+  {
+    "method": "POST",
+    "path": "/api/employee-lifecycle/onboarding",
+    "file": "server/modules/employee-lifecycle/employee-lifecycle.controller.ts",
+    "line": 2
+  },
+  {
+    "method": "POST",
+    "path": "/api/employee-lifecycle/onboarding/:id/arrival",
+    "file": "server/modules/employee-lifecycle/employee-lifecycle.controller.ts",
+    "line": 2
+  },
+  {
+    "method": "POST",
+    "path": "/api/employee-lifecycle/onboarding/:id/documents",
+    "file": "server/modules/employee-lifecycle/employee-lifecycle.controller.ts",
+    "line": 2
+  },
+  {
+    "method": "POST",
+    "path": "/api/employee-lifecycle/onboarding/:id/documents/:documentId/verify",
+    "file": "server/modules/employee-lifecycle/employee-lifecycle.controller.ts",
+    "line": 2
+  },
+  {
+    "method": "POST",
+    "path": "/api/employee-lifecycle/onboarding/:id/external-request",
+    "file": "server/modules/employee-lifecycle/employee-lifecycle.controller.ts",
+    "line": 2
+  },
+  {
+    "method": "POST",
+    "path": "/api/employee-lifecycle/onboarding/:id/external-result",
+    "file": "server/modules/employee-lifecycle/employee-lifecycle.controller.ts",
+    "line": 2
+  },
+  {
+    "method": "POST",
+    "path": "/api/employee-lifecycle/onboarding/:id/probation/:reviewId/complete",
+    "file": "server/modules/employee-lifecycle/employee-lifecycle.controller.ts",
+    "line": 2
+  },
+  {
+    "method": "POST",
+    "path": "/api/employee-lifecycle/onboarding/:id/tasks",
+    "file": "server/modules/employee-lifecycle/employee-lifecycle.controller.ts",
+    "line": 2
+  },
+  {
+    "method": "POST",
+    "path": "/api/employee-lifecycle/onboarding/:id/tasks/:taskId/complete",
+    "file": "server/modules/employee-lifecycle/employee-lifecycle.controller.ts",
+    "line": 2
+  },
+  {
+    "method": "GET",
+    "path": "/api/employee-lifecycle/onboarding/arrival/public",
+    "file": "server/modules/employee-lifecycle/employee-lifecycle.controller.ts",
+    "line": 2
+  },
+  {
+    "method": "POST",
+    "path": "/api/employee-lifecycle/onboarding/arrival/public",
+    "file": "server/modules/employee-lifecycle/employee-lifecycle.controller.ts",
+    "line": 2
+  },
+  {
+    "method": "POST",
+    "path": "/api/employee-lifecycle/onboarding/reminders/check",
+    "file": "server/modules/employee-lifecycle/employee-lifecycle.controller.ts",
+    "line": 2
+  },
+  {
+    "method": "GET",
+    "path": "/api/employee-lifecycle/probation/due",
+    "file": "server/modules/employee-lifecycle/employee-lifecycle.controller.ts",
+    "line": 2
+  },
+  {
+    "method": "POST",
+    "path": "/api/employee-lifecycle/reviews/:reviewId/question-bank/retry",
+    "file": "server/modules/employee-lifecycle/employee-lifecycle.controller.ts",
+    "line": 2
+  },
+  {
+    "method": "GET",
+    "path": "/api/employee-lifecycle/reviews/public",
+    "file": "server/modules/employee-lifecycle/employee-lifecycle.controller.ts",
+    "line": 2
+  },
+  {
+    "method": "POST",
+    "path": "/api/employee-lifecycle/reviews/public",
+    "file": "server/modules/employee-lifecycle/employee-lifecycle.controller.ts",
+    "line": 2
+  },
+  {
+    "method": "POST",
+    "path": "/api/employee-lifecycle/reviews/reminders/check",
+    "file": "server/modules/employee-lifecycle/employee-lifecycle.controller.ts",
+    "line": 2
+  },
+  {
+    "method": "GET",
+    "path": "/api/governance/audits",
+    "file": "server/modules/governance/governance.controller.ts",
+    "line": 21
+  },
+  {
+    "method": "POST",
+    "path": "/api/governance/sla/scan",
+    "file": "server/modules/governance/governance.controller.ts",
+    "line": 15
+  },
+  {
+    "method": "GET",
+    "path": "/api/governance/stage-rules",
+    "file": "server/modules/governance/governance.controller.ts",
+    "line": 12
+  },
+  {
+    "method": "GET",
+    "path": "/api/governance/talents/:id/allowed-transitions",
+    "file": "server/modules/governance/governance.controller.ts",
+    "line": 13
+  },
+  {
+    "method": "GET",
+    "path": "/api/governance/talents/:id/export",
+    "file": "server/modules/governance/governance.controller.ts",
+    "line": 22
+  },
+  {
+    "method": "POST",
+    "path": "/api/governance/talents/:id/rating",
+    "file": "server/modules/governance/governance.controller.ts",
+    "line": 18
+  },
+  {
+    "method": "GET",
+    "path": "/api/governance/talents/:id/rating-history",
+    "file": "server/modules/governance/governance.controller.ts",
+    "line": 19
+  },
+  {
+    "method": "GET",
+    "path": "/api/governance/talents/:id/timeline",
+    "file": "server/modules/governance/governance.controller.ts",
+    "line": 20
+  },
+  {
+    "method": "POST",
+    "path": "/api/governance/talents/:id/transition",
+    "file": "server/modules/governance/governance.controller.ts",
+    "line": 14
+  },
+  {
+    "method": "GET",
+    "path": "/api/governance/tasks",
+    "file": "server/modules/governance/governance.controller.ts",
+    "line": 16
+  },
+  {
+    "method": "POST",
+    "path": "/api/governance/tasks/:id/action",
+    "file": "server/modules/governance/governance.controller.ts",
+    "line": 17
+  },
+  {
+    "method": "GET",
+    "path": "/api/health",
+    "file": "server/modules/database/database.controller.ts",
+    "line": 10
+  },
+  {
+    "method": "GET",
+    "path": "/api/health/database",
+    "file": "server/modules/database/database.controller.ts",
+    "line": 21
+  },
+  {
+    "method": "POST",
+    "path": "/api/health/database/retry",
+    "file": "server/modules/database/database.controller.ts",
+    "line": 67
+  },
+  {
+    "method": "GET",
+    "path": "/api/health/system",
+    "file": "server/modules/database/database.controller.ts",
+    "line": 26
+  },
+  {
+    "method": "GET",
+    "path": "/api/interview-evaluations/analytics",
+    "file": "server/modules/interviews/evaluations.controller.ts",
+    "line": 40
+  },
+  {
+    "method": "POST",
+    "path": "/api/interview-evaluations/before-interviews/check",
+    "file": "server/modules/interviews/evaluations.controller.ts",
+    "line": 26
+  },
+  {
+    "method": "POST",
+    "path": "/api/interview-evaluations/feedback-sla/check",
+    "file": "server/modules/interviews/evaluations.controller.ts",
+    "line": 25
+  },
+  {
+    "method": "GET",
+    "path": "/api/interview-evaluations/interviews/:interviewId/aggregate",
+    "file": "server/modules/interviews/evaluations.controller.ts",
+    "line": 23
+  },
+  {
+    "method": "POST",
+    "path": "/api/interview-evaluations/interviews/:interviewId/ai-draft",
+    "file": "server/modules/interviews/evaluations.controller.ts",
+    "line": 18
+  },
+  {
+    "method": "POST",
+    "path": "/api/interview-evaluations/interviews/:interviewId/decision",
+    "file": "server/modules/interviews/evaluations.controller.ts",
+    "line": 24
+  },
+  {
+    "method": "GET",
+    "path": "/api/interview-evaluations/interviews/:interviewId/feedback",
+    "file": "server/modules/interviews/evaluations.controller.ts",
+    "line": 19
+  },
+  {
+    "method": "POST",
+    "path": "/api/interview-evaluations/interviews/:interviewId/feedback",
+    "file": "server/modules/interviews/evaluations.controller.ts",
+    "line": 22
+  },
+  {
+    "method": "POST",
+    "path": "/api/interview-evaluations/interviews/:interviewId/feedback-extract",
+    "file": "server/modules/interviews/evaluations.controller.ts",
+    "line": 13
+  },
+  {
+    "method": "POST",
+    "path": "/api/interview-evaluations/interviews/:interviewId/generate-questions",
+    "file": "server/modules/interviews/evaluations.controller.ts",
+    "line": 38
+  },
+  {
+    "method": "POST",
+    "path": "/api/interview-evaluations/interviews/:interviewId/notes",
+    "file": "server/modules/interviews/evaluations.controller.ts",
+    "line": 17
+  },
+  {
+    "method": "GET",
+    "path": "/api/interview-evaluations/interviews/:interviewId/questions",
+    "file": "server/modules/interviews/evaluations.controller.ts",
+    "line": 20
+  },
+  {
+    "method": "GET",
+    "path": "/api/interview-evaluations/interviews/:interviewId/questions/export",
+    "file": "server/modules/interviews/evaluations.controller.ts",
+    "line": 21
+  },
+  {
+    "method": "GET",
+    "path": "/api/interview-evaluations/public",
+    "file": "server/modules/interviews/evaluations.controller.ts",
+    "line": 35
+  },
+  {
+    "method": "POST",
+    "path": "/api/interview-evaluations/public",
+    "file": "server/modules/interviews/evaluations.controller.ts",
+    "line": 36
+  },
+  {
+    "method": "POST",
+    "path": "/api/interview-evaluations/public/draft",
+    "file": "server/modules/interviews/evaluations.controller.ts",
+    "line": 27
+  },
+  {
+    "method": "POST",
+    "path": "/api/interview-evaluations/public/extract",
+    "file": "server/modules/interviews/evaluations.controller.ts",
+    "line": 28
+  },
+  {
+    "method": "GET",
+    "path": "/api/interview-evaluations/salary-benchmarks",
+    "file": "server/modules/interviews/evaluations.controller.ts",
+    "line": 37
+  },
+  {
+    "method": "POST",
+    "path": "/api/interview-evaluations/salary-benchmarks",
+    "file": "server/modules/interviews/evaluations.controller.ts",
+    "line": 39
+  },
+  {
+    "method": "GET",
+    "path": "/api/interview-evaluations/templates",
+    "file": "server/modules/interviews/evaluations.controller.ts",
+    "line": 10
+  },
+  {
+    "method": "POST",
+    "path": "/api/interview-evaluations/templates",
+    "file": "server/modules/interviews/evaluations.controller.ts",
+    "line": 11
+  },
+  {
+    "method": "GET",
+    "path": "/api/interview-evaluations/workbench",
+    "file": "server/modules/interviews/evaluations.controller.ts",
+    "line": 12
+  },
+  {
+    "method": "GET",
+    "path": "/api/interviews/appointments",
+    "file": "server/modules/interviews/interviews.controller.ts",
+    "line": 46
+  },
+  {
+    "method": "POST",
+    "path": "/api/interviews/appointments",
+    "file": "server/modules/interviews/interviews.controller.ts",
+    "line": 48
+  },
+  {
+    "method": "GET",
+    "path": "/api/interviews/appointments/:interviewId",
+    "file": "server/modules/interviews/interviews.controller.ts",
+    "line": 47
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/interviews/appointments/:interviewId",
+    "file": "server/modules/interviews/interviews.controller.ts",
+    "line": 63
+  },
+  {
+    "method": "POST",
+    "path": "/api/interviews/appointments/:interviewId/cancel",
+    "file": "server/modules/interviews/interviews.controller.ts",
+    "line": 66
+  },
+  {
+    "method": "POST",
+    "path": "/api/interviews/appointments/:interviewId/reschedule-decision",
+    "file": "server/modules/interviews/interviews.controller.ts",
+    "line": 64
+  },
+  {
+    "method": "POST",
+    "path": "/api/interviews/appointments/:interviewId/result",
+    "file": "server/modules/interviews/interviews.controller.ts",
+    "line": 69
+  },
+  {
+    "method": "POST",
+    "path": "/api/interviews/appointments/:interviewId/retry-invitation",
+    "file": "server/modules/interviews/interviews.controller.ts",
+    "line": 68
+  },
+  {
+    "method": "POST",
+    "path": "/api/interviews/appointments/:interviewId/retry-sync",
+    "file": "server/modules/interviews/interviews.controller.ts",
+    "line": 67
+  },
+  {
+    "method": "GET",
+    "path": "/api/interviews/availability",
+    "file": "server/modules/interviews/interviews.controller.ts",
+    "line": 14
+  },
+  {
+    "method": "POST",
+    "path": "/api/interviews/availability",
+    "file": "server/modules/interviews/interviews.controller.ts",
+    "line": 15
+  },
+  {
+    "method": "GET",
+    "path": "/api/interviews/candidates",
+    "file": "server/modules/interviews/interviews.controller.ts",
+    "line": 16
+  },
+  {
+    "method": "GET",
+    "path": "/api/interviews/interviewers",
+    "file": "server/modules/interviews/interviews.controller.ts",
+    "line": 12
+  },
+  {
+    "method": "POST",
+    "path": "/api/interviews/interviewers",
+    "file": "server/modules/interviews/interviews.controller.ts",
+    "line": 13
+  },
+  {
+    "method": "GET",
+    "path": "/api/interviews/invite-templates",
+    "file": "server/modules/interviews/interviews.controller.ts",
+    "line": 45
+  },
+  {
+    "method": "POST",
+    "path": "/api/interviews/reminders/check",
+    "file": "server/modules/interviews/interviews.controller.ts",
+    "line": 70
+  },
+  {
+    "method": "GET",
+    "path": "/api/interviews/reschedule-jobs/:jobId",
+    "file": "server/modules/interviews/interviews.controller.ts",
+    "line": 65
+  },
+  {
+    "method": "GET",
+    "path": "/api/interviews/rooms",
+    "file": "server/modules/interviews/interviews.controller.ts",
+    "line": 26
+  },
+  {
+    "method": "POST",
+    "path": "/api/interviews/rooms",
+    "file": "server/modules/interviews/interviews.controller.ts",
+    "line": 35
+  },
+  {
+    "method": "GET",
+    "path": "/api/interviews/rooms/availability",
+    "file": "server/modules/interviews/interviews.controller.ts",
+    "line": 18
+  },
+  {
+    "method": "POST",
+    "path": "/api/interviews/scheduling-candidate",
+    "file": "server/modules/interviews/interviews.controller.ts",
+    "line": 17
+  },
+  {
+    "method": "POST",
+    "path": "/api/interviews/wecom/authorization-notice",
+    "file": "server/modules/interviews/interviews.controller.ts",
+    "line": 27
+  },
+  {
+    "method": "POST",
+    "path": "/api/interviews/wecom/resources/sync",
+    "file": "server/modules/interviews/interviews.controller.ts",
+    "line": 37
+  },
+  {
+    "method": "POST",
+    "path": "/api/interviews/wecom/users/search",
+    "file": "server/modules/interviews/interviews.controller.ts",
+    "line": 36
+  },
+  {
+    "method": "GET",
+    "path": "/api/messages",
+    "file": "server/modules/messages/messages.controller.ts",
+    "line": 2
+  },
+  {
+    "method": "POST",
+    "path": "/api/messages/:id/retry",
+    "file": "server/modules/messages/messages.controller.ts",
+    "line": 2
+  },
+  {
+    "method": "POST",
+    "path": "/api/messages/:id/send",
+    "file": "server/modules/messages/messages.controller.ts",
+    "line": 2
+  },
+  {
+    "method": "GET",
+    "path": "/api/messages/connection",
+    "file": "server/modules/messages/messages.controller.ts",
+    "line": 2
+  },
+  {
+    "method": "POST",
+    "path": "/api/messages/owner-alert",
+    "file": "server/modules/messages/messages.controller.ts",
+    "line": 2
+  },
+  {
+    "method": "POST",
+    "path": "/api/messages/preview",
+    "file": "server/modules/messages/messages.controller.ts",
+    "line": 2
+  },
+  {
+    "method": "POST",
+    "path": "/api/messages/rules",
+    "file": "server/modules/messages/messages.controller.ts",
+    "line": 2
+  },
+  {
+    "method": "POST",
+    "path": "/api/messages/rules/:id/toggle",
+    "file": "server/modules/messages/messages.controller.ts",
+    "line": 2
+  },
+  {
+    "method": "GET",
+    "path": "/api/messages/rules/list",
+    "file": "server/modules/messages/messages.controller.ts",
+    "line": 2
+  },
+  {
+    "method": "POST",
+    "path": "/api/messages/rules/scan",
+    "file": "server/modules/messages/messages.controller.ts",
+    "line": 2
+  },
+  {
+    "method": "GET",
+    "path": "/api/messages/templates",
+    "file": "server/modules/messages/messages.controller.ts",
+    "line": 2
+  },
+  {
+    "method": "POST",
+    "path": "/api/messages/templates",
+    "file": "server/modules/messages/messages.controller.ts",
+    "line": 2
+  },
+  {
+    "method": "GET",
+    "path": "/api/offers",
+    "file": "server/modules/offers/offers.controller.ts",
+    "line": 15
+  },
+  {
+    "method": "POST",
+    "path": "/api/offers",
+    "file": "server/modules/offers/offers.controller.ts",
+    "line": 45
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/offers/:id",
+    "file": "server/modules/offers/offers.controller.ts",
+    "line": 32
+  },
+  {
+    "method": "POST",
+    "path": "/api/offers/:id/approval",
+    "file": "server/modules/offers/offers.controller.ts",
+    "line": 83
+  },
+  {
+    "method": "POST",
+    "path": "/api/offers/:id/generate-file",
+    "file": "server/modules/offers/offers.controller.ts",
+    "line": 86
+  },
+  {
+    "method": "POST",
+    "path": "/api/offers/:id/negotiate",
+    "file": "server/modules/offers/offers.controller.ts",
+    "line": 95
+  },
+  {
+    "method": "POST",
+    "path": "/api/offers/:id/response-link",
+    "file": "server/modules/offers/offers.controller.ts",
+    "line": 92
+  },
+  {
+    "method": "POST",
+    "path": "/api/offers/:id/send-email",
+    "file": "server/modules/offers/offers.controller.ts",
+    "line": 89
+  },
+  {
+    "method": "POST",
+    "path": "/api/offers/:id/submit",
+    "file": "server/modules/offers/offers.controller.ts",
+    "line": 80
+  },
+  {
+    "method": "POST",
+    "path": "/api/offers/interview-context",
+    "file": "server/modules/offers/offers.controller.ts",
+    "line": 24
+  },
+  {
+    "method": "GET",
+    "path": "/api/offers/templates",
+    "file": "server/modules/offers/offers.controller.ts",
+    "line": 18
+  },
+  {
+    "method": "POST",
+    "path": "/api/offers/templates",
+    "file": "server/modules/offers/offers.controller.ts",
+    "line": 21
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/offers/templates/:id",
+    "file": "server/modules/offers/offers.controller.ts",
+    "line": 29
+  },
+  {
+    "method": "GET",
+    "path": "/api/points/ranking",
+    "file": "server/modules/points/points.controller.ts",
+    "line": 11
+  },
+  {
+    "method": "GET",
+    "path": "/api/public/assessments/:token",
+    "file": "server/modules/assessments/public-assessments.controller.ts",
+    "line": 9
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/public/assessments/:token/answers",
+    "file": "server/modules/assessments/public-assessments.controller.ts",
+    "line": 12
+  },
+  {
+    "method": "POST",
+    "path": "/api/public/assessments/:token/events",
+    "file": "server/modules/assessments/public-assessments.controller.ts",
+    "line": 23
+  },
+  {
+    "method": "POST",
+    "path": "/api/public/assessments/:token/files/:questionId",
+    "file": "server/modules/assessments/public-assessments.controller.ts",
+    "line": 17
+  },
+  {
+    "method": "POST",
+    "path": "/api/public/assessments/:token/submit",
+    "file": "server/modules/assessments/public-assessments.controller.ts",
+    "line": 28
+  },
+  {
+    "method": "GET",
+    "path": "/api/public/interviews/:token",
+    "file": "server/modules/interviews/public-interviews.controller.ts",
+    "line": 23
+  },
+  {
+    "method": "POST",
+    "path": "/api/public/interviews/:token/check-in",
+    "file": "server/modules/interviews/public-interviews.controller.ts",
+    "line": 26
+  },
+  {
+    "method": "POST",
+    "path": "/api/public/interviews/:token/communication",
+    "file": "server/modules/interviews/public-interviews.controller.ts",
+    "line": 28
+  },
+  {
+    "method": "POST",
+    "path": "/api/public/interviews/:token/confirm",
+    "file": "server/modules/interviews/public-interviews.controller.ts",
+    "line": 24
+  },
+  {
+    "method": "POST",
+    "path": "/api/public/interviews/:token/preparation",
+    "file": "server/modules/interviews/public-interviews.controller.ts",
+    "line": 27
+  },
+  {
+    "method": "POST",
+    "path": "/api/public/interviews/:token/reschedule",
+    "file": "server/modules/interviews/public-interviews.controller.ts",
+    "line": 25
+  },
+  {
+    "method": "GET",
+    "path": "/api/public/interviews/communication",
+    "file": "server/modules/interviews/public-interviews.controller.ts",
+    "line": 9
+  },
+  {
+    "method": "POST",
+    "path": "/api/public/interviews/communication",
+    "file": "server/modules/interviews/public-interviews.controller.ts",
+    "line": 22
+  },
+  {
+    "method": "POST",
+    "path": "/api/public/interviews/communication/extract",
+    "file": "server/modules/interviews/public-interviews.controller.ts",
+    "line": 10
+  },
+  {
+    "method": "GET",
+    "path": "/api/public/offers/:token",
+    "file": "server/modules/offers/public-offers.controller.ts",
+    "line": 2
+  },
+  {
+    "method": "POST",
+    "path": "/api/public/offers/:token/respond",
+    "file": "server/modules/offers/public-offers.controller.ts",
+    "line": 2
+  },
+  {
+    "method": "GET",
+    "path": "/api/public/referrals/:token",
+    "file": "server/modules/referrals/public-referrals.controller.ts",
+    "line": 2
+  },
+  {
+    "method": "POST",
+    "path": "/api/public/referrals/:token/submit",
+    "file": "server/modules/referrals/public-referrals.controller.ts",
+    "line": 2
+  },
+  {
+    "method": "GET",
+    "path": "/api/public/referrals/track/:token",
+    "file": "server/modules/referrals/public-referrals.controller.ts",
+    "line": 2
+  },
+  {
+    "method": "GET",
+    "path": "/api/public/resumes/formats",
+    "file": "server/modules/resumes/public-resume-api.controller.ts",
+    "line": 34
+  },
+  {
+    "method": "GET",
+    "path": "/api/public/resumes/jobs/:jobId",
+    "file": "server/modules/resumes/public-resume-api.controller.ts",
+    "line": 26
+  },
+  {
+    "method": "POST",
+    "path": "/api/public/resumes/parse",
+    "file": "server/modules/resumes/public-resume-api.controller.ts",
+    "line": 16
+  },
+  {
+    "method": "GET",
+    "path": "/api/public/talent-reviews/:token",
+    "file": "server/modules/talents/talents.controller.ts",
+    "line": 257
+  },
+  {
+    "method": "POST",
+    "path": "/api/public/talent-reviews/:token/respond",
+    "file": "server/modules/talents/talents.controller.ts",
+    "line": 262
+  },
+  {
+    "method": "GET",
+    "path": "/api/recruitment",
+    "file": "server/modules/recruitment/recruitment.controller.ts",
+    "line": 17
+  },
+  {
+    "method": "GET",
+    "path": "/api/recruitment/approvals/:type/:id",
+    "file": "server/modules/recruitment/recruitment.controller.ts",
+    "line": 104
+  },
+  {
+    "method": "POST",
+    "path": "/api/recruitment/approvals/:type/:id/decision",
+    "file": "server/modules/recruitment/recruitment.controller.ts",
+    "line": 110
+  },
+  {
+    "method": "GET",
+    "path": "/api/recruitment/channels",
+    "file": "server/modules/recruitment/recruitment.controller.ts",
+    "line": 191
+  },
+  {
+    "method": "POST",
+    "path": "/api/recruitment/channels",
+    "file": "server/modules/recruitment/recruitment.controller.ts",
+    "line": 194
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/recruitment/channels/:id",
+    "file": "server/modules/recruitment/recruitment.controller.ts",
+    "line": 197
+  },
+  {
+    "method": "GET",
+    "path": "/api/recruitment/collection-tasks",
+    "file": "server/modules/recruitment/recruitment.controller.ts",
+    "line": 202
+  },
+  {
+    "method": "GET",
+    "path": "/api/recruitment/collection-tasks/:id",
+    "file": "server/modules/recruitment/recruitment.controller.ts",
+    "line": 207
+  },
+  {
+    "method": "POST",
+    "path": "/api/recruitment/collection-tasks/:id/cancel",
+    "file": "server/modules/recruitment/recruitment.controller.ts",
+    "line": 235
+  },
+  {
+    "method": "POST",
+    "path": "/api/recruitment/collection-tasks/:id/claim",
+    "file": "server/modules/recruitment/recruitment.controller.ts",
+    "line": 210
+  },
+  {
+    "method": "POST",
+    "path": "/api/recruitment/collection-tasks/:id/complete",
+    "file": "server/modules/recruitment/recruitment.controller.ts",
+    "line": 220
+  },
+  {
+    "method": "POST",
+    "path": "/api/recruitment/collection-tasks/:id/fail",
+    "file": "server/modules/recruitment/recruitment.controller.ts",
+    "line": 225
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/recruitment/collection-tasks/:id/progress",
+    "file": "server/modules/recruitment/recruitment.controller.ts",
+    "line": 215
+  },
+  {
+    "method": "POST",
+    "path": "/api/recruitment/collection-tasks/:id/retry",
+    "file": "server/modules/recruitment/recruitment.controller.ts",
+    "line": 230
+  },
+  {
+    "method": "POST",
+    "path": "/api/recruitment/collection-tasks/check-stale",
+    "file": "server/modules/recruitment/recruitment.controller.ts",
+    "line": 240
+  },
+  {
+    "method": "GET",
+    "path": "/api/recruitment/department-demands",
+    "file": "server/modules/recruitment/recruitment.controller.ts",
+    "line": 58
+  },
+  {
+    "method": "POST",
+    "path": "/api/recruitment/department-demands",
+    "file": "server/modules/recruitment/recruitment.controller.ts",
+    "line": 64
+  },
+  {
+    "method": "POST",
+    "path": "/api/recruitment/department-demands/:positionId/pause",
+    "file": "server/modules/recruitment/recruitment.controller.ts",
+    "line": 82
+  },
+  {
+    "method": "POST",
+    "path": "/api/recruitment/department-demands/transcript-extract",
+    "file": "server/modules/recruitment/recruitment.controller.ts",
+    "line": 71
+  },
+  {
+    "method": "GET",
+    "path": "/api/recruitment/form-options",
+    "file": "server/modules/recruitment/recruitment.controller.ts",
+    "line": 46
+  },
+  {
+    "method": "GET",
+    "path": "/api/recruitment/monthly-demands",
+    "file": "server/modules/recruitment/recruitment.controller.ts",
+    "line": 52
+  },
+  {
+    "method": "POST",
+    "path": "/api/recruitment/monthly-demands",
+    "file": "server/modules/recruitment/recruitment.controller.ts",
+    "line": 88
+  },
+  {
+    "method": "POST",
+    "path": "/api/recruitment/monthly-demands/transcript-extract",
+    "file": "server/modules/recruitment/recruitment.controller.ts",
+    "line": 94
+  },
+  {
+    "method": "GET",
+    "path": "/api/recruitment/monthly-hiring",
+    "file": "server/modules/recruitment/recruitment.controller.ts",
+    "line": 24
+  },
+  {
+    "method": "GET",
+    "path": "/api/recruitment/position-options",
+    "file": "server/modules/recruitment/recruitment.controller.ts",
+    "line": 40
+  },
+  {
+    "method": "POST",
+    "path": "/api/recruitment/positions",
+    "file": "server/modules/recruitment/recruitment.controller.ts",
+    "line": 134
+  },
+  {
+    "method": "GET",
+    "path": "/api/recruitment/positions/:id",
+    "file": "server/modules/recruitment/recruitment.controller.ts",
+    "line": 116
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/recruitment/positions/:id",
+    "file": "server/modules/recruitment/recruitment.controller.ts",
+    "line": 150
+  },
+  {
+    "method": "POST",
+    "path": "/api/recruitment/positions/:id/channels",
+    "file": "server/modules/recruitment/recruitment.controller.ts",
+    "line": 186
+  },
+  {
+    "method": "POST",
+    "path": "/api/recruitment/positions/:id/close",
+    "file": "server/modules/recruitment/recruitment.controller.ts",
+    "line": 166
+  },
+  {
+    "method": "POST",
+    "path": "/api/recruitment/positions/:id/offline",
+    "file": "server/modules/recruitment/recruitment.controller.ts",
+    "line": 161
+  },
+  {
+    "method": "POST",
+    "path": "/api/recruitment/positions/:id/publish",
+    "file": "server/modules/recruitment/recruitment.controller.ts",
+    "line": 156
+  },
+  {
+    "method": "POST",
+    "path": "/api/recruitment/positions/:id/reopen",
+    "file": "server/modules/recruitment/recruitment.controller.ts",
+    "line": 181
+  },
+  {
+    "method": "GET",
+    "path": "/api/recruitment/positions/:id/versions",
+    "file": "server/modules/recruitment/recruitment.controller.ts",
+    "line": 122
+  },
+  {
+    "method": "GET",
+    "path": "/api/recruitment/positions/:id/versions/compare",
+    "file": "server/modules/recruitment/recruitment.controller.ts",
+    "line": 128
+  },
+  {
+    "method": "POST",
+    "path": "/api/recruitment/positions/batch-offline",
+    "file": "server/modules/recruitment/recruitment.controller.ts",
+    "line": 176
+  },
+  {
+    "method": "POST",
+    "path": "/api/recruitment/positions/batch-publish",
+    "file": "server/modules/recruitment/recruitment.controller.ts",
+    "line": 171
+  },
+  {
+    "method": "POST",
+    "path": "/api/recruitment/positions/company-catalog/sync",
+    "file": "server/modules/recruitment/recruitment.controller.ts",
+    "line": 145
+  },
+  {
+    "method": "POST",
+    "path": "/api/recruitment/positions/import",
+    "file": "server/modules/recruitment/recruitment.controller.ts",
+    "line": 140
+  },
+  {
+    "method": "GET",
+    "path": "/api/recruitment/referral-poster-order",
+    "file": "server/modules/recruitment/recruitment.controller.ts",
+    "line": 30
+  },
+  {
+    "method": "GET",
+    "path": "/api/referrals",
+    "file": "server/modules/referrals/referrals.controller.ts",
+    "line": 24
+  },
+  {
+    "method": "POST",
+    "path": "/api/referrals/:id/evaluate-rewards",
+    "file": "server/modules/referrals/referrals.controller.ts",
+    "line": 36
+  },
+  {
+    "method": "POST",
+    "path": "/api/referrals/:id/validity",
+    "file": "server/modules/referrals/referrals.controller.ts",
+    "line": 35
+  },
+  {
+    "method": "GET",
+    "path": "/api/referrals/analytics",
+    "file": "server/modules/referrals/referrals.controller.ts",
+    "line": 34
+  },
+  {
+    "method": "GET",
+    "path": "/api/referrals/campaigns",
+    "file": "server/modules/referrals/referrals.controller.ts",
+    "line": 26
+  },
+  {
+    "method": "POST",
+    "path": "/api/referrals/campaigns",
+    "file": "server/modules/referrals/referrals.controller.ts",
+    "line": 27
+  },
+  {
+    "method": "GET",
+    "path": "/api/referrals/positions",
+    "file": "server/modules/referrals/referrals.controller.ts",
+    "line": 25
+  },
+  {
+    "method": "GET",
+    "path": "/api/referrals/reward-rules",
+    "file": "server/modules/referrals/referrals.controller.ts",
+    "line": 32
+  },
+  {
+    "method": "POST",
+    "path": "/api/referrals/reward-rules",
+    "file": "server/modules/referrals/referrals.controller.ts",
+    "line": 33
+  },
+  {
+    "method": "POST",
+    "path": "/api/referrals/rewards/:id/pay",
+    "file": "server/modules/referrals/referrals.controller.ts",
+    "line": 37
+  },
+  {
+    "method": "GET",
+    "path": "/api/resumes",
+    "file": "server/modules/resumes/resumes.controller.ts",
+    "line": 34
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/resumes/:id",
+    "file": "server/modules/resumes/resumes.controller.ts",
+    "line": 196
+  },
+  {
+    "method": "POST",
+    "path": "/api/resumes/:id/convert-to-word",
+    "file": "server/modules/resumes/resumes.controller.ts",
+    "line": 186
+  },
+  {
+    "method": "POST",
+    "path": "/api/resumes/:id/reparse",
+    "file": "server/modules/resumes/resumes.controller.ts",
+    "line": 179
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/resumes/:id/review",
+    "file": "server/modules/resumes/resumes.controller.ts",
+    "line": 191
+  },
+  {
+    "method": "POST",
+    "path": "/api/resumes/analysis/start",
+    "file": "server/modules/resumes/resumes.controller.ts",
+    "line": 66
+  },
+  {
+    "method": "GET",
+    "path": "/api/resumes/api-config",
+    "file": "server/modules/resumes/resumes.controller.ts",
+    "line": 159
+  },
+  {
+    "method": "POST",
+    "path": "/api/resumes/api-config/rotate",
+    "file": "server/modules/resumes/resumes.controller.ts",
+    "line": 162
+  },
+  {
+    "method": "POST",
+    "path": "/api/resumes/batch-upload",
+    "file": "server/modules/resumes/resumes.controller.ts",
+    "line": 98
+  },
+  {
+    "method": "GET",
+    "path": "/api/resumes/batches",
+    "file": "server/modules/resumes/resumes.controller.ts",
+    "line": 136
+  },
+  {
+    "method": "GET",
+    "path": "/api/resumes/batches/:batchId",
+    "file": "server/modules/resumes/resumes.controller.ts",
+    "line": 141
+  },
+  {
+    "method": "GET",
+    "path": "/api/resumes/batches/:batchId/export",
+    "file": "server/modules/resumes/resumes.controller.ts",
+    "line": 151
+  },
+  {
+    "method": "POST",
+    "path": "/api/resumes/batches/:batchId/retry",
+    "file": "server/modules/resumes/resumes.controller.ts",
+    "line": 144
+  },
+  {
+    "method": "GET",
+    "path": "/api/resumes/candidates/:candidateId/versions",
+    "file": "server/modules/resumes/resumes.controller.ts",
+    "line": 166
+  },
+  {
+    "method": "POST",
+    "path": "/api/resumes/identity-backfill",
+    "file": "server/modules/resumes/resumes.controller.ts",
+    "line": 91
+  },
+  {
+    "method": "POST",
+    "path": "/api/resumes/parse-upload",
+    "file": "server/modules/resumes/resumes.controller.ts",
+    "line": 56
+  },
+  {
+    "method": "POST",
+    "path": "/api/resumes/process",
+    "file": "server/modules/resumes/resumes.controller.ts",
+    "line": 48
+  },
+  {
+    "method": "POST",
+    "path": "/api/resumes/upload-url",
+    "file": "server/modules/resumes/resumes.controller.ts",
+    "line": 43
+  },
+  {
+    "method": "POST",
+    "path": "/api/resumes/versions/:versionId/activate",
+    "file": "server/modules/resumes/resumes.controller.ts",
+    "line": 174
+  },
+  {
+    "method": "GET",
+    "path": "/api/talents",
+    "file": "server/modules/talents/talents.controller.ts",
+    "line": 13
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/talents/:id",
+    "file": "server/modules/talents/talents.controller.ts",
+    "line": 232
+  },
+  {
+    "method": "GET",
+    "path": "/api/talents/:id",
+    "file": "server/modules/talents/talents.controller.ts",
+    "line": 163
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/talents/:id/assessment",
+    "file": "server/modules/talents/talents.controller.ts",
+    "line": 227
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/talents/:id/assessment-correction",
+    "file": "server/modules/talents/talents.controller.ts",
+    "line": 149
+  },
+  {
+    "method": "POST",
+    "path": "/api/talents/:id/assessment-rerun",
+    "file": "server/modules/talents/talents.controller.ts",
+    "line": 111
+  },
+  {
+    "method": "GET",
+    "path": "/api/talents/:id/assessment-versions",
+    "file": "server/modules/talents/talents.controller.ts",
+    "line": 108
+  },
+  {
+    "method": "GET",
+    "path": "/api/talents/:id/assessment-versions/compare",
+    "file": "server/modules/talents/talents.controller.ts",
+    "line": 122
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/talents/:id/birth-year",
+    "file": "server/modules/talents/talents.controller.ts",
+    "line": 175
+  },
+  {
+    "method": "GET",
+    "path": "/api/talents/:id/communications",
+    "file": "server/modules/talents/talents.controller.ts",
+    "line": 194
+  },
+  {
+    "method": "POST",
+    "path": "/api/talents/:id/communications",
+    "file": "server/modules/talents/talents.controller.ts",
+    "line": 197
+  },
+  {
+    "method": "POST",
+    "path": "/api/talents/:id/contact-lock",
+    "file": "server/modules/talents/talents.controller.ts",
+    "line": 202
+  },
+  {
+    "method": "POST",
+    "path": "/api/talents/:id/contact-lock/release",
+    "file": "server/modules/talents/talents.controller.ts",
+    "line": 207
+  },
+  {
+    "method": "POST",
+    "path": "/api/talents/:id/flow-wecom",
+    "file": "server/modules/talents/talents.controller.ts",
+    "line": 222
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/talents/:id/match-correction",
+    "file": "server/modules/talents/talents.controller.ts",
+    "line": 152
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/talents/:id/name",
+    "file": "server/modules/talents/talents.controller.ts",
+    "line": 180
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/talents/:id/ownership",
+    "file": "server/modules/talents/talents.controller.ts",
+    "line": 170
+  },
+  {
+    "method": "POST",
+    "path": "/api/talents/:id/review",
+    "file": "server/modules/talents/talents.controller.ts",
+    "line": 191
+  },
+  {
+    "method": "POST",
+    "path": "/api/talents/:id/stage",
+    "file": "server/modules/talents/talents.controller.ts",
+    "line": 212
+  },
+  {
+    "method": "POST",
+    "path": "/api/talents/:id/wecom-review-share",
+    "file": "server/modules/talents/talents.controller.ts",
+    "line": 217
+  },
+  {
+    "method": "GET",
+    "path": "/api/talents/ai-monitoring",
+    "file": "server/modules/talents/talents.controller.ts",
+    "line": 105
+  },
+  {
+    "method": "GET",
+    "path": "/api/talents/ai-queue/status",
+    "file": "server/modules/talents/talents.controller.ts",
+    "line": 138
+  },
+  {
+    "method": "POST",
+    "path": "/api/talents/assessment-rerun-all",
+    "file": "server/modules/talents/talents.controller.ts",
+    "line": 143
+  },
+  {
+    "method": "POST",
+    "path": "/api/talents/avatars/backfill",
+    "file": "server/modules/talents/talents.controller.ts",
+    "line": 20
+  },
+  {
+    "method": "POST",
+    "path": "/api/talents/batch",
+    "file": "server/modules/talents/talents.controller.ts",
+    "line": 96
+  },
+  {
+    "method": "POST",
+    "path": "/api/talents/batch-auto-analyze",
+    "file": "server/modules/talents/talents.controller.ts",
+    "line": 125
+  },
+  {
+    "method": "GET",
+    "path": "/api/talents/communication-templates",
+    "file": "server/modules/talents/talents.controller.ts",
+    "line": 63
+  },
+  {
+    "method": "POST",
+    "path": "/api/talents/communication-templates",
+    "file": "server/modules/talents/talents.controller.ts",
+    "line": 68
+  },
+  {
+    "method": "POST",
+    "path": "/api/talents/communications/transcript-extract",
+    "file": "server/modules/talents/talents.controller.ts",
+    "line": 78
+  },
+  {
+    "method": "GET",
+    "path": "/api/talents/communications/wechat-check",
+    "file": "server/modules/talents/talents.controller.ts",
+    "line": 73
+  },
+  {
+    "method": "POST",
+    "path": "/api/talents/contact-locks/release-expired",
+    "file": "server/modules/talents/talents.controller.ts",
+    "line": 52
+  },
+  {
+    "method": "GET",
+    "path": "/api/talents/duplicates",
+    "file": "server/modules/talents/talents.controller.ts",
+    "line": 28
+  },
+  {
+    "method": "GET",
+    "path": "/api/talents/duplicates/:caseId",
+    "file": "server/modules/talents/talents.controller.ts",
+    "line": 34
+  },
+  {
+    "method": "POST",
+    "path": "/api/talents/duplicates/:caseId/merge",
+    "file": "server/modules/talents/talents.controller.ts",
+    "line": 37
+  },
+  {
+    "method": "POST",
+    "path": "/api/talents/duplicates/:caseId/resolve",
+    "file": "server/modules/talents/talents.controller.ts",
+    "line": 42
+  },
+  {
+    "method": "POST",
+    "path": "/api/talents/duplicates/scan",
+    "file": "server/modules/talents/talents.controller.ts",
+    "line": 31
+  },
+  {
+    "method": "GET",
+    "path": "/api/talents/follow-ups/overdue",
+    "file": "server/modules/talents/talents.controller.ts",
+    "line": 90
+  },
+  {
+    "method": "POST",
+    "path": "/api/talents/follow-ups/sync",
+    "file": "server/modules/talents/talents.controller.ts",
+    "line": 93
+  },
+  {
+    "method": "GET",
+    "path": "/api/talents/job-rematch/impact",
+    "file": "server/modules/talents/talents.controller.ts",
+    "line": 99
+  },
+  {
+    "method": "POST",
+    "path": "/api/talents/job-rematch/run",
+    "file": "server/modules/talents/talents.controller.ts",
+    "line": 102
+  },
+  {
+    "method": "POST",
+    "path": "/api/talents/merges/:mergeId/undo",
+    "file": "server/modules/talents/talents.controller.ts",
+    "line": 47
+  },
+  {
+    "method": "POST",
+    "path": "/api/talents/ownership/release-stale",
+    "file": "server/modules/talents/talents.controller.ts",
+    "line": 55
+  },
+  {
+    "method": "GET",
+    "path": "/api/talents/review-queue",
+    "file": "server/modules/talents/talents.controller.ts",
+    "line": 60
+  },
+  {
+    "method": "GET",
+    "path": "/talent-review",
+    "file": "server/talent-review-page.controller.ts",
+    "line": 11
+  },
+  {
+    "method": "GET",
+    "path": "/api/jobs/:id",
+    "file": "server/platform/jobs.ts",
+    "line": 47,
+    "platform": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/studio-tasks",
+    "file": "server/platform/tasks.ts",
+    "line": 819,
+    "platform": true
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/studio-tasks/:name/config",
+    "file": "server/platform/tasks.ts",
+    "line": 829,
+    "platform": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/studio-tasks/:name/run-now",
+    "file": "server/platform/tasks.ts",
+    "line": 834,
+    "platform": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/studio-tasks/templates",
+    "file": "server/platform/tasks.ts",
+    "line": 824,
+    "platform": true
+  }
+]

@@ -1,0 +1,2 @@
+export interface ReferralCampaignInput{ name:string; positionId?:string; demandId?:string; role:string; department?:string; description?:string; expiresAt?:string; publicBaseUrl:string; referrerName?:string; referrerMobile?:string; referrerDepartment?:string; referrerUserId?:string; operator?:string; operatorUserId?:string }
+export interface RewardRuleInput{ name:string; role?:string; department?:string; stage:'简历有效'|'面试通过'|'接受Offer'|'正式入职'|'入职留存'; type:'现金'|'积分'|'现金+积分'; amount?:number; points?:number; retentionDays?:number; description?:string; operator?:string }

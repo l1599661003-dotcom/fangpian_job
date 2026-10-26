@@ -1,0 +1,4650 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>棱镜 KFS · 投放全链路工具 · 功能介绍</title>
+<style>
+
+  :root {
+    /* 紫色系 - 更浓郁 */
+    --p-50:  #FAF5FF;
+    --p-100: #F3E8FF;
+    --p-200: #E9D5FF;
+    --p-300: #D8B4FE;
+    --p-400: #C084FC;
+    --p-500: #A855F7;
+    --p-600: #9333EA;
+    --p-700: #7E22CE;
+    --p-800: #6B21A8;
+    --p-900: #581C87;
+    --p-950: #3B0764;
+
+    /* 强调色 - 玫瑰 + 蓝 */
+    --pink-400: #F472B6;
+    --pink-500: #EC4899;
+    --pink-600: #DB2777;
+    --indigo-500: #6366F1;
+    --indigo-600: #4F46E5;
+
+    /* 深黑紫 · 用于标题 */
+    --p-ink:      #2E1065;
+    --p-ink-2:    #1E0B3A;
+
+    /* 中性 */
+    --ink:        #0A0A0F;
+    --ink-2:      #18181B;
+    --ink-3:      #27272A;
+    --gray-1:     #3F3F46;
+    --gray-2:     #52525B;
+    --gray-3:     #71717A;
+    --gray-4:     #A1A1AA;
+    --gray-5:     #D4D4D8;
+    --gray-6:     #E4E4E7;
+    --gray-7:     #F4F4F5;
+
+    /* 深色背景 - 深紫黑 */
+    --dark-bg:    #0A0118;
+    --dark-card:  #1E0B3A;
+
+    /* 页面 */
+    --paper:      #F8F7FC;
+
+    /* 功能色 */
+    --live:       #10B981;
+    --live-bg:    #ECFDF5;
+    --dev:        #F59E0B;
+    --dev-bg:     #FFFBEB;
+    --plan:       var(--p-700);
+    --plan-bg:    var(--p-50);
+
+    /* 主渐变 */
+    --grad-primary: linear-gradient(135deg, #6B21A8 0%, #9333EA 35%, #C026D3 65%, #EC4899 100%);
+    --grad-deep:    linear-gradient(135deg, #1E1B4B 0%, #4C1D95 50%, #6B21A8 100%);
+    --grad-glow:    linear-gradient(135deg, #A855F7 0%, #EC4899 100%);
+    --grad-soft:    linear-gradient(135deg, #F3E8FF 0%, #FAF5FF 50%, #ffffff 100%);
+
+    /* 阴影 - 紫色调 */
+    --shadow-sm:  0 1px 2px rgba(15, 5, 30, 0.04),
+                  0 1px 3px rgba(91, 33, 182, 0.04);
+    --shadow:     0 2px 4px rgba(15, 5, 30, 0.03),
+                  0 8px 16px rgba(91, 33, 182, 0.06),
+                  0 24px 48px -16px rgba(91, 33, 182, 0.08);
+    --shadow-lg:  0 4px 8px rgba(15, 5, 30, 0.04),
+                  0 16px 32px rgba(91, 33, 182, 0.10),
+                  0 40px 80px -16px rgba(124, 58, 237, 0.16);
+    --shadow-glow: 0 0 0 1px rgba(168, 85, 247, 0.1),
+                   0 8px 24px rgba(168, 85, 247, 0.18),
+                   0 0 60px rgba(192, 38, 211, 0.08);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html {
+    font-feature-settings: "cv11", "ss01", "ss03", "tnum", "kern";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Display",
+                 "PingFang SC", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    background: var(--paper);
+    background-image:
+      radial-gradient(at 0% 0%, rgba(168, 85, 247, 0.06) 0px, transparent 50%),
+      radial-gradient(at 100% 0%, rgba(236, 72, 153, 0.04) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, rgba(99, 102, 241, 0.04) 0px, transparent 50%);
+    background-attachment: fixed;
+    color: var(--ink);
+    line-height: 1.55;
+    padding: 48px 0 80px;
+  }
+
+  .container { max-width: 1640px; margin: 0 auto; padding: 0 32px; }
+
+  /* ───── Noise texture overlay ───── */
+  .noise-bg {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.4;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.4'/%3E%3C/svg%3E");
+  }
+
+  /* ───── Top bar ───── */
+  .top-bar {
+    position: sticky; top: 24px; z-index: 100;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(168, 85, 247, 0.12);
+    border-radius: 14px;
+    padding: 10px 20px;
+    margin-bottom: 40px;
+    display: flex; justify-content: space-between; align-items: center;
+    box-shadow: 0 1px 2px rgba(91, 33, 182, 0.04),
+                0 8px 32px rgba(168, 85, 247, 0.05);
+  }
+  .top-bar .brand {
+    display: flex; align-items: center; gap: 12px;
+    font-size: 13px; font-weight: 600; color: var(--ink);
+    letter-spacing: -0.005em;
+  }
+  .top-bar .brand .dot {
+    width: 9px; height: 9px; border-radius: 50%;
+    background: var(--grad-glow);
+    box-shadow: 0 0 0 3px var(--p-100),
+                0 0 16px rgba(192, 38, 211, 0.5);
+  }
+  .top-bar .actions { display: flex; gap: 8px; }
+  .top-bar button {
+    background: var(--ink); color: white; border: none;
+    padding: 7px 14px; border-radius: 7px; cursor: pointer;
+    font-size: 12.5px; font-weight: 500; letter-spacing: -0.005em;
+    transition: all 0.15s ease;
+  }
+  .top-bar button:hover {
+    background: var(--p-700); transform: translateY(-0.5px);
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+  }
+  .top-bar button.secondary {
+    background: transparent; color: var(--gray-1);
+    border: 1px solid var(--gray-5);
+  }
+  .top-bar button.secondary:hover {
+    background: var(--p-50); color: var(--p-700);
+    border-color: var(--p-200);
+  }
+
+  /* ───── TOC ───── */
+  .toc {
+    background: white;
+    border: 1px solid rgba(168, 85, 247, 0.12);
+    border-radius: 16px; padding: 28px 32px; margin-bottom: 40px;
+    box-shadow: var(--shadow-sm);
+  }
+  .toc h3 {
+    font-size: 11px; color: var(--gray-2);
+    letter-spacing: 0.14em; text-transform: uppercase;
+    margin-bottom: 18px; font-weight: 600;
+  }
+  .toc ol { list-style: none; columns: 2; column-gap: 40px; }
+  .toc li { padding: 5px 0; font-size: 13.5px; break-inside: avoid; }
+  .toc li a {
+    color: var(--ink-2); text-decoration: none;
+    display: flex; gap: 14px; transition: color 0.15s;
+    font-weight: 500;
+  }
+  .toc li a:hover { color: var(--p-700); }
+  .toc li .num {
+    color: var(--gray-3); font-variant-numeric: tabular-nums;
+    flex-shrink: 0; width: 24px; font-feature-settings: "tnum";
+  }
+
+  /* ───── Slide layout ───── */
+  .slide-row {
+    display: grid; grid-template-columns: 1fr 320px;
+    gap: 24px; margin-bottom: 36px; align-items: start;
+  }
+  .slide {
+    aspect-ratio: 16 / 9; background: white;
+    border-radius: 20px;
+    border: 1px solid rgba(168, 85, 247, 0.10);
+    padding: 56px 64px 64px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    position: relative;
+    display: flex; flex-direction: column;
+  }
+
+  /* Slide meta */
+  .slide::before {
+    content: '';
+    position: absolute;
+    top: 24px; left: 64px;
+    width: 32px; height: 1px;
+    background: linear-gradient(90deg, var(--p-700), transparent);
+  }
+  .slide-meta {
+    position: absolute;
+    top: 24px; left: 64px;
+    display: flex; align-items: center; gap: 10px;
+    font-size: 10.5px; color: var(--gray-2);
+    letter-spacing: 0.12em; font-weight: 600;
+    text-transform: uppercase;
+    padding-top: 14px;
+  }
+  .slide-meta .accent {
+    color: var(--p-700);
+    font-weight: 700;
+  }
+  .slide-meta .sep { color: var(--gray-4); }
+  .slide-num {
+    position: absolute; bottom: 24px; right: 32px;
+    font-size: 10.5px; color: var(--gray-3);
+    letter-spacing: 0.08em;
+    font-variant-numeric: tabular-nums;
+    font-weight: 500;
+  }
+
+  /* ───── Cover slide · 深色版 ───── */
+  .cover {
+    background:
+      radial-gradient(ellipse 90% 70% at 20% 30%, rgba(168, 85, 247, 0.35), transparent 60%),
+      radial-gradient(ellipse 70% 90% at 90% 80%, rgba(236, 72, 153, 0.22), transparent 60%),
+      radial-gradient(ellipse 60% 50% at 60% 30%, rgba(99, 102, 241, 0.12), transparent 50%),
+      linear-gradient(135deg, #1E0B3A 0%, #0A0118 100%);
+    color: white;
+    justify-content: space-between;
+    overflow: hidden;
+  }
+  .cover::before, .cover::after {
+    content: '';
+    position: absolute;
+    pointer-events: none;
+  }
+  .cover::before {
+    inset: 0;
+    background-image:
+      radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.06) 1px, transparent 0);
+    background-size: 32px 32px;
+    opacity: 1;
+  }
+  .cover::after {
+    width: 400px; height: 400px;
+    top: -150px; right: -100px;
+    background: var(--grad-glow);
+    border-radius: 50%;
+    filter: blur(100px);
+    opacity: 0.4;
+  }
+  .cover .glow-orb-b {
+    position: absolute;
+    width: 400px; height: 400px;
+    bottom: -200px; left: -100px;
+    background: linear-gradient(135deg, #6366F1, #A855F7);
+    border-radius: 50%;
+    filter: blur(100px);
+    opacity: 0.35;
+    pointer-events: none;
+  }
+  .cover .cover-top {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    position: relative; z-index: 1;
+  }
+  .cover .logo-mark {
+    display: flex; align-items: center; gap: 12px;
+  }
+  .cover .logo-mark .dot {
+    width: 11px; height: 11px; border-radius: 50%;
+    background: var(--grad-glow);
+    box-shadow: 0 0 0 4px rgba(168, 85, 247, 0.2),
+                0 0 32px rgba(192, 38, 211, 0.7);
+  }
+  .cover .logo-mark span {
+    font-size: 13px; font-weight: 600; color: white;
+    letter-spacing: -0.005em;
+  }
+  .cover .date {
+    font-size: 11px; color: var(--p-300);
+    letter-spacing: 0.14em; font-weight: 700;
+    text-transform: uppercase;
+    font-variant-numeric: tabular-nums;
+  }
+  .cover .cover-center {
+    position: relative; z-index: 1;
+    flex: 1; display: flex; flex-direction: column; justify-content: center;
+    padding: 32px 0;
+  }
+  .cover .eyebrow {
+    font-size: 11px; color: var(--p-300);
+    letter-spacing: 0.18em; text-transform: uppercase;
+    font-weight: 700; margin-bottom: 28px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .cover .eyebrow::before {
+    content: ''; width: 28px; height: 1px;
+    background: var(--grad-glow);
+  }
+  .cover h1 {
+    font-size: 96px; font-weight: 600;
+    letter-spacing: -0.045em;
+    line-height: 0.94;
+    color: white;
+    margin-bottom: 32px;
+  }
+  .cover h1 .ink2 { color: rgba(255, 255, 255, 0.55); font-weight: 400; }
+  .cover h1 .accent {
+    background: var(--grad-glow);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 700;
+  }
+  .cover .subtitle {
+    font-size: 20px; color: rgba(255, 255, 255, 0.65);
+    font-weight: 400; max-width: 600px;
+    letter-spacing: -0.01em;
+  }
+  .cover .cover-bottom {
+    position: relative; z-index: 1;
+    display: flex; justify-content: space-between; align-items: flex-end;
+    font-size: 11.5px; color: rgba(255, 255, 255, 0.5);
+    letter-spacing: 0.04em;
+  }
+  .cover .author {
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.85);
+    letter-spacing: -0.005em;
+  }
+
+  /* ───── Divider slide ───── */
+  .divider {
+    background:
+      radial-gradient(ellipse 70% 80% at 30% 50%, rgba(124, 58, 237, 0.35), transparent 60%),
+      radial-gradient(ellipse 50% 60% at 80% 30%, rgba(236, 72, 153, 0.20), transparent 60%),
+      linear-gradient(135deg, #1E0B3A 0%, #0A0118 100%);
+    color: white;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .divider::before { display: none; }
+  .divider .slide-meta {
+    color: var(--p-300);
+  }
+  .divider .glow-orb {
+    position: absolute;
+    width: 400px; height: 400px;
+    border-radius: 50%;
+    background: var(--grad-glow);
+    filter: blur(100px);
+    opacity: 0.35;
+    pointer-events: none;
+  }
+  .divider .glow-orb.a { top: -150px; right: -100px; }
+  .divider .glow-orb.b { bottom: -200px; left: -100px;
+    background: linear-gradient(135deg, #6366F1, #A855F7);
+  }
+  .divider .grid-overlay {
+    position: absolute;
+    inset: 0;
+    background-image:
+      radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.06) 1px, transparent 0);
+    background-size: 32px 32px;
+    pointer-events: none;
+  }
+  .divider .part-label {
+    position: relative; z-index: 1;
+    font-size: 11px; color: var(--p-300);
+    letter-spacing: 0.22em; text-transform: uppercase;
+    margin-bottom: 28px; font-weight: 700;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .divider .part-label::before,
+  .divider .part-label::after {
+    content: ''; width: 32px; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--p-400));
+  }
+  .divider .part-label::after {
+    background: linear-gradient(90deg, var(--p-400), transparent);
+  }
+  .divider h2 {
+    position: relative; z-index: 1;
+    font-size: 88px; font-weight: 600;
+    letter-spacing: -0.035em;
+    margin-bottom: 24px;
+    line-height: 0.98;
+  }
+  .divider h2 .accent {
+    background: var(--grad-glow);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 700;
+  }
+  .divider .sub {
+    position: relative; z-index: 1;
+    font-size: 17px; color: rgba(255, 255, 255, 0.6);
+    max-width: 720px; line-height: 1.6;
+    font-weight: 400;
+  }
+
+  /* ───── Standard content slide ───── */
+  .slide h2.slide-title {
+    font-size: 38px; font-weight: 600;
+    letter-spacing: -0.025em; line-height: 1.12;
+    margin-bottom: 12px;
+    margin-top: 36px;
+    color: var(--p-ink);
+  }
+  .slide h2.slide-title .accent-text {
+    background: var(--grad-primary);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .slide h2.slide-title .status {
+    font-size: 11px; font-weight: 700;
+    padding: 4px 10px; border-radius: 999px;
+    letter-spacing: 0.06em;
+    margin-left: 14px; vertical-align: middle;
+    display: inline-flex; align-items: center; gap: 5px;
+    text-transform: uppercase;
+  }
+  .slide h2.slide-title .status.live {
+    background: var(--live-bg); color: var(--live);
+    box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.15);
+  }
+  .slide h2.slide-title .status.live::before {
+    content: ''; width: 5px; height: 5px;
+    background: var(--live); border-radius: 50%;
+    box-shadow: 0 0 8px var(--live);
+  }
+  .slide h2.slide-title .status.dev {
+    background: var(--dev-bg); color: var(--dev);
+    box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.15);
+  }
+  .slide h2.slide-title .status.dev::before {
+    content: ''; width: 5px; height: 5px;
+    background: var(--dev); border-radius: 50%;
+  }
+  .slide h2.slide-title .status.plan {
+    background: var(--plan-bg); color: var(--plan);
+    box-shadow: 0 0 0 1px rgba(124, 58, 237, 0.15);
+  }
+  .slide h2.slide-title .status.plan::before {
+    content: ''; width: 5px; height: 5px;
+    background: var(--plan); border-radius: 50%;
+  }
+  .slide .slide-sub {
+    font-size: 15px; color: var(--gray-1);
+    margin-bottom: 36px; font-weight: 400;
+    letter-spacing: -0.005em;
+    max-width: 820px;
+  }
+  .slide .slide-sub strong {
+    color: var(--p-700);
+    font-weight: 700;
+  }
+  .slide .slide-body {
+    flex: 1; display: flex; gap: 36px; overflow: hidden;
+  }
+  .slide .body-text { flex: 1; min-width: 0; }
+  .slide .body-text {
+    display: flex; flex-direction: column; justify-content: center;
+  }
+  .slide .body-visual {
+    flex: 1.15; min-width: 0;
+    overflow: hidden;
+    position: relative; display: flex;
+    align-items: center; justify-content: center;
+  }
+  .slide .body-visual img,
+  .slide .body-visual video {
+    max-width: 100%; max-height: 100%; object-fit: contain; display: block;
+  }
+  .slide .body-visual .placeholder {
+    color: var(--gray-2); font-size: 13px;
+    text-align: center; padding: 28px;
+    line-height: 1.6;
+  }
+  .slide .body-visual .placeholder b {
+    display: block; font-size: 10.5px;
+    color: var(--p-700);
+    margin-bottom: 10px; letter-spacing: 0.12em;
+    text-transform: uppercase; font-weight: 700;
+  }
+  .slide .body-visual .placeholder code {
+    display: inline-block; margin-top: 10px;
+    font-family: "SF Mono", Menlo, monospace;
+    font-size: 11px; color: var(--gray-1);
+    background: white;
+    padding: 4px 8px; border-radius: 4px;
+    border: 1px solid var(--gray-5);
+  }
+
+  /* Feature list */
+  .feature-list { margin-top: 4px; }
+  .feature-list li {
+    list-style: none; padding: 12px 0;
+    border-bottom: 1px solid var(--gray-7);
+    display: flex; align-items: flex-start; gap: 14px;
+    font-size: 14px;
+  }
+  .feature-list li:last-child { border-bottom: none; }
+  .feature-list li .marker {
+    width: 16px; height: 16px;
+    margin-top: 4px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+  }
+  .feature-list li .marker::before {
+    content: ''; width: 6px; height: 6px;
+    background: var(--grad-glow); border-radius: 50%;
+    box-shadow: 0 0 0 2px var(--p-50);
+  }
+  .feature-list li .text { flex: 1; }
+  .feature-list li .label {
+    font-weight: 600; color: var(--ink);
+    font-size: 14px; letter-spacing: -0.005em;
+  }
+  .feature-list li .label .mini {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 10px; padding: 2px 8px;
+    border-radius: 999px; margin-left: 8px;
+    vertical-align: middle; font-weight: 700;
+    letter-spacing: 0.04em; text-transform: uppercase;
+  }
+  .feature-list li .label .mini::before {
+    content: ''; width: 4px; height: 4px; border-radius: 50%;
+  }
+  .feature-list li .label .mini.live { background: var(--live-bg); color: var(--live); }
+  .feature-list li .label .mini.live::before { background: var(--live); }
+  .feature-list li .label .mini.dev { background: var(--dev-bg); color: var(--dev); }
+  .feature-list li .label .mini.dev::before { background: var(--dev); }
+  .feature-list li .label .mini.plan { background: var(--plan-bg); color: var(--plan); }
+  .feature-list li .label .mini.plan::before { background: var(--plan); }
+  .feature-list li .desc {
+    font-size: 12.5px; color: var(--gray-1);
+    margin-top: 3px; letter-spacing: -0.003em;
+    line-height: 1.55;
+  }
+
+  /* Demo ID copy */
+  .demo-id {
+    margin-top: 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px 8px 14px;
+    background: var(--p-50);
+    border: 1px dashed var(--p-300);
+    border-radius: 8px;
+  }
+  .demo-id-label {
+    font-size: 10.5px;
+    color: var(--p-700);
+    letter-spacing: 0.1em;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+  .demo-id-code {
+    font-family: "SF Mono", Menlo, monospace;
+    font-size: 12px;
+    color: var(--p-ink);
+    background: white;
+    padding: 4px 9px;
+    border-radius: 5px;
+    border: 1px solid var(--p-200);
+    letter-spacing: 0;
+  }
+  .demo-id-copy {
+    background: var(--ink);
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    letter-spacing: -0.005em;
+    transition: all 0.15s;
+  }
+  .demo-id-copy:hover { background: var(--p-700); }
+  .demo-id-copy.copied { background: var(--live); }
+
+  /* Jump button */
+  .jump-btn {
+    display: inline-flex; align-items: center; gap: 10px;
+    background: var(--ink); color: white;
+    text-decoration: none;
+    padding: 11px 20px;
+    border-radius: 9px; font-size: 13px;
+    font-weight: 600; margin-top: 20px;
+    letter-spacing: -0.005em;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(15, 5, 30, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    position: relative;
+    overflow: hidden;
+  }
+  .jump-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--grad-primary);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .jump-btn:hover::before { opacity: 1; }
+  .jump-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(124, 58, 237, 0.35);
+  }
+  .jump-btn span, .jump-btn .arrow {
+    position: relative; z-index: 1;
+  }
+  .jump-btn .arrow {
+    width: 14px; height: 14px;
+    transition: transform 0.2s;
+  }
+  .jump-btn:hover .arrow { transform: translateX(3px); }
+  .jump-btn.placeholder {
+    background: white; color: var(--gray-2);
+    border: 1px dashed var(--gray-4);
+    box-shadow: none;
+  }
+  .jump-btn.placeholder::before { display: none; }
+  .jump-btn.placeholder:hover {
+    background: var(--p-50); color: var(--p-700);
+    border-color: var(--p-300); transform: none;
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.08);
+  }
+
+  /* ═══════════════════════════════════════════════════════════ */
+  /* SLIDE 2 · 4 场景三阶段                                      */
+  /* ═══════════════════════════════════════════════════════════ */
+  .phase-board {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1.3fr 1fr;
+    gap: 14px;
+    margin-top: 8px;
+    position: relative;
+  }
+  .phase-col {
+    display: flex; flex-direction: column;
+    gap: 10px;
+  }
+  .phase-header {
+    display: flex; align-items: center;
+    gap: 10px; padding: 0 4px 6px;
+    font-size: 10.5px; color: var(--p-700);
+    letter-spacing: 0.16em; font-weight: 700;
+    text-transform: uppercase;
+  }
+  .phase-header .num {
+    width: 18px; height: 18px; border-radius: 50%;
+    background: var(--p-100); color: var(--p-700);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0;
+  }
+  .phase-card {
+    flex: 1;
+    background: white;
+    border: 1px solid var(--p-200);
+    border-radius: 14px;
+    padding: 22px 24px;
+    display: flex; flex-direction: column;
+    gap: 10px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.25s;
+    opacity: 0;
+    animation: phaseIn 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  .phase-card:hover {
+    border-color: var(--p-400);
+    box-shadow: 0 12px 28px rgba(124, 58, 237, 0.12);
+  }
+  @keyframes phaseIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .phase-card.before { animation-delay: 0.12s; }
+  .phase-card.mid-1 { animation-delay: 0.24s; }
+  .phase-card.mid-2 { animation-delay: 0.36s; }
+  .phase-card.after { animation-delay: 0.48s; }
+
+  .phase-card.before {
+    background: var(--grad-primary);
+    color: white;
+    border: none;
+    box-shadow: 0 8px 24px rgba(124, 58, 237, 0.25);
+  }
+  .phase-card.before::before {
+    content: '';
+    position: absolute; top: -50%; right: -20%;
+    width: 200px; height: 200px;
+    background: radial-gradient(circle, rgba(255,255,255,0.2), transparent 70%);
+    pointer-events: none;
+  }
+  .phase-card.after {
+    background: linear-gradient(135deg, #1E0B3A 0%, #4C1D95 70%, #6B21A8 100%);
+    color: white;
+    border: none;
+    box-shadow: 0 8px 24px rgba(46, 16, 101, 0.4);
+  }
+  .phase-card.after::before {
+    content: '';
+    position: absolute; bottom: -50%; left: -20%;
+    width: 220px; height: 220px;
+    background: radial-gradient(circle, rgba(236, 72, 153, 0.3), transparent 70%);
+    pointer-events: none;
+  }
+
+  .phase-card .pc-num {
+    font-size: 10px; letter-spacing: 0.16em;
+    font-weight: 700; text-transform: uppercase;
+    opacity: 0.7;
+  }
+  .phase-card.before .pc-num,
+  .phase-card.after .pc-num { color: rgba(255,255,255,0.8); }
+  .phase-card .pc-name {
+    font-size: 22px; font-weight: 700;
+    letter-spacing: -0.015em;
+    line-height: 1.2;
+    color: var(--p-ink);
+  }
+  .phase-card.before .pc-name,
+  .phase-card.after .pc-name { color: white; }
+  .phase-card .pc-detail {
+    font-size: 12.5px;
+    color: var(--gray-1);
+    line-height: 1.55;
+    flex: 1;
+  }
+  .phase-card.before .pc-detail,
+  .phase-card.after .pc-detail { color: rgba(255,255,255,0.85); }
+  .phase-card .pc-pain {
+    margin-top: 4px;
+    padding-top: 10px;
+    border-top: 1px solid var(--p-100);
+    font-size: 11px;
+    color: var(--gray-2);
+    line-height: 1.5;
+  }
+  .phase-card.before .pc-pain,
+  .phase-card.after .pc-pain {
+    border-color: rgba(255,255,255,0.18);
+    color: rgba(255,255,255,0.65);
+  }
+
+  /* Mid column · 上下两个并行 */
+  .phase-col.mid {
+    gap: 12px;
+  }
+  .phase-col.mid .phase-card {
+    background: linear-gradient(160deg, var(--p-50) 0%, white 100%);
+    border-color: var(--p-200);
+  }
+  .phase-col.mid .phase-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 4px; height: 100%;
+    background: var(--grad-glow);
+  }
+  .phase-col.mid .phase-card.mid-1::before {
+    background: linear-gradient(180deg, var(--p-600), var(--p-400));
+  }
+  .phase-col.mid .phase-card.mid-2::before {
+    background: linear-gradient(180deg, var(--p-400), var(--pink-500));
+  }
+
+  .step-flow {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    margin-top: 8px;
+    flex: 1;
+  }
+  .step-track {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 0;
+    position: relative;
+  }
+  .step-track::before {
+    content: '';
+    position: absolute;
+    top: 28px;
+    left: calc(100% / 12);
+    right: calc(100% / 12);
+    height: 2px;
+    background: linear-gradient(90deg,
+      var(--p-200) 0%,
+      var(--p-400) 25%,
+      var(--p-500) 50%,
+      var(--pink-400) 75%,
+      var(--pink-500) 100%);
+    opacity: 0.5;
+    z-index: 0;
+  }
+  .step-node {
+    display: flex; flex-direction: column; align-items: center;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+    opacity: 0;
+    animation: stepFadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  .step-node:nth-child(1) { animation-delay: 0.05s; }
+  .step-node:nth-child(2) { animation-delay: 0.15s; }
+  .step-node:nth-child(3) { animation-delay: 0.25s; }
+  .step-node:nth-child(4) { animation-delay: 0.35s; }
+  .step-node:nth-child(5) { animation-delay: 0.45s; }
+  .step-node:nth-child(6) { animation-delay: 0.55s; }
+  @keyframes stepFadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .step-node .circle {
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: white;
+    border: 2px solid var(--p-200);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; font-weight: 700;
+    color: var(--p-700);
+    font-variant-numeric: tabular-nums;
+    margin-bottom: 14px;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.08);
+  }
+  .step-node:hover .circle {
+    background: var(--grad-primary);
+    color: white;
+    border-color: transparent;
+    transform: scale(1.08);
+    box-shadow: 0 8px 24px rgba(124, 58, 237, 0.35);
+  }
+  .step-node:nth-child(1) .circle { animation: pulseGlow 4s ease-in-out infinite; }
+  @keyframes pulseGlow {
+    0%, 100% { box-shadow: 0 4px 12px rgba(124, 58, 237, 0.08); }
+    50% { box-shadow: 0 4px 24px rgba(124, 58, 237, 0.24); }
+  }
+  .step-node .step-title {
+    font-size: 13px; font-weight: 700;
+    color: var(--ink);
+    letter-spacing: -0.005em;
+    margin-bottom: 2px;
+  }
+  .step-node .step-cat {
+    font-size: 10px;
+    color: var(--p-700);
+    letter-spacing: 0.14em;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+  .step-scenes {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 8px;
+    margin-top: 4px;
+  }
+  .step-scene {
+    background: var(--p-50);
+    border: 1px solid var(--p-100);
+    border-radius: 10px;
+    padding: 12px 14px;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    opacity: 0;
+    animation: sceneFadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation-delay: 0.6s;
+    cursor: default;
+  }
+  .step-scenes .step-scene:nth-child(1) { animation-delay: 0.65s; }
+  .step-scenes .step-scene:nth-child(2) { animation-delay: 0.72s; }
+  .step-scenes .step-scene:nth-child(3) { animation-delay: 0.79s; }
+  .step-scenes .step-scene:nth-child(4) { animation-delay: 0.86s; }
+  .step-scenes .step-scene:nth-child(5) { animation-delay: 0.93s; }
+  .step-scenes .step-scene:nth-child(6) { animation-delay: 1.00s; }
+  @keyframes sceneFadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .step-scene:hover {
+    background: white;
+    border-color: var(--p-300);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(124, 58, 237, 0.12);
+  }
+  .step-scene .pain-icon {
+    font-size: 11px; color: var(--p-600);
+    margin-bottom: 6px;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+  }
+  .step-scene .pain-text {
+    font-size: 11.5px; color: var(--gray-1);
+    line-height: 1.5;
+    letter-spacing: -0.003em;
+  }
+
+  /* ═══════════════════════════════════════════════════════════ */
+  /* SLIDE 3 · 功能板块对照流程                                  */
+  /* ═══════════════════════════════════════════════════════════ */
+  .mapping-grid {
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    grid-template-rows: auto auto;
+    gap: 12px;
+    margin-top: 8px;
+  }
+  .mapping-grid.mapping-4 {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  .mapping-grid.mapping-4 .mapping-step {
+    padding: 18px 20px;
+    min-height: 120px;
+    display: flex; flex-direction: column;
+    justify-content: space-between;
+  }
+  .mapping-grid.mapping-4 .mapping-step .step-name {
+    font-size: 18px;
+    line-height: 1.25;
+    margin: 8px 0;
+  }
+  .mapping-grid.mapping-4 .ms-phase {
+    font-size: 9.5px;
+    color: var(--p-300);
+    letter-spacing: 0.18em;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+  .mapping-grid.mapping-4 .ms-a { background: linear-gradient(160deg, #3B0764 0%, #1E0B3A 100%); }
+  .mapping-grid.mapping-4 .ms-b { background: linear-gradient(160deg, #18181B 0%, #0A0A0F 100%); }
+  .mapping-grid.mapping-4 .ms-c { background: linear-gradient(160deg, #4C1D95 0%, #2E1065 100%); }
+  .mapping-grid.mapping-4 .ms-d { background: linear-gradient(160deg, #6B21A8 0%, #4C1D95 100%); }
+  .mapping-grid.mapping-4 .mapping-fn {
+    min-height: 140px;
+    display: flex; align-items: center;
+  }
+  .mapping-grid.mapping-4 .mapping-fn .fn-modules {
+    gap: 8px;
+  }
+  .mapping-grid.mapping-4 .mapping-fn .fn-tag {
+    font-size: 12.5px;
+    padding: 6px 11px;
+  }
+  .mapping-step-row {
+    display: contents;
+  }
+  .mapping-step {
+    background: linear-gradient(180deg, var(--ink) 0%, var(--ink-2) 100%);
+    color: white;
+    border-radius: 10px;
+    padding: 14px 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .mapping-step::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--grad-glow);
+  }
+  .mapping-step .step-n {
+    font-size: 10px; color: var(--p-300);
+    letter-spacing: 0.16em;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .mapping-step .step-name {
+    font-size: 13px; font-weight: 600;
+    color: white;
+    letter-spacing: -0.005em;
+    line-height: 1.3;
+  }
+  .mapping-fn {
+    background: white;
+    border: 1px solid var(--p-200);
+    border-radius: 10px;
+    padding: 14px 16px;
+    transition: all 0.2s;
+    position: relative;
+  }
+  .mapping-fn:hover {
+    border-color: var(--p-400);
+    box-shadow: 0 8px 20px rgba(124, 58, 237, 0.12);
+    transform: translateY(-2px);
+  }
+  .mapping-fn .fn-modules {
+    display: flex; flex-wrap: wrap;
+    gap: 6px;
+  }
+  .mapping-fn .fn-tag {
+    font-size: 11.5px;
+    padding: 4px 9px;
+    background: var(--p-50);
+    color: var(--p-700);
+    border-radius: 6px;
+    font-weight: 600;
+    letter-spacing: -0.005em;
+  }
+  .mapping-fn .fn-tag.muted {
+    background: var(--gray-7);
+    color: var(--gray-2);
+    font-weight: 500;
+  }
+  .mapping-bottom {
+    margin-top: 16px;
+    padding: 16px 24px;
+    background: linear-gradient(135deg, var(--p-50) 0%, white 100%);
+    border: 1px solid var(--p-200);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .mapping-bottom .key-tag {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 13px; font-weight: 600;
+    color: var(--ink);
+  }
+  .mapping-bottom .key-tag .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--grad-glow);
+    box-shadow: 0 0 12px rgba(192, 38, 211, 0.5);
+  }
+  .mapping-bottom .key-note {
+    font-size: 12.5px; color: var(--gray-1);
+    flex: 1; text-align: right;
+  }
+  .mapping-bottom .key-note strong {
+    color: var(--p-700); font-weight: 700;
+  }
+
+  /* ═══════════════════════════════════════════════════════════ */
+  /* SLIDE 5 · 数据接入 - 动态流入                               */
+  /* ═══════════════════════════════════════════════════════════ */
+  .data-arch {
+    flex: 1;
+    display: flex; flex-direction: column;
+    gap: 16px;
+    margin-top: 8px;
+  }
+  .data-arch-header {
+    display: flex; align-items: center;
+    gap: 12px; margin-bottom: 4px;
+    font-size: 11px; color: var(--gray-2);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+  .data-arch-header .line {
+    flex: 1; height: 1px;
+    background: linear-gradient(90deg, var(--gray-5), transparent);
+  }
+  .data-flow {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+  .data-node {
+    background: white;
+    border: 1px solid var(--p-100);
+    border-radius: 12px;
+    padding: 18px 20px;
+    display: flex; flex-direction: column;
+    gap: 8px;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    overflow: hidden;
+    opacity: 0;
+    animation: dataFlowIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  .data-node:nth-child(1) { animation-delay: 0.10s; }
+  .data-node:nth-child(2) { animation-delay: 0.18s; }
+  .data-node:nth-child(3) { animation-delay: 0.26s; }
+  .data-node:nth-child(4) { animation-delay: 0.34s; }
+  .data-node:nth-child(5) { animation-delay: 0.42s; }
+  .data-node:nth-child(6) { animation-delay: 0.50s; }
+  @keyframes dataFlowIn {
+    from { opacity: 0; transform: translateY(12px) scale(0.96); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .data-node::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--grad-glow);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .data-node:hover::before { opacity: 1; }
+  .data-node:hover {
+    border-color: var(--p-400);
+    transform: translateY(-3px);
+    box-shadow: 0 12px 24px rgba(124, 58, 237, 0.12);
+  }
+  .data-node.muted {
+    background: var(--gray-7);
+    border-color: transparent;
+  }
+  .data-node.muted::before {
+    background: var(--gray-4);
+  }
+  .data-node .src-tag {
+    font-size: 10px;
+    color: var(--p-700);
+    letter-spacing: 0.1em;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+  .data-node.muted .src-tag { color: var(--gray-2); }
+  .data-node .src-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: -0.005em;
+  }
+  .data-node.muted .src-name { color: var(--gray-1); }
+  .data-node .src-desc {
+    font-size: 11.5px;
+    color: var(--gray-1);
+    line-height: 1.5;
+  }
+  .data-arch-merge {
+    background: var(--grad-deep);
+    color: white;
+    border-radius: 14px;
+    padding: 18px 24px;
+    display: flex; justify-content: space-between; align-items: center;
+    box-shadow: 0 8px 24px rgba(91, 33, 182, 0.30),
+                inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    position: relative;
+    overflow: hidden;
+    opacity: 0;
+    animation: mergeIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation-delay: 0.60s;
+  }
+  @keyframes mergeIn {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .data-arch-merge::before {
+    content: '';
+    position: absolute;
+    top: -50%; right: -10%;
+    width: 200px; height: 200px;
+    background: radial-gradient(circle, rgba(236, 72, 153, 0.3), transparent 70%);
+    pointer-events: none;
+  }
+  .data-arch-merge .merge-label {
+    font-size: 11px; letter-spacing: 0.12em;
+    text-transform: uppercase; font-weight: 700;
+    color: var(--p-300);
+  }
+  .data-arch-merge .merge-title {
+    font-size: 19px; font-weight: 600;
+    letter-spacing: -0.01em;
+    margin-top: 2px;
+    color: white;
+  }
+  .data-arch-merge .merge-note {
+    font-size: 12.5px;
+    background: rgba(255, 255, 255, 0.10);
+    padding: 7px 14px; border-radius: 7px;
+    font-weight: 500;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: white;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ───── Two col panels (Slide 6) ───── */
+  .two-col-visual {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    flex: 1;
+  }
+  .panel {
+    background: white;
+    border: 1px solid var(--p-100);
+    border-radius: 14px;
+    padding: 20px;
+    display: flex; flex-direction: column;
+    gap: 12px;
+    overflow: hidden;
+    position: relative;
+    transition: all 0.25s;
+  }
+  .panel:hover {
+    border-color: var(--p-300);
+    box-shadow: 0 12px 32px rgba(124, 58, 237, 0.10);
+  }
+  .panel-header {
+    display: flex; align-items: center;
+    justify-content: space-between;
+  }
+  .panel-title {
+    font-size: 15px; font-weight: 600;
+    color: var(--ink); letter-spacing: -0.005em;
+  }
+  .panel-subtitle {
+    font-size: 11.5px; color: var(--gray-2);
+    letter-spacing: -0.005em;
+    margin-top: 2px;
+  }
+  .panel-tag {
+    font-size: 10px; color: var(--p-700);
+    background: var(--p-100);
+    padding: 4px 9px; border-radius: 999px;
+    letter-spacing: 0.1em; font-weight: 700;
+    text-transform: uppercase;
+  }
+  .panel .img-wrap {
+    flex: 1; min-height: 0;
+    background: var(--gray-7);
+    border-radius: 10px;
+    overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .panel .img-wrap img,
+  .panel .img-wrap video {
+    width: 100%; height: 100%; object-fit: contain;
+  }
+  .panel-note {
+    font-size: 12px; color: var(--gray-1);
+    line-height: 1.5;
+    padding-top: 4px;
+    border-top: 1px solid var(--gray-7);
+    margin-top: 4px;
+  }
+
+  /* ═══════════════════════════════════════════════════════════ */
+  /* SLIDE 7 · 上 tag 下图                                       */
+  /* ═══════════════════════════════════════════════════════════ */
+  .multi-dim-tags {
+    display: flex;
+    gap: 12px;
+    margin-top: 8px;
+  }
+  .dim-tag {
+    flex: 1;
+    background: white;
+    border: 1px solid var(--p-100);
+    border-radius: 12px;
+    padding: 14px 18px;
+    transition: all 0.25s;
+    display: flex; flex-direction: column; gap: 6px;
+    position: relative;
+    overflow: hidden;
+  }
+  .dim-tag::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 28px; height: 2px;
+    background: var(--grad-glow);
+  }
+  .dim-tag:hover {
+    border-color: var(--p-400);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(124, 58, 237, 0.10);
+  }
+  .dim-tag .dim-axis {
+    font-family: "SF Mono", Menlo, "Source Code Pro", monospace;
+    font-size: 11px;
+    color: var(--p-700);
+    font-weight: 700;
+    letter-spacing: 0;
+    margin-bottom: 2px;
+  }
+  .dim-tag .dim-title {
+    font-size: 14px; font-weight: 600;
+    color: var(--ink);
+    letter-spacing: -0.005em;
+  }
+  .dim-tag .dim-desc {
+    font-size: 11.5px;
+    color: var(--gray-1);
+    line-height: 1.5;
+  }
+  .multi-dim-image {
+    flex: 1;
+    margin-top: 16px;
+    background: white;
+    border: 1px solid var(--p-100);
+    border-radius: 14px;
+    overflow: hidden;
+    position: relative;
+    min-height: 0;
+  }
+  .multi-dim-image img,
+  .multi-dim-image video {
+    width: 100%; height: 100%; object-fit: contain;
+    display: block;
+  }
+  .multi-dim-image .img-overlay {
+    position: absolute;
+    top: 14px; right: 14px;
+    background: rgba(15, 5, 30, 0.92);
+    backdrop-filter: blur(8px);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    z-index: 1;
+  }
+
+  /* ═══════════════════════════════════════════════════════════ */
+  /* SLIDE 19 · 拼图工作台                                       */
+  /* ═══════════════════════════════════════════════════════════ */
+  .puzzle-board {
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    grid-template-rows: repeat(6, 1fr);
+    gap: 10px;
+    margin-top: 8px;
+  }
+  .puzzle-board.puzzle-4 {
+    grid-template-columns: 1.2fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 14px;
+  }
+  .puzzle-board.puzzle-4 .puzzle-tile {
+    grid-column: auto;
+    grid-row: auto;
+  }
+  .puzzle-board.puzzle-4 .puzzle-tile .tile-name {
+    font-size: 28px;
+    line-height: 1.15;
+  }
+  .puzzle-board.puzzle-4 .puzzle-tile .tool-chip {
+    font-size: 12px;
+    padding: 4px 10px;
+  }
+  .puzzle-board.puzzle-4 .puzzle-tile.a {
+    grid-column: 1; grid-row: 1;
+  }
+  .puzzle-board.puzzle-4 .puzzle-tile.b {
+    grid-column: 2; grid-row: 1;
+  }
+  .puzzle-board.puzzle-4 .puzzle-tile.e {
+    grid-column: 2; grid-row: 2;
+  }
+  .puzzle-board.puzzle-4 .puzzle-tile.d {
+    grid-column: 1; grid-row: 2;
+  }
+  .puzzle-tile {
+    border-radius: 12px;
+    padding: 16px 18px;
+    display: flex; flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    cursor: default;
+  }
+  .puzzle-tile:hover {
+    transform: translateY(-3px) scale(1.01);
+    box-shadow: 0 12px 28px rgba(91, 33, 182, 0.18);
+    z-index: 2;
+  }
+  .puzzle-tile .tile-head {
+    display: flex; justify-content: space-between; align-items: flex-start;
+  }
+  .puzzle-tile .tile-num {
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    font-weight: 700;
+    text-transform: uppercase;
+    opacity: 0.7;
+  }
+  .puzzle-tile .tile-name {
+    font-weight: 700;
+    letter-spacing: -0.012em;
+    line-height: 1.2;
+  }
+  .puzzle-tile .tile-tools {
+    display: flex; flex-wrap: wrap; gap: 5px;
+    margin-top: 8px;
+  }
+  .puzzle-tile .tool-chip {
+    font-size: 10.5px;
+    padding: 3px 8px;
+    border-radius: 5px;
+    font-weight: 600;
+    letter-spacing: -0.005em;
+    line-height: 1.3;
+  }
+
+  /* Tile A · step 1 - 大紫色 */
+  .puzzle-tile.a {
+    grid-column: span 5;
+    grid-row: span 3;
+    background: var(--grad-primary);
+    color: white;
+    box-shadow: 0 8px 24px rgba(124, 58, 237, 0.30);
+  }
+  .puzzle-tile.a::before {
+    content: '';
+    position: absolute;
+    top: -50%; right: -20%;
+    width: 200px; height: 200px;
+    background: radial-gradient(circle, rgba(255,255,255,0.18), transparent 70%);
+    pointer-events: none;
+  }
+  .puzzle-tile.a .tile-name {
+    font-size: 26px;
+    color: white;
+  }
+  .puzzle-tile.a .tool-chip {
+    background: rgba(255,255,255,0.15);
+    color: white;
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.12);
+  }
+
+  /* Tile B · step 2 - 黑色 */
+  .puzzle-tile.b {
+    grid-column: span 4;
+    grid-row: span 3;
+    background: linear-gradient(180deg, var(--ink) 0%, var(--ink-2) 100%);
+    color: white;
+  }
+  .puzzle-tile.b::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--grad-glow);
+  }
+  .puzzle-tile.b .tile-num { color: var(--p-300); }
+  .puzzle-tile.b .tile-name {
+    font-size: 22px; color: white;
+  }
+  .puzzle-tile.b .tool-chip {
+    background: rgba(168, 85, 247, 0.20);
+    color: var(--p-200);
+    border: 1px solid rgba(168, 85, 247, 0.15);
+  }
+
+  /* Tile C · step 3 - 浅紫 */
+  .puzzle-tile.c {
+    grid-column: span 3;
+    grid-row: span 3;
+    background: linear-gradient(160deg, var(--p-100) 0%, white 100%);
+    border: 1px solid var(--p-200);
+  }
+  .puzzle-tile.c .tile-num { color: var(--p-700); }
+  .puzzle-tile.c .tile-name {
+    font-size: 18px; color: var(--ink);
+  }
+  .puzzle-tile.c .tool-chip {
+    background: white;
+    color: var(--p-700);
+    border: 1px solid var(--p-200);
+  }
+
+  /* Tile D · step 4 - 浅紫强调 */
+  .puzzle-tile.d {
+    grid-column: span 4;
+    grid-row: span 3;
+    background: white;
+    border: 1px solid var(--p-200);
+  }
+  .puzzle-tile.d .tile-num { color: var(--p-700); }
+  .puzzle-tile.d .tile-name {
+    font-size: 20px; color: var(--ink);
+  }
+  .puzzle-tile.d .tool-chip {
+    background: var(--p-50);
+    color: var(--p-700);
+    border: 1px solid var(--p-200);
+  }
+
+  /* Tile E · step 5 - 深色玫瑰 */
+  .puzzle-tile.e {
+    grid-column: span 5;
+    grid-row: span 3;
+    background: linear-gradient(135deg, #1E0B3A 0%, #4C1D95 60%, #6B21A8 100%);
+    color: white;
+  }
+  .puzzle-tile.e::before {
+    content: '';
+    position: absolute;
+    bottom: -50%; left: -20%;
+    width: 240px; height: 240px;
+    background: radial-gradient(circle, rgba(236, 72, 153, 0.25), transparent 70%);
+    pointer-events: none;
+  }
+  .puzzle-tile.e .tile-num { color: var(--pink-400); }
+  .puzzle-tile.e .tile-name {
+    font-size: 22px; color: white;
+  }
+  .puzzle-tile.e .tool-chip {
+    background: rgba(255,255,255,0.12);
+    color: white;
+    border: 1px solid rgba(255,255,255,0.10);
+  }
+
+  /* Tile F · step 6 - 浅 */
+  .puzzle-tile.f {
+    grid-column: span 3;
+    grid-row: span 3;
+    background: white;
+    border: 1px solid var(--p-200);
+  }
+  .puzzle-tile.f .tile-num { color: var(--p-700); }
+  .puzzle-tile.f .tile-name {
+    font-size: 18px; color: var(--ink);
+  }
+  .puzzle-tile.f .tool-chip {
+    background: var(--p-50);
+    color: var(--p-700);
+    border: 1px solid var(--p-200);
+  }
+
+  /* ───── QA list ───── */
+  .qa-list { flex: 1; overflow: hidden; margin-top: 4px; }
+  .qa-item {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--gray-7);
+    display: flex; gap: 16px;
+    align-items: flex-start;
+  }
+  .qa-item:last-child { border-bottom: none; }
+  .qa-item .q-mark {
+    font-size: 13px; font-weight: 700;
+    color: var(--p-700);
+    margin-top: 1px;
+    font-variant-numeric: tabular-nums;
+    background: var(--p-50);
+    padding: 2px 8px;
+    border-radius: 6px;
+    letter-spacing: 0.04em;
+  }
+  .qa-item .qa-body { flex: 1; }
+  .qa-item .q {
+    font-size: 13.5px; font-weight: 600;
+    margin-bottom: 4px; color: var(--ink);
+    letter-spacing: -0.005em;
+  }
+  .qa-item .a {
+    font-size: 12.5px; color: var(--gray-1);
+    line-height: 1.55;
+  }
+  .qa-closing {
+    margin-top: 16px;
+    padding: 14px 18px;
+    background: var(--p-50);
+    border-left: 3px solid var(--p-500);
+    border-radius: 0 10px 10px 0;
+    font-size: 12.5px; color: var(--gray-1);
+    line-height: 1.55;
+  }
+
+  /* ───── Notes panel ───── */
+  .notes-panel {
+    background: white;
+    border: 1px solid rgba(168, 85, 247, 0.12);
+    border-radius: 16px;
+    padding: 18px;
+    position: sticky;
+    top: 100px;
+    max-height: 72vh;
+    overflow-y: auto;
+    box-shadow: 0 1px 3px rgba(91, 33, 182, 0.04),
+                0 8px 24px rgba(91, 33, 182, 0.04);
+  }
+  .notes-panel::-webkit-scrollbar { width: 6px; }
+  .notes-panel::-webkit-scrollbar-thumb {
+    background: var(--gray-4);
+    border-radius: 3px;
+  }
+  .notes-header {
+    font-size: 10px; color: var(--gray-2);
+    letter-spacing: 0.14em; margin-bottom: 14px;
+    text-transform: uppercase; font-weight: 700;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .notes-header::after {
+    content: ''; flex: 1; height: 1px;
+    background: linear-gradient(90deg, var(--gray-5), transparent);
+  }
+  .notes-list .note-item {
+    background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%);
+    border-left: 3px solid #F59E0B;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    border-radius: 0 8px 8px 0;
+    font-size: 13px;
+  }
+  .notes-list .note-item .note-text {
+    word-break: break-word;
+    white-space: pre-wrap;
+    color: var(--ink-2);
+    line-height: 1.55;
+  }
+  .notes-list .note-item .note-actions {
+    display: flex; gap: 4px; margin-top: 8px;
+    font-size: 11px;
+    align-items: center;
+  }
+  .notes-list .note-item .note-time {
+    color: var(--gray-2);
+    font-size: 10.5px;
+    margin-right: 6px;
+  }
+  .notes-list .note-item .note-actions button {
+    background: none; border: none; color: var(--gray-1);
+    cursor: pointer; padding: 2px 6px; border-radius: 4px;
+    font-size: 11px;
+  }
+  .notes-list .note-item .note-actions button:hover {
+    background: rgba(0,0,0,0.05); color: var(--ink);
+  }
+  .notes-list .empty {
+    font-size: 12px; color: var(--gray-3);
+    font-style: italic; padding: 12px 0;
+    text-align: center;
+  }
+  .note-form textarea {
+    width: 100%; border: 1px solid var(--gray-5);
+    border-radius: 8px; padding: 10px 12px;
+    font-family: inherit; font-size: 12.5px;
+    resize: vertical; min-height: 60px; margin-bottom: 8px;
+    color: var(--ink);
+    transition: all 0.15s;
+  }
+  .note-form textarea:focus {
+    outline: none;
+    border-color: var(--p-500);
+    box-shadow: 0 0 0 3px var(--p-100);
+  }
+  .note-form button {
+    background: var(--ink); color: white;
+    border: none; padding: 7px 14px;
+    border-radius: 7px; cursor: pointer;
+    font-size: 12px; font-weight: 600;
+    letter-spacing: -0.005em;
+    transition: all 0.15s;
+  }
+  .note-form button:hover {
+    background: var(--p-700);
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+  }
+
+  /* warn / dev / live bg vars for demos */
+  :root {
+    --warn: #DC2626;
+    --warn-bg: #FEF2F2;
+    --grad-cool: linear-gradient(135deg, #6366F1 0%, #A855F7 100%);
+  }
+
+  /* ═══════════════════════════════════════════════ */
+  /* Demo 1 · 笔记管理升级                            */
+  /* ═══════════════════════════════════════════════ */
+  .nm-toolbar {
+    display: flex; gap: 8px; margin-bottom: 14px;
+    align-items: center; flex-wrap: wrap;
+  }
+  .nm-toolbar .view-tab {
+    padding: 7px 14px; border-radius: 7px;
+    font-size: 12.5px; font-weight: 600;
+    border: 1px solid var(--gray-5);
+    background: white; color: var(--gray-1);
+    cursor: pointer;
+  }
+  .nm-toolbar .view-tab.active {
+    background: var(--p-700); color: white; border-color: var(--p-700);
+  }
+  .nm-toolbar .filter-grp {
+    display: flex; gap: 6px; align-items: center;
+    margin-left: auto;
+    font-size: 11.5px; color: var(--gray-2);
+  }
+  .nm-toolbar .filter-tag {
+    padding: 4px 9px; border-radius: 5px;
+    background: var(--p-50); color: var(--p-700);
+    font-size: 11px; font-weight: 600;
+  }
+  .nm-body {
+    flex: 1; display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 14px; min-height: 0;
+  }
+  .nm-sidebar {
+    background: var(--p-50); border-radius: 10px;
+    padding: 14px; overflow: hidden;
+  }
+  .nm-sb-title {
+    font-size: 10.5px; font-weight: 700;
+    color: var(--p-700);
+    letter-spacing: 0.1em; text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .nm-sb-group { margin-bottom: 14px; }
+  .nm-sb-label {
+    font-size: 12px; font-weight: 600;
+    color: var(--ink); margin-bottom: 6px;
+  }
+  .nm-sb-tag {
+    display: inline-block; padding: 3px 8px;
+    background: white; color: var(--p-700);
+    border: 1px solid var(--p-200);
+    border-radius: 5px; font-size: 10.5px;
+    margin: 2px 3px 2px 0; cursor: pointer;
+  }
+  .nm-sb-tag.on { background: var(--p-700); color: white; border-color: var(--p-700); }
+  .nm-table {
+    background: white; border: 1px solid var(--gray-6);
+    border-radius: 10px; overflow: hidden;
+    display: flex; flex-direction: column;
+  }
+  .nm-th, .nm-tr {
+    display: grid;
+    grid-template-columns: 2.4fr 0.8fr 0.6fr 0.6fr 0.7fr 0.7fr 1.3fr;
+    gap: 10px; padding: 9px 16px;
+    font-size: 11.5px; align-items: center;
+    border-bottom: 1px solid var(--gray-7);
+  }
+  .nm-th {
+    background: #FAFAFA; font-size: 10.5px;
+    font-weight: 700; color: var(--gray-2);
+    letter-spacing: 0.06em; text-transform: uppercase;
+  }
+  .nm-tr:last-child { border-bottom: none; }
+  .nm-tr .nm-note-title {
+    font-weight: 600; color: var(--ink);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .nm-tr .nm-status {
+    padding: 2px 7px; border-radius: 4px;
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 0.04em; text-transform: uppercase;
+    text-align: center;
+  }
+  .nm-tr .nm-status.live { background: #DCFCE7; color: #166534; }
+  .nm-tr .nm-status.dev { background: #FEF3C7; color: #92400E; }
+  .nm-tr .nm-status.kasshen { background: #FECACA; color: #991B1B; }
+  .nm-tr .nm-status.decay { background: var(--gray-7); color: var(--gray-2); }
+  .nm-tr .nm-roi { font-variant-numeric: tabular-nums; font-weight: 700; color: var(--p-ink); }
+  .nm-tr .nm-tags { display: flex; gap: 4px; flex-wrap: wrap; }
+  .nm-tr .nm-tag-l1 {
+    font-size: 9.5px; padding: 2px 6px;
+    background: var(--p-100); color: var(--p-700);
+    border-radius: 4px; font-weight: 600;
+  }
+  .nm-tr .nm-tag-data {
+    font-size: 9.5px; padding: 2px 6px;
+    background: #ECFDF5; color: var(--live);
+    border-radius: 4px; font-weight: 600;
+  }
+
+  /* ═══════════════════════════════════════════════ */
+  /* Demo 2 · 评论每日巡查                            */
+  /* ═══════════════════════════════════════════════ */
+  .pat-body {
+    flex: 1; display: grid;
+    grid-template-columns: 1.05fr 1fr;
+    gap: 16px; min-height: 0;
+  }
+  .pat-chat {
+    background: #F5F5F7;
+    border-radius: 12px; padding: 14px 12px;
+    display: flex; flex-direction: column; overflow: hidden;
+  }
+  .pat-chat-head {
+    display: flex; align-items: center; gap: 8px;
+    padding: 4px 6px 10px;
+    border-bottom: 1px solid var(--gray-5);
+    margin-bottom: 8px;
+  }
+  .pat-chat-head .avatar {
+    width: 24px; height: 24px; border-radius: 6px;
+    background: var(--p-700); color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700;
+  }
+  .pat-chat-head .info { display: flex; flex-direction: column; }
+  .pat-chat-head .name { font-size: 12px; font-weight: 700; color: var(--ink); }
+  .pat-chat-head .group { font-size: 10px; color: var(--gray-2); }
+  .pat-chat-head .bot-tag {
+    margin-left: auto; font-size: 9px; padding: 2px 7px;
+    background: var(--p-100); color: var(--p-700);
+    border-radius: 4px; font-weight: 700; letter-spacing: 0.05em;
+  }
+  .pat-msgs { flex: 1; overflow: hidden; display: flex; flex-direction: column; gap: 8px; }
+  .pat-msg {
+    background: white; border-radius: 10px; padding: 10px 12px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+  }
+  .pat-msg-time {
+    font-size: 9.5px; color: var(--gray-3);
+    text-align: center; margin-bottom: 2px;
+  }
+  .pat-msg-h {
+    font-size: 12px; font-weight: 700;
+    color: var(--ink); margin-bottom: 5px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .pat-msg-h .ico { font-size: 13px; }
+  .pat-msg-h.warn { color: var(--warn); }
+  .pat-msg-body { font-size: 11px; color: var(--gray-1); line-height: 1.55; }
+  .pat-msg-body ul { list-style: none; }
+  .pat-msg-body ul li { padding: 1px 0; display: flex; gap: 6px; }
+  .pat-msg-body ul li::before { content: '·'; color: var(--p-500); font-weight: 700; }
+  .pat-msg-body ul li.bad { color: var(--warn); }
+  .pat-msg-body ul li.bad::before { color: var(--warn); }
+  .pat-msg-body ul li.good { color: var(--live); }
+  .pat-msg-body ul li.good::before { color: var(--live); }
+  .pat-stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 6px; }
+  .pat-stat {
+    background: var(--p-50); padding: 6px 10px;
+    border-radius: 6px; font-size: 10.5px;
+  }
+  .pat-stat .k { color: var(--gray-2); }
+  .pat-stat .v { font-weight: 700; color: var(--p-ink); font-size: 13px; }
+  .pat-dashboard {
+    background: white; border: 1px solid var(--gray-6);
+    border-radius: 12px; padding: 16px;
+    display: flex; flex-direction: column; overflow: hidden;
+  }
+  .pat-dh {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: 14px;
+  }
+  .pat-dh .ttl { font-size: 14px; font-weight: 700; color: var(--p-ink); }
+  .pat-dh .when { font-size: 10.5px; color: var(--gray-2); }
+  .pat-kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 14px; }
+  .pat-kpi {
+    background: linear-gradient(160deg, var(--p-50) 0%, white 100%);
+    border: 1px solid var(--p-100);
+    border-radius: 9px; padding: 10px 12px;
+  }
+  .pat-kpi .label {
+    font-size: 9.5px; color: var(--p-700);
+    letter-spacing: 0.06em; font-weight: 700;
+    text-transform: uppercase; margin-bottom: 4px;
+  }
+  .pat-kpi .val {
+    font-size: 19px; font-weight: 700;
+    color: var(--p-ink);
+    font-variant-numeric: tabular-nums; letter-spacing: -0.015em;
+  }
+  .pat-kpi .val .unit { font-size: 11px; color: var(--gray-2); font-weight: 500; }
+  .pat-kpi .delta { font-size: 9.5px; margin-left: 4px; font-variant-numeric: tabular-nums; }
+  .pat-kpi .delta.up { color: var(--live); }
+  .pat-kpi .delta.down { color: var(--warn); }
+  .pat-chart { background: #FAFAFA; border-radius: 8px; padding: 12px; margin-bottom: 12px; }
+  .pat-chart-title { font-size: 11px; font-weight: 700; color: var(--gray-1); margin-bottom: 10px; }
+  .pat-trend { display: flex; gap: 4px; align-items: flex-end; height: 70px; }
+  .pat-trend-bar { flex: 1; display: flex; flex-direction: column; gap: 0; align-items: stretch; }
+  .pat-trend-bar .seg-pos { background: var(--live); border-radius: 2px 2px 0 0; }
+  .pat-trend-bar .seg-mid { background: var(--p-300); }
+  .pat-trend-bar .seg-neg { background: var(--warn); border-radius: 0 0 2px 2px; }
+  .pat-trend-x { display: flex; gap: 4px; margin-top: 4px; font-size: 9px; color: var(--gray-3); }
+  .pat-trend-x span { flex: 1; text-align: center; }
+  .pat-alerts { flex: 1; overflow: hidden; }
+  .pat-alert-title {
+    font-size: 11px; font-weight: 700;
+    color: var(--gray-1); margin-bottom: 8px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .pat-alert-title .badge {
+    font-size: 9px; padding: 1px 6px;
+    background: var(--warn-bg); color: var(--warn); border-radius: 999px;
+  }
+  .pat-alert {
+    background: #FFFAFA; border: 1px solid #FECACA;
+    border-radius: 8px; padding: 8px 12px;
+    margin-bottom: 6px; font-size: 10.5px;
+  }
+  .pat-alert .note-title { color: var(--ink); font-weight: 600; margin-bottom: 3px; }
+  .pat-alert .issue { color: var(--warn); font-size: 10px; }
+  .pat-alert .meta { color: var(--gray-2); font-size: 9.5px; margin-top: 3px; }
+
+  /* ═══════════════════════════════════════════════ */
+  /* Demo 3 · 消费者聆听                              */
+  /* ═══════════════════════════════════════════════ */
+  .cl-srcs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 14px; }
+  .cl-src {
+    background: white; border: 1px solid var(--gray-6);
+    border-radius: 10px; padding: 12px 14px;
+    position: relative; overflow: hidden;
+  }
+  .cl-src::before {
+    content: ''; position: absolute;
+    top: 0; left: 0; right: 0; height: 2px;
+    background: var(--grad-glow);
+  }
+  .cl-src .label {
+    font-size: 9.5px; color: var(--p-700);
+    letter-spacing: 0.06em; font-weight: 700;
+    text-transform: uppercase; margin-bottom: 5px;
+  }
+  .cl-src .val {
+    font-size: 22px; font-weight: 700;
+    color: var(--p-ink);
+    font-variant-numeric: tabular-nums; letter-spacing: -0.015em;
+  }
+  .cl-src .val .unit { font-size: 12px; color: var(--gray-2); font-weight: 500; margin-left: 2px; }
+  .cl-src .desc { font-size: 10.5px; color: var(--gray-1); margin-top: 3px; }
+  .cl-body {
+    flex: 1; display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 14px; min-height: 0;
+  }
+  .cl-topics {
+    background: white; border: 1px solid var(--gray-6);
+    border-radius: 12px; padding: 14px 16px;
+    display: flex; flex-direction: column; overflow: hidden;
+  }
+  .cl-topics-h {
+    font-size: 13px; font-weight: 700;
+    color: var(--p-ink); margin-bottom: 10px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .cl-topics-h .sub { font-size: 10px; color: var(--gray-2); font-weight: 500; }
+  .cl-topic { padding: 9px 0; border-bottom: 1px dashed var(--gray-6); }
+  .cl-topic:last-child { border-bottom: none; }
+  .cl-topic-h { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+  .cl-topic-h .rank {
+    width: 18px; height: 18px;
+    background: var(--p-700); color: white;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 700;
+  }
+  .cl-topic-h .name { font-size: 12.5px; font-weight: 700; color: var(--ink); flex: 1; }
+  .cl-topic-h .pct {
+    font-size: 10.5px; color: var(--p-700);
+    background: var(--p-100); padding: 2px 7px;
+    border-radius: 999px; font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+  .cl-topic-bar { height: 4px; background: var(--gray-7); border-radius: 2px; margin-bottom: 6px; overflow: hidden; }
+  .cl-topic-bar .fill { height: 100%; background: var(--grad-glow); }
+  .cl-topic-q {
+    font-size: 10.5px; color: var(--gray-1);
+    font-style: italic; line-height: 1.5;
+    padding: 5px 9px;
+    background: var(--p-50); border-radius: 5px;
+    margin-bottom: 4px;
+  }
+  .cl-topic-q::before { content: '" '; color: var(--p-400); font-weight: 700; }
+  .cl-topic-q::after { content: ' "'; color: var(--p-400); font-weight: 700; }
+  .cl-topic-ad { font-size: 10.5px; color: var(--gray-1); line-height: 1.5; }
+  .cl-topic-ad b { color: var(--p-ink); }
+  .cl-right { display: flex; flex-direction: column; gap: 10px; overflow: hidden; }
+  .cl-emotion { background: white; border: 1px solid var(--gray-6); border-radius: 10px; padding: 12px; }
+  .cl-emotion-h { font-size: 11.5px; font-weight: 700; color: var(--gray-1); margin-bottom: 8px; }
+  .cl-emotion-bar { height: 22px; border-radius: 5px; display: flex; overflow: hidden; }
+  .cl-emotion-bar .seg {
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9.5px; font-weight: 700; color: white;
+  }
+  .cl-emotion-bar .seg.pos { background: var(--live); flex: 62; }
+  .cl-emotion-bar .seg.mid { background: var(--p-400); flex: 26; }
+  .cl-emotion-bar .seg.neg { background: var(--warn); flex: 12; }
+  .cl-emotion-legend { display: flex; gap: 12px; margin-top: 6px; font-size: 10px; color: var(--gray-1); }
+  .cl-emotion-legend .item { display: flex; align-items: center; gap: 4px; }
+  .cl-emotion-legend .sw { width: 8px; height: 8px; border-radius: 2px; }
+  .cl-opps {
+    background: linear-gradient(160deg, var(--p-50) 0%, white 100%);
+    border: 1px solid var(--p-200);
+    border-radius: 10px; padding: 12px 14px;
+    flex: 1; overflow: hidden;
+  }
+  .cl-opps-h {
+    font-size: 12px; font-weight: 700; color: var(--p-ink);
+    margin-bottom: 8px; display: flex; align-items: center; gap: 6px;
+  }
+  .cl-opps-h::before { content: '💡'; font-size: 14px; }
+  .cl-opp {
+    background: white; padding: 8px 11px;
+    border-radius: 7px; margin-bottom: 6px;
+    font-size: 10.5px; border-left: 3px solid var(--p-500);
+  }
+  .cl-opp .opp-h { font-weight: 700; color: var(--ink); font-size: 11px; margin-bottom: 2px; }
+  .cl-opp .opp-d { color: var(--gray-1); line-height: 1.5; }
+  .cl-opp .opp-d .tag {
+    display: inline-block; padding: 1px 6px;
+    background: var(--p-100); color: var(--p-700);
+    border-radius: 3px; font-size: 9.5px; font-weight: 700;
+    margin-left: 4px;
+  }
+
+  /* ═══════════════════════════════════════════════ */
+  /* Demo 4 · 竞品自定义看板                          */
+  /* ═══════════════════════════════════════════════ */
+  .cp-toolbar { display: flex; gap: 6px; margin-bottom: 14px; align-items: center; flex-wrap: wrap; }
+  .cp-dim-label {
+    font-size: 10px; color: var(--gray-2);
+    font-weight: 700; margin-right: 4px;
+    letter-spacing: 0.06em; text-transform: uppercase;
+  }
+  .cp-dim {
+    padding: 6px 11px; border-radius: 7px;
+    background: white; border: 1px solid var(--gray-5);
+    font-size: 11px; font-weight: 600;
+    color: var(--gray-1); cursor: pointer;
+  }
+  .cp-dim.active { background: var(--p-ink); color: white; border-color: var(--p-ink); }
+  .cp-dim .chev { display: inline-block; margin-left: 3px; font-size: 8px; }
+  .cp-add {
+    padding: 6px 11px; border-radius: 7px;
+    background: var(--p-50); border: 1px dashed var(--p-400);
+    color: var(--p-700); font-size: 11px; font-weight: 600; cursor: pointer;
+  }
+  .cp-brands {
+    margin-left: auto; display: flex; align-items: center; gap: 8px;
+    font-size: 10.5px; color: var(--gray-2);
+  }
+  .cp-brand { padding: 3px 8px; border-radius: 4px; font-size: 10.5px; font-weight: 700; }
+  .cp-brand.ours { background: var(--grad-primary); color: white; }
+  .cp-brand.theirs { background: var(--gray-6); color: var(--gray-1); }
+  .cp-body { flex: 1; display: grid; grid-template-columns: 1.6fr 1fr; gap: 14px; min-height: 0; }
+  .cp-body.cp-body-solo { grid-template-columns: 1fr; }
+  .cp-left { display: flex; flex-direction: column; gap: 12px; min-height: 0; }
+  .cp-chart {
+    background: #FAFAFA; border-radius: 10px;
+    padding: 14px 16px; flex: 1;
+    display: flex; flex-direction: column; overflow: hidden;
+  }
+  .cp-chart-h { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
+  .cp-chart-title { font-size: 12px; font-weight: 700; color: var(--p-ink); }
+  .cp-chart-meta { font-size: 10px; color: var(--gray-2); }
+  .cp-bars { flex: 1; display: flex; align-items: flex-end; gap: 8px; padding-bottom: 20px; position: relative; }
+  .cp-bar-grp {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; gap: 2px; position: relative;
+  }
+  .cp-bar-pair { display: flex; gap: 2px; align-items: flex-end; height: 100px; }
+  .cp-bar { width: 16px; border-radius: 3px 3px 0 0; background: var(--p-300); }
+  .cp-bar.ours { background: var(--grad-primary); }
+  .cp-bar.theirs { background: var(--gray-4); }
+  .cp-bar-label {
+    font-size: 9.5px; color: var(--gray-2);
+    position: absolute; bottom: -18px;
+    width: 100%; text-align: center;
+  }
+  .cp-legend {
+    display: flex; gap: 12px; justify-content: center;
+    font-size: 10px; color: var(--gray-1);
+    padding-top: 8px; border-top: 1px solid var(--gray-6);
+  }
+  .cp-legend-item { display: flex; align-items: center; gap: 5px; }
+  .cp-legend-item .sw { width: 10px; height: 10px; border-radius: 2px; }
+  .cp-topnotes {
+    background: white; border: 1px solid var(--gray-6);
+    border-radius: 10px; padding: 12px 14px; overflow: hidden;
+  }
+  .cp-topnotes-h { font-size: 11.5px; font-weight: 700; color: var(--p-ink); margin-bottom: 8px; }
+  .cp-noterow {
+    display: grid;
+    grid-template-columns: 18px 28px 1.6fr 0.6fr 0.6fr 0.6fr;
+    gap: 8px; padding: 5px 0;
+    font-size: 10.5px; align-items: center;
+    border-bottom: 1px solid var(--gray-7);
+  }
+  .cp-noterow:last-child { border-bottom: none; }
+  .cp-noterow .rank {
+    background: var(--p-100); color: var(--p-700);
+    border-radius: 4px; padding: 1px 4px;
+    text-align: center; font-weight: 700; font-size: 10px;
+  }
+  .cp-noterow .thumb {
+    width: 28px; height: 28px;
+    background: linear-gradient(135deg, var(--p-300), var(--pink-400));
+    border-radius: 5px;
+  }
+  .cp-noterow .thumb:nth-child(odd) { background: linear-gradient(135deg, var(--indigo-500), var(--p-500)); }
+  .cp-noterow .t {
+    color: var(--ink); font-weight: 500;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .cp-noterow .m {
+    color: var(--gray-2);
+    font-variant-numeric: tabular-nums; text-align: right;
+  }
+  .cp-right { display: flex; flex-direction: column; gap: 10px; overflow: hidden; }
+  .cp-table {
+    background: white; border: 1px solid var(--gray-6);
+    border-radius: 10px; padding: 12px 14px; overflow: hidden;
+  }
+  .cp-table-head { font-size: 11.5px; font-weight: 700; color: var(--p-ink); margin-bottom: 6px; }
+  .cp-row {
+    display: grid;
+    grid-template-columns: 1fr 0.5fr 0.5fr 0.6fr;
+    gap: 6px; padding: 5px 0;
+    border-bottom: 1px solid var(--gray-7);
+    font-size: 10.5px; align-items: center;
+  }
+  .cp-row.h { color: var(--gray-2); font-weight: 700; font-size: 9.5px; letter-spacing: 0.06em; text-transform: uppercase; }
+  .cp-row .opp { font-weight: 700; color: var(--ink); }
+  .cp-row .delta { font-variant-numeric: tabular-nums; font-weight: 700; }
+  .cp-row .delta.up { color: var(--live); }
+  .cp-row .delta.down { color: var(--warn); }
+  .cp-advice {
+    background: linear-gradient(135deg, var(--p-50), white);
+    border: 1px solid var(--p-200);
+    border-radius: 10px; padding: 12px 14px;
+    flex: 1; overflow: hidden;
+  }
+  .cp-advice-h {
+    font-size: 11.5px; font-weight: 700; color: var(--p-ink);
+    margin-bottom: 6px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .cp-advice-h::before { content: '🎯'; font-size: 13px; }
+  .cp-advice-item {
+    font-size: 10.5px; color: var(--gray-1);
+    padding: 5px 0; line-height: 1.5;
+    display: flex; gap: 8px;
+  }
+  .cp-advice-item::before {
+    content: '→'; color: var(--p-500); font-weight: 700; flex-shrink: 0;
+  }
+  .cp-advice-item b { color: var(--p-ink); }
+
+  /* ═══════════════════════════════════════════════ */
+  /* Demo 5 · AI 审稿                                 */
+  /* ═══════════════════════════════════════════════ */
+  .ai-body { flex: 1; display: grid; grid-template-columns: 1.1fr 1fr; gap: 14px; min-height: 0; }
+  .ai-editor {
+    background: white; border: 1px solid var(--gray-6);
+    border-radius: 12px; padding: 14px 16px;
+    display: flex; flex-direction: column; overflow: hidden;
+  }
+  .ai-ed-h {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 10px; padding-bottom: 8px;
+    border-bottom: 1px solid var(--gray-6);
+  }
+  .ai-ed-h .ttl { font-size: 12px; font-weight: 700; color: var(--p-ink); }
+  .ai-ed-h .submit { font-size: 10px; color: var(--gray-2); }
+  .ai-note-meta {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 10px;
+    font-size: 10.5px; color: var(--gray-1);
+  }
+  .ai-note-meta .creator { font-weight: 700; color: var(--ink); }
+  .ai-note-meta .sep { color: var(--gray-4); }
+  .ai-note-title {
+    font-size: 14px; font-weight: 700;
+    color: var(--ink); margin-bottom: 10px;
+    line-height: 1.4;
+  }
+  .ai-note-title .hl-warn {
+    background: #FEF3C7;
+    border-bottom: 2px solid var(--dev);
+    padding: 0 2px;
+  }
+  .ai-note-body {
+    flex: 1; overflow: hidden;
+    background: #FAFAFA; border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 11px; color: var(--ink); line-height: 1.7;
+  }
+  .ai-note-body p { margin-bottom: 8px; }
+  .ai-note-body .hl-warn {
+    background: #FEF3C7;
+    border-bottom: 2px solid var(--dev);
+    padding: 0 3px; border-radius: 2px;
+  }
+  .ai-note-body .hl-fail {
+    background: #FEE2E2;
+    border-bottom: 2px solid var(--warn);
+    padding: 0 3px; border-radius: 2px;
+    color: var(--warn); font-weight: 600;
+  }
+  .ai-note-body .hl-warn::after, .ai-note-body .hl-fail::after {
+    content: attr(data-tip);
+    display: inline-block;
+    font-size: 8.5px;
+    color: white; background: var(--dev);
+    padding: 1px 4px; border-radius: 3px;
+    margin-left: 4px;
+    vertical-align: middle;
+    letter-spacing: 0.04em;
+  }
+  .ai-note-body .hl-fail::after { background: var(--warn); }
+  .ai-note-tags { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 8px; }
+  .ai-note-tags .tag {
+    font-size: 9.5px; color: var(--p-700);
+    background: var(--p-100);
+    padding: 2px 7px; border-radius: 4px;
+    font-weight: 600;
+  }
+  .ai-result {
+    background: white; border: 1px solid var(--gray-6);
+    border-radius: 12px; padding: 14px 16px;
+    display: flex; flex-direction: column; overflow: hidden;
+  }
+  .ai-result-h {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 12px; padding-bottom: 8px;
+    border-bottom: 1px solid var(--gray-6);
+  }
+  .ai-result-h .ttl { font-size: 12px; font-weight: 700; color: var(--p-ink); }
+  .ai-result-h .score-wrap { display: flex; align-items: baseline; gap: 4px; }
+  .ai-result-h .score {
+    font-size: 26px; font-weight: 700;
+    background: var(--grad-glow);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-variant-numeric: tabular-nums; line-height: 1;
+  }
+  .ai-result-h .score-max { font-size: 11px; color: var(--gray-3); }
+  .ai-checks { flex: 1; overflow: hidden; display: flex; flex-direction: column; gap: 6px; }
+  .ai-check {
+    background: #FAFAFA; border-radius: 7px;
+    padding: 8px 12px;
+    display: grid; grid-template-columns: 16px 1fr auto;
+    gap: 10px; align-items: center; font-size: 11px;
+  }
+  .ai-check.pass { background: var(--live-bg); }
+  .ai-check.warn { background: var(--dev-bg); }
+  .ai-check.fail { background: var(--warn-bg); }
+  .ai-check .ico {
+    width: 16px; height: 16px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; color: white; font-weight: 700;
+  }
+  .ai-check.pass .ico { background: var(--live); }
+  .ai-check.warn .ico { background: var(--dev); }
+  .ai-check.fail .ico { background: var(--warn); }
+  .ai-check .label { font-weight: 600; color: var(--ink); }
+  .ai-check .label .detail {
+    display: block; font-size: 10px;
+    color: var(--gray-1); font-weight: 400; margin-top: 2px;
+  }
+  .ai-check .status {
+    font-size: 10px; font-weight: 700;
+    padding: 2px 7px; border-radius: 4px;
+    letter-spacing: 0.04em; text-transform: uppercase;
+  }
+  .ai-check.pass .status { background: var(--live); color: white; }
+  .ai-check.warn .status { background: var(--dev); color: white; }
+  .ai-check.fail .status { background: var(--warn); color: white; }
+  .ai-actions {
+    display: flex; gap: 8px; margin-top: 10px;
+    padding-top: 10px; border-top: 1px solid var(--gray-6);
+  }
+  .ai-act {
+    flex: 1; padding: 8px 0; text-align: center;
+    border-radius: 7px;
+    font-size: 11px; font-weight: 700; cursor: pointer;
+  }
+  .ai-act.primary { background: var(--p-ink); color: white; }
+  .ai-act.secondary { background: white; color: var(--gray-1); border: 1px solid var(--gray-5); }
+
+  /* ═══════════════════════════════════════════════ */
+  /* Demo 6 · AI 周报                                 */
+  /* ═══════════════════════════════════════════════ */
+  .wr-head {
+    background: var(--grad-deep);
+    margin: -56px -64px 14px;
+    padding: 20px 64px;
+    color: white;
+    position: relative; overflow: hidden;
+  }
+  .wr-head::before {
+    content: ''; position: absolute;
+    top: -50%; right: -10%;
+    width: 250px; height: 250px;
+    background: radial-gradient(circle, rgba(236, 72, 153, 0.4), transparent 70%);
+    pointer-events: none;
+  }
+  .wr-head-content {
+    display: flex; justify-content: space-between; align-items: center;
+    position: relative; z-index: 1;
+  }
+  .wr-head .left { display: flex; flex-direction: column; }
+  .wr-head .label {
+    font-size: 10px; color: var(--p-300);
+    letter-spacing: 0.16em; font-weight: 700;
+    text-transform: uppercase; margin-bottom: 6px;
+  }
+  .wr-head .ttl { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; }
+  .wr-head .ttl .em {
+    background: var(--grad-glow);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .wr-head .date {
+    font-size: 11px; color: rgba(255,255,255,0.7);
+    margin-top: 4px; font-variant-numeric: tabular-nums;
+  }
+  .wr-head .ai-badge {
+    display: flex; align-items: center; gap: 8px;
+    background: rgba(255,255,255,0.1);
+    padding: 8px 14px; border-radius: 999px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.15);
+  }
+  .wr-head .ai-badge .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--live); box-shadow: 0 0 8px var(--live);
+  }
+  .wr-head .ai-badge .txt { font-size: 11px; font-weight: 700; letter-spacing: 0.04em; }
+  .wr-body { flex: 1; display: flex; flex-direction: column; gap: 12px; min-height: 0; }
+  .wr-kpis { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+  .wr-kpi {
+    background: white; border: 1px solid var(--gray-6);
+    border-radius: 9px; padding: 10px 11px;
+    position: relative; overflow: hidden;
+  }
+  .wr-kpi::before {
+    content: ''; position: absolute;
+    top: 0; left: 0; width: 24px; height: 2px;
+    background: var(--grad-glow);
+  }
+  .wr-kpi .k {
+    font-size: 9px; color: var(--gray-2);
+    letter-spacing: 0.06em; font-weight: 700;
+    text-transform: uppercase; margin-bottom: 3px;
+  }
+  .wr-kpi .v {
+    font-size: 16px; font-weight: 700;
+    color: var(--p-ink);
+    font-variant-numeric: tabular-nums; letter-spacing: -0.015em;
+  }
+  .wr-kpi .v .unit { font-size: 9px; color: var(--gray-3); font-weight: 500; margin-left: 1px; }
+  .wr-kpi .d { font-size: 9.5px; margin-top: 2px; font-variant-numeric: tabular-nums; }
+  .wr-kpi .d.up { color: var(--live); }
+  .wr-kpi .d.down { color: var(--warn); }
+  .wr-grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 12px; flex: 1; min-height: 0; }
+  .wr-section {
+    background: white; border: 1px solid var(--gray-6);
+    border-radius: 10px; padding: 12px 14px;
+    overflow: hidden;
+    display: flex; flex-direction: column;
+  }
+  .wr-section .sh {
+    font-size: 11.5px; font-weight: 700;
+    color: var(--p-ink); margin-bottom: 8px;
+    display: flex; justify-content: space-between; align-items: baseline;
+  }
+  .wr-section .sh .sub { font-size: 9.5px; color: var(--gray-2); font-weight: 500; }
+  .wr-trend {
+    flex: 1; display: flex; align-items: flex-end;
+    gap: 4px; padding-bottom: 16px;
+    position: relative; min-height: 0;
+  }
+  .wr-trend-day {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center;
+    height: 100%; justify-content: flex-end;
+    position: relative;
+  }
+  .wr-trend-bar { width: 14px; background: var(--grad-glow); border-radius: 2px 2px 0 0; }
+  .wr-trend-x { font-size: 9px; color: var(--gray-3); position: absolute; bottom: 0; }
+  .wr-noteslist { flex: 1; overflow: hidden; }
+  .wr-noterow {
+    display: grid;
+    grid-template-columns: 18px 1.6fr 0.5fr 0.5fr;
+    gap: 8px; padding: 5px 0;
+    font-size: 10.5px; align-items: center;
+    border-bottom: 1px dashed var(--gray-7);
+  }
+  .wr-noterow:last-child { border-bottom: none; }
+  .wr-noterow .rk {
+    width: 18px; height: 18px;
+    border-radius: 50%; background: var(--p-100); color: var(--p-700);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px; font-weight: 700;
+  }
+  .wr-noterow .rk.gold { background: var(--grad-glow); color: white; }
+  .wr-noterow .t {
+    color: var(--ink); font-weight: 500;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .wr-noterow .roi {
+    font-variant-numeric: tabular-nums;
+    color: var(--p-ink); font-weight: 700; text-align: right;
+  }
+  .wr-noterow .roi.bad { color: var(--gray-3); }
+  .wr-insight {
+    background: linear-gradient(135deg, var(--p-50), white);
+    border: 1px solid var(--p-200);
+    border-radius: 10px; padding: 12px 14px;
+  }
+  .wr-insight-h {
+    font-size: 11px; font-weight: 700; color: var(--p-ink);
+    margin-bottom: 8px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .wr-insight-h::before {
+    content: ''; width: 4px; height: 14px;
+    background: var(--grad-glow); border-radius: 2px;
+  }
+  .wr-insight-row {
+    font-size: 10.5px; color: var(--gray-1);
+    line-height: 1.6; padding: 3px 0;
+  }
+  .wr-insight-row b { color: var(--p-ink); }
+  .wr-insight-row .good { color: var(--live); font-weight: 700; }
+  .wr-insight-row .bad { color: var(--warn); font-weight: 700; }
+
+  
+  
+
+
+
+  /* ───── Slide 6 · multi-dim 增强版（演示版） ───── */
+  .multi-dim-tags.multi-dim-large {
+    gap: 18px; margin-top: 14px;
+    flex: 1; min-height: 0;
+    align-items: stretch;
+  }
+  .dim-tag.dim-tag-large {
+    padding: 36px 30px; border-radius: 18px;
+    position: relative; overflow: hidden; border: none;
+    display: flex; flex-direction: column;
+    justify-content: space-between;
+  }
+  .dim-tag.dim-tag-large::before { display: none; }
+  .dim-tag.dim-tag-large .dim-num {
+    font-family: "SF Mono", Menlo, monospace;
+    font-size: 60px; font-weight: 800; line-height: 1;
+    letter-spacing: -0.04em; margin-bottom: 4px;
+    background: linear-gradient(135deg, currentColor 30%, transparent 100%);
+    -webkit-background-clip: text; background-clip: text;
+    color: transparent; opacity: 0.92;
+  }
+  .dim-tag.dim-tag-large .dim-axis {
+    font-size: 12px; letter-spacing: 0.04em;
+    padding: 4px 10px; border-radius: 999px;
+    align-self: flex-start; display: inline-block;
+    margin-bottom: 6px;
+  }
+  .dim-tag.dim-tag-large .dim-title {
+    font-size: 22px; font-weight: 700;
+    line-height: 1.3; letter-spacing: -0.012em;
+    margin-bottom: 10px;
+  }
+  .dim-tag.dim-tag-large .dim-desc {
+    font-size: 13.5px; line-height: 1.65;
+    color: var(--gray-1);
+  }
+  .dim-tag.dim-tag-large.dim-purple {
+    background: linear-gradient(160deg, #1E0B3A 0%, #4C1D95 60%, #6B21A8 100%);
+    color: white;
+  }
+  .dim-tag.dim-tag-large.dim-purple .dim-num { color: rgba(255,255,255,0.55); }
+  .dim-tag.dim-tag-large.dim-purple .dim-axis {
+    background: rgba(255,255,255,0.14); color: #E9D5FF;
+    border: 1px solid rgba(255,255,255,0.18);
+  }
+  .dim-tag.dim-tag-large.dim-purple .dim-title { color: white; }
+  .dim-tag.dim-tag-large.dim-purple .dim-desc { color: rgba(255,255,255,0.78); }
+
+  .dim-tag.dim-tag-large.dim-mid {
+    background: linear-gradient(160deg, #7C3AED 0%, #A855F7 100%);
+    color: white;
+  }
+  .dim-tag.dim-tag-large.dim-mid .dim-num { color: rgba(255,255,255,0.55); }
+  .dim-tag.dim-tag-large.dim-mid .dim-axis {
+    background: rgba(255,255,255,0.18); color: white;
+    border: 1px solid rgba(255,255,255,0.22);
+  }
+  .dim-tag.dim-tag-large.dim-mid .dim-title { color: white; }
+  .dim-tag.dim-tag-large.dim-mid .dim-desc { color: rgba(255,255,255,0.85); }
+
+  .dim-tag.dim-tag-large.dim-light {
+    background: linear-gradient(160deg, #F5F3FF 0%, #FFFFFF 70%);
+    border: 1px solid var(--p-200); color: var(--p-700);
+  }
+  .dim-tag.dim-tag-large.dim-light .dim-num { color: var(--p-700); }
+  .dim-tag.dim-tag-large.dim-light .dim-axis {
+    background: var(--p-100); color: var(--p-700);
+    border: 1px solid var(--p-200);
+  }
+  .dim-tag.dim-tag-large.dim-light .dim-title { color: var(--ink); }
+
+  /* ───── Slide 12 · 账号/项目/权限 横向 3 卡（演示版） ───── */
+  .ap-flow {
+    flex: 1; display: flex; align-items: stretch;
+    justify-content: space-between; gap: 0;
+    margin-top: 20px; padding: 0 4px;
+  }
+  .ap-card {
+    flex: 1; background: white; border-radius: 16px;
+    padding: 22px 22px 20px;
+    display: flex; flex-direction: column; gap: 10px;
+    position: relative; overflow: hidden;
+  }
+  .ap-card .ap-corner {
+    position: absolute; top: 0; right: 0;
+    width: 72px; height: 72px;
+    background: var(--grad-glow); opacity: 0.08;
+    border-radius: 0 16px 0 72px;
+  }
+  .ap-card .ap-num {
+    font-family: "SF Mono", Menlo, monospace;
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 0.18em; color: var(--p-700);
+    opacity: 0.65;
+  }
+  .ap-card .ap-name {
+    font-size: 24px; font-weight: 800;
+    letter-spacing: -0.018em; line-height: 1.1;
+    color: var(--ink);
+    display: flex; align-items: baseline; gap: 8px;
+  }
+  .ap-card .ap-name-en {
+    font-family: "SF Mono", Menlo, monospace;
+    font-size: 10px; font-weight: 600;
+    color: var(--p-700); letter-spacing: 0.08em;
+    text-transform: uppercase; opacity: 0.7;
+  }
+  .ap-card .ap-desc {
+    font-size: 11.5px; line-height: 1.55;
+    color: var(--gray-1);
+  }
+  .ap-card .ap-keys {
+    margin-top: auto; padding-top: 10px;
+    border-top: 1px dashed var(--p-200);
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .ap-card .ap-key {
+    font-size: 10.5px; color: var(--gray-2);
+    line-height: 1.5;
+    display: flex; gap: 5px; align-items: flex-start;
+  }
+  .ap-card .ap-key::before {
+    content: '·'; color: var(--p-700);
+    font-weight: 800; flex-shrink: 0;
+  }
+  .ap-card .ap-key b { color: var(--ink); font-weight: 700; }
+
+  .ap-card.ap-account {
+    background: linear-gradient(160deg, #1E0B3A 0%, #4C1D95 65%, #6B21A8 100%);
+    color: white; border: 1px solid rgba(255,255,255,0.08);
+  }
+  .ap-card.ap-account .ap-corner {
+    background: radial-gradient(circle, rgba(236,72,153,0.5), transparent 70%);
+    opacity: 0.5;
+  }
+  .ap-card.ap-account .ap-num { color: rgba(255,255,255,0.55); }
+  .ap-card.ap-account .ap-name { color: white; }
+  .ap-card.ap-account .ap-name-en { color: #E9D5FF; }
+  .ap-card.ap-account .ap-desc { color: rgba(255,255,255,0.82); }
+  .ap-card.ap-account .ap-keys { border-top-color: rgba(255,255,255,0.18); }
+  .ap-card.ap-account .ap-key { color: rgba(255,255,255,0.6); }
+  .ap-card.ap-account .ap-key::before { color: #E9D5FF; }
+  .ap-card.ap-account .ap-key b { color: white; }
+
+  .ap-card.ap-project {
+    background: linear-gradient(160deg, #7C3AED 0%, #A855F7 100%);
+    color: white; border: 1px solid rgba(255,255,255,0.12);
+  }
+  .ap-card.ap-project::before {
+    content: ''; position: absolute;
+    top: 0; left: 0; right: 0; height: 2px;
+    background: rgba(255,255,255,0.3);
+  }
+  .ap-card.ap-project .ap-corner {
+    background: radial-gradient(circle, rgba(255,255,255,0.35), transparent 70%);
+    opacity: 0.35;
+  }
+  .ap-card.ap-project .ap-num { color: rgba(255,255,255,0.6); }
+  .ap-card.ap-project .ap-name { color: white; }
+  .ap-card.ap-project .ap-name-en { color: rgba(255,255,255,0.78); }
+  .ap-card.ap-project .ap-desc { color: rgba(255,255,255,0.88); }
+  .ap-card.ap-project .ap-keys { border-top-color: rgba(255,255,255,0.22); }
+  .ap-card.ap-project .ap-key { color: rgba(255,255,255,0.7); }
+  .ap-card.ap-project .ap-key::before { color: white; }
+  .ap-card.ap-project .ap-key b { color: white; }
+
+  .ap-card.ap-permission {
+    background: linear-gradient(160deg, #F5F3FF 0%, #FFFFFF 70%);
+    border: 1px solid var(--p-200);
+  }
+
+  .ap-chain {
+    display: flex; align-items: center; gap: 5px;
+    margin: 2px 0 0;
+    font-family: "SF Mono", Menlo, monospace;
+    font-size: 10px; font-weight: 700;
+    color: white; flex-wrap: wrap;
+  }
+  .ap-chain .ap-chain-node {
+    padding: 3px 7px; border-radius: 5px;
+    background: rgba(255,255,255,0.20);
+    border: 1px solid rgba(255,255,255,0.32);
+    color: white; letter-spacing: 0.02em;
+  }
+  .ap-chain .ap-chain-arrow {
+    color: rgba(255,255,255,0.7); font-size: 10px;
+  }
+  .ap-arrow {
+    align-self: center; flex-shrink: 0;
+    width: 28px; display: flex;
+    align-items: center; justify-content: center;
+    color: var(--p-300); margin: 0 -2px;
+  }
+  .ap-arrow svg { width: 24px; height: 12px; }
+
+  /* ───── Slide 20 · 工作台拼图 V2（演示版）—— 功能为主、场景为辅 ───── */
+  .puzzle-tile .tile-scenario {
+    font-size: 10.5px; font-weight: 700;
+    letter-spacing: 0.04em; opacity: 0.78; line-height: 1.4;
+  }
+  .puzzle-tile .tile-scenario .tile-scenario-name {
+    margin-left: 6px; opacity: 0.92; font-weight: 700;
+  }
+  .puzzle-tile .tile-funcs {
+    display: flex; flex-direction: column; gap: 6px;
+    margin-top: 12px; flex: 1; justify-content: center;
+  }
+  .puzzle-tile .tile-func {
+    display: flex; align-items: baseline; gap: 8px;
+    font-size: 19px; font-weight: 800;
+    letter-spacing: -0.012em; line-height: 1.15;
+  }
+  .puzzle-tile .tile-func .tile-func-num {
+    font-family: "SF Mono", Menlo, monospace;
+    font-size: 10px; font-weight: 700;
+    opacity: 0.55; letter-spacing: 0.06em;
+    flex-shrink: 0; width: 16px;
+  }
+  .puzzle-board.puzzle-4 .puzzle-tile .tile-func { font-size: 20px; }
+  .puzzle-tile.a .tile-func { color: white; }
+  .puzzle-tile.a .tile-func-num { color: rgba(255,255,255,0.55); }
+  .puzzle-tile.b .tile-func { color: white; }
+  .puzzle-tile.b .tile-func-num { color: var(--p-300); }
+  .puzzle-tile.e .tile-func { color: white; }
+  .puzzle-tile.e .tile-func-num { color: rgba(236,72,153,0.7); }
+  .puzzle-tile.d .tile-func { color: var(--ink); }
+  .puzzle-tile.d .tile-func-num { color: var(--p-700); }
+
+
+  /* ───── 棱镜 AI 功能介绍（4 张） ───── */
+  .cap-row {
+    display: flex; gap: 8px; flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  .cap-chip {
+    font-size: 11.5px; font-weight: 700;
+    padding: 5px 11px; border-radius: 999px;
+    background: var(--p-50); color: var(--p-700);
+    border: 1px solid var(--p-200);
+    letter-spacing: -0.005em;
+  }
+  .ai-example {
+    background: linear-gradient(160deg, #FAF5FF 0%, #FFFFFF 100%);
+    border: 1px solid var(--p-200);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-top: 12px;
+  }
+  .ai-example .label {
+    font-family: "SF Mono", Menlo, monospace;
+    font-size: 10px; color: var(--p-700);
+    letter-spacing: 0.1em; text-transform: uppercase;
+    font-weight: 700; margin-bottom: 6px;
+  }
+  .ai-example .q {
+    font-size: 12.5px; color: var(--ink);
+    line-height: 1.55; font-weight: 600;
+  }
+  .ai-example .q code {
+    background: var(--p-100); color: var(--p-700);
+    padding: 1px 6px; border-radius: 4px;
+    font-family: "SF Mono", Menlo, monospace;
+    font-size: 11px;
+  }
+  .entity-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 4px;
+  }
+  .entity-card {
+    background: white;
+    border: 1px solid var(--p-100);
+    border-radius: 10px;
+    padding: 10px 12px;
+    display: flex; flex-direction: column; gap: 3px;
+  }
+  .entity-card .ent-trigger {
+    font-family: "SF Mono", Menlo, monospace;
+    font-size: 12.5px; font-weight: 800;
+    color: var(--p-700); letter-spacing: -0.01em;
+  }
+  .entity-card .ent-desc {
+    font-size: 10.5px; color: var(--gray-2); line-height: 1.5;
+  }
+  .entity-card .ent-count {
+    font-size: 9.5px; color: var(--p-700); font-weight: 700;
+    margin-top: 2px;
+    font-family: "SF Mono", Menlo, monospace;
+    letter-spacing: 0.05em;
+  }
+  .feature-list .desc code {
+    background: var(--p-50); color: var(--p-700);
+    padding: 1px 6px; border-radius: 4px;
+    font-family: "SF Mono", Menlo, monospace;
+    font-size: 10.5px; font-weight: 600;
+  }
+  .feature-list .desc b { color: var(--p-ink); font-weight: 700; }
+
+  /* ─── 演示控制 ─── */
+  /* ───── Stage + scaled deck ───── */
+  .stage {
+    position: fixed; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    background:
+      radial-gradient(ellipse 50% 30% at 50% 50%, rgba(124, 58, 237, 0.10), transparent),
+      #0A0118;
+  }
+  .deck-wrap {
+    width: 1280px; height: 720px;
+    position: relative;
+    transform: scale(var(--scale, 1));
+    transform-origin: center center;
+  }
+  .deck {
+    width: 1280px; height: 720px;
+    position: relative;
+    background: #0A0118;
+    box-shadow: 0 0 80px rgba(168, 85, 247, 0.18),
+                0 30px 80px rgba(15, 5, 30, 0.5);
+    border-radius: 0;
+    overflow: hidden;
+  }
+
+  /* ───── Slide layout (1280×720, px units 1:1) ───── */
+  .slide {
+    position: absolute; inset: 0;
+    background: white;
+    padding: 52px 60px 60px;
+    overflow: hidden;
+    display: flex; flex-direction: column;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.35s ease;
+  }
+  .slide.active {
+    opacity: 1; pointer-events: auto; z-index: 1;
+  }
+
+  /* Slide meta */
+  .slide::before {
+    content: '';
+    position: absolute;
+    top: 22px; left: 60px;
+    width: 28px; height: 1px;
+    background: linear-gradient(90deg, var(--p-700), transparent);
+  }
+  .slide-meta {
+    position: absolute;
+    top: 22px; left: 60px;
+    display: flex; align-items: center; gap: 10px;
+    font-size: 10px; color: var(--gray-2);
+    letter-spacing: 0.12em; font-weight: 600;
+    text-transform: uppercase;
+    padding-top: 14px;
+  }
+  .slide-meta .accent { color: var(--p-700); font-weight: 700; }
+  .slide-meta .sep { color: var(--gray-4); }
+
+  /* ───── Cover (深色版，演示版 1280×720 尺寸调整后) ───── */
+  .slide.cover {
+    background:
+      radial-gradient(ellipse 90% 70% at 20% 30%, rgba(168, 85, 247, 0.35), transparent 60%),
+      radial-gradient(ellipse 70% 90% at 90% 80%, rgba(236, 72, 153, 0.22), transparent 60%),
+      radial-gradient(ellipse 60% 50% at 60% 30%, rgba(99, 102, 241, 0.12), transparent 50%),
+      linear-gradient(135deg, #1E0B3A 0%, #0A0118 100%);
+    color: white;
+    justify-content: space-between;
+    overflow: hidden;
+  }
+  .slide.cover::before, .slide.cover::after { content: ''; position: absolute; pointer-events: none; }
+  .slide.cover::before {
+    inset: 0;
+    background-image: radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.06) 1px, transparent 0);
+    background-size: 32px 32px;
+    opacity: 1;
+    width: auto; height: auto;
+    top: 0; left: 0; right: 0; bottom: 0;
+  }
+  .slide.cover::after {
+    width: 400px; height: 400px;
+    top: -150px; right: -100px;
+    background: var(--grad-glow);
+    border-radius: 50%;
+    filter: blur(100px);
+    opacity: 0.4;
+  }
+  /* 深色封面文字配色 */
+  .slide.cover .logo-mark span { color: white; }
+  .slide.cover .cover-date,
+  .slide.cover .date { color: var(--p-300); }
+  .slide.cover .eyebrow { color: var(--p-300); }
+  .slide.cover h1 { color: white; }
+  .slide.cover h1 .ink2 { color: rgba(255, 255, 255, 0.6); }
+  .slide.cover .subtitle { color: rgba(255, 255, 255, 0.8); }
+  .slide.cover .cover-bottom { color: rgba(255, 255, 255, 0.65); }
+  .slide.cover .cover-bottom .author { color: white; }
+  .cover-top { display: flex; justify-content: space-between; align-items: flex-start; position: relative; z-index: 1; }
+  .logo-mark { display: flex; align-items: center; gap: 12px; }
+  .logo-mark .dot {
+    width: 11px; height: 11px; border-radius: 50%;
+    background: var(--grad-glow);
+    box-shadow: 0 0 0 4px var(--p-100), 0 0 32px rgba(192, 38, 211, 0.6);
+  }
+  .logo-mark span { font-size: 13px; font-weight: 600; color: var(--ink); letter-spacing: -0.005em; }
+  .cover-date { font-size: 11px; color: var(--p-700); letter-spacing: 0.14em; font-weight: 700; text-transform: uppercase; font-variant-numeric: tabular-nums; }
+  .cover-center { position: relative; z-index: 1; flex: 1; display: flex; flex-direction: column; justify-content: center; }
+  .eyebrow {
+    font-size: 11px; color: var(--p-700);
+    letter-spacing: 0.18em; text-transform: uppercase;
+    font-weight: 700; margin-bottom: 28px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .eyebrow::before { content: ''; width: 28px; height: 1px; background: var(--grad-glow); }
+  .cover h1 {
+    font-size: 80px; font-weight: 600;
+    letter-spacing: -0.045em; line-height: 0.94;
+    color: var(--ink); margin-bottom: 28px;
+  }
+  .cover h1 .ink2 { color: var(--gray-2); font-weight: 400; }
+  .cover h1 .accent {
+    background: var(--grad-primary);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 700;
+  }
+  .cover .subtitle {
+    font-size: 18px; color: var(--gray-1);
+    font-weight: 400; max-width: 540px;
+    letter-spacing: -0.01em;
+  }
+  .cover-bottom {
+    position: relative; z-index: 1;
+    display: flex; justify-content: space-between; align-items: flex-end;
+    font-size: 11.5px; color: var(--gray-2); letter-spacing: 0.04em;
+  }
+  .cover-bottom .author { font-weight: 600; color: var(--ink-2); letter-spacing: -0.005em; }
+
+  /* ───── Divider ───── */
+  .divider {
+    background:
+      radial-gradient(ellipse 70% 80% at 30% 50%, rgba(124, 58, 237, 0.35), transparent 60%),
+      radial-gradient(ellipse 50% 60% at 80% 30%, rgba(236, 72, 153, 0.20), transparent 60%),
+      linear-gradient(135deg, #1E0B3A 0%, #0A0118 100%);
+    color: white; justify-content: center;
+  }
+  .divider::before { display: none; }
+  .divider .slide-meta { color: var(--p-300); }
+  .glow-orb { position: absolute; border-radius: 50%; filter: blur(80px); pointer-events: none; }
+  .glow-orb.a { width: 400px; height: 400px; top: -150px; right: -100px; background: var(--grad-glow); opacity: 0.35; }
+  .glow-orb.b { width: 400px; height: 400px; bottom: -200px; left: -100px; background: linear-gradient(135deg, #6366F1, #A855F7); opacity: 0.35; }
+  .grid-overlay {
+    position: absolute; inset: 0;
+    background-image: radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.06) 1px, transparent 0);
+    background-size: 32px 32px; pointer-events: none;
+  }
+  .part-label {
+    position: relative; z-index: 1;
+    font-size: 11px; color: var(--p-300);
+    letter-spacing: 0.22em; text-transform: uppercase;
+    margin-bottom: 24px; font-weight: 700;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .part-label::before, .part-label::after {
+    content: ''; width: 32px; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--p-400));
+  }
+  .part-label::after { background: linear-gradient(90deg, var(--p-400), transparent); }
+  .divider h2 {
+    position: relative; z-index: 1;
+    font-size: 76px; font-weight: 600;
+    letter-spacing: -0.035em; margin-bottom: 20px;
+    line-height: 0.98;
+  }
+  .divider h2 .accent {
+    background: var(--grad-glow);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 700;
+  }
+  .divider .sub {
+    position: relative; z-index: 1;
+    font-size: 16px; color: rgba(255, 255, 255, 0.6);
+    max-width: 640px; line-height: 1.6;
+  }
+
+  /* ───── Content slide ───── */
+  .slide h2.slide-title {
+    font-size: 32px; font-weight: 600;
+    letter-spacing: -0.025em; line-height: 1.12;
+    margin-bottom: 10px; margin-top: 32px;
+  }
+  .slide h2.slide-title .accent-text {
+    background: var(--grad-primary);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .slide h2.slide-title .status {
+    font-size: 10px; font-weight: 700;
+    padding: 3px 9px; border-radius: 999px;
+    letter-spacing: 0.06em; margin-left: 12px;
+    vertical-align: middle;
+    display: inline-flex; align-items: center; gap: 4px;
+    text-transform: uppercase;
+  }
+  .slide h2.slide-title .status.live { background: var(--live-bg); color: var(--live); }
+  .slide h2.slide-title .status.live::before { content: ''; width: 4px; height: 4px; background: var(--live); border-radius: 50%; box-shadow: 0 0 6px var(--live); }
+  .slide h2.slide-title .status.dev { background: var(--dev-bg); color: var(--dev); }
+  .slide h2.slide-title .status.dev::before { content: ''; width: 4px; height: 4px; background: var(--dev); border-radius: 50%; }
+  .slide h2.slide-title .status.plan { background: var(--plan-bg); color: var(--plan); }
+  .slide h2.slide-title .status.plan::before { content: ''; width: 4px; height: 4px; background: var(--plan); border-radius: 50%; }
+  .slide .slide-sub {
+    font-size: 14px; color: var(--gray-1);
+    margin-bottom: 28px; font-weight: 400;
+    letter-spacing: -0.005em; max-width: 720px;
+  }
+  .slide .slide-sub strong { color: var(--p-700); font-weight: 700; }
+  .slide-body { flex: 1; display: flex; gap: 28px; overflow: hidden; }
+  .body-text { flex: 1; min-width: 0; }
+  .body-visual {
+    flex: 1.15; min-width: 0;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+  }
+  .body-visual img, .body-visual video {
+    max-width: 100%; max-height: 100%; object-fit: contain; display: block;
+  }
+  .body-visual .placeholder {
+    color: var(--gray-2); font-size: 12px;
+    text-align: center; padding: 24px; line-height: 1.6;
+  }
+  .body-visual .placeholder b {
+    display: block; font-size: 10px;
+    color: var(--p-700); margin-bottom: 8px;
+    letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700;
+  }
+  .body-visual .placeholder code {
+    display: inline-block; margin-top: 8px;
+    font-family: "SF Mono", Menlo, monospace;
+    font-size: 10px; color: var(--gray-1);
+    background: white;
+    padding: 3px 7px; border-radius: 4px;
+    border: 1px solid var(--gray-5);
+  }
+
+  /* Feature list */
+  .feature-list { margin-top: 2px; }
+  .feature-list li {
+    list-style: none; padding: 10px 0;
+    border-bottom: 1px solid var(--gray-7);
+    display: flex; align-items: flex-start; gap: 12px;
+    font-size: 13px;
+  }
+  .feature-list li:last-child { border-bottom: none; }
+  .feature-list li .marker {
+    width: 14px; height: 14px;
+    margin-top: 3px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .feature-list li .marker::before {
+    content: ''; width: 5px; height: 5px;
+    background: var(--grad-glow); border-radius: 50%;
+    box-shadow: 0 0 0 2px var(--p-50);
+  }
+  .feature-list li .text { flex: 1; }
+  .feature-list li .label {
+    font-weight: 600; color: var(--ink);
+    font-size: 13px; letter-spacing: -0.005em;
+  }
+  .feature-list li .label .mini {
+    display: inline-flex; align-items: center; gap: 3px;
+    font-size: 9px; padding: 2px 7px;
+    border-radius: 999px; margin-left: 7px;
+    vertical-align: middle; font-weight: 700;
+    letter-spacing: 0.04em; text-transform: uppercase;
+  }
+  .feature-list li .label .mini::before { content: ''; width: 3px; height: 3px; border-radius: 50%; }
+  .feature-list li .label .mini.dev { background: var(--dev-bg); color: var(--dev); }
+  .feature-list li .label .mini.dev::before { background: var(--dev); }
+  .feature-list li .label .mini.plan { background: var(--plan-bg); color: var(--plan); }
+  .feature-list li .label .mini.plan::before { background: var(--plan); }
+  .feature-list li .desc {
+    font-size: 11.5px; color: var(--gray-1);
+    margin-top: 2px; line-height: 1.55;
+  }
+
+  /* ───── SLIDE 2 · step flow ───── */
+  .step-flow { display: flex; flex-direction: column; gap: 20px; flex: 1; margin-top: 4px; }
+  .step-track { display: grid; grid-template-columns: repeat(6, 1fr); position: relative; }
+  .step-track::before {
+    content: ''; position: absolute;
+    top: 24px;
+    left: calc(100% / 12); right: calc(100% / 12);
+    height: 2px;
+    background: linear-gradient(90deg, var(--p-200), var(--p-400), var(--p-500), var(--pink-400), var(--pink-500));
+    opacity: 0.5;
+  }
+  .step-node {
+    display: flex; flex-direction: column; align-items: center;
+    text-align: center; position: relative; z-index: 1;
+    opacity: 0;
+    animation: stepFadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  .slide.active .step-node:nth-child(1) { animation-delay: 0.10s; }
+  .slide.active .step-node:nth-child(2) { animation-delay: 0.22s; }
+  .slide.active .step-node:nth-child(3) { animation-delay: 0.34s; }
+  .slide.active .step-node:nth-child(4) { animation-delay: 0.46s; }
+  .slide.active .step-node:nth-child(5) { animation-delay: 0.58s; }
+  .slide.active .step-node:nth-child(6) { animation-delay: 0.70s; }
+  @keyframes stepFadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .step-node .circle {
+    width: 48px; height: 48px;
+    border-radius: 50%; background: white;
+    border: 2px solid var(--p-200);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; font-weight: 700;
+    color: var(--p-700);
+    margin-bottom: 12px;
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.08);
+  }
+  .step-node .step-title { font-size: 12px; font-weight: 700; color: var(--ink); margin-bottom: 2px; }
+  .step-node .step-cat { font-size: 9px; color: var(--p-700); letter-spacing: 0.14em; font-weight: 700; text-transform: uppercase; }
+  .step-scenes { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+  .step-scene {
+    background: var(--p-50);
+    border: 1px solid var(--p-100);
+    border-radius: 9px;
+    padding: 11px 13px;
+    opacity: 0;
+    animation: stepFadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  .slide.active .step-scenes .step-scene:nth-child(1) { animation-delay: 0.85s; }
+  .slide.active .step-scenes .step-scene:nth-child(2) { animation-delay: 0.95s; }
+  .slide.active .step-scenes .step-scene:nth-child(3) { animation-delay: 1.05s; }
+  .slide.active .step-scenes .step-scene:nth-child(4) { animation-delay: 1.15s; }
+  .slide.active .step-scenes .step-scene:nth-child(5) { animation-delay: 1.25s; }
+  .slide.active .step-scenes .step-scene:nth-child(6) { animation-delay: 1.35s; }
+  .step-scene .pain-icon { font-size: 10px; color: var(--p-600); margin-bottom: 5px; letter-spacing: 0.08em; font-weight: 700; }
+  .step-scene .pain-text { font-size: 10.5px; color: var(--gray-1); line-height: 1.5; }
+
+  /* ───── SLIDE 3 · mapping ───── */
+  .mapping-grid {
+    flex: 1; display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    grid-template-rows: auto auto;
+    gap: 10px; margin-top: 4px;
+  }
+  .mapping-step {
+    background: linear-gradient(180deg, var(--ink) 0%, var(--ink-2) 100%);
+    color: white; border-radius: 10px;
+    padding: 12px 14px;
+    position: relative; overflow: hidden;
+  }
+  .mapping-step::before {
+    content: ''; position: absolute;
+    top: 0; left: 0; right: 0; height: 2px;
+    background: var(--grad-glow);
+  }
+  .mapping-step .step-n { font-size: 9px; color: var(--p-300); letter-spacing: 0.16em; font-weight: 700; margin-bottom: 5px; }
+  .mapping-step .step-name { font-size: 12px; font-weight: 600; color: white; letter-spacing: -0.005em; line-height: 1.3; }
+  .mapping-fn { background: white; border: 1px solid var(--p-200); border-radius: 10px; padding: 12px 14px; }
+  .mapping-fn .fn-modules { display: flex; flex-wrap: wrap; gap: 5px; }
+  .mapping-fn .fn-tag { font-size: 10.5px; padding: 3px 8px; background: var(--p-50); color: var(--p-700); border-radius: 5px; font-weight: 600; letter-spacing: -0.005em; }
+  .mapping-fn .fn-tag.muted { background: var(--gray-7); color: var(--gray-2); font-weight: 500; }
+  .mapping-bottom {
+    margin-top: 14px; padding: 14px 20px;
+    background: linear-gradient(135deg, var(--p-50) 0%, white 100%);
+    border: 1px solid var(--p-200);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: space-between; gap: 20px;
+  }
+  .mapping-bottom .key-tag { display: flex; align-items: center; gap: 9px; font-size: 12px; font-weight: 600; color: var(--ink); }
+  .mapping-bottom .key-tag .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--grad-glow); box-shadow: 0 0 10px rgba(192, 38, 211, 0.5); }
+  .mapping-bottom .key-note { font-size: 11px; color: var(--gray-1); flex: 1; text-align: right; }
+  .mapping-bottom .key-note strong { color: var(--p-700); font-weight: 700; }
+
+  /* ───── SLIDE 5 · data arch ───── */
+  .data-arch { flex: 1; display: flex; flex-direction: column; gap: 14px; margin-top: 4px; }
+  .data-arch-header {
+    display: flex; align-items: center; gap: 11px;
+    font-size: 10px; color: var(--gray-2);
+    letter-spacing: 0.12em; text-transform: uppercase; font-weight: 600;
+  }
+  .data-arch-header .line { flex: 1; height: 1px; background: linear-gradient(90deg, var(--gray-5), transparent); }
+  .data-flow { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .data-node {
+    background: white;
+    border: 1px solid var(--p-100);
+    border-radius: 10px;
+    padding: 14px 16px;
+    display: flex; flex-direction: column; gap: 6px;
+    position: relative; overflow: hidden;
+    opacity: 0;
+    animation: dataFlowIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  .slide.active .data-node:nth-child(1) { animation-delay: 0.15s; }
+  .slide.active .data-node:nth-child(2) { animation-delay: 0.25s; }
+  .slide.active .data-node:nth-child(3) { animation-delay: 0.35s; }
+  .slide.active .data-node:nth-child(4) { animation-delay: 0.45s; }
+  .slide.active .data-node:nth-child(5) { animation-delay: 0.55s; }
+  .slide.active .data-node:nth-child(6) { animation-delay: 0.65s; }
+  @keyframes dataFlowIn { from { opacity: 0; transform: translateY(10px) scale(0.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
+  .data-node::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--grad-glow); opacity: 1; }
+  .data-node.muted { background: var(--gray-7); border-color: transparent; }
+  .data-node.muted::before { background: var(--gray-4); }
+  .data-node .src-tag { font-size: 9px; color: var(--p-700); letter-spacing: 0.1em; font-weight: 700; text-transform: uppercase; }
+  .data-node.muted .src-tag { color: var(--gray-2); }
+  .data-node .src-name { font-size: 15px; font-weight: 600; color: var(--ink); letter-spacing: -0.005em; }
+  .data-node.muted .src-name { color: var(--gray-1); }
+  .data-node .src-desc { font-size: 10.5px; color: var(--gray-1); line-height: 1.5; }
+  .data-arch-merge {
+    background: var(--grad-deep);
+    color: white; border-radius: 12px;
+    padding: 14px 20px;
+    display: flex; justify-content: space-between; align-items: center;
+    box-shadow: 0 8px 24px rgba(91, 33, 182, 0.3);
+    position: relative; overflow: hidden;
+    opacity: 0;
+    animation: dataFlowIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  .slide.active .data-arch-merge { animation-delay: 0.75s; }
+  .data-arch-merge::before {
+    content: ''; position: absolute;
+    top: -50%; right: -10%;
+    width: 180px; height: 180px;
+    background: radial-gradient(circle, rgba(236, 72, 153, 0.3), transparent 70%);
+    pointer-events: none;
+  }
+  .data-arch-merge .merge-label { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: var(--p-300); }
+  .data-arch-merge .merge-title { font-size: 17px; font-weight: 600; color: white; letter-spacing: -0.01em; margin-top: 2px; }
+  .data-arch-merge .merge-note {
+    font-size: 11px;
+    background: rgba(255,255,255,0.1);
+    padding: 6px 11px; border-radius: 6px;
+    border: 1px solid rgba(255,255,255,0.08);
+    color: white; position: relative; z-index: 1;
+  }
+
+  /* ───── SLIDE 6 · two col ───── */
+  .two-col-visual { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; flex: 1; }
+  .panel {
+    background: white;
+    border: 1px solid var(--p-100);
+    border-radius: 12px;
+    padding: 16px;
+    display: flex; flex-direction: column; gap: 10px;
+    overflow: hidden;
+  }
+  .panel-header { display: flex; align-items: center; justify-content: space-between; }
+  .panel-title { font-size: 13px; font-weight: 600; color: var(--ink); letter-spacing: -0.005em; }
+  .panel-subtitle { font-size: 10.5px; color: var(--gray-2); margin-top: 2px; }
+  .panel-tag { font-size: 9px; color: var(--p-700); background: var(--p-100); padding: 3px 8px; border-radius: 999px; letter-spacing: 0.1em; font-weight: 700; text-transform: uppercase; }
+  .panel .img-wrap {
+    flex: 1; min-height: 0;
+    background: var(--gray-7);
+    border-radius: 8px; overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .panel .img-wrap img, .panel .img-wrap video { width: 100%; height: 100%; object-fit: contain; }
+  .panel-note {
+    font-size: 10.5px; color: var(--gray-1); line-height: 1.5;
+    padding-top: 4px; border-top: 1px solid var(--gray-7);
+  }
+
+  /* ───── SLIDE 7 · multi dim ───── */
+  .multi-dim-tags { display: flex; gap: 10px; margin-top: 4px; }
+  .dim-tag {
+    flex: 1; background: white;
+    border: 1px solid var(--p-100);
+    border-radius: 10px;
+    padding: 12px 16px;
+    display: flex; flex-direction: column; gap: 5px;
+    position: relative; overflow: hidden;
+  }
+  .dim-tag::before { content: ''; position: absolute; top: 0; left: 0; width: 24px; height: 2px; background: var(--grad-glow); }
+  .dim-tag .dim-axis { font-family: "SF Mono", Menlo, monospace; font-size: 10px; color: var(--p-700); font-weight: 700; margin-bottom: 2px; }
+  .dim-tag .dim-title { font-size: 12.5px; font-weight: 600; color: var(--ink); letter-spacing: -0.005em; }
+  .dim-tag .dim-desc { font-size: 10.5px; color: var(--gray-1); line-height: 1.5; }
+  .multi-dim-image {
+    flex: 1; margin-top: 14px;
+    background: white;
+    border: 1px solid var(--p-100);
+    border-radius: 12px;
+    overflow: hidden; position: relative;
+  }
+  .multi-dim-image img { width: 100%; height: 100%; object-fit: contain; display: block; }
+  .multi-dim-image .img-overlay {
+    position: absolute; top: 12px; right: 12px;
+    background: rgba(15, 5, 30, 0.92); backdrop-filter: blur(8px);
+    color: white; padding: 5px 11px;
+    border-radius: 999px;
+    font-size: 9px; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase;
+  }
+
+  /* ───── SLIDE 20 · puzzle ───── */
+  .puzzle-board {
+    flex: 1; display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    grid-template-rows: repeat(6, 1fr);
+    gap: 9px; margin-top: 4px;
+  }
+  .puzzle-tile {
+    border-radius: 12px; padding: 14px 16px;
+    display: flex; flex-direction: column; justify-content: space-between;
+    position: relative; overflow: hidden;
+  }
+  .puzzle-tile .tile-head { display: flex; justify-content: space-between; align-items: flex-start; }
+  .puzzle-tile .tile-num { font-size: 10px; letter-spacing: 0.14em; font-weight: 700; text-transform: uppercase; opacity: 0.7; }
+  .puzzle-tile .tile-name { font-weight: 700; letter-spacing: -0.012em; line-height: 1.2; }
+  .puzzle-tile .tile-tools { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 7px; }
+  .puzzle-tile .tool-chip { font-size: 10px; padding: 3px 7px; border-radius: 5px; font-weight: 600; }
+  .puzzle-tile.a {
+    grid-column: span 5; grid-row: span 3;
+    background: var(--grad-primary); color: white;
+    box-shadow: 0 8px 24px rgba(124, 58, 237, 0.3);
+  }
+  .puzzle-tile.a::before {
+    content: ''; position: absolute;
+    top: -50%; right: -20%;
+    width: 200px; height: 200px;
+    background: radial-gradient(circle, rgba(255,255,255,0.18), transparent 70%);
+    pointer-events: none;
+  }
+  .puzzle-tile.a .tile-name { font-size: 22px; color: white; }
+  .puzzle-tile.a .tool-chip { background: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.12); }
+  .puzzle-tile.b {
+    grid-column: span 4; grid-row: span 3;
+    background: linear-gradient(180deg, var(--ink) 0%, var(--ink-2) 100%);
+    color: white;
+  }
+  .puzzle-tile.b::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--grad-glow); }
+  .puzzle-tile.b .tile-num { color: var(--p-300); }
+  .puzzle-tile.b .tile-name { font-size: 18px; color: white; }
+  .puzzle-tile.b .tool-chip { background: rgba(168, 85, 247, 0.2); color: var(--p-200); border: 1px solid rgba(168, 85, 247, 0.15); }
+  .puzzle-tile.c {
+    grid-column: span 3; grid-row: span 3;
+    background: linear-gradient(160deg, var(--p-100) 0%, white 100%);
+    border: 1px solid var(--p-200);
+  }
+  .puzzle-tile.c .tile-num { color: var(--p-700); }
+  .puzzle-tile.c .tile-name { font-size: 16px; color: var(--ink); }
+  .puzzle-tile.c .tool-chip { background: white; color: var(--p-700); border: 1px solid var(--p-200); }
+  .puzzle-tile.d {
+    grid-column: span 4; grid-row: span 3;
+    background: white; border: 1px solid var(--p-200);
+  }
+  .puzzle-tile.d .tile-num { color: var(--p-700); }
+  .puzzle-tile.d .tile-name { font-size: 17px; color: var(--ink); }
+  .puzzle-tile.d .tool-chip { background: var(--p-50); color: var(--p-700); border: 1px solid var(--p-200); }
+  .puzzle-tile.e {
+    grid-column: span 5; grid-row: span 3;
+    background: linear-gradient(135deg, #1E0B3A 0%, #4C1D95 60%, #6B21A8 100%);
+    color: white;
+  }
+  .puzzle-tile.e::before {
+    content: ''; position: absolute;
+    bottom: -50%; left: -20%;
+    width: 220px; height: 220px;
+    background: radial-gradient(circle, rgba(236, 72, 153, 0.25), transparent 70%);
+    pointer-events: none;
+  }
+  .puzzle-tile.e .tile-num { color: var(--pink-400); }
+  .puzzle-tile.e .tile-name { font-size: 18px; color: white; }
+  .puzzle-tile.e .tool-chip { background: rgba(255,255,255,0.12); color: white; border: 1px solid rgba(255,255,255,0.1); }
+  .puzzle-tile.f {
+    grid-column: span 3; grid-row: span 3;
+    background: white; border: 1px solid var(--p-200);
+  }
+  .puzzle-tile.f .tile-num { color: var(--p-700); }
+  .puzzle-tile.f .tile-name { font-size: 16px; color: var(--ink); }
+  .puzzle-tile.f .tool-chip { background: var(--p-50); color: var(--p-700); border: 1px solid var(--p-200); }
+
+  /* ───── QA ───── */
+  .qa-list { flex: 1; overflow: hidden; margin-top: 4px; }
+  .qa-item {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--gray-7);
+    display: flex; gap: 14px; align-items: flex-start;
+  }
+  .qa-item:last-child { border-bottom: none; }
+  .qa-item .q-mark { font-size: 12px; font-weight: 700; color: var(--p-700); margin-top: 1px; background: var(--p-50); padding: 2px 7px; border-radius: 6px; }
+  .qa-item .qa-body { flex: 1; }
+  .qa-item .q { font-size: 13px; font-weight: 600; margin-bottom: 3px; color: var(--ink); letter-spacing: -0.005em; }
+  .qa-item .a { font-size: 11.5px; color: var(--gray-1); line-height: 1.55; }
+  .qa-closing {
+    margin-top: 14px; padding: 12px 16px;
+    background: var(--p-50);
+    border-left: 3px solid var(--p-500);
+    border-radius: 0 10px 10px 0;
+    font-size: 11.5px; color: var(--gray-1); line-height: 1.55;
+  }
+
+  /* ───── Controls ───── */
+  .controls {
+    position: fixed;
+    bottom: 24px; left: 50%;
+    transform: translateX(-50%);
+    z-index: 100;
+    display: flex; align-items: center; gap: 12px;
+    background: rgba(10, 1, 24, 0.85);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(168, 85, 247, 0.25);
+    border-radius: 999px;
+    padding: 8px 16px;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .controls.visible { opacity: 1; }
+  .ctrl-btn {
+    background: transparent; border: none;
+    color: rgba(255,255,255,0.7); cursor: pointer;
+    width: 30px; height: 30px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+  }
+  .ctrl-btn:hover { background: rgba(168, 85, 247, 0.2); color: white; }
+  .ctrl-btn svg { width: 13px; height: 13px; }
+  .ctrl-counter {
+    color: white; font-size: 12px; font-weight: 600;
+    padding: 0 10px;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.05em; min-width: 56px;
+    text-align: center;
+  }
+  .ctrl-counter .current { color: var(--p-300); }
+  .ctrl-counter .total { color: rgba(255,255,255,0.4); }
+
+  /* Progress bar */
+  .progress {
+    position: fixed; top: 0; left: 0; right: 0;
+    height: 3px; background: rgba(168, 85, 247, 0.15);
+    z-index: 99;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--grad-glow);
+    transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 0 12px rgba(168, 85, 247, 0.6);
+  }
+
+  /* Hint */
+  .hint {
+    position: fixed; bottom: 24px; right: 24px;
+    z-index: 90;
+    background: rgba(10, 1, 24, 0.85);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(168, 85, 247, 0.15);
+    color: rgba(255,255,255,0.7);
+    padding: 10px 14px; border-radius: 8px;
+    font-size: 11px; letter-spacing: 0.04em;
+    display: flex; align-items: center; gap: 10px;
+    opacity: 0;
+    animation: hintShow 0.6s ease forwards;
+    animation-delay: 0.8s;
+  }
+  @keyframes hintShow { from { opacity: 0; transform: translateY(8px); } to { opacity: 0.9; transform: translateY(0); } }
+  .hint .kbd {
+    background: rgba(255,255,255,0.1);
+    padding: 2px 6px; border-radius: 4px;
+    font-family: "SF Mono", Menlo, monospace;
+    font-size: 10px; color: white;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+  body.dismiss-hint .hint { display: none; }
+  body.idle { cursor: none; }
+  body.idle .controls { opacity: 0; }
+
+  html, body { width: 100%; height: 100%; overflow: hidden; padding: 0 !important; }
+  body { user-select: none; background: #0A0118; }
+  body > .container { display: none; }
+</style>
+</head>
+<body>
+
+<div class="progress">
+  <div class="progress-fill" id="progressFill"></div>
+</div>
+
+<div class="stage">
+  <div class="deck-wrap" id="deckWrap">
+    <div class="deck">
+
+      <div class="slide cover active">
+            <div class="glow-orb-b"></div>
+            <div class="cover-top">
+              <div class="logo-mark"><span class="dot"></span><span>棱镜 · Prism</span></div>
+              <div class="date">2026 · 05 · 15</div>
+            </div>
+            <div class="cover-center">
+              <div class="eyebrow">产品功能介绍 · 销售素材</div>
+              <h1>
+                <span class="ink2">棱镜 KFS</span><br>
+                <span class="accent">投放全链路工具</span>
+              </h1>
+              <p class="subtitle">小红书 KFS 投放 · 数据 · 内容 · 巡查 · 复盘 · 一站搞定</p>
+            </div>
+            <div class="cover-bottom">
+              <div class="author">棱镜 · Prism</div>
+              <div>26 SLIDES · 2026</div>
+            </div>
+          </div>
+
+      <!-- NEW Slide 2 · 产品价值主张 -->
+      <div class="slide">
+            <div class="slide-meta"><span class="accent">关于棱镜</span><span class="sep">·</span><span>产品定位</span></div>
+            <h2 class="slide-title">棱镜 · <span class="accent-text">小红书 KFS 投放数据 + 智能分析平台</span></h2>
+            <p class="slide-sub">不只是看数据 · 帮你 <strong>看得更深 · 跑得更快 · 复盘更准</strong></p>
+            <div class="slide-body" style="flex-direction: column; gap: 16px; justify-content: center; padding: 12px 0;">
+              <div class="multi-dim-tags multi-dim-large">
+                <div class="dim-tag dim-tag-large dim-purple">
+                  <div class="dim-num">01</div>
+                  <div class="dim-axis">数据更全</div>
+                  <div class="dim-title">跨平台数据<br>笔记 ID 级关联</div>
+                  <div class="dim-desc">聚光后端 + 小红星 + 蒲公英 + 笔记自然数据 —— 按笔记 ID 自动拼接，一条笔记一行数据</div>
+                </div>
+                <div class="dim-tag dim-tag-large dim-mid">
+                  <div class="dim-num">02</div>
+                  <div class="dim-axis">看得更深</div>
+                  <div class="dim-title">内容标签 +<br>评论 + 竞品全维</div>
+                  <div class="dim-desc">不只看数据看板，还能看评论区舆情、竞品对标、内容标签下钻 —— 找规律、找机会、找雷区</div>
+                </div>
+                <div class="dim-tag dim-tag-large dim-light">
+                  <div class="dim-num">03</div>
+                  <div class="dim-axis">跑得更快</div>
+                  <div class="dim-title">棱镜 AI +<br>自动盯盘</div>
+                  <div class="dim-desc">自然语言问数 · AI 自动跑数 · 定时推送飞书 —— 替代手工拉数、手搓周报</div>
+                </div>
+              </div>
+            </div>
+            <span class="slide-num">02 / 26</span>
+          </div>
+
+      <div class="slide">
+            <div class="slide-meta"><span class="accent">投放全链路</span><span class="sep">·</span><span>4 个核心场景</span></div>
+            <h2 class="slide-title">棱镜覆盖 KFS <span class="accent-text">投放全链路 · 4 个核心场景</span></h2>
+            <p class="slide-sub">投前规划一次 · 投中两个场景循环跑 · 投后复盘一次 —— 每一段都有对应的棱镜工具</p>
+            <div class="phase-board">
+              <div class="phase-col">
+                <div class="phase-header"><span class="num">1</span><span>投 前 · 规划</span></div>
+                <div class="phase-card before">
+                  <div class="pc-num">SCENARIO ①</div>
+                  <div class="pc-name">接 brief<br>做规划</div>
+                  <div class="pc-detail">· 看客户历史<br>· 看竞品在做什么<br>· 看品类基线<br>· 出策略和预算分配</div>
+                </div>
+              </div>
+              <div class="phase-col mid">
+                <div class="phase-header"><span class="num">2</span><span>投 中 · 并行</span></div>
+                <div class="phase-card mid-1">
+                  <div class="pc-num">SCENARIO ②</div>
+                  <div class="pc-name">盯执行 · 管笔记</div>
+                  <div class="pc-detail">笔记状态 / 实时数据 / 异常处理 / 客户老板临时问</div>
+                </div>
+                <div class="phase-card mid-2">
+                  <div class="pc-num">SCENARIO ③</div>
+                  <div class="pc-name">听用户 · 巡舆情</div>
+                  <div class="pc-detail">负评巡查 / 用户讨论 / 找内容机会点</div>
+                </div>
+              </div>
+              <div class="phase-col">
+                <div class="phase-header"><span class="num">3</span><span>投 后 · 复盘</span></div>
+                <div class="phase-card after">
+                  <div class="pc-num">SCENARIO ④</div>
+                  <div class="pc-name">写复盘<br>做交付</div>
+                  <div class="pc-detail">· 找好笔记<br>· 找规律<br>· 给客户结论<br>· 写周报月报</div>
+                </div>
+              </div>
+            </div>
+            <span class="slide-num">03 / 26</span>
+          </div>
+
+      <div class="slide divider">
+            <div class="glow-orb a"></div>
+            <div class="glow-orb b"></div>
+            <div class="grid-overlay"></div>
+            <div class="part-label">PART 1 / 2</div>
+            <h2>棱镜<span class="accent">有什么</span>、<br>怎么用。</h2>
+            <p class="sub">9 个已上线功能 · 7 个模块 · 每个都带真实使用截图</p>
+            <span class="slide-num" style="color: rgba(255,255,255,0.4);">04 / 26</span>
+          </div>
+
+      <div class="slide">
+            <div class="slide-meta"><span class="accent">模块①</span><span class="sep">·</span><span>数据接入</span></div>
+            <h2 class="slide-title">数据接入与拼接<span class="status live">已上线</span></h2>
+            <p class="slide-sub">把多平台数据按笔记 ID 自动关联 · <strong>一条笔记一行数据</strong> · 跨平台数据融合</p>
+      
+            <div class="data-arch">
+              <div class="data-arch-header">
+                <span>多个数据源</span><span class="line"></span><span>按笔记 ID 自动 JOIN</span>
+              </div>
+              <div class="data-flow" style="grid-template-columns: repeat(2, 1fr); gap: 14px;">
+                <div class="data-node">
+                  <div class="src-tag">投放数据</div>
+                  <div class="src-name">聚光</div>
+                  <div class="src-desc">消耗 / 点击 / CPUV / 笔记表现</div>
+                </div>
+                <div class="data-node">
+                  <div class="src-tag">前端互动</div>
+                  <div class="src-name">蒲公英 KOL</div>
+                  <div class="src-desc">达人合作 / 点赞 / 收藏 / 评论</div>
+                </div>
+                <div class="data-node">
+                  <div class="src-tag">效果数据</div>
+                  <div class="src-name">淘宝星河</div>
+                  <div class="src-desc">红书 → 天猫店引流转化</div>
+                </div>
+                <div class="data-node">
+                  <div class="src-tag">内容维度</div>
+                  <div class="src-name">一方内容标签</div>
+                  <div class="src-desc">客户标签体系 · 按标签筛笔记</div>
+                </div>
+              </div>
+      
+              <a href="https://zdtool.zalldigital.cn/analysisTemplateMain/bottomData?projectId=549&reportId=2041357392735948801&templateKey=note_taobao_and_dandelion_bottom_data" target="_blank" rel="noopener" class="data-arch-merge" style="text-decoration: none;">
+                <div>
+                  <div class="merge-label">输出 · 点击进入</div>
+                  <div class="merge-title">一张笔记级跨平台融合大表</div>
+                </div>
+                <div class="merge-note">5 个浏览器标签 → 1 个页面 · 1 小时 → 1 分钟</div>
+              </a>
+            </div>
+            <span class="slide-num">05 / 26</span>
+          </div>
+
+      <div class="slide">
+            <div class="slide-meta"><span class="accent">模块②</span><span class="sep">·</span><span>看板 · 1/2</span></div>
+            <h2 class="slide-title">四象限 + 热力图<span class="status live">已上线</span></h2>
+            <p class="slide-sub">客户感知最强的两张图 · 5 秒出图 · 取代手搓 1 小时</p>
+            <div class="two-col-visual">
+              <a href="https://zdtool.zalldigital.cn/analysisTemplateMain/noteQuadrantAnalysis?reportId=2053715449319084034&projectId=967&templateType=NOTE_QUADRANT_ANALYSIS&id=2055108809575489537" target="_blank" rel="noopener" class="panel" style="text-decoration: none; color: inherit;">
+                <div class="panel-header">
+                  <div>
+                    <div class="panel-title">四象限分析</div>
+                    <div class="panel-subtitle">投入 × 价值 · 找明星 / 现金牛 / 瘦狗</div>
+                  </div>
+                  <span class="panel-tag" style="background: var(--p-ink); color: white;">QUADRANT · 点击跳转 ↗</span>
+                </div>
+                <div class="img-wrap">
+                  <img src="assets/ss_quadrant.jpg" alt="四象限分析">
+                </div>
+                <div class="panel-note">把消耗 × ROI 拆到四个象限 · 一眼定位投流问题</div>
+              </a>
+              <a href="https://zdtool.zalldigital.cn/analysisTemplateMain/noteQuadrantAnalysis?reportId=2053715449319084034&projectId=967&templateType=NOTE_QUADRANT_ANALYSIS&id=2055108809575489537" target="_blank" rel="noopener" class="panel" style="text-decoration: none; color: inherit;">
+                <div class="panel-header">
+                  <div>
+                    <div class="panel-title">热力图叉乘</div>
+                    <div class="panel-subtitle">内容 × 人群 / 时段 × 笔记 · 找强相关组合</div>
+                  </div>
+                  <span class="panel-tag" style="background: var(--p-ink); color: white;">HEATMAP · 点击跳转 ↗</span>
+                </div>
+                <div class="img-wrap">
+                  <img src="assets/ss_heatmap_new.jpg" alt="热力图">
+                </div>
+                <div class="panel-note">非线性组合的机会点 · 内容方向选择必备</div>
+              </a>
+            </div>
+            <span class="slide-num">06 / 26</span>
+          </div>
+
+      <div class="slide">
+            <div class="slide-meta"><span class="accent">模块②</span><span class="sep">·</span><span>看板 · 2/2</span></div>
+            <h2 class="slide-title">同两张图，<span class="accent-text">能下钻看三个维度</span><span class="status live">已上线</span></h2>
+            <p class="slide-sub">前面的四象限 + 热力图，把笔记跟 <strong>投放动作</strong> 一起看 —— 自带 3 个维度可切换</p>
+            <div class="slide-body" style="flex-direction: column; gap: 14px; justify-content: center; padding: 8px 0;">
+              <div class="multi-dim-tags multi-dim-large">
+                <div class="dim-tag dim-tag-large dim-purple">
+                  <div class="dim-num">01</div>
+                  <div class="dim-axis">笔记 × 点位</div>
+                  <div class="dim-title">不同投放点位的<br>表现差异</div>
+                  <div class="dim-desc">信息流 / 搜索 / 互动 / 视频流 —— 一条笔记在哪个点位 CPUV 最低、哪个点位拖后腿</div>
+                </div>
+                <div class="dim-tag dim-tag-large dim-mid">
+                  <div class="dim-num">02</div>
+                  <div class="dim-axis">笔记 × 人群</div>
+                  <div class="dim-title">人群定向的<br>命中差异</div>
+                  <div class="dim-desc">同一条笔记在不同年龄 / 兴趣 / 行为定向下的 CPUV 差异 · 定位精准度问题</div>
+                </div>
+                <div class="dim-tag dim-tag-large dim-light">
+                  <div class="dim-num">03</div>
+                  <div class="dim-axis">笔记 × 关键词</div>
+                  <div class="dim-title">搜索词带来的<br>笔记表现</div>
+                  <div class="dim-desc">哪些关键词带的笔记跑量大、互动好、CPUV 低 · 找搜索投放的内容机会</div>
+                </div>
+              </div>
+            </div>
+            <span class="slide-num">07 / 26</span>
+          </div>
+
+      <div class="slide">
+            <div class="slide-meta"><span class="accent">模块③</span><span class="sep">·</span><span>笔记管理</span></div>
+            <h2 class="slide-title">笔记管理<span class="status live">已上线</span></h2>
+            <p class="slide-sub">一条笔记 = 一行数据 · 一站式看状态 / 数据 / 评论 / 标签</p>
+            <div class="slide-body">
+              <div class="body-text">
+                <ul class="feature-list">
+                  <li>
+                    <span class="marker"></span>
+                    <div class="text">
+                      <div class="label">笔记列表</div>
+                      <div class="desc">一条笔记 = 一行数据 · 一站式看所有在投笔记</div>
+                    </div>
+                  </li>
+                  <li>
+                    <span class="marker"></span>
+                    <div class="text">
+                      <div class="label">笔记状态实时查询</div>
+                      <div class="desc">在投 / 卡审 / 停投 / 衰退 标记 · 主动看卡审，不用等运营截图</div>
+                    </div>
+                  </li>
+                  <li>
+                    <span class="marker"></span>
+                    <div class="text">
+                      <div class="label">笔记 × 数据 × 评论一站式</div>
+                      <div class="desc">单条笔记同时看：投流数据 + KOL 信息 + 评论区情绪 + 内容标签</div>
+                    </div>
+                  </li>
+                </ul>
+                <a href="https://zdtool.zalldigital.cn/project/main/967/commentManageList/noteList" target="_blank" rel="noopener" class="jump-btn">
+                  <span>棱镜后台 · 笔记管理</span><svg class="arrow" viewBox="0 0 16 16" fill="none"><path d="M5 3L11 8L5 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </a>
+                <div class="demo-id">
+                  <span class="demo-id-label">演示笔记 ID</span>
+                  <code class="demo-id-code" id="demoNoteId">69d9d2c3000000001d01a7a0</code>
+                  <button class="demo-id-copy" data-copy-target="demoNoteId">复制</button>
+                </div>
+              </div>
+              <div class="body-visual">
+                <img src="assets/ss_note_mgmt_new.jpg" alt="笔记管理">
+              </div>
+            </div>
+            <span class="slide-num">08 / 26</span>
+          </div>
+
+      <div class="slide">
+            <div class="slide-meta"><span class="accent">模块④</span><span class="sep">·</span><span>评论区 · 1/3</span></div>
+            <h2 class="slide-title">评论抓取 + AI 雷区识别<span class="status live">已上线</span></h2>
+            <p class="slide-sub">差评爆雷主动发现 · 不被客户截图打脸</p>
+            <div class="slide-body">
+              <div class="body-text">
+                <ul class="feature-list">
+                  <li><span class="marker"></span><div class="text"><div class="label">TOP30 笔记评论抓取</div><div class="desc">所有 KFS 笔记自动抓 TOP30 笔记的全部评论</div></div></li>
+                  <li><span class="marker"></span><div class="text"><div class="label">楼中楼精华抓取</div><div class="desc">楼中楼前 10 条精华回复（评论区"含金量层"）</div></div></li>
+                  <li><span class="marker"></span><div class="text"><div class="label">AI 舆情监测 · 雷区识别</div><div class="desc">品牌雷区自动标红 · 差评爆雷主动发现</div></div></li>
+                  <li><span class="marker"></span><div class="text"><div class="label">正/负/中评分类</div><div class="desc">AI 自动分类，一眼看整体口碑</div></div></li>
+                </ul>
+                <a href="https://zdtool.zalldigital.cn/project/main/967/commentManageList/commentPublic" target="_blank" rel="noopener" class="jump-btn">
+                  <span>棱镜后台 · 评论维护</span><svg class="arrow" viewBox="0 0 16 16" fill="none"><path d="M5 3L11 8L5 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </a>
+              </div>
+              <div class="body-visual">
+                <img src="assets/ss_comment_mgmt_new.jpg" alt="评论管理">
+              </div>
+            </div>
+            <span class="slide-num">09 / 26</span>
+          </div>
+
+      <div class="slide">
+            <div class="slide-meta"><span class="accent">模块④</span><span class="sep">·</span><span>评论区 · 2/3</span></div>
+            <h2 class="slide-title">AI 自定义识别<span class="status live">已上线</span></h2>
+            <p class="slide-sub">给每个客户定制识别规则 · AI 按你的关键词 / 意图 / 达人逐条打标</p>
+            <div class="slide-body">
+              <div class="body-text" style="flex: 1.6;">
+                <ul class="feature-list">
+                  <li><span class="marker"></span><div class="text"><div class="label">是否含关键词</div><div class="desc">客户最在意的词出现就标红：成分 / 效果 / 价格 / 售后</div></div></li>
+                  <li><span class="marker"></span><div class="text"><div class="label">是否含特定意图</div><div class="desc">AI 识别："想买" / "对比中" / "推荐他人" / "投诉" 等意图</div></div></li>
+                  <li><span class="marker"></span><div class="text"><div class="label">是否有指定达人回复</div><div class="desc">追踪某些重点达人是否进行了二次互动</div></div></li>
+                  <li><span class="marker"></span><div class="text"><div class="label">引流词识别</div><div class="desc">用户在评论里提到的其他品牌 · 找竞品讨论</div></div></li>
+                  <li><span class="marker"></span><div class="text"><div class="label">产品讨论识别</div><div class="desc">用户主动问的产品问题 · 用户问的就是内容机会点</div></div></li>
+                </ul>
+              </div>
+              <div class="body-visual" style="flex: 0.7;">
+                <img src="assets/ss_ai_custom.png" alt="AI 自定义识别">
+              </div>
+            </div>
+            <span class="slide-num">10 / 26</span>
+          </div>
+
+      <div class="slide">
+            <div class="slide-meta"><span class="accent">模块④</span><span class="sep">·</span><span>评论区 · 3/3</span></div>
+            <h2 class="slide-title">本品评论区洞察<span class="status live">已上线</span></h2>
+            <p class="slide-sub">AI 自动聚合本品评论 · 词云 + 舆情趋势 + 洞察报告 · 复盘时直接拿</p>
+            <div class="slide-body">
+              <div class="body-text">
+                <ul class="feature-list">
+                  <li><span class="marker"></span><div class="text"><div class="label">词云</div><div class="desc">评论高频词可视化 · 一眼看用户在聊什么</div></div></li>
+                  <li><span class="marker"></span><div class="text"><div class="label">舆情趋势</div><div class="desc">正 / 负 / 中评每日堆叠柱状图 · 看趋势异常 + 时间段</div></div></li>
+                  <li><span class="marker"></span><div class="text"><div class="label">洞察报告</div><div class="desc">AI 自动生成完整洞察报告 · 复盘 / 客户交付直接拿</div></div></li>
+                </ul>
+                <a href="https://zdtool.zalldigital.cn/project/main/967/commentManageList/commentManagedig" target="_blank" rel="noopener" class="jump-btn">
+                  <span>棱镜后台 · 评论价值挖掘</span><svg class="arrow" viewBox="0 0 16 16" fill="none"><path d="M5 3L11 8L5 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </a>
+              </div>
+              <div class="body-visual">
+                <img src="assets/ss_comment_insight_new.jpg" alt="本品评论洞察">
+              </div>
+            </div>
+            <span class="slide-num">11 / 26</span>
+          </div>
+
+      <div class="slide">
+            <div class="slide-meta"><span class="accent">模块⑥</span><span class="sep">·</span><span>竞品分析</span></div>
+            <h2 class="slide-title">竞品研究报告<span class="status live">已上线</span></h2>
+            <p class="slide-sub">抓笔记 + 抓评论 + AI 洞察 · 一份报告完整呈现 · 支持导出 PDF</p>
+            <div class="slide-body">
+              <div class="body-text">
+                <ul class="feature-list">
+                  <li><span class="marker"></span><div class="text"><div class="label">竞品笔记 + 前端数据抓取</div><div class="desc">输入竞品账号自动抓笔记 + 点赞 / 收藏 / 评论 / 分享 / 互动 / 评论率全量</div></div></li>
+                  <li><span class="marker"></span><div class="text"><div class="label">竞品评论区抓取</div><div class="desc">看用户在竞品评论里说什么 · 找差异化机会点</div></div></li>
+                  <li><span class="marker"></span><div class="text"><div class="label">竞品评论洞察报告</div><div class="desc">AI 自动生成完整竞品分析报告 · 直接交付客户</div></div></li>
+                </ul>
+                <a href="https://zdtool.zalldigital.cn/project/main/967/competitorNote" target="_blank" rel="noopener" class="jump-btn">
+                  <span>棱镜后台 · 竞品研究</span><svg class="arrow" viewBox="0 0 16 16" fill="none"><path d="M5 3L11 8L5 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </a>
+              </div>
+              <div class="body-visual">
+                <img src="assets/ss_competitor_analysis.png" alt="竞品研究报告">
+              </div>
+            </div>
+            <span class="slide-num">12 / 26</span>
+          </div>
+
+      <div class="slide divider">
+            <div class="glow-orb a"></div>
+            <div class="glow-orb b"></div>
+            <div class="grid-overlay"></div>
+            <div class="part-label">PART 2 / 2</div>
+            <h2>棱镜<span class="accent">还会有</span><br>什么。</h2>
+            <p class="sub">即将上线 · 评论 + 笔记 + 竞品 + AI · 让 KFS 投放更智能</p>
+            <span class="slide-num" style="color: rgba(255,255,255,0.4);">13 / 26</span>
+          </div>
+
+      <div class="slide">
+            <div class="slide-meta"><span class="accent">展望 ①</span><span class="sep">·</span><span>笔记管理升级</span></div>
+            <h2 class="slide-title">笔记管理升级 · 从"看笔记"到"管笔记"<span class="status dev">开发中</span></h2>
+            <p class="slide-sub">接入完整投放数据 · 自定义视图 · 内容/数据双标签分类</p>
+            <div class="nm-toolbar">
+              <button class="view-tab">全部笔记</button>
+              <button class="view-tab active">我的好笔记 ★</button>
+              <button class="view-tab">卡审笔记</button>
+              <button class="view-tab">衰退笔记</button>
+              <button class="view-tab">618 大促笔记</button>
+              <button class="view-tab" style="border-style: dashed; color: var(--p-700);">+ 新建视图</button>
+              <div class="filter-grp">
+                <span>当前筛选：</span>
+                <span class="filter-tag">L1 · 引流转化</span>
+                <span class="filter-tag">高 ROI</span>
+              </div>
+            </div>
+            <div class="nm-body">
+              <div class="nm-sidebar">
+                <div class="nm-sb-group">
+                  <div class="nm-sb-title">内容标签分类</div>
+                  <div class="nm-sb-label">L1 · 投放目的</div>
+                  <span class="nm-sb-tag on">引流转化</span>
+                  <span class="nm-sb-tag">品类渗透</span>
+                  <span class="nm-sb-tag">破圈拉新</span>
+                  <div class="nm-sb-label" style="margin-top: 10px;">L2 · 内容形式</div>
+                  <span class="nm-sb-tag">单品种草</span>
+                  <span class="nm-sb-tag">测评</span>
+                  <span class="nm-sb-tag">妆教</span>
+                  <span class="nm-sb-tag">生活场景</span>
+                </div>
+                <div class="nm-sb-group">
+                  <div class="nm-sb-title">数据标签分类</div>
+                  <span class="nm-sb-tag on">高 ROI</span>
+                  <span class="nm-sb-tag">高互动</span>
+                  <span class="nm-sb-tag">衰退中</span>
+                  <span class="nm-sb-tag">卡审中</span>
+                </div>
+              </div>
+              <div class="nm-table">
+                <div class="nm-th">
+                  <div>笔记标题 / 达人</div>
+                  <div>状态</div>
+                  <div>ROI</div>
+                  <div>CPUV</div>
+                  <div>互动量</div>
+                  <div>标签</div>
+                </div>
+                <div class="nm-tr">
+                  <div class="nm-note-title">夏天油皮的救星！3 步搞定脱妆 — @阿橘很甜</div>
+                  <div><span class="nm-status live">在投</span></div>
+                  <div class="nm-roi">3.2</div>
+                  <div>¥1.4</div>
+                  <div>8.2k</div>
+                  <div class="nm-tags"><span class="nm-tag-l1">引流转化</span><span class="nm-tag-data">高 ROI</span></div>
+                </div>
+                <div class="nm-tr">
+                  <div class="nm-note-title">学生党闭眼入！平价精华真实测评 — @Vivi 不能停</div>
+                  <div><span class="nm-status live">在投</span></div>
+                  <div class="nm-roi">2.8</div>
+                  <div>¥1.6</div>
+                  <div>12.5k</div>
+                  <div class="nm-tags"><span class="nm-tag-l1">引流转化</span><span class="nm-tag-data">高互动</span></div>
+                </div>
+                <div class="nm-tr">
+                  <div class="nm-note-title">熬夜党的急救面膜 — @熬夜不掉发</div>
+                  <div><span class="nm-status decay">衰退</span></div>
+                  <div class="nm-roi" style="color: var(--gray-2);">1.4</div>
+                  <div>¥2.8</div>
+                  <div>3.1k</div>
+                  <div class="nm-tags"><span class="nm-tag-l1">引流转化</span><span class="nm-tag-data" style="background: #FEF3C7; color: var(--dev);">衰退中</span></div>
+                </div>
+                <div class="nm-tr">
+                  <div class="nm-note-title">这款防晒真的不假白！素颜出门首选 — @姜小柚</div>
+                  <div><span class="nm-status kasshen">卡审</span></div>
+                  <div class="nm-roi">—</div>
+                  <div>—</div>
+                  <div>6.4k</div>
+                  <div class="nm-tags"><span class="nm-tag-l1">引流转化</span><span class="nm-tag-data" style="background: #FECACA; color: #991B1B;">卡审中</span></div>
+                </div>
+                <div class="nm-tr">
+                  <div class="nm-note-title">敏感肌姐妹冲！亲测一周用感 — @肌肤管家阿茶</div>
+                  <div><span class="nm-status live">在投</span></div>
+                  <div class="nm-roi">2.5</div>
+                  <div>¥1.8</div>
+                  <div>5.6k</div>
+                  <div class="nm-tags"><span class="nm-tag-l1">引流转化</span><span class="nm-tag-data">高 ROI</span></div>
+                </div>
+                <div class="nm-tr">
+                  <div class="nm-note-title">化妆课代表 · 通勤妆 5 分钟搞定 — @豆豆 hello</div>
+                  <div><span class="nm-status dev">追投</span></div>
+                  <div class="nm-roi">3.7</div>
+                  <div>¥1.2</div>
+                  <div>15.3k</div>
+                  <div class="nm-tags"><span class="nm-tag-l1">引流转化</span><span class="nm-tag-data">高 ROI</span><span class="nm-tag-data">高互动</span></div>
+                </div>
+              </div>
+            </div>
+            <span class="slide-num">14 / 26</span>
+          </div>
+
+      <div class="slide">
+            <div class="slide-meta"><span class="accent">展望 ②</span><span class="sep">·</span><span>评论区 · 每日巡查</span></div>
+            <h2 class="slide-title">评论区每日巡查<span class="status plan">规划中</span></h2>
+            <p class="slide-sub">飞书机器人自动推送 · TOP10 笔记 × TOP10 评论 · 早上一打开飞书就看到当日舆情</p>
+            <div class="pat-body">
+              <div class="pat-chat">
+                <div class="pat-chat-head">
+                  <div class="avatar">棱</div>
+                  <div class="info">
+                    <div class="name">棱镜舆情助手</div>
+                    <div class="group">inne · 投放管理群</div>
+                  </div>
+                  <div class="bot-tag">BOT</div>
+                </div>
+                <div class="pat-msgs">
+                  <div class="pat-msg-time">━━━━ 今天 ━━━━</div>
+                  <div class="pat-msg">
+                    <div class="pat-msg-h"><span class="ico">🌅</span>09:02 · 早安巡查报告</div>
+                    <div class="pat-msg-body">
+                      <ul>
+                        <li>TOP10 在投笔记 · 共扫描 <b>287 条评论</b></li>
+                        <li class="good">正向情绪 <b>76%</b>（环比 +3%）</li>
+                        <li>核心讨论：性价比 / 真实测评 / 学生党</li>
+                      </ul>
+                    </div>
+                    <div class="pat-stats-grid">
+                      <div class="pat-stat"><div class="k">扫描评论</div><div class="v">287</div></div>
+                      <div class="pat-stat"><div class="k">正向占比</div><div class="v" style="color: var(--live);">76%</div></div>
+                      <div class="pat-stat"><div class="k">负评条数</div><div class="v" style="color: var(--warn);">12</div></div>
+                      <div class="pat-stat"><div class="k">达人响应</div><div class="v">8/10</div></div>
+                    </div>
+                  </div>
+                  <div class="pat-msg">
+                    <div class="pat-msg-h warn"><span class="ico">⚠️</span>10:34 · 负评预警 · 建议 30 分钟内处理</div>
+                    <div class="pat-msg-body">
+                      <ul>
+                        <li class="bad">"夏日防晒急救"用户投诉售后（3 条）</li>
+                        <li class="bad">"学生党闭眼入"出现成分质疑（2 条）</li>
+                        <li>@运营老师 已 @ 通知</li>
+                      </ul>
+                    </div>
+                  </div>
+                  <div class="pat-msg">
+                    <div class="pat-msg-h"><span class="ico">📈</span>14:00 · 中午舆情更新</div>
+                    <div class="pat-msg-body">
+                      <ul>
+                        <li class="good">上午 5 条负评已处理 ✓</li>
+                        <li>新增 48 条评论 · 正向 81%</li>
+                        <li>新讨论焦点："618 折扣是否包邮"</li>
+                      </ul>
+                    </div>
+                  </div>
+                  <div class="pat-msg">
+                    <div class="pat-msg-h"><span class="ico">🌙</span>18:00 · 全天总结</div>
+                    <div class="pat-msg-body">
+                      <ul>
+                        <li>全天评论 <b>463 条</b> · 正向 <b>79%</b></li>
+                        <li>处理负评 <b>12/12</b> ✓</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="pat-dashboard">
+                <div class="pat-dh">
+                  <div class="ttl">今日舆情仪表盘 · 5/15</div>
+                  <div class="when">实时刷新 · 18:24</div>
+                </div>
+                <div class="pat-kpis">
+                  <div class="pat-kpi">
+                    <div class="label">总评论</div>
+                    <div class="val">463<span class="delta up">+12%</span></div>
+                  </div>
+                  <div class="pat-kpi">
+                    <div class="label">正向占比</div>
+                    <div class="val">79<span class="unit">%</span><span class="delta up">+5%</span></div>
+                  </div>
+                  <div class="pat-kpi">
+                    <div class="label">负评数</div>
+                    <div class="val">12<span class="delta down">−4</span></div>
+                  </div>
+                  <div class="pat-kpi">
+                    <div class="label">达人响应</div>
+                    <div class="val">8<span class="unit">/10</span></div>
+                  </div>
+                </div>
+                <div class="pat-chart">
+                  <div class="pat-chart-title">情绪走势 · 24h</div>
+                  <div class="pat-trend">
+                    <div class="pat-trend-bar"><div class="seg-neg" style="height: 8px;"></div><div class="seg-mid" style="height: 18px;"></div><div class="seg-pos" style="height: 28px;"></div></div>
+                    <div class="pat-trend-bar"><div class="seg-neg" style="height: 4px;"></div><div class="seg-mid" style="height: 16px;"></div><div class="seg-pos" style="height: 36px;"></div></div>
+                    <div class="pat-trend-bar"><div class="seg-neg" style="height: 14px;"></div><div class="seg-mid" style="height: 22px;"></div><div class="seg-pos" style="height: 30px;"></div></div>
+                    <div class="pat-trend-bar"><div class="seg-neg" style="height: 6px;"></div><div class="seg-mid" style="height: 14px;"></div><div class="seg-pos" style="height: 42px;"></div></div>
+                    <div class="pat-trend-bar"><div class="seg-neg" style="height: 10px;"></div><div class="seg-mid" style="height: 20px;"></div><div class="seg-pos" style="height: 32px;"></div></div>
+                    <div class="pat-trend-bar"><div class="seg-neg" style="height: 5px;"></div><div class="seg-mid" style="height: 17px;"></div><div class="seg-pos" style="height: 38px;"></div></div>
+                    <div class="pat-trend-bar"><div class="seg-neg" style="height: 3px;"></div><div class="seg-mid" style="height: 15px;"></div><div class="seg-pos" style="height: 40px;"></div></div>
+                    <div class="pat-trend-bar"><div class="seg-neg" style="height: 7px;"></div><div class="seg-mid" style="height: 19px;"></div><div class="seg-pos" style="height: 36px;"></div></div>
+                  </div>
+                  <div class="pat-trend-x">
+                    <span>00</span><span>03</span><span>06</span><span>09</span><span>12</span><span>15</span><span>18</span><span>21</span>
+                  </div>
+                </div>
+                <div class="pat-alerts">
+                  <div class="pat-alert-title">异常笔记 <span class="badge">12 负评</span></div>
+                  <div class="pat-alert">
+                    <div class="note-title">夏日防晒急救 · 涂这个不闷痘！</div>
+                    <div class="issue">⚠ 售后投诉 · 3 条</div>
+                    <div class="meta">@阿橘很甜 · 在投 · ¥4,250 / 日</div>
+                  </div>
+                  <div class="pat-alert">
+                    <div class="note-title">学生党闭眼入！平价精华</div>
+                    <div class="issue">⚠ 成分质疑 · 2 条</div>
+                    <div class="meta">@Vivi 不能停 · 在投 · ¥3,180 / 日</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <span class="slide-num">15 / 26</span>
+          </div>
+
+      <div class="slide">
+            <div class="slide-meta"><span class="accent">展望 ③</span><span class="sep">·</span><span>消费者聆听</span></div>
+            <h2 class="slide-title">消费者聆听 · 跳出小红书<span class="status plan">规划中</span></h2>
+            <p class="slide-sub">本品评论 + 搜索笔记 + 天猫淘宝评价 + 达人企微群反馈 · 听用户在<strong>全网</strong>怎么聊</p>
+            <div class="cl-srcs">
+              <div class="cl-src">
+                <div class="label">本品小红书评论</div>
+                <div class="val">2,847<span class="unit">条</span></div>
+                <div class="desc">投放笔记 + 自然笔记</div>
+              </div>
+              <div class="cl-src">
+                <div class="label">搜索场域笔记</div>
+                <div class="val">516<span class="unit">条</span></div>
+                <div class="desc">"inne 钙镁锌"相关全量</div>
+              </div>
+              <div class="cl-src">
+                <div class="label">天猫 / 淘宝评价</div>
+                <div class="val">1,205<span class="unit">条</span></div>
+                <div class="desc">SKU 评价 + 问大家</div>
+              </div>
+              <div class="cl-src">
+                <div class="label">达人企微群反馈</div>
+                <div class="val">183<span class="unit">条</span></div>
+                <div class="desc">合作达人后台咨询</div>
+              </div>
+            </div>
+            <div class="cl-body">
+              <div class="cl-topics">
+                <div class="cl-topics-h">
+                  <span>核心讨论话题 · TOP 5</span>
+                  <span class="sub">按用户讨论量排序 · 近 30 天</span>
+                </div>
+                <div class="cl-topic">
+                  <div class="cl-topic-h">
+                    <span class="rank">1</span>
+                    <span class="name">性价比 · 与竞品对比</span>
+                    <span class="pct">38%</span>
+                  </div>
+                  <div class="cl-topic-bar"><div class="fill" style="width: 95%;"></div></div>
+                  <div class="cl-topic-q">钙镁锌都买过美羚和 Swisse，inne 是真的便宜还克均钙含量高，性价比赢麻了</div>
+                  <div class="cl-topic-ad"><b>AI 建议：</b>突出"克均钙含量"做差异化卖点，可做对比型笔记</div>
+                </div>
+                <div class="cl-topic">
+                  <div class="cl-topic-h">
+                    <span class="rank">2</span>
+                    <span class="name">适用人群 · 分龄场景</span>
+                    <span class="pct">24%</span>
+                  </div>
+                  <div class="cl-topic-bar"><div class="fill" style="width: 60%;"></div></div>
+                  <div class="cl-topic-q">2 岁宝宝能吃这个吗？还是要换成钙剂滴剂？</div>
+                  <div class="cl-topic-ad"><b>AI 建议：</b>用户跨越学生党 + 妈妈群体，建议增加"分龄"内容线</div>
+                </div>
+                <div class="cl-topic">
+                  <div class="cl-topic-h">
+                    <span class="rank">3</span>
+                    <span class="name">食用方式 · 怎么吃</span>
+                    <span class="pct">17%</span>
+                  </div>
+                  <div class="cl-topic-bar"><div class="fill" style="width: 42%;"></div></div>
+                  <div class="cl-topic-q">空腹能吃吗？要不要配合维 D？孩子不爱吃怎么办？</div>
+                  <div class="cl-topic-ad"><b>AI 建议：</b>制作"食用 FAQ"系列内容，回答用户最关心的问题</div>
+                </div>
+                <div class="cl-topic">
+                  <div class="cl-topic-h">
+                    <span class="rank">4</span>
+                    <span class="name">见效感知 · 多久见效</span>
+                    <span class="pct">14%</span>
+                  </div>
+                  <div class="cl-topic-bar"><div class="fill" style="width: 35%;"></div></div>
+                  <div class="cl-topic-q">吃了两周完全没感觉，是不是要继续吃？孩子身高有变化吗？</div>
+                  <div class="cl-topic-ad"><b>AI 建议：</b>真实长期使用者打卡型笔记 / 用户证言</div>
+                </div>
+              </div>
+              <div class="cl-right">
+                <div class="cl-emotion">
+                  <div class="cl-emotion-h">全网情绪聚合</div>
+                  <div class="cl-emotion-bar">
+                    <div class="seg pos">62%</div>
+                    <div class="seg mid">26%</div>
+                    <div class="seg neg">12%</div>
+                  </div>
+                  <div class="cl-emotion-legend">
+                    <div class="item"><span class="sw" style="background: var(--live);"></span>正向</div>
+                    <div class="item"><span class="sw" style="background: var(--p-400);"></span>中性</div>
+                    <div class="item"><span class="sw" style="background: var(--warn);"></span>负向</div>
+                  </div>
+                </div>
+                <div class="cl-opps">
+                  <div class="cl-opps-h">内容机会点 · 给策划的下一步</div>
+                  <div class="cl-opp">
+                    <div class="opp-h">机会 · 克均钙含量对比内容</div>
+                    <div class="opp-d">用户对比刚需 38%，做"成分对比"是内容白海 <span class="tag">高优先</span></div>
+                  </div>
+                  <div class="cl-opp">
+                    <div class="opp-h">机会 · 分龄食用指南系列</div>
+                    <div class="opp-d">妈妈群高频问"宝宝能不能吃" <span class="tag">高优先</span></div>
+                  </div>
+                  <div class="cl-opp">
+                    <div class="opp-h">机会 · 食用 FAQ 内容</div>
+                    <div class="opp-d">空腹 / 维 D / 不爱吃 等场景化问题 <span class="tag">中优先</span></div>
+                  </div>
+                  <div class="cl-opp">
+                    <div class="opp-h">风险 · 售后投诉舆情</div>
+                    <div class="opp-d">已 @ 客服跟进，建议加"7 天退换"提示 <span class="tag" style="background: #FECACA; color: #991B1B;">注意</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <span class="slide-num">16 / 26</span>
+          </div>
+
+      <div class="slide">
+            <div class="slide-meta"><span class="accent">展望 ④</span><span class="sep">·</span><span>竞品自定义看板</span></div>
+            <h2 class="slide-title">竞品分析升级 · 自定义看板<span class="status plan">规划中</span></h2>
+            <p class="slide-sub">策划按自己的分析角度搭看板 · 维度自选 · 本品 × 竞品并排对比</p>
+            <div class="cp-toolbar">
+              <span class="cp-dim-label">维度自选</span>
+              <button class="cp-dim active">达人类型 <span class="chev">▼</span></button>
+              <button class="cp-dim">笔记内容形式 <span class="chev">▼</span></button>
+              <button class="cp-dim">时间周期 <span class="chev">▼</span></button>
+              <button class="cp-dim">互动指标 <span class="chev">▼</span></button>
+              <button class="cp-dim">关键词维度 <span class="chev">▼</span></button>
+              <button class="cp-add">+ 自定义维度</button>
+              <div class="cp-brands">
+                <span class="cp-brand ours">inne</span>
+                <span style="color: var(--gray-3);">vs</span>
+                <span class="cp-brand theirs">美羚</span>
+                <span class="cp-brand theirs">Swisse</span>
+                <span class="cp-brand theirs">钙尔奇</span>
+              </div>
+            </div>
+            <div class="cp-body cp-body-solo">
+                <div class="cp-chart">
+                  <div class="cp-chart-h">
+                    <div class="cp-chart-title">达人维度 · 互动量对比</div>
+                    <div class="cp-chart-meta">近 30 天 · 单位：万次互动</div>
+                  </div>
+                  <div class="cp-bars">
+                    <div class="cp-bar-grp">
+                      <div class="cp-bar-pair"><div class="cp-bar ours" style="height: 80%;"></div><div class="cp-bar theirs" style="height: 55%;"></div></div>
+                      <div class="cp-bar-label">头部达人</div>
+                    </div>
+                    <div class="cp-bar-grp">
+                      <div class="cp-bar-pair"><div class="cp-bar ours" style="height: 60%;"></div><div class="cp-bar theirs" style="height: 78%;"></div></div>
+                      <div class="cp-bar-label">腰部达人</div>
+                    </div>
+                    <div class="cp-bar-grp">
+                      <div class="cp-bar-pair"><div class="cp-bar ours" style="height: 45%;"></div><div class="cp-bar theirs" style="height: 70%;"></div></div>
+                      <div class="cp-bar-label">尾部达人</div>
+                    </div>
+                    <div class="cp-bar-grp">
+                      <div class="cp-bar-pair"><div class="cp-bar ours" style="height: 90%;"></div><div class="cp-bar theirs" style="height: 35%;"></div></div>
+                      <div class="cp-bar-label">妈妈博主</div>
+                    </div>
+                    <div class="cp-bar-grp">
+                      <div class="cp-bar-pair"><div class="cp-bar ours" style="height: 35%;"></div><div class="cp-bar theirs" style="height: 88%;"></div></div>
+                      <div class="cp-bar-label">医生科普</div>
+                    </div>
+                    <div class="cp-bar-grp">
+                      <div class="cp-bar-pair"><div class="cp-bar ours" style="height: 50%;"></div><div class="cp-bar theirs" style="height: 62%;"></div></div>
+                      <div class="cp-bar-label">营养师</div>
+                    </div>
+                  </div>
+                  <div class="cp-legend">
+                    <div class="cp-legend-item"><span class="sw" style="background: linear-gradient(135deg, #6B21A8, #EC4899);"></span>本品 inne</div>
+                    <div class="cp-legend-item"><span class="sw" style="background: var(--gray-4);"></span>竞品均值</div>
+                  </div>
+                </div>
+                <div class="cp-topnotes">
+                  <div class="cp-topnotes-h">竞品爆款笔记 TOP 5 · 互动量降序</div>
+                  <div class="cp-noterow">
+                    <div class="rank">#1</div>
+                    <div class="thumb"></div>
+                    <div class="t">医生告诉你！这 3 种钙差异在哪 — @张医生说健康（美羚）</div>
+                    <div class="m">28.4 万</div>
+                    <div class="m">¥12.5</div>
+                    <div class="m">医生科普</div>
+                  </div>
+                  <div class="cp-noterow">
+                    <div class="rank">#2</div>
+                    <div class="thumb"></div>
+                    <div class="t">海淘 Swisse 钙片，到底值不值？— @澳洲海淘小贝（Swisse）</div>
+                    <div class="m">22.1 万</div>
+                    <div class="m">¥18.0</div>
+                    <div class="m">头部达人</div>
+                  </div>
+                  <div class="cp-noterow">
+                    <div class="rank">#3</div>
+                    <div class="thumb"></div>
+                    <div class="t">营养师妈妈 · 钙片选购避雷指南 — @营养师杨杨（美羚）</div>
+                    <div class="m">18.7 万</div>
+                    <div class="m">¥9.8</div>
+                    <div class="m">营养师</div>
+                  </div>
+                  <div class="cp-noterow">
+                    <div class="rank">#4</div>
+                    <div class="thumb"></div>
+                    <div class="t">钙尔奇 vs Swisse 横评 — @测评界扛把子（钙尔奇）</div>
+                    <div class="m">15.3 万</div>
+                    <div class="m">¥14.2</div>
+                    <div class="m">头部达人</div>
+                  </div>
+                  <div class="cp-noterow">
+                    <div class="rank">#5</div>
+                    <div class="thumb"></div>
+                    <div class="t">每天 1 粒，骨密度居然变好了？— @肖琳的健康日记（钙尔奇）</div>
+                    <div class="m">12.9 万</div>
+                    <div class="m">¥6.5</div>
+                    <div class="m">腰部达人</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <span class="slide-num">17 / 26</span>
+          </div>
+
+      <div class="slide">
+            <div class="slide-meta"><span class="accent">展望 ⑤</span><span class="sep">·</span><span>AI 审稿</span></div>
+            <h2 class="slide-title">AI 审稿 · 上线前合规审核<span class="status dev">开发中</span></h2>
+            <p class="slide-sub">替代人工初审 · 广告法 / 极限词 / 医学违禁词 / 平台违规规则全检测</p>
+            <div class="ai-body">
+              <div class="ai-editor">
+                <div class="ai-ed-h">
+                  <div class="ttl">📝 笔记原文 · 待审核</div>
+                  <div class="submit">提交于 14:32</div>
+                </div>
+                <div class="ai-note-meta">
+                  <span class="creator">@阿橘很甜</span>
+                  <span class="sep">·</span>
+                  <span>粉丝 28.5w · 美妆赛道</span>
+                  <span class="sep">·</span>
+                  <span>合作笔记 #12</span>
+                </div>
+                <div class="ai-note-title">
+                  夏天油皮的<span class="hl-warn">救星</span>！3 步搞定脱妆，<span class="hl-fail">瞬间见效</span>
+                </div>
+                <div class="ai-note-body">
+                  <p>姐妹们油皮的痛只有自己懂😭 化妆 2 小时脱妆 5 分钟，T 区出油到能煎鸡蛋！</p>
+                  <p>试过 N 款定妆喷雾，终于找到平价天花板 —— inne 持妆喷雾。<span class="hl-warn" data-tip="对比型表述">完虐市面 99% 同类产品</span>，姐妹们冲就完了！</p>
+                  <p>✨ <b>步骤 1</b>：上妆前 1 喷打底 · 持妆 8 小时不暗沉</p>
+                  <p>✨ <b>步骤 2</b>：定妆后 2 喷锁住 · <span class="hl-fail" data-tip="医学功效">瞬间消炎抗痘</span></p>
+                  <p>✨ <b>步骤 3</b>：补妆前 1 喷 · 油光秒收 · <span class="hl-warn" data-tip="绝对化用语">永远不脱妆</span></p>
+                  <p style="color: var(--gray-2); font-size: 10.5px; margin-top: 8px;">📦 618 限时 ¥89/瓶（原价 ¥139）— 戳购物车冲鸭 🛒</p>
+                </div>
+                <div class="ai-note-tags">
+                  <span class="tag">#油皮姐妹</span>
+                  <span class="tag">#平价定妆</span>
+                  <span class="tag">#618 必买</span>
+                  <span class="tag">#夏日彩妆</span>
+                </div>
+              </div>
+              <div class="ai-result">
+                <div class="ai-result-h">
+                  <div class="ttl">🛡 AI 审核报告</div>
+                  <div class="score-wrap">
+                    <span class="score">68</span>
+                    <span class="score-max">/ 100</span>
+                  </div>
+                </div>
+                <div class="ai-checks">
+                  <div class="ai-check pass">
+                    <div class="ico">✓</div>
+                    <div class="label">广告法合规
+                      <span class="detail">未检测到"国家级 / 第一 / 顶级"类违禁词</span>
+                    </div>
+                    <div class="status">通过</div>
+                  </div>
+                  <div class="ai-check warn">
+                    <div class="ico">!</div>
+                    <div class="label">极限词检测
+                      <span class="detail">检测到："瞬间见效""永远不脱妆""完虐 99%"</span>
+                    </div>
+                    <div class="status">警告</div>
+                  </div>
+                  <div class="ai-check fail">
+                    <div class="ico">✗</div>
+                    <div class="label">医学功效违规
+                      <span class="detail">"瞬间消炎抗痘"涉嫌宣称医疗功效</span>
+                    </div>
+                    <div class="status">不通过</div>
+                  </div>
+                  <div class="ai-check pass">
+                    <div class="ico">✓</div>
+                    <div class="label">品牌敏感词
+                      <span class="detail">未提及竞品 / 品牌负面词</span>
+                    </div>
+                    <div class="status">通过</div>
+                  </div>
+                  <div class="ai-check warn">
+                    <div class="ico">!</div>
+                    <div class="label">价格表述
+                      <span class="detail">原价对比建议加"参考价"字样</span>
+                    </div>
+                    <div class="status">警告</div>
+                  </div>
+                  <div class="ai-check pass">
+                    <div class="ico">✓</div>
+                    <div class="label">内容真实性
+                      <span class="detail">AI 判断为达人真实体验类内容</span>
+                    </div>
+                    <div class="status">通过</div>
+                  </div>
+                </div>
+                <div class="ai-actions">
+                  <button class="ai-act secondary">退回作者</button>
+                  <button class="ai-act primary">应用 AI 修改建议 → 重审</button>
+                </div>
+              </div>
+            </div>
+            <span class="slide-num">18 / 26</span>
+          </div>
+
+      <div class="slide">
+            <div class="wr-head">
+              <div class="wr-head-content">
+                <div class="left">
+                  <div class="label">展望 ⑥ · 客户周报 · 双投版</div>
+                  <div class="ttl">AI 周报 · inne · 本周 <span class="em">智能简报</span></div>
+                  <div class="date">5/8 – 5/14 · 2026</div>
+                </div>
+                <div class="ai-badge">
+                  <div class="dot"></div>
+                  <div class="txt">AI 自动生成 · 规划中</div>
+                </div>
+              </div>
+            </div>
+            <div class="wr-body">
+              <div class="wr-kpis">
+                <div class="wr-kpi"><div class="k">总消耗</div><div class="v">182,540<span class="unit">¥</span></div><div class="d up">+18% 环比</div></div>
+                <div class="wr-kpi"><div class="k">CPUV</div><div class="v">1.42<span class="unit">¥</span></div><div class="d down">−9% 环比</div></div>
+                <div class="wr-kpi"><div class="k">点击率</div><div class="v">3.85<span class="unit">%</span></div><div class="d up">+0.3pt</div></div>
+                <div class="wr-kpi"><div class="k">星河引流 UV</div><div class="v">6,580</div><div class="d up">+22% 环比</div></div>
+                <div class="wr-kpi"><div class="k">星河 ROI</div><div class="v">2.6</div><div class="d up">+15% 环比</div></div>
+                <div class="wr-kpi"><div class="k">评论正向占比</div><div class="v">78<span class="unit">%</span></div><div class="d up">+3pt</div></div>
+              </div>
+              <div class="wr-grid">
+                <div class="wr-section">
+                  <div class="sh">
+                    <span>消耗 + 引流 UV · 日趋势</span>
+                    <span class="sub">紫色 = 消耗 / 玫瑰 = UV</span>
+                  </div>
+                  <div class="wr-trend" style="height: 110px;">
+                    <div class="wr-trend-day"><div class="wr-trend-bar" style="height: 55%;"></div><div class="wr-trend-x">5/8</div></div>
+                    <div class="wr-trend-day"><div class="wr-trend-bar" style="height: 62%;"></div><div class="wr-trend-x">5/9</div></div>
+                    <div class="wr-trend-day"><div class="wr-trend-bar" style="height: 58%;"></div><div class="wr-trend-x">5/10</div></div>
+                    <div class="wr-trend-day"><div class="wr-trend-bar" style="height: 70%;"></div><div class="wr-trend-x">5/11</div></div>
+                    <div class="wr-trend-day"><div class="wr-trend-bar" style="height: 78%;"></div><div class="wr-trend-x">5/12</div></div>
+                    <div class="wr-trend-day"><div class="wr-trend-bar" style="height: 88%;"></div><div class="wr-trend-x">5/13</div></div>
+                    <div class="wr-trend-day"><div class="wr-trend-bar" style="height: 95%;"></div><div class="wr-trend-x">5/14</div></div>
+                  </div>
+                  <div class="sh" style="margin-top: 12px;">
+                    <span>笔记 TOP 5 · 按 ROI 排序</span>
+                    <span class="sub">已剔除冷启动期笔记</span>
+                  </div>
+                  <div class="wr-noteslist">
+                    <div class="wr-noterow"><div class="rk gold">1</div><div class="t">化妆课代表 · 通勤妆 5 分钟搞定 — @豆豆 hello</div><div class="roi">3.7</div><div class="roi" style="color: var(--gray-2); font-weight: 500;">¥1.2</div></div>
+                    <div class="wr-noterow"><div class="rk gold">2</div><div class="t">夏天油皮的救星！3 步搞定脱妆 — @阿橘很甜</div><div class="roi">3.2</div><div class="roi" style="color: var(--gray-2); font-weight: 500;">¥1.4</div></div>
+                    <div class="wr-noterow"><div class="rk">3</div><div class="t">学生党闭眼入！平价精华真实测评 — @Vivi 不能停</div><div class="roi">2.8</div><div class="roi" style="color: var(--gray-2); font-weight: 500;">¥1.6</div></div>
+                    <div class="wr-noterow"><div class="rk">4</div><div class="t">敏感肌姐妹冲！亲测一周用感 — @肌肤管家阿茶</div><div class="roi">2.5</div><div class="roi" style="color: var(--gray-2); font-weight: 500;">¥1.8</div></div>
+                    <div class="wr-noterow"><div class="rk">5</div><div class="t">熬夜党的急救面膜 · 7 天打卡 — @熬夜不掉发</div><div class="roi bad">1.4</div><div class="roi" style="color: var(--gray-2); font-weight: 500;">¥2.8</div></div>
+                  </div>
+                </div>
+                <div class="wr-section" style="background: linear-gradient(180deg, white 0%, var(--p-50) 100%); border-color: var(--p-200);">
+                  <div class="sh"><span>本周评论 + 竞品速报</span></div>
+                  <div style="font-size: 11px; color: var(--gray-1); line-height: 1.6; margin-bottom: 10px;">
+                    <div style="padding: 4px 0; display: flex; justify-content: space-between;"><span>评论总量</span><span style="font-weight: 700; color: var(--p-ink);">3,240 条 <span style="color: var(--live); font-size: 9.5px;">+15%</span></span></div>
+                    <div style="padding: 4px 0; display: flex; justify-content: space-between;"><span>负评数</span><span style="font-weight: 700; color: var(--p-ink);">78 条 <span style="color: var(--live); font-size: 9.5px;">−12%</span></span></div>
+                    <div style="padding: 4px 0; display: flex; justify-content: space-between;"><span>高频讨论</span><span style="color: var(--p-ink); font-weight: 600;">性价比 / 学生党 / 真测评</span></div>
+                    <div style="padding: 4px 0; display: flex; justify-content: space-between;"><span>竞品爆款笔记</span><span style="color: var(--p-ink); font-weight: 600;">3 篇 · 主推医生科普</span></div>
+                    <div style="padding: 4px 0; display: flex; justify-content: space-between;"><span>本品 vs 竞品声量</span><span style="font-weight: 700; color: var(--live);">+24%</span></div>
+                  </div>
+                  <div class="wr-insight" style="flex: 1;">
+                    <div class="wr-insight-h">🤖 AI 智能总结 + 下周建议</div>
+                    <div class="wr-insight-row"><b>本周亮点：</b><span class="good">星河 ROI 突破 2.6</span> · 妈妈博主笔记跑量超预期 · 评论正向 +3pt</div>
+                    <div class="wr-insight-row"><b>风险预警：</b><span class="bad">"夏日防晒急救"系列 5 条售后投诉</span>，建议运营优先处理</div>
+                    <div class="wr-insight-row"><b>下周建议 #1：</b>加码妈妈博主预算 <b>+30%</b>（竞品赛道弱）</div>
+                    <div class="wr-insight-row"><b>下周建议 #2：</b>缩量"医生科普"线（竞品领先 60%，正面硬碰不划算）</div>
+                    <div class="wr-insight-row"><b>下周建议 #3：</b>新内容方向：<b>分龄食用 FAQ</b>（评论高频问题）</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <span class="slide-num">19 / 26</span>
+          </div>
+
+      <div class="slide">
+            <div class="slide-meta"><span class="accent">总结</span><span class="sep">·</span><span>策媒 KFS 工作台</span></div>
+            <h2 class="slide-title">棱镜 KFS · <span class="accent-text">投放全链路工作台</span></h2>
+            <p class="slide-sub">4 个投放场景 · 每一段对应一组棱镜功能 · 拼起来就是完整的 KFS 投放工具集</p>
+            <div class="puzzle-board puzzle-4">
+              <div class="puzzle-tile a">
+                <div class="tile-head">
+                  <span class="tile-scenario">投 前 · SCENARIO ①<span class="tile-scenario-name">规划 · 接 brief 做方案</span></span>
+                </div>
+                <div class="tile-funcs">
+                  <div class="tile-func"><span class="tile-func-num">01</span>数据接入</div>
+                  <div class="tile-func"><span class="tile-func-num">02</span>竞品研究</div>
+                  <div class="tile-func"><span class="tile-func-num">03</span>一方内容标签</div>
+                  <div class="tile-func"><span class="tile-func-num">04</span>历史项目</div>
+                </div>
+              </div>
+              <div class="puzzle-tile b">
+                <div class="tile-head">
+                  <span class="tile-scenario">投 中 · SCENARIO ②<span class="tile-scenario-name">执行 · 盯笔记 管数据</span></span>
+                </div>
+                <div class="tile-funcs">
+                  <div class="tile-func"><span class="tile-func-num">01</span>笔记管理</div>
+                  <div class="tile-func"><span class="tile-func-num">02</span>笔记状态</div>
+                  <div class="tile-func"><span class="tile-func-num">03</span>棱镜 AI 问数</div>
+                </div>
+              </div>
+              <div class="puzzle-tile e">
+                <div class="tile-head">
+                  <span class="tile-scenario">投 中 · SCENARIO ③<span class="tile-scenario-name">巡查 · 听评论 抓舆情</span></span>
+                </div>
+                <div class="tile-funcs">
+                  <div class="tile-func"><span class="tile-func-num">01</span>评论抓取</div>
+                  <div class="tile-func"><span class="tile-func-num">02</span>AI 雷区</div>
+                  <div class="tile-func"><span class="tile-func-num">03</span>AI 自定义</div>
+                  <div class="tile-func"><span class="tile-func-num">04</span>本品洞察</div>
+                </div>
+              </div>
+              <div class="puzzle-tile d">
+                <div class="tile-head">
+                  <span class="tile-scenario">投 后 · SCENARIO ④<span class="tile-scenario-name">复盘 · 写交付 找规律</span></span>
+                </div>
+                <div class="tile-funcs">
+                  <div class="tile-func"><span class="tile-func-num">01</span>四象限</div>
+                  <div class="tile-func"><span class="tile-func-num">02</span>热力图</div>
+                  <div class="tile-func"><span class="tile-func-num">03</span>笔记 × 多维度</div>
+                  <div class="tile-func"><span class="tile-func-num">04</span>竞品研究报告</div>
+                </div>
+              </div>
+            </div>
+            <span class="slide-num">20 / 26</span>
+          </div>
+
+      <div class="slide divider">
+            <div class="glow-orb a"></div>
+            <div class="glow-orb b"></div>
+            <div class="grid-overlay"></div>
+            <div class="part-label">NEXT</div>
+            <h2>关于 <span class="accent">棱镜 AI</span></h2>
+            <span class="slide-num" style="color: rgba(255,255,255,0.4);">21 / 26</span>
+          </div>
+      <!-- AI-1 · 棱镜 AI 是什么 + 主界面 -->
+      <div class="slide">
+            <div class="slide-meta"><span class="accent">展望 ⑦</span><span class="sep">·</span><span>棱镜 AI · 概览</span></div>
+            <h2 class="slide-title">棱镜 AI · <span class="accent-text">用一句话问数据</span></h2>
+            <p class="slide-sub">智能数据查询助手 · <strong>棱镜数据 + DeepSeek 大模型</strong> · 不用写 SQL · 不用学产品 · 张嘴就问</p>
+            <div class="slide-body">
+              <div class="body-text">
+                <div class="cap-row">
+                  <span class="cap-chip">🔍 自然语言取数</span>
+                  <span class="cap-chip">⏰ 自动盯盘</span>
+                  <span class="cap-chip">@ 多维实体</span>
+                  <span class="cap-chip">🧠 上下文记忆</span>
+                </div>
+                <ul class="feature-list">
+                  <li><span class="marker"></span><div class="text"><div class="label">数据 + 大模型 双引擎</div><div class="desc">数据源是<b>棱镜真实投放数据</b>（账户、笔记、标签 ID 级），大模型理解你的自然语言提问 · <b>非数据类业务问题也能问</b></div></div></li>
+                  <li><span class="marker"></span><div class="text"><div class="label">@ 一下就锁定数据范围</div><div class="desc">输入框直接 <code>@</code>：选项目、选报表、选子账户、选标签 —— 全自动弹出，省去找名字的过程</div></div></li>
+                  <li><span class="marker"></span><div class="text"><div class="label">自动盯盘 · 让 AI 替你跑</div><div class="desc">把"<b>每天 12 点查消耗进度</b>"这种事丢给 AI · 跑完结果直接飞书推给你 · 设一次跑一辈子</div></div></li>
+                  <li><span class="marker"></span><div class="text"><div class="label">同会话连续问 · 记忆你的偏好</div><div class="desc">侧边栏 <b>历史会话</b> + <b>记忆库 (0/20)</b> · AI 记得你上次问的范围、口径、偏好</div></div></li>
+                </ul>
+              </div>
+              <div class="body-visual">
+                <img src="棱镜AI主界面.jpg" alt="棱镜 AI 主界面">
+              </div>
+            </div>
+            <span class="slide-num">22 / 26</span>
+          </div>
+
+      <!-- AI-2 · 自然语言取数 -->
+      <div class="slide">
+            <div class="slide-meta"><span class="accent">棱镜 AI</span><span class="sep">·</span><span>核心能力 ①</span></div>
+            <h2 class="slide-title">自然语言取数 · <span class="accent-text">问一句 · 拿结论 · 给建议</span></h2>
+            <p class="slide-sub">AI 自动拼 SQL · 跑数 · 排序 · 给完整业务解读 —— 不只是数字，是结论</p>
+            <div class="slide-body">
+              <div class="body-text">
+                <ul class="feature-list">
+                  <li><span class="marker"></span><div class="text"><div class="label">问题 → SQL → 结果 → 解读</div><div class="desc">一句话覆盖完整链路 · AI 主动给 <b>TOP 排序、关键指标对比、业务建议</b></div></div></li>
+                  <li><span class="marker"></span><div class="text"><div class="label">复杂回溯字段都支持</div><div class="desc"><code>T+2 CPUV</code> / <code>T+30 CPUV</code> / 互动率 / CTR / CPC / 跑速 / 消耗进度 —— 棱镜里有的都能问</div></div></li>
+                  <li><span class="marker"></span><div class="text"><div class="label">追问可继续</div><div class="desc">紧跟着问"<b>这几条今天怎么样？</b>"、"<b>趋势有变化吗？</b>" —— AI 记得上文的笔记范围，直接接着算</div></div></li>
+                </ul>
+                <div class="ai-example">
+                  <div class="label">💬 真实示例</div>
+                  <div class="q"><code>@项目: 棱镜 inne</code> 昨天广告消耗超过 2000 的笔记有哪些？投放数据咋样？</div>
+                </div>
+              </div>
+              <div class="body-visual">
+                <img src="棱镜AI-数据问答.jpg" alt="自然语言取数示例">
+              </div>
+            </div>
+            <span class="slide-num">23 / 26</span>
+          </div>
+
+      <!-- AI-3 · @ 多维实体识别 -->
+      <div class="slide">
+            <div class="slide-meta"><span class="accent">棱镜 AI</span><span class="sep">·</span><span>核心能力 ②</span></div>
+            <h2 class="slide-title">@ 一下 · <span class="accent-text">项目 / 报表 / 子账户 / 标签</span> 一秒锁定</h2>
+            <p class="slide-sub">不用记完整账户名 · <strong>模糊匹配</strong> 支持中英文缩写 · 一次只看你要的数据范围</p>
+            <div class="slide-body">
+              <div class="body-text">
+                <ul class="feature-list" style="margin-bottom: 14px;">
+                  <li><span class="marker"></span><div class="text"><div class="label">4 类实体 · @ 触发</div><div class="desc">输入框打 <code>@</code> 就弹出选择面板 —— 选完直接锁定数据范围，AI 不会再串到别的账户</div></div></li>
+                  <li><span class="marker"></span><div class="text"><div class="label">模糊匹配 · 不用打全名</div><div class="desc"><code>mac项目</code> 自动匹配 <b>mac</b>、<code>薇诺娜特护面膜</code> 匹配 <b>薇诺娜-特护面膜</b></div></div></li>
+                </ul>
+                <div class="entity-grid">
+                  <div class="entity-card"><div class="ent-trigger">@项目</div><div class="ent-desc">按 SPU / 客户层项目锁定</div><div class="ent-count">2 个示例</div></div>
+                  <div class="entity-card"><div class="ent-trigger">@报表</div><div class="ent-desc">按已建好的 G 系列报表锁定</div><div class="ent-count">11 个示例</div></div>
+                  <div class="entity-card"><div class="ent-trigger">@子账户</div><div class="ent-desc">按聚光后台账户名锁定</div><div class="ent-count">60 个示例</div></div>
+                  <div class="entity-card"><div class="ent-trigger">@标签</div><div class="ent-desc">客户自定义的内容标签体系</div><div class="ent-count">112 个示例</div></div>
+                </div>
+              </div>
+              <div class="body-visual">
+                <img src="棱镜AI-标签能力.jpg" alt="@ 多维实体识别">
+              </div>
+            </div>
+            <span class="slide-num">24 / 26</span>
+          </div>
+
+      <!-- AI-4 · 自动盯盘 -->
+      <div class="slide">
+            <div class="slide-meta"><span class="accent">棱镜 AI</span><span class="sep">·</span><span>核心能力 ③</span></div>
+            <h2 class="slide-title">自动盯盘 · <span class="accent-text">让 AI 定期跑数 · 飞书自动推</span></h2>
+            <p class="slide-sub">设定一次 · 跑一辈子 · 异常自动告警 —— 不再手动盯账户、刷消耗进度</p>
+            <div class="slide-body">
+              <div class="body-text">
+                <ul class="feature-list">
+                  <li><span class="marker"></span><div class="text"><div class="label">把"每天问一次"丢给 AI</div><div class="desc">支持<b>定时 / 每天 / 每周</b>触发 · 结果直接发到你的飞书 —— 不用打开电脑、不用进棱镜</div></div></li>
+                  <li><span class="marker"></span><div class="text"><div class="label">典型场景</div><div class="desc">· <b>跑速监控</b>：每小时大概在花多少钱？<br>· <b>消耗进度</b>：哪些计划现在进度不足 50%？<br>· <b>异常预警</b>：某条爆款笔记的 CPUV 突然飙升<br>· <b>周报准备</b>：每周一早上 9 点拉上周完整数据</div></div></li>
+                  <li><span class="marker"></span><div class="text"><div class="label">一句话设置</div><div class="desc"><code>@项目: XXX 每天中午 12 点告诉我哪些计划消耗进度不足 50%</code> —— 这一句话就建好了一个定时任务</div></div></li>
+                </ul>
+                <div class="ai-example">
+                  <div class="label">⏰ 现在主界面入口</div>
+                  <div class="q">左侧栏「定时任务 <code>0/5</code>」+ 中央卡片「<b>自动盯盘 · 让 AI 定期跑数据，结果发到飞书</b>」</div>
+                </div>
+              </div>
+              <div class="body-visual">
+                <img src="棱镜AI主界面.jpg" alt="自动盯盘主界面">
+              </div>
+            </div>
+            <span class="slide-num">25 / 26</span>
+          </div>
+
+
+      <div class="slide divider">
+            <div class="glow-orb a"></div>
+            <div class="glow-orb b"></div>
+            <div class="grid-overlay"></div>
+            <h2 style="font-size: 156px; letter-spacing: -0.04em; line-height: 1;">Q<span class="accent">&amp;</span>A</h2>
+            <span class="slide-num" style="color: rgba(255,255,255,0.4);">26 / 26</span>
+          </div>
+
+    </div>
+  </div>
+
+<!-- Controls -->
+<div class="controls" id="controls">
+  <button class="ctrl-btn" id="prev" title="上一页 ←">
+    <svg viewBox="0 0 16 16" fill="none"><path d="M11 3L5 8L11 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </button>
+  <div class="ctrl-counter"><span class="current" id="curNum">1</span> <span class="total">/ 26</span></div>
+  <button class="ctrl-btn" id="next" title="下一页 →">
+    <svg viewBox="0 0 16 16" fill="none"><path d="M5 3L11 8L5 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </button>
+  <div style="width: 1px; height: 16px; background: rgba(255,255,255,0.15); margin: 0 4px;"></div>
+  <button class="ctrl-btn" id="fullscreen" title="全屏 F">
+    <svg viewBox="0 0 16 16" fill="none"><path d="M2 6V2H6M14 6V2H10M2 10V14H6M14 10V14H10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </button>
+</div>
+
+<div class="hint" id="hint">
+  <span class="kbd">←</span><span class="kbd">→</span> 翻页 · <span class="kbd">F</span> 全屏 · <span class="kbd">ESC</span> 退出
+</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const TOTAL = slides.length;
+  let current = 0;
+
+  const curNumEl = document.getElementById('curNum');
+  const progressFill = document.getElementById('progressFill');
+  const controls = document.getElementById('controls');
+  const deckWrap = document.getElementById('deckWrap');
+
+  // Fit deck to viewport
+  function fit() {
+    const margin = 40;
+    const scaleX = (window.innerWidth - margin * 2) / 1280;
+    const scaleY = (window.innerHeight - margin * 2) / 720;
+    const scale = Math.min(scaleX, scaleY);
+    deckWrap.style.setProperty('--scale', scale);
+  }
+  fit();
+  window.addEventListener('resize', fit);
+
+  function go(idx) {
+    if (idx < 0 || idx >= TOTAL) return;
+    slides[current].classList.remove('active');
+    current = idx;
+    slides[current].classList.add('active');
+    curNumEl.textContent = current + 1;
+    progressFill.style.width = ((current + 1) / TOTAL * 100) + '%';
+
+    const animated = slides[current].querySelectorAll('.step-node, .step-scene, .data-node, .data-arch-merge');
+    animated.forEach(el => {
+      el.style.animation = 'none';
+      void el.offsetWidth;
+      el.style.animation = '';
+    });
+
+    slides[current].querySelectorAll('video').forEach(v => { v.currentTime = 0; });
+  }
+
+  document.getElementById('prev').addEventListener('click', () => go(current - 1));
+  document.getElementById('next').addEventListener('click', () => go(current + 1));
+  document.getElementById('fullscreen').addEventListener('click', toggleFullscreen);
+
+  function toggleFullscreen() {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(() => {});
+    } else {
+      document.exitFullscreen();
+    }
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') {
+      e.preventDefault(); go(current + 1);
+    } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+      e.preventDefault(); go(current - 1);
+    } else if (e.key === 'f' || e.key === 'F') {
+      toggleFullscreen();
+    } else if (e.key === 'Home') {
+      go(0);
+    } else if (e.key === 'End') {
+      go(TOTAL - 1);
+    }
+  });
+
+  let idleTimer;
+  function resetIdle() {
+    document.body.classList.remove('idle');
+    controls.classList.add('visible');
+    clearTimeout(idleTimer);
+    idleTimer = setTimeout(() => {
+      document.body.classList.add('idle');
+      controls.classList.remove('visible');
+    }, 2500);
+  }
+  document.addEventListener('mousemove', resetIdle);
+  document.addEventListener('click', resetIdle);
+  resetIdle();
+
+  setTimeout(() => { document.body.classList.add('dismiss-hint'); }, 5000);
+
+  progressFill.style.width = (1 / TOTAL * 100) + '%';
+</script>
+
+</body>
+
+</html>

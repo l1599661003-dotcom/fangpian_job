@@ -1,0 +1,846 @@
+[
+  {
+    "id": "rec3ctmtoVpPJshhagP",
+    "fields": {
+      "候选人ID": "tal_95d65c18d7714439a802",
+      "入职单ID": "onboarding_9ed86b6a69164ff29d0f",
+      "创建时间": "2026-09-18T01:44:02.038Z",
+      "处理状态": "待处理",
+      "更新时间": "2026-09-18T01:44:02.038Z",
+      "节点类型": "入职一周回访",
+      "计划日期": "2026-09-25",
+      "试用期记录ID": "probation_eb6728a1a41a45158d1c"
+    },
+    "createdTime": "2026-09-18T01:44:02.079Z"
+  },
+  {
+    "id": "rec2NQiDrUSgTjUpbDF",
+    "fields": {
+      "候选人ID": "tal_95d65c18d7714439a802",
+      "入职单ID": "onboarding_9ed86b6a69164ff29d0f",
+      "创建时间": "2026-09-18T01:44:02.281Z",
+      "处理状态": "待处理",
+      "扩展信息JSON": "{\"evaluationUrl\":\"https://r5vd-1031.studio.fengbao.com/onboarding-review?onboarding_review_token=k27OxGx-OolvgJ1zpfjlQYKrxZBBm0kWnGLyMO3xZUw\"}",
+      "更新时间": "2026-10-18T00:00:13.482Z",
+      "节点类型": "试用期中期",
+      "计划日期": "2026-10-18",
+      "试用期记录ID": "probation_aae8dba6bef7416fb74c",
+      "通知时间": "2026-10-18T00:00:13.482Z",
+      "通知状态": "已发送"
+    },
+    "createdTime": "2026-09-18T01:44:02.322Z",
+    "lastModifiedTime": "2026-10-18T00:00:13.525Z"
+  },
+  {
+    "id": "recJ07KJfAl63tZLEEM",
+    "fields": {
+      "候选人ID": "tal_95d65c18d7714439a802",
+      "入职单ID": "onboarding_9ed86b6a69164ff29d0f",
+      "创建时间": "2026-09-18T01:44:02.523Z",
+      "处理状态": "待处理",
+      "更新时间": "2026-09-18T01:44:02.523Z",
+      "节点类型": "转正评估",
+      "计划日期": "2026-12-18",
+      "试用期记录ID": "probation_e5969e1c96bb4fe0bbe1"
+    },
+    "createdTime": "2026-09-18T01:44:02.564Z"
+  },
+  {
+    "id": "recMKFOQs1fZxacMcTc",
+    "fields": {
+      "候选人ID": "tal_da8e9a6bd3bc46238855",
+      "入职单ID": "onboarding_4e10eae211874b9b9433",
+      "创建时间": "2026-09-23T17:26:43.460Z",
+      "处理状态": "待处理",
+      "更新时间": "2026-09-23T17:26:43.460Z",
+      "节点类型": "入职一周回访",
+      "计划日期": "2026-09-30",
+      "试用期记录ID": "probation_f93e7f990bf34731a281",
+      "通知状态": "待发送"
+    },
+    "createdTime": "2026-09-23T17:26:43.498Z"
+  },
+  {
+    "id": "rec3SyxQmPeYrBmAlb5",
+    "fields": {
+      "候选人ID": "tal_da8e9a6bd3bc46238855",
+      "入职单ID": "onboarding_4e10eae211874b9b9433",
+      "创建时间": "2026-09-23T17:26:43.685Z",
+      "处理状态": "待处理",
+      "扩展信息JSON": "{\"evaluationUrl\":\"https://r5vd-1031.studio.fengbao.com/onboarding-review?onboarding_review_token=0xpaphZZlKDcuBbHfb117Rhv9Bj4X-BlN9CpcX6zjAQ\"}",
+      "更新时间": "2026-10-23T00:00:15.924Z",
+      "节点类型": "入职一月评价",
+      "计划日期": "2026-10-23",
+      "试用期记录ID": "probation_a53fa558aeb842998a88",
+      "通知时间": "2026-10-23T00:00:15.924Z",
+      "通知状态": "已发送"
+    },
+    "createdTime": "2026-09-23T17:26:43.724Z",
+    "lastModifiedTime": "2026-10-23T00:00:15.968Z"
+  },
+  {
+    "id": "recjRfMaBcfbSLXEHWf",
+    "fields": {
+      "候选人ID": "tal_da8e9a6bd3bc46238855",
+      "入职单ID": "onboarding_4e10eae211874b9b9433",
+      "创建时间": "2026-09-23T17:26:43.906Z",
+      "处理状态": "待处理",
+      "更新时间": "2026-09-23T17:26:43.906Z",
+      "节点类型": "转正评估",
+      "计划日期": "2026-12-23",
+      "试用期记录ID": "probation_9140f48b96f545d18473",
+      "通知状态": "待发送"
+    },
+    "createdTime": "2026-09-23T17:26:43.945Z"
+  },
+  {
+    "id": "recms4nMs8rkLsaM1Au",
+    "fields": {
+      "候选人ID": "tal_4a79f06bec2446afab0a",
+      "入职单ID": "onboarding_1cb9497ee1cc4e92a9ca",
+      "创建时间": "2026-09-23T17:29:34.274Z",
+      "处理状态": "待处理",
+      "更新时间": "2026-09-23T17:29:34.274Z",
+      "节点类型": "入职一周回访",
+      "计划日期": "2026-09-30",
+      "试用期记录ID": "probation_5288393b11824d789418",
+      "通知状态": "待发送"
+    },
+    "createdTime": "2026-09-23T17:29:34.315Z"
+  },
+  {
+    "id": "recpbHg3mwnquJTmTPF",
+    "fields": {
+      "候选人ID": "tal_4a79f06bec2446afab0a",
+      "入职单ID": "onboarding_1cb9497ee1cc4e92a9ca",
+      "创建时间": "2026-09-23T17:29:34.495Z",
+      "处理状态": "待处理",
+      "扩展信息JSON": "{\"evaluationUrl\":\"https://r5vd-1031.studio.fengbao.com/onboarding-review?onboarding_review_token=8nAqy8PYXOcJfpnJqhGXpAa82Fy_73xe4gau9_QpH3U\"}",
+      "更新时间": "2026-10-23T00:00:17.433Z",
+      "节点类型": "入职一月评价",
+      "计划日期": "2026-10-23",
+      "试用期记录ID": "probation_07bf67ab7d4a48678d24",
+      "通知时间": "2026-10-23T00:00:17.433Z",
+      "通知状态": "已发送"
+    },
+    "createdTime": "2026-09-23T17:29:34.536Z",
+    "lastModifiedTime": "2026-10-23T00:00:17.478Z"
+  },
+  {
+    "id": "rechM2jJbAMdQXdwkih",
+    "fields": {
+      "候选人ID": "tal_4a79f06bec2446afab0a",
+      "入职单ID": "onboarding_1cb9497ee1cc4e92a9ca",
+      "创建时间": "2026-09-23T17:29:34.722Z",
+      "处理状态": "待处理",
+      "更新时间": "2026-09-23T17:29:34.722Z",
+      "节点类型": "转正评估",
+      "计划日期": "2026-12-23",
+      "试用期记录ID": "probation_b2dff1c667ae40359c51",
+      "通知状态": "待发送"
+    },
+    "createdTime": "2026-09-23T17:29:34.764Z"
+  },
+  {
+    "id": "recTUZ1namTW8uOFMJb",
+    "fields": {
+      "候选人ID": "tal_935ff3695bea4862a418",
+      "入职单ID": "onboarding_3f9c5b896ad84956858d",
+      "创建时间": "2026-09-23T17:30:01.981Z",
+      "处理状态": "待处理",
+      "更新时间": "2026-09-23T17:30:01.981Z",
+      "节点类型": "入职一周回访",
+      "计划日期": "2026-09-30",
+      "试用期记录ID": "probation_f5996a888e6f4143ac1f",
+      "通知状态": "待发送"
+    },
+    "createdTime": "2026-09-23T17:30:02.021Z"
+  },
+  {
+    "id": "recRydCavVe1YkdSXoJ",
+    "fields": {
+      "候选人ID": "tal_935ff3695bea4862a418",
+      "入职单ID": "onboarding_3f9c5b896ad84956858d",
+      "创建时间": "2026-09-23T17:30:02.209Z",
+      "处理状态": "待处理",
+      "扩展信息JSON": "{\"evaluationUrl\":\"https://r5vd-1031.studio.fengbao.com/onboarding-review?onboarding_review_token=rULxqIOywhxF9j54l0RSTwPl0b7W-Ld3ZDGHz8xJZEM\"}",
+      "更新时间": "2026-10-23T00:00:19.028Z",
+      "节点类型": "入职一月评价",
+      "计划日期": "2026-10-23",
+      "试用期记录ID": "probation_adab466fcbc54338b625",
+      "通知时间": "2026-10-23T00:00:19.028Z",
+      "通知状态": "已发送"
+    },
+    "createdTime": "2026-09-23T17:30:02.250Z",
+    "lastModifiedTime": "2026-10-23T00:00:19.078Z"
+  },
+  {
+    "id": "recgDusIkG2TFTmX7na",
+    "fields": {
+      "候选人ID": "tal_935ff3695bea4862a418",
+      "入职单ID": "onboarding_3f9c5b896ad84956858d",
+      "创建时间": "2026-09-23T17:30:02.452Z",
+      "处理状态": "待处理",
+      "更新时间": "2026-09-23T17:30:02.452Z",
+      "节点类型": "转正评估",
+      "计划日期": "2026-12-23",
+      "试用期记录ID": "probation_f07f61fa0ff94a90843e",
+      "通知状态": "待发送"
+    },
+    "createdTime": "2026-09-23T17:30:02.493Z"
+  },
+  {
+    "id": "rec3ZBPR9PA9yFNi9sX",
+    "fields": {
+      "候选人ID": "tal_529cdba048204c25809d",
+      "入职单ID": "onboarding_0b04cc162f84478db5dc",
+      "创建时间": "2026-09-23T17:30:42.837Z",
+      "处理状态": "待处理",
+      "更新时间": "2026-09-23T17:30:42.837Z",
+      "节点类型": "入职一周回访",
+      "计划日期": "2026-09-30",
+      "试用期记录ID": "probation_6245dbf089554beb847d",
+      "通知状态": "待发送"
+    },
+    "createdTime": "2026-09-23T17:30:42.877Z"
+  },
+  {
+    "id": "recBN7K4WT0FUc7LguN",
+    "fields": {
+      "候选人ID": "tal_529cdba048204c25809d",
+      "入职单ID": "onboarding_0b04cc162f84478db5dc",
+      "创建时间": "2026-09-23T17:30:43.053Z",
+      "处理状态": "待处理",
+      "扩展信息JSON": "{\"evaluationUrl\":\"https://r5vd-1031.studio.fengbao.com/onboarding-review?onboarding_review_token=0dzmDa5zU8WcY3gl5JBr5JyTV3Cx_bElMTH9lmLlcDo\"}",
+      "更新时间": "2026-10-23T00:00:20.441Z",
+      "节点类型": "入职一月评价",
+      "计划日期": "2026-10-23",
+      "试用期记录ID": "probation_7ac112cbea4545209f0c",
+      "通知时间": "2026-10-23T00:00:20.441Z",
+      "通知状态": "已发送"
+    },
+    "createdTime": "2026-09-23T17:30:43.093Z",
+    "lastModifiedTime": "2026-10-23T00:00:20.484Z"
+  },
+  {
+    "id": "recESUKnD4RS3u32X1I",
+    "fields": {
+      "候选人ID": "tal_529cdba048204c25809d",
+      "入职单ID": "onboarding_0b04cc162f84478db5dc",
+      "创建时间": "2026-09-23T17:30:43.274Z",
+      "处理状态": "待处理",
+      "更新时间": "2026-09-23T17:30:43.274Z",
+      "节点类型": "转正评估",
+      "计划日期": "2026-12-23",
+      "试用期记录ID": "probation_301816c4859b477ab8f7",
+      "通知状态": "待发送"
+    },
+    "createdTime": "2026-09-23T17:30:43.311Z"
+  },
+  {
+    "id": "recnkk3K7IXQzwsKzzf",
+    "fields": {
+      "候选人ID": "tal_20e73a6df1ed449585ff",
+      "入职单ID": "onboarding_af856b511bec4a818fd3",
+      "创建时间": "2026-09-23T17:31:05.636Z",
+      "处理状态": "待处理",
+      "更新时间": "2026-09-23T17:31:05.636Z",
+      "节点类型": "入职一周回访",
+      "计划日期": "2026-09-30",
+      "试用期记录ID": "probation_ae4b82cc28064bbabc22",
+      "通知状态": "待发送"
+    },
+    "createdTime": "2026-09-23T17:31:05.674Z"
+  },
+  {
+    "id": "recsC3VjA4HUkk1DpQU",
+    "fields": {
+      "候选人ID": "tal_20e73a6df1ed449585ff",
+      "入职单ID": "onboarding_af856b511bec4a818fd3",
+      "创建时间": "2026-09-23T17:31:05.864Z",
+      "处理状态": "待处理",
+      "扩展信息JSON": "{\"evaluationUrl\":\"https://r5vd-1031.studio.fengbao.com/onboarding-review?onboarding_review_token=ogfiOBsOg9HWnS8w7waYpj-lOj55lGAoflPvpXlRgPY\"}",
+      "更新时间": "2026-10-23T00:00:21.866Z",
+      "节点类型": "入职一月评价",
+      "计划日期": "2026-10-23",
+      "试用期记录ID": "probation_69eb0e62d41d49dd88d0",
+      "通知时间": "2026-10-23T00:00:21.866Z",
+      "通知状态": "已发送"
+    },
+    "createdTime": "2026-09-23T17:31:05.903Z",
+    "lastModifiedTime": "2026-10-23T00:00:21.909Z"
+  },
+  {
+    "id": "recfE7Dyd9zOuD1Vn8r",
+    "fields": {
+      "候选人ID": "tal_20e73a6df1ed449585ff",
+      "入职单ID": "onboarding_af856b511bec4a818fd3",
+      "创建时间": "2026-09-23T17:31:06.082Z",
+      "处理状态": "待处理",
+      "更新时间": "2026-09-23T17:31:06.082Z",
+      "节点类型": "转正评估",
+      "计划日期": "2026-12-23",
+      "试用期记录ID": "probation_399195f2a6ca4f92b750",
+      "通知状态": "待发送"
+    },
+    "createdTime": "2026-09-23T17:31:06.120Z"
+  },
+  {
+    "id": "recvQZbwU90InxlUEc4",
+    "fields": {
+      "候选人ID": "tal_53bffbd745af4d1ea676",
+      "入职单ID": "onboarding_f337b0c410f144369d06",
+      "创建时间": "2026-09-23T17:31:23.770Z",
+      "处理状态": "待处理",
+      "更新时间": "2026-09-23T17:31:23.770Z",
+      "节点类型": "入职一周回访",
+      "计划日期": "2026-09-30",
+      "试用期记录ID": "probation_411953fc216e48debd8b",
+      "通知状态": "待发送"
+    },
+    "createdTime": "2026-09-23T17:31:23.810Z"
+  },
+  {
+    "id": "recYJgNuGm1wS4y3tnT",
+    "fields": {
+      "候选人ID": "tal_53bffbd745af4d1ea676",
+      "入职单ID": "onboarding_f337b0c410f144369d06",
+      "创建时间": "2026-09-23T17:31:23.992Z",
+      "处理状态": "待处理",
+      "扩展信息JSON": "{\"evaluationUrl\":\"https://r5vd-1031.studio.fengbao.com/onboarding-review?onboarding_review_token=5YKix05tC9_l3yZIeC5EyIlXBwvt7_XHMjAZoEBq_Xk\"}",
+      "更新时间": "2026-10-23T00:00:23.362Z",
+      "节点类型": "入职一月评价",
+      "计划日期": "2026-10-23",
+      "试用期记录ID": "probation_2db6b5a3f117411181f4",
+      "通知时间": "2026-10-23T00:00:23.362Z",
+      "通知状态": "已发送"
+    },
+    "createdTime": "2026-09-23T17:31:24.030Z",
+    "lastModifiedTime": "2026-10-23T00:00:23.404Z"
+  },
+  {
+    "id": "recnn2RNTk3dw3bk8Wx",
+    "fields": {
+      "候选人ID": "tal_53bffbd745af4d1ea676",
+      "入职单ID": "onboarding_f337b0c410f144369d06",
+      "创建时间": "2026-09-23T17:31:24.212Z",
+      "处理状态": "待处理",
+      "更新时间": "2026-09-23T17:31:24.212Z",
+      "节点类型": "转正评估",
+      "计划日期": "2026-12-23",
+      "试用期记录ID": "probation_5b7cd5f1d3784cb2b0f9",
+      "通知状态": "待发送"
+    },
+    "createdTime": "2026-09-23T17:31:24.250Z"
+  },
+  {
+    "id": "recyB1jQHK8Q3fZgcs5",
+    "fields": {
+      "候选人ID": "tal_b9db837602db4efdabd6",
+      "入职单ID": "onboarding_19eee494184d41ee8234",
+      "创建时间": "2026-09-23T17:31:43.684Z",
+      "处理状态": "待处理",
+      "更新时间": "2026-09-23T17:31:43.684Z",
+      "节点类型": "入职一周回访",
+      "计划日期": "2026-09-30",
+      "试用期记录ID": "probation_cb16865f9e484e5ba528",
+      "通知状态": "待发送"
+    },
+    "createdTime": "2026-09-23T17:31:43.724Z"
+  },
+  {
+    "id": "recFn6J0deWAvdG1NwM",
+    "fields": {
+      "候选人ID": "tal_b9db837602db4efdabd6",
+      "入职单ID": "onboarding_19eee494184d41ee8234",
+      "创建时间": "2026-09-23T17:31:43.936Z",
+      "处理状态": "待处理",
+      "扩展信息JSON": "{\"evaluationUrl\":\"https://r5vd-1031.studio.fengbao.com/onboarding-review?onboarding_review_token=86souORthgN_M2_3EiVWyi7YWz4iES7jVCe1yoUUD0g\"}",
+      "更新时间": "2026-10-23T00:00:24.905Z",
+      "节点类型": "入职一月评价",
+      "计划日期": "2026-10-23",
+      "试用期记录ID": "probation_ce73ff47c756428daf8d",
+      "通知时间": "2026-10-23T00:00:24.905Z",
+      "通知状态": "已发送"
+    },
+    "createdTime": "2026-09-23T17:31:43.975Z",
+    "lastModifiedTime": "2026-10-23T00:00:24.957Z"
+  },
+  {
+    "id": "recnlBd6kYWKxQ3Ruq4",
+    "fields": {
+      "候选人ID": "tal_b9db837602db4efdabd6",
+      "入职单ID": "onboarding_19eee494184d41ee8234",
+      "创建时间": "2026-09-23T17:31:44.164Z",
+      "处理状态": "待处理",
+      "更新时间": "2026-09-23T17:31:44.164Z",
+      "节点类型": "转正评估",
+      "计划日期": "2026-12-23",
+      "试用期记录ID": "probation_812740d468354a6b943e",
+      "通知状态": "待发送"
+    },
+    "createdTime": "2026-09-23T17:31:44.206Z"
+  },
+  {
+    "id": "recj4Rck5HueZo9UeaA",
+    "fields": {
+      "候选人ID": "tal_34aa41895e1e40218301",
+      "入职单ID": "onboarding_92a802e12ac949d4a3f0",
+      "创建时间": "2026-09-23T17:32:02.321Z",
+      "处理状态": "待处理",
+      "更新时间": "2026-09-23T17:32:02.321Z",
+      "节点类型": "入职一周回访",
+      "计划日期": "2026-09-30",
+      "试用期记录ID": "probation_b68c8cbb39a94fa7b270",
+      "通知状态": "待发送"
+    },
+    "createdTime": "2026-09-23T17:32:02.366Z"
+  },
+  {
+    "id": "recwDtqUuhbZYib4en0",
+    "fields": {
+      "候选人ID": "tal_34aa41895e1e40218301",
+      "入职单ID": "onboarding_92a802e12ac949d4a3f0",
+      "创建时间": "2026-09-23T17:32:02.580Z",
+      "处理状态": "待处理",
+      "扩展信息JSON": "{\"evaluationUrl\":\"https://r5vd-1031.studio.fengbao.com/onboarding-review?onboarding_review_token=BeqHZclc6ekjWdgpS5mDn8GEmkZpMyk1VzrpQg267Jo\"}",
+      "更新时间": "2026-10-23T00:00:26.358Z",
+      "节点类型": "入职一月评价",
+      "计划日期": "2026-10-23",
+      "试用期记录ID": "probation_22d2e9898d5c40d1b4d3",
+      "通知时间": "2026-10-23T00:00:26.358Z",
+      "通知状态": "已发送"
+    },
+    "createdTime": "2026-09-23T17:32:02.620Z",
+    "lastModifiedTime": "2026-10-23T00:00:26.397Z"
+  },
+  {
+    "id": "rece22zD6HZb8Az234y",
+    "fields": {
+      "候选人ID": "tal_34aa41895e1e40218301",
+      "入职单ID": "onboarding_92a802e12ac949d4a3f0",
+      "创建时间": "2026-09-23T17:32:02.815Z",
+      "处理状态": "待处理",
+      "更新时间": "2026-09-23T17:32:02.815Z",
+      "节点类型": "转正评估",
+      "计划日期": "2026-12-23",
+      "试用期记录ID": "probation_57568c6d32b142f1ac6e",
+      "通知状态": "待发送"
+    },
+    "createdTime": "2026-09-23T17:32:02.863Z"
+  },
+  {
+    "id": "recrMUPX58Qi430YsyY",
+    "fields": {
+      "候选人ID": "tal_6e1ae80d06014222ac58",
+      "入职单ID": "onboarding_05eca0be92324b189c5d",
+      "创建时间": "2026-09-23T17:32:24.384Z",
+      "处理状态": "待处理",
+      "更新时间": "2026-09-23T17:32:24.384Z",
+      "节点类型": "入职一周回访",
+      "计划日期": "2026-09-30",
+      "试用期记录ID": "probation_a613c8fda79b42a79357",
+      "通知状态": "待发送"
+    },
+    "createdTime": "2026-09-23T17:32:24.423Z"
+  },
+  {
+    "id": "recwO8g0bmwN0fMofHT",
+    "fields": {
+      "候选人ID": "tal_6e1ae80d06014222ac58",
+      "入职单ID": "onboarding_05eca0be92324b189c5d",
+      "创建时间": "2026-09-23T17:32:24.590Z",
+      "处理状态": "待处理",
+      "扩展信息JSON": "{\"evaluationUrl\":\"https://r5vd-1031.studio.fengbao.com/onboarding-review?onboarding_review_token=W_u6V3esSo-rE_bULhnJxkMXMw1VkxrSpUrh_TKZ65c\"}",
+      "更新时间": "2026-10-23T00:00:27.696Z",
+      "节点类型": "入职一月评价",
+      "计划日期": "2026-10-23",
+      "试用期记录ID": "probation_df744ee343ce4d64a76f",
+      "通知时间": "2026-10-23T00:00:27.696Z",
+      "通知状态": "已发送"
+    },
+    "createdTime": "2026-09-23T17:32:24.628Z",
+    "lastModifiedTime": "2026-10-23T00:00:27.734Z"
+  },
+  {
+    "id": "recBUmVseoplUnJN4Zb",
+    "fields": {
+      "候选人ID": "tal_6e1ae80d06014222ac58",
+      "入职单ID": "onboarding_05eca0be92324b189c5d",
+      "创建时间": "2026-09-23T17:32:24.800Z",
+      "处理状态": "待处理",
+      "更新时间": "2026-09-23T17:32:24.800Z",
+      "节点类型": "转正评估",
+      "计划日期": "2026-12-23",
+      "试用期记录ID": "probation_76c4202ae24244169f19",
+      "通知状态": "待发送"
+    },
+    "createdTime": "2026-09-23T17:32:24.838Z"
+  },
+  {
+    "id": "recZZtWFzgMzeHjqKAn",
+    "fields": {
+      "候选人ID": "tal_3d1ab4a32b45421386b0",
+      "入职单ID": "onboarding_949e60e321d94889a21d",
+      "创建时间": "2026-09-23T17:32:46.415Z",
+      "处理状态": "待处理",
+      "更新时间": "2026-09-23T17:32:46.415Z",
+      "节点类型": "入职一周回访",
+      "计划日期": "2026-09-30",
+      "试用期记录ID": "probation_13216d79368047a586c8",
+      "通知状态": "待发送"
+    },
+    "createdTime": "2026-09-23T17:32:46.454Z"
+  },
+  {
+    "id": "recsxE6pdkf5Yb6awwQ",
+    "fields": {
+      "候选人ID": "tal_3d1ab4a32b45421386b0",
+      "入职单ID": "onboarding_949e60e321d94889a21d",
+      "创建时间": "2026-09-23T17:32:46.631Z",
+      "处理状态": "待处理",
+      "扩展信息JSON": "{\"evaluationUrl\":\"https://r5vd-1031.studio.fengbao.com/onboarding-review?onboarding_review_token=77lwHc6MbMpbjVWlo6YLHnmii-9OrXXCMSVZSexk4IQ\"}",
+      "更新时间": "2026-10-23T00:00:28.969Z",
+      "节点类型": "入职一月评价",
+      "计划日期": "2026-10-23",
+      "试用期记录ID": "probation_a55141b91bd840d4806c",
+      "通知时间": "2026-10-23T00:00:28.969Z",
+      "通知状态": "已发送"
+    },
+    "createdTime": "2026-09-23T17:32:46.672Z",
+    "lastModifiedTime": "2026-10-23T00:00:29.007Z"
+  },
+  {
+    "id": "reciT9mK94A49ZI8HsF",
+    "fields": {
+      "候选人ID": "tal_3d1ab4a32b45421386b0",
+      "入职单ID": "onboarding_949e60e321d94889a21d",
+      "创建时间": "2026-09-23T17:32:46.835Z",
+      "处理状态": "待处理",
+      "更新时间": "2026-09-23T17:32:46.835Z",
+      "节点类型": "转正评估",
+      "计划日期": "2026-12-23",
+      "试用期记录ID": "probation_9b9590079aca4416becb",
+      "通知状态": "待发送"
+    },
+    "createdTime": "2026-09-23T17:32:46.873Z"
+  },
+  {
+    "id": "rec2KBz0alpcS8w6lUf",
+    "fields": {
+      "候选人ID": "tal_863429a7fce14583badf",
+      "入职单ID": "onboarding_3fbcc4d4fc8b4efeb0d8",
+      "创建时间": "2026-09-23T17:33:13.258Z",
+      "处理状态": "待处理",
+      "更新时间": "2026-09-23T17:33:13.258Z",
+      "节点类型": "入职一周回访",
+      "计划日期": "2026-09-30",
+      "试用期记录ID": "probation_43594cfc1229491b8b95",
+      "通知状态": "待发送"
+    },
+    "createdTime": "2026-09-23T17:33:13.298Z"
+  },
+  {
+    "id": "recBH7njHYOyGzu3hsM",
+    "fields": {
+      "候选人ID": "tal_863429a7fce14583badf",
+      "入职单ID": "onboarding_3fbcc4d4fc8b4efeb0d8",
+      "创建时间": "2026-09-23T17:33:13.475Z",
+      "处理状态": "待处理",
+      "扩展信息JSON": "{\"evaluationUrl\":\"https://r5vd-1031.studio.fengbao.com/onboarding-review?onboarding_review_token=0GbldSf1Me0cB3damn_7ISDNuGHT4cBRli50M2hYGHQ\"}",
+      "更新时间": "2026-10-23T00:00:30.327Z",
+      "节点类型": "入职一月评价",
+      "计划日期": "2026-10-23",
+      "试用期记录ID": "probation_191ee5cad22f4c4fb75d",
+      "通知时间": "2026-10-23T00:00:30.327Z",
+      "通知状态": "已发送"
+    },
+    "createdTime": "2026-09-23T17:33:13.513Z",
+    "lastModifiedTime": "2026-10-23T00:00:30.371Z"
+  },
+  {
+    "id": "recXyFIlEYNwog4hDFa",
+    "fields": {
+      "候选人ID": "tal_863429a7fce14583badf",
+      "入职单ID": "onboarding_3fbcc4d4fc8b4efeb0d8",
+      "创建时间": "2026-09-23T17:33:13.695Z",
+      "处理状态": "待处理",
+      "更新时间": "2026-09-23T17:33:13.695Z",
+      "节点类型": "转正评估",
+      "计划日期": "2026-12-23",
+      "试用期记录ID": "probation_ddc95972deaf406ebe10",
+      "通知状态": "待发送"
+    },
+    "createdTime": "2026-09-23T17:33:13.733Z"
+  },
+  {
+    "id": "recnKIqvFub7mAkwIZg",
+    "fields": {
+      "候选人ID": "tal_d66af3c9b8b44d10a8ba",
+      "入职单ID": "onboarding_bb1959e18b7047aca23a",
+      "创建时间": "2026-10-21T07:11:28.630Z",
+      "处理状态": "待处理",
+      "更新时间": "2026-10-21T07:11:28.630Z",
+      "节点类型": "入职一周回访",
+      "计划日期": "2026-10-28",
+      "试用期记录ID": "probation_b038b1681a28432e98d9",
+      "通知状态": "待发送"
+    },
+    "createdTime": "2026-10-21T07:11:28.694Z"
+  },
+  {
+    "id": "recNNJ2gUFA2pgM1li2",
+    "fields": {
+      "候选人ID": "tal_d66af3c9b8b44d10a8ba",
+      "入职单ID": "onboarding_bb1959e18b7047aca23a",
+      "创建时间": "2026-10-21T07:11:28.942Z",
+      "处理状态": "待处理",
+      "更新时间": "2026-10-21T07:11:28.942Z",
+      "节点类型": "入职一月评价",
+      "计划日期": "2026-11-21",
+      "试用期记录ID": "probation_639f7e708d3346d3b46e",
+      "通知状态": "待发送"
+    },
+    "createdTime": "2026-10-21T07:11:28.986Z"
+  },
+  {
+    "id": "recUda1Yt6aDHFUcF3O",
+    "fields": {
+      "候选人ID": "tal_d66af3c9b8b44d10a8ba",
+      "入职单ID": "onboarding_bb1959e18b7047aca23a",
+      "创建时间": "2026-10-21T07:11:29.186Z",
+      "处理状态": "待处理",
+      "更新时间": "2026-10-21T07:11:29.186Z",
+      "节点类型": "转正评估",
+      "计划日期": "2027-01-21",
+      "试用期记录ID": "probation_cdaf0e8a259042489ff6",
+      "通知状态": "待发送"
+    },
+    "createdTime": "2026-10-21T07:11:29.231Z"
+  },
+  {
+    "id": "recafzVeum48Ha2xOlz",
+    "fields": {
+      "候选人ID": "tal_317e24b026db42c1bfe1",
+      "入职单ID": "onboarding_be770041d5ff430ba105",
+      "创建时间": "2026-10-21T07:13:30.008Z",
+      "处理状态": "待处理",
+      "更新时间": "2026-10-21T07:13:30.008Z",
+      "节点类型": "入职一周回访",
+      "计划日期": "2026-10-28",
+      "试用期记录ID": "probation_56dc22b8bbb448578954",
+      "通知状态": "待发送"
+    },
+    "createdTime": "2026-10-21T07:13:30.047Z"
+  },
+  {
+    "id": "recouNd3HrKIKxVVR82",
+    "fields": {
+      "候选人ID": "tal_317e24b026db42c1bfe1",
+      "入职单ID": "onboarding_be770041d5ff430ba105",
+      "创建时间": "2026-10-21T07:13:30.225Z",
+      "处理状态": "待处理",
+      "更新时间": "2026-10-21T07:13:30.225Z",
+      "节点类型": "入职一月评价",
+      "计划日期": "2026-11-21",
+      "试用期记录ID": "probation_96f7ce4e424248909939",
+      "通知状态": "待发送"
+    },
+    "createdTime": "2026-10-21T07:13:30.262Z"
+  },
+  {
+    "id": "recrPwqC1L27mE0tzHj",
+    "fields": {
+      "候选人ID": "tal_317e24b026db42c1bfe1",
+      "入职单ID": "onboarding_be770041d5ff430ba105",
+      "创建时间": "2026-10-21T07:13:30.436Z",
+      "处理状态": "待处理",
+      "更新时间": "2026-10-21T07:13:30.436Z",
+      "节点类型": "转正评估",
+      "计划日期": "2027-01-21",
+      "试用期记录ID": "probation_c9a33a41f11a40ce85cd",
+      "通知状态": "待发送"
+    },
+    "createdTime": "2026-10-21T07:13:30.475Z"
+  },
+  {
+    "id": "recEYmOGNojTCACFZeW",
+    "fields": {
+      "候选人ID": "tal_b611d78fb8864486a524",
+      "入职单ID": "onboarding_8b874909abf843ecaff8",
+      "创建时间": "2026-10-21T07:16:21.232Z",
+      "处理状态": "待处理",
+      "更新时间": "2026-10-21T07:16:21.232Z",
+      "节点类型": "入职一周回访",
+      "计划日期": "2026-10-28",
+      "试用期记录ID": "probation_7d0b89968bf745b4bdb2",
+      "通知状态": "待发送"
+    },
+    "createdTime": "2026-10-21T07:16:21.273Z"
+  },
+  {
+    "id": "recQuqyAOAKKetuq3CD",
+    "fields": {
+      "候选人ID": "tal_b611d78fb8864486a524",
+      "入职单ID": "onboarding_8b874909abf843ecaff8",
+      "创建时间": "2026-10-21T07:16:21.470Z",
+      "处理状态": "待处理",
+      "更新时间": "2026-10-21T07:16:21.470Z",
+      "节点类型": "入职一月评价",
+      "计划日期": "2026-11-21",
+      "试用期记录ID": "probation_76465984e6d045eaa816",
+      "通知状态": "待发送"
+    },
+    "createdTime": "2026-10-21T07:16:21.514Z"
+  },
+  {
+    "id": "recQE32vOFwLHHRlIw7",
+    "fields": {
+      "候选人ID": "tal_b611d78fb8864486a524",
+      "入职单ID": "onboarding_8b874909abf843ecaff8",
+      "创建时间": "2026-10-21T07:16:21.700Z",
+      "处理状态": "待处理",
+      "更新时间": "2026-10-21T07:16:21.700Z",
+      "节点类型": "转正评估",
+      "计划日期": "2027-01-21",
+      "试用期记录ID": "probation_8dc448dbdda34f61bc72",
+      "通知状态": "待发送"
+    },
+    "createdTime": "2026-10-21T07:16:21.739Z"
+  },
+  {
+    "id": "recd79lkRNIjMG0SuOw",
+    "fields": {
+      "候选人ID": "tal_d808651adbf74495ba5c",
+      "入职单ID": "onboarding_82eeee8b8d17440fadd1",
+      "创建时间": "2026-10-21T07:16:48.664Z",
+      "处理状态": "待处理",
+      "更新时间": "2026-10-21T07:16:48.664Z",
+      "节点类型": "入职一周回访",
+      "计划日期": "2026-10-28",
+      "试用期记录ID": "probation_0e694fb8421742b6afeb",
+      "通知状态": "待发送"
+    },
+    "createdTime": "2026-10-21T07:16:48.704Z"
+  },
+  {
+    "id": "receA1DMS4giM79UBtT",
+    "fields": {
+      "候选人ID": "tal_d808651adbf74495ba5c",
+      "入职单ID": "onboarding_82eeee8b8d17440fadd1",
+      "创建时间": "2026-10-21T07:16:48.877Z",
+      "处理状态": "待处理",
+      "更新时间": "2026-10-21T07:16:48.877Z",
+      "节点类型": "入职一月评价",
+      "计划日期": "2026-11-21",
+      "试用期记录ID": "probation_d6d87d5c3b604a67b7d8",
+      "通知状态": "待发送"
+    },
+    "createdTime": "2026-10-21T07:16:48.914Z"
+  },
+  {
+    "id": "recfXCnYUswdmxE7V1d",
+    "fields": {
+      "候选人ID": "tal_d808651adbf74495ba5c",
+      "入职单ID": "onboarding_82eeee8b8d17440fadd1",
+      "创建时间": "2026-10-21T07:16:49.072Z",
+      "处理状态": "待处理",
+      "更新时间": "2026-10-21T07:16:49.072Z",
+      "节点类型": "转正评估",
+      "计划日期": "2027-01-21",
+      "试用期记录ID": "probation_59f02fac57d9468788f0",
+      "通知状态": "待发送"
+    },
+    "createdTime": "2026-10-21T07:16:49.110Z"
+  },
+  {
+    "id": "recrKCEyebbcZ9FsqSv",
+    "fields": {
+      "候选人ID": "tal_23d0817530ae4f1f9c87",
+      "入职单ID": "onboarding_d3a48336e9cd41d994aa",
+      "创建时间": "2026-10-21T07:25:29.431Z",
+      "处理状态": "待处理",
+      "更新时间": "2026-10-21T07:25:29.431Z",
+      "节点类型": "入职一周回访",
+      "计划日期": "2026-10-28",
+      "试用期记录ID": "probation_dc37f02d13bf4032bcf1",
+      "通知状态": "待发送"
+    },
+    "createdTime": "2026-10-21T07:25:29.472Z"
+  },
+  {
+    "id": "recZ3qkAMk71IRaDAVt",
+    "fields": {
+      "候选人ID": "tal_23d0817530ae4f1f9c87",
+      "入职单ID": "onboarding_d3a48336e9cd41d994aa",
+      "创建时间": "2026-10-21T07:25:29.680Z",
+      "处理状态": "待处理",
+      "更新时间": "2026-10-21T07:25:29.680Z",
+      "节点类型": "入职一月评价",
+      "计划日期": "2026-11-21",
+      "试用期记录ID": "probation_f8aa9affdb86413287e1",
+      "通知状态": "待发送"
+    },
+    "createdTime": "2026-10-21T07:25:29.723Z"
+  },
+  {
+    "id": "recbdb3wS1133zeQAHm",
+    "fields": {
+      "候选人ID": "tal_23d0817530ae4f1f9c87",
+      "入职单ID": "onboarding_d3a48336e9cd41d994aa",
+      "创建时间": "2026-10-21T07:25:29.923Z",
+      "处理状态": "待处理",
+      "更新时间": "2026-10-21T07:25:29.923Z",
+      "节点类型": "转正评估",
+      "计划日期": "2027-01-21",
+      "试用期记录ID": "probation_91ab9f8cbd864e79872d",
+      "通知状态": "待发送"
+    },
+    "createdTime": "2026-10-21T07:25:29.966Z"
+  },
+  {
+    "id": "recxJjqbuJCHaOKk4J8",
+    "fields": {
+      "候选人ID": "tal_b29d0a52988f43fc9622",
+      "入职单ID": "onboarding_0ef972a022134a499a1b",
+      "创建时间": "2026-10-21T08:22:49.136Z",
+      "处理状态": "待处理",
+      "更新时间": "2026-10-21T08:22:49.136Z",
+      "节点类型": "入职一周回访",
+      "计划日期": "2026-10-28",
+      "试用期记录ID": "probation_5c860c3c445148aea046",
+      "通知状态": "待发送"
+    },
+    "createdTime": "2026-10-21T08:22:49.177Z"
+  },
+  {
+    "id": "reccUbXa8HkweQUC5OT",
+    "fields": {
+      "候选人ID": "tal_b29d0a52988f43fc9622",
+      "入职单ID": "onboarding_0ef972a022134a499a1b",
+      "创建时间": "2026-10-21T08:22:49.373Z",
+      "处理状态": "待处理",
+      "更新时间": "2026-10-21T08:22:49.373Z",
+      "节点类型": "入职一月评价",
+      "计划日期": "2026-11-21",
+      "试用期记录ID": "probation_99f45070c5be411cb604",
+      "通知状态": "待发送"
+    },
+    "createdTime": "2026-10-21T08:22:49.417Z"
+  },
+  {
+    "id": "recyqTtpzk9X7SsBuNx",
+    "fields": {
+      "候选人ID": "tal_b29d0a52988f43fc9622",
+      "入职单ID": "onboarding_0ef972a022134a499a1b",
+      "创建时间": "2026-10-21T08:22:49.584Z",
+      "处理状态": "待处理",
+      "更新时间": "2026-10-21T08:22:49.584Z",
+      "节点类型": "转正评估",
+      "计划日期": "2027-01-21",
+      "试用期记录ID": "probation_0d9746cc771c411ea3d7",
+      "通知状态": "待发送"
+    },
+    "createdTime": "2026-10-21T08:22:49.632Z"
+  }
+]

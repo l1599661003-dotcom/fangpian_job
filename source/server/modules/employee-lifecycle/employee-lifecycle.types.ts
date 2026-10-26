@@ -1,0 +1,6 @@
+export interface OnboardingInput { candidateId:string; applicationId?:string; offerId?:string; positionId?:string; plannedStartDate:string; department?:string; role?:string; manager?:string; location?:string; operator?:string; operatorUserId?:string }
+export interface OnboardingTaskInput { category:string; name:string; description?:string; owner?:string; ownerUserId?:string; dueAt?:string; operator?:string }
+export interface ArrivalInput { actualDate:string; note:string; probationMonths?:number; operator?:string; operatorUserId?:string }
+export interface OffboardingInput { onboardingId:string; type:string; reasonCategory:string; reason:string; appliedAt?:string; plannedDate:string; returnToPool?:boolean; returnSuggestedAt?:string; operator?:string }
+export interface ExitInterviewInput { interviewDate:string; interviewer:string; interviewerUserId?:string; sourceInterviewId?:string; mainReason:string; satisfaction?:string[]; dissatisfaction?:string[]; suggestions?:string; destination?:string; willingToReturn?:boolean; returnConditions?:string; confidentiality?:string }
+export interface FollowupInput { channel:string; result:string; reason:string; feedback:string; satisfaction?:number; ratingBefore?:string; ratingAfter?:string; returnIntent?:string; nextDate?:string; operator?:string }

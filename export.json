@@ -1,0 +1,513 @@
+{
+  "app_id": "01M0HW28HH2GK7FFH4Y76DJTJB",
+  "app_name": "人才管理系统",
+  "app_version": "1.0.93",
+  "items": [
+    "code",
+    "db",
+    "uploads",
+    "config",
+    "versions",
+    "deploy"
+  ],
+  "config_env_keys": 18,
+  "config_apis": 309,
+  "config_tasks": 10,
+  "versions": 20,
+  "backups": 20,
+  "exported_at": "2026-10-26T02:26:11.836875644Z",
+  "links_expire_at": "2026-10-27T02:26:11.836875644Z",
+  "source_tree": "2a55856c8be35a9a916b1b11ea2d6bc0d502a267",
+  "source_files": 398,
+  "base_id": "bsewmhhhhjEj0cMNh9S",
+  "tables": [
+    {
+      "id": "tblEf07FMuGb6HEUFrX",
+      "name": "example_notes",
+      "records": 0
+    },
+    {
+      "id": "tblVFezs5hQeRtbSh9t",
+      "name": "resume_api_settings",
+      "records": 4
+    },
+    {
+      "id": "tblenC7vDU05BFP4Hhj",
+      "name": "resume_extraction_records",
+      "records": 1524
+    },
+    {
+      "id": "tbl5fa7uQ6IAxeJ49XS",
+      "name": "recruitment_demands",
+      "records": 1
+    },
+    {
+      "id": "tbl2ixBTUklreXAI8Xb",
+      "name": "recruitment_demand_owner_events",
+      "records": 0
+    },
+    {
+      "id": "tblRFy5iAfLI83m6TcL",
+      "name": "recruitment_positions",
+      "records": 93
+    },
+    {
+      "id": "tbl484yz8JmEfOoVJyb",
+      "name": "recruitment_demand_approval_events",
+      "records": 0
+    },
+    {
+      "id": "tblFeE4AbxYQkdrm1aq",
+      "name": "recruitment_position_versions",
+      "records": 76
+    },
+    {
+      "id": "tblSCRDGKiC0lTskrBv",
+      "name": "recruitment_collection_tasks",
+      "records": 12
+    },
+    {
+      "id": "tblHvYk7r2yZrPSzyo7",
+      "name": "recruitment_collection_task_events",
+      "records": 12
+    },
+    {
+      "id": "tbloodKGHsSIVLtJ7zd",
+      "name": "recruitment_channels",
+      "records": 0
+    },
+    {
+      "id": "tblZVZgbKl2bsjwXp2L",
+      "name": "recruitment_position_channels",
+      "records": 0
+    },
+    {
+      "id": "tbl9A6Mui0rTLSvvln5",
+      "name": "recruitment_candidates",
+      "records": 1504
+    },
+    {
+      "id": "tblDb024aIl31WszmPW",
+      "name": "recruitment_candidate_duplicate_cases",
+      "records": 2218
+    },
+    {
+      "id": "tblVxxJmiEVI37yFuxW",
+      "name": "recruitment_candidate_merge_events",
+      "records": 0
+    },
+    {
+      "id": "tblNRJPHf98u1sqtaAO",
+      "name": "recruitment_candidate_owner_events",
+      "records": 0
+    },
+    {
+      "id": "tbl9TaUID5KxGGvCICe",
+      "name": "recruitment_candidate_contact_locks",
+      "records": 1
+    },
+    {
+      "id": "tblBKa3CQMQE2sRgkBB",
+      "name": "recruitment_applications",
+      "records": 1719
+    },
+    {
+      "id": "tbl5miyE8Kb9zuumQEu",
+      "name": "recruitment_stage_events",
+      "records": 2204
+    },
+    {
+      "id": "tbl2LRUkAcoBW863QvX",
+      "name": "recruitment_candidate_tags",
+      "records": 39116
+    },
+    {
+      "id": "tbllBDRQ5mz08d2J51C",
+      "name": "recruitment_ai_assessments",
+      "records": 2678
+    },
+    {
+      "id": "tblgYtdqTF1TZyMjblF",
+      "name": "recruitment_job_matches",
+      "records": 8303
+    },
+    {
+      "id": "tbl4wrUgTgwVmaDUoYQ",
+      "name": "recruitment_communications",
+      "records": 20
+    },
+    {
+      "id": "tblGVy2XJ9VA9Nrd4GW",
+      "name": "recruitment_candidate_reviews",
+      "records": 5
+    },
+    {
+      "id": "tblvzSePn0m7jl5lTAo",
+      "name": "recruitment_communication_templates",
+      "records": 4
+    },
+    {
+      "id": "tblPcV3J3XBLHUEVQwT",
+      "name": "recruitment_question_bank",
+      "records": 524
+    },
+    {
+      "id": "tblWrUEOONj4aJTUDba",
+      "name": "recruitment_assessment_templates",
+      "records": 0
+    },
+    {
+      "id": "tblRZkYIKXgxrn2hiDx",
+      "name": "recruitment_assessment_invites",
+      "records": 0
+    },
+    {
+      "id": "tblFzaUjA18oLJJWXs7",
+      "name": "recruitment_assessment_answers",
+      "records": 0
+    },
+    {
+      "id": "tblvKfy7urjNuHX1kdc",
+      "name": "recruitment_assessment_events",
+      "records": 0
+    },
+    {
+      "id": "tblpAfmd0bZx22OsVff",
+      "name": "recruitment_assessment_reviews",
+      "records": 0
+    },
+    {
+      "id": "tblZpPeJkrjuAZdWMtN",
+      "name": "recruitment_interviews",
+      "records": 44
+    },
+    {
+      "id": "tblLMd6wjNgw2ZwpAVZ",
+      "name": "recruitment_interviewer_pool",
+      "records": 0
+    },
+    {
+      "id": "tblsDcz8nDLq5GmivYb",
+      "name": "recruitment_interviewer_availability",
+      "records": 0
+    },
+    {
+      "id": "tblECaIqruHKIQRmLyy",
+      "name": "recruitment_meeting_rooms",
+      "records": 24
+    },
+    {
+      "id": "tblGnsgjlOhTPT5dCgL",
+      "name": "recruitment_interview_sync_events",
+      "records": 54
+    },
+    {
+      "id": "tblGbznVzrvnGZuH3Xj",
+      "name": "recruitment_interview_invite_templates",
+      "records": 2
+    },
+    {
+      "id": "tblllGfvHPB48h65X4j",
+      "name": "recruitment_interview_feedback",
+      "records": 42
+    },
+    {
+      "id": "tblgJsU3pUQUuWLS4AT",
+      "name": "recruitment_interview_templates",
+      "records": 3
+    },
+    {
+      "id": "tbl8P5zqTup8EjYyqc7",
+      "name": "recruitment_interview_notes",
+      "records": 23
+    },
+    {
+      "id": "tbljqDyyho57Bfb3mQX",
+      "name": "recruitment_interview_decisions",
+      "records": 0
+    },
+    {
+      "id": "tblFkIDANm4hRGuu5HM",
+      "name": "recruitment_salary_benchmarks",
+      "records": 0
+    },
+    {
+      "id": "tblKGGU6TRdEsFD5k7T",
+      "name": "recruitment_offers",
+      "records": 23
+    },
+    {
+      "id": "tblWrNQqxdVmugXb5GJ",
+      "name": "recruitment_offer_versions",
+      "records": 28
+    },
+    {
+      "id": "tbloBG6fW5FiCwM99cm",
+      "name": "recruitment_offer_approval_events",
+      "records": 0
+    },
+    {
+      "id": "tbld9OsgMyxxY1sZVQ3",
+      "name": "recruitment_offer_templates",
+      "records": 2
+    },
+    {
+      "id": "tbl8spP0s8pnrHtm2V5",
+      "name": "recruitment_offer_send_events",
+      "records": 14
+    },
+    {
+      "id": "tblDSvGHdQkqavVDpJc",
+      "name": "recruitment_offer_negotiations",
+      "records": 0
+    },
+    {
+      "id": "tblcBkWBAl3m4EY47sv",
+      "name": "recruitment_background_checks",
+      "records": 6
+    },
+    {
+      "id": "tblTxzbTqII0luPJCM9",
+      "name": "recruitment_background_contacts",
+      "records": 0
+    },
+    {
+      "id": "tblqAtCHjkC7stmQJKj",
+      "name": "recruitment_background_verifications",
+      "records": 0
+    },
+    {
+      "id": "tblWQndL6pdhQPRq7Kb",
+      "name": "recruitment_background_risks",
+      "records": 0
+    },
+    {
+      "id": "tblf0tunhuZUDFkwW9a",
+      "name": "recruitment_background_events",
+      "records": 12
+    },
+    {
+      "id": "tblqNtfgQz3PUl417Bg",
+      "name": "recruitment_onboarding_cases",
+      "records": 18
+    },
+    {
+      "id": "tblTpiVBwcurbfzUaj5",
+      "name": "recruitment_onboarding_documents",
+      "records": 0
+    },
+    {
+      "id": "tblpFHMSq4U3m4NB0gh",
+      "name": "recruitment_onboarding_tasks",
+      "records": 85
+    },
+    {
+      "id": "tblMPSvVdE7yxn7xau4",
+      "name": "recruitment_probation_reviews",
+      "records": 54
+    },
+    {
+      "id": "tblftxSzQkMxG1eVmI4",
+      "name": "recruitment_offboarding_cases",
+      "records": 0
+    },
+    {
+      "id": "tblI7Tgir8SZIQaJCIR",
+      "name": "recruitment_exit_interviews",
+      "records": 0
+    },
+    {
+      "id": "tblghy2saMPQBItPxZf",
+      "name": "recruitment_followups",
+      "records": 0
+    },
+    {
+      "id": "tblaWxlW8GTvJw3MOh3",
+      "name": "recruitment_employee_lifecycle_events",
+      "records": 35
+    },
+    {
+      "id": "tbllCLKIrwgca8BTZst",
+      "name": "recruitment_referrals",
+      "records": 108
+    },
+    {
+      "id": "tblNjcxIqolQ1lLniql",
+      "name": "recruitment_referral_rewards",
+      "records": 0
+    },
+    {
+      "id": "tbllCbGJ8cs9lgfsfjF",
+      "name": "recruitment_tasks",
+      "records": 783
+    },
+    {
+      "id": "tblHKlkVH7FJ8GXCFVF",
+      "name": "recruitment_audit_logs",
+      "records": 37941
+    },
+    {
+      "id": "tbla1C7hVsfqK8fj6X2",
+      "name": "resume_api_usage_logs",
+      "records": 0
+    },
+    {
+      "id": "tblX1xjcf2q5q6pAwFo",
+      "name": "recruitment_roles",
+      "records": 11
+    },
+    {
+      "id": "tblLiIys0b9Ew6DZ0jR",
+      "name": "recruitment_user_roles",
+      "records": 456
+    },
+    {
+      "id": "tblDT64fcUJQ1rnowZj",
+      "name": "recruitment_referral_campaigns",
+      "records": 42
+    },
+    {
+      "id": "tblvhyeG1aT6UIHoSCO",
+      "name": "recruitment_referral_reward_rules",
+      "records": 0
+    },
+    {
+      "id": "tbl6VEXoHgRk5CxIixw",
+      "name": "recruitment_referral_events",
+      "records": 114
+    },
+    {
+      "id": "tblzNISH7BKcMxzhfuw",
+      "name": "recruitment_stage_rules",
+      "records": 24
+    },
+    {
+      "id": "tblcUEwV6smKSRURl95",
+      "name": "recruitment_stage_sla_events",
+      "records": 0
+    },
+    {
+      "id": "tblnw0lCT6drpperFns",
+      "name": "recruitment_message_templates",
+      "records": 8
+    },
+    {
+      "id": "tblJ7rjiYH3EmHjl4ud",
+      "name": "recruitment_messages",
+      "records": 279
+    },
+    {
+      "id": "tblfaflfq9btIOQOy3A",
+      "name": "recruitment_message_send_events",
+      "records": 2640
+    },
+    {
+      "id": "tblZ4e3AuWd75uKcMTK",
+      "name": "recruitment_message_trigger_rules",
+      "records": 0
+    },
+    {
+      "id": "tblIFXzMVIzTXB9lhD4",
+      "name": "recruitment_message_trigger_runs",
+      "records": 0
+    },
+    {
+      "id": "tblvbu1zALCdqy0tuTc",
+      "name": "recruitment_task_events",
+      "records": 0
+    },
+    {
+      "id": "tblXL1CFOI446UguNhB",
+      "name": "recruitment_candidate_rating_events",
+      "records": 0
+    },
+    {
+      "id": "tbldhLoEl7cC4wcEL7I",
+      "name": "recruitment_report_exports",
+      "records": 0
+    },
+    {
+      "id": "tblIYv3huTq1RXoRLsn",
+      "name": "recruitment_users",
+      "records": 370
+    },
+    {
+      "id": "tblN6lgR6NavxUJvB7c",
+      "name": "recruitment_organization_units",
+      "records": 200
+    },
+    {
+      "id": "tbl06nR8s54pWrxG4Mx",
+      "name": "recruitment_sensitive_access_requests",
+      "records": 0
+    },
+    {
+      "id": "tblArfndGgmoMFbLCgM",
+      "name": "recruitment_resume_versions",
+      "records": 1696
+    },
+    {
+      "id": "tblI2ZcN3yjW58VIHXb",
+      "name": "resume_batch_imports",
+      "records": 131
+    },
+    {
+      "id": "tblpjQF7lZov5wb16PN",
+      "name": "resume_batch_import_items",
+      "records": 3286
+    },
+    {
+      "id": "tblExiMkcT5hcV3ta0M",
+      "name": "recruitment_login_sessions",
+      "records": 238
+    },
+    {
+      "id": "tblXZA2X1jF6pZFIzdp",
+      "name": "recruitment_talent_review_shares",
+      "records": 193
+    },
+    {
+      "id": "tblhTI5zcgO6qPn4dGZ",
+      "name": "recruitment_talent_review_responses",
+      "records": 23
+    },
+    {
+      "id": "tblkaBrU7SsMzgzvuTl",
+      "name": "recruitment_interview_mail_events",
+      "records": 78
+    },
+    {
+      "id": "tblyphcPkln86s4xnNx",
+      "name": "recruitment_interview_candidate_forms",
+      "records": 14
+    },
+    {
+      "id": "tbl7zsxYbVeIqTZmiVn",
+      "name": "ScheduledTasks",
+      "records": 8
+    },
+    {
+      "id": "tbldFlG0iPTdBNiQF87",
+      "name": "ScheduledTaskRuns",
+      "records": 44895
+    },
+    {
+      "id": "tblt1Bw61Yr8dAqCXiP",
+      "name": "__health_probe__",
+      "records": 0
+    },
+    {
+      "id": "tblw7sPpfKuA5ShP82Y",
+      "name": "recruitment_monthly_demands",
+      "records": 47
+    },
+    {
+      "id": "tbljJJQiADvQjB6ZVi0",
+      "name": "recruitment_public_links",
+      "records": 178
+    }
+  ],
+  "files": 0,
+  "uploads": 5500,
+  "attachments": 0
+}

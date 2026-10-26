@@ -1,0 +1,36 @@
+# Build / runtime caches
+node_modules/
+.next/
+.nuxt/
+.svelte-kit/
+.pnpm-store/
+.turbo/
+coverage/
+test-results/
+dist/
+build/
+out/
+.parcel-cache/
+
+# Studio runtime / agent state (NEVER version — huge & churny, times out git add -A)
+.codex/
+.studio-build.lock/
+
+# Logs
+*.log
+logs/
+
+# Local env
+.env.local
+.env.*.local
+
+# OS / IDE
+.DS_Store
+.idea/
+.vscode/
+
+# 崩溃 core dump (~100MB/个): 进程 SIGSEGV/SIGABRT 时落 cwd, 被 git add -A 带进
+# 历史会撑爆 .git → OSS 备份 git bundle 被 OOM (2026-06-09 fangpian-flash 事故)。
+# session-runtime 已设 ulimit -c 0 从源头不产; 这里再兜一层, 万一产了也别提交。
+core
+core.*
