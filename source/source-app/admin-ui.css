@@ -9294,6 +9294,58 @@ body.rf-public-communication-body .rf-public-communication-scroll::-webkit-scrol
   box-shadow: 0 8px 24px rgba(49, 43, 33, .045);
 }
 
+#page-jobs .rf-job-summary article:has([data-rf-pending-approvals]) {
+  padding: 0;
+}
+
+#page-jobs .rf-job-summary [data-rf-pending-approvals] {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr);
+  align-items: center;
+  gap: 11px;
+  width: 100%;
+  min-height: 92px;
+  padding: 15px 16px;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+#page-jobs .rf-job-summary [data-rf-pending-approvals]:hover { background: #fff8ec; }
+#page-jobs .rf-job-summary [data-rf-pending-approvals]:disabled { cursor: default; }
+#page-jobs .rf-job-summary [data-rf-pending-approvals]:disabled:hover { background: transparent; }
+
+.rf-pending-approval-list {
+  display: grid;
+  gap: 10px;
+}
+
+.rf-pending-approval-list button {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr);
+  gap: 2px 12px;
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid #e4d7bf;
+  border-radius: 12px;
+  background: #fffdf8;
+  color: #3c3428;
+  text-align: left;
+  cursor: pointer;
+}
+
+.rf-pending-approval-list button:hover { border-color: #c9a15a; background: #fff8ec; }
+.rf-pending-approval-list span { grid-row: span 3; align-self: center; color: #98651d; font-size: 13px; font-weight: 800; }
+.rf-pending-approval-list strong,
+.rf-pending-approval-list small,
+.rf-pending-approval-list em { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rf-pending-approval-list strong { font-size: 15px; }
+.rf-pending-approval-list small,
+.rf-pending-approval-list em { color: #8a8174; font-size: 12px; font-style: normal; }
+
 #page-jobs .rf-job-summary-mark {
   display: grid;
   place-items: center;

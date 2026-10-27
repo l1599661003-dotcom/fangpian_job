@@ -959,11 +959,20 @@ export class OffersService {
       if (x < left) page.drawRectangle({ x, y, width: left - x, height, color: rgb(1, 1, 1) })
       if (x + width > right) page.drawRectangle({ x: right, y, width: x + width - right, height, color: rgb(1, 1, 1) })
     }
-    const put = (page: any, value: string, x: number, y: number, size = 10.5) => page.drawText(value, { x, y, size, font, color: textColor })
-    const fittedSize = (value: string, maxWidth: number, preferred: number, minimum: number) => {
-      let size = preferred
-      while (size > minimum && font.widthOfTextAtSize(value, size) > maxWidth) size -= 0.25
-      return size
+    const bodySize = 10.5
+    const put = (page: any, value: string, x: number, y: number, size = bodySize) => page.drawText(value, { x, y, size, font, color: textColor })
+    const wrapText = (value: string, maxWidth: number, size = bodySize) => {
+      const lines: string[] = []
+      let line = ''
+      for (const char of Array.from(value)) {
+        const next = line + char
+        if (line && font.widthOfTextAtSize(next, size) > maxWidth) {
+          lines.push(line)
+          line = char
+        } else line = next
+      }
+      if (line) lines.push(line)
+      return lines
     }
     const dateParts = (value: string) => {
       const match = String(value || '').match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/)
@@ -971,13 +980,13 @@ export class OffersService {
     }
     // Coordinates follow the supplied A4 template (PDF origin is bottom-left).
     first.drawRectangle({ x: 150, y: 625.5, width: 52, height: 16, color: rgb(1, 1, 1) })
-    put(first, values.candidateName, 116, 631, fittedSize(values.candidateName, 34, 11, 8))
-    put(first, values.candidateHonorific, 150.95, 629.57, 12)
+    put(first, values.candidateName, 116, 629.6, bodySize)
+    put(first, values.candidateHonorific, 116 + font.widthOfTextAtSize(values.candidateName, bodySize) + 6, 629.6, bodySize)
     put(first, `${values.role}${values.department ? `（${values.department}）` : ''}`, 190, 562)
     if (values.location && values.location !== '山东省烟台市') {
       cover(first, 176, 503, 170, 18); put(first, values.location, 180, 513)
     }
-    put(first, values.reportingTo, 190, 537, fittedSize(values.reportingTo, 200, 10.5, 8))
+    put(first, values.reportingTo, 190, 537, bodySize)
     const startParts = dateParts(values.startDate)
     put(first, startParts[0], 184, 463, 10.5)
     put(first, startParts[1], 219, 463, 10.5)
@@ -985,13 +994,11 @@ export class OffersService {
     const salaryExtras: string[] = []
     if (values.performanceIncluded) salaryExtras.push(`绩效${values.performanceSalary}元`)
     if (values.commissionIncluded) salaryExtras.push(`其他${values.commissionSalary}元`)
-    const probationMatch = String(values.probationMonths || '').match(/(\d+(?:\.\d+)?)\s*个月(?:.*?(\d+(?:\.\d+)?)\s*%)?/)
-    const probationText = probationMatch
-      ? `试用期${probationMatch[1]}个月${probationMatch[2] ? `，试用薪资${probationMatch[2]}%` : ''}`
-      : values.probationMonths
-    const salarySummary = `薪酬${values.totalSalary}元/月，包含底薪${values.monthlySalary}元${salaryExtras.length ? `+${salaryExtras.join('+')}` : ''}，${probationText}，试用期即缴纳五险一金。`
+    const probationText = text(values.probationMonths)
+    const salarySummary = `薪酬${values.totalSalary}元/月，包含底薪${values.monthlySalary}元${salaryExtras.length ? `+${salaryExtras.join('+')}` : ''}${probationText ? `，${probationText}` : ''}。`
+    const salaryLines = wrapText(salarySummary, 386, bodySize).slice(0, 3)
     cover(first, 88, 322, 432, 50)
-    put(first, salarySummary, 124, 348, fittedSize(salarySummary, 386, 9.5, 7.5))
+    salaryLines.forEach((line, index) => put(first, line, 124, 352 - index * 15, bodySize))
     const deadlineParts = dateParts(values.deadlineDate)
     put(second, deadlineParts[0], 137, 593, 10.5)
     put(second, deadlineParts[1], 185, 593, 10.5)

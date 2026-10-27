@@ -5588,26 +5588,28 @@ if (!root) return;
       return ({ 紧急: 0, 高: 0, 重要: 1, 中: 1, 储备: 2, 一般: 2, 低: 2 }[demand.priority] ?? 3);
     };
     const statusPriority = (item) => item.status === '招聘中' ? 0 : item.status === '待发布' ? 1 : 2;
-    const rows = (state.jobs || []).slice().sort((left, right) => demandPriority(left) - demandPriority(right) || statusPriority(left) - statusPriority(right) || (left.department || '').localeCompare(right.department || '', 'zh-CN') || (left.name || '').localeCompare(right.name || '', 'zh-CN')).filter((item) => {
+    const approvedJobs = (state.jobs || []).filter((item) => (item.approvalStatus || '已通过') === '已通过');
+    const rows = approvedJobs.slice().sort((left, right) => demandPriority(left) - demandPriority(right) || statusPriority(left) - statusPriority(right) || (left.department || '').localeCompare(right.department || '', 'zh-CN') || (left.name || '').localeCompare(right.name || '', 'zh-CN')).filter((item) => {
       if (!keyword) return true;
       const demand = demandMap.get(item.id);
       const haystack = [item.name, item.code, item.department, item.owner, item.recruiter, item.backupRecruiter, item.responsibilities, item.requirements, (item.tags || []).join(' '), demand?.positionName].join('|').toLowerCase();
       return haystack.includes(keyword);
     });
-    const totalPositions = (state.jobs || []).length;
-    const recruitingPositions = (state.jobs || []).filter((item) => item.status === '招聘中').length;
-    const pendingApprovals = (state.jobs || []).filter((item) => (item.approvalStatus || '待审批') === '待审批').length;
+    const totalPositions = approvedJobs.length;
+    const recruitingPositions = approvedJobs.filter((item) => item.status === '招聘中').length;
+    const pendingApprovals = pendingRecruitmentApprovals().length;
     const demandHeadcount = Array.from(demandMap.values()).reduce((total, item) => total + Number(item.headcount || 0), 0);
     const selectedRange = selectedMonth ? window.companyCalendar?.monthRange(selectedMonth) : null;
     const monthLabel = selectedMonth ? `${selectedMonth.slice(0, 4)}年${Number(selectedMonth.slice(5, 7))}月${selectedRange ? `（${selectedRange.label}）` : ''}` : '当前月份';
     if (summary) summary.innerHTML = `
       <article><span class="rf-job-summary-mark total" aria-hidden="true">岗</span><div><small>岗位总数</small><strong>${totalPositions}</strong><em>公司岗位库</em></div></article>
       <article><span class="rf-job-summary-mark active" aria-hidden="true">招</span><div><small>招聘中</small><strong>${recruitingPositions}</strong><em>正在接收候选人</em></div></article>
-      <article><span class="rf-job-summary-mark pending" aria-hidden="true">审</span><div><small>待审批</small><strong>${pendingApprovals}</strong><em>等待审批人处理</em></div></article>
+      <article><button type="button" data-rf-pending-approvals ${pendingApprovals ? '' : 'disabled'}><span class="rf-job-summary-mark pending" aria-hidden="true">审</span><div><small>待审批</small><strong>${pendingApprovals}</strong><em>${pendingApprovals ? '点击查看未通过申请' : '暂无待审批'}</em></div></button></article>
       <article><span class="rf-job-summary-mark demand" aria-hidden="true">需</span><div><small>${escapeHtml(monthLabel)}需求</small><strong>${demandHeadcount}</strong><em>计划招聘人数</em></div></article>`;
     if (resultCount) resultCount.textContent = keyword ? `找到 ${rows.length} 个岗位` : `共 ${rows.length} 个岗位 · 按紧急、重要、储备排序`;
+    document.querySelector('[data-rf-pending-approvals]')?.addEventListener('click', () => openPendingApprovals());
     if (!rows.length) {
-      wrap.innerHTML = `<div class="rf-dialog-empty"><strong>暂无岗位</strong><p>${keyword ? '没有匹配的岗位，换个关键词试试。' : '点击右上角“新增岗位”建立公司岗位库。'}</p></div>`;
+      wrap.innerHTML = `<div class="rf-dialog-empty"><strong>暂无岗位</strong><p>${keyword ? '没有匹配的岗位，换个关键词试试。' : '审批通过后的岗位才会出现在这里。'}</p></div>`;
       return;
     }
     const selectedCount = state.jobSelectedIds.size;
@@ -5741,6 +5743,44 @@ if (!root) return;
     } catch (error) {
       notifyUser(conciseError(error), 'error', () => handlePositionAction(action, id, button));
     }
+  }
+
+  function pendingRecruitmentApprovals() {
+    const positions = (state.jobs || [])
+      .filter((item) => (item.approvalStatus || '已通过') === '待审批')
+      .map((item) => ({
+        type: 'position',
+        id: item.id,
+        title: item.name || '未命名岗位',
+        department: item.department || '未分配部门',
+        applicant: item.approvalApplicant || item.owner || '当前用户',
+        submittedAt: item.approvalSubmittedAt || item.createdAt || '',
+        detail: `${item.category || '社招'} · ${Number(item.headcount || 0)}人`,
+      }));
+    const demands = (state.monthlyDemands || [])
+      .filter((item) => (item.approvalStatus || item.status) === '待审批')
+      .map((item) => ({
+        type: 'demand',
+        id: item.id,
+        title: `${item.month || ''} ${item.positionName || '招聘需求'}`.trim(),
+        department: item.department || '未分配部门',
+        applicant: item.createdBy || item.owner || '当前用户',
+        submittedAt: item.approvalSubmittedAt || item.createdAt || '',
+        detail: `${Number(item.headcount || 0)}人 · ${item.demandType || '新增需求'}`,
+      }));
+    return [...positions, ...demands].sort((left, right) => String(right.submittedAt).localeCompare(String(left.submittedAt)));
+  }
+
+  function openPendingApprovals() {
+    const items = pendingRecruitmentApprovals();
+    const cards = items.length
+      ? items.map((item) => `<button type="button" data-rf-open-approval="${escapeHtml(item.type)}:${escapeHtml(item.id)}"><span>${item.type === 'position' ? '岗位' : '需求'}</span><strong>${escapeHtml(item.title)}</strong><small>${escapeHtml(item.department)} · ${escapeHtml(item.detail)}</small><em>${escapeHtml(item.applicant)} · ${escapeHtml(formatShanghaiDateTime(item.submittedAt) || '刚刚提交')}</em></button>`).join('')
+      : '<div class="rf-dialog-empty"><strong>暂无待审批</strong><p>新岗位和招聘需求通过后，才会进入岗位列表。</p></div>';
+    showTalentDialog(`<header class="rf-dialog-head"><div><span>PENDING APPROVALS</span><h2>待审批</h2><p>这里只显示还没通过的岗位和招聘需求。通过之前，它们不会出现在岗位列表里。</p></div><b>${items.length}</b></header><div class="rf-pending-approval-list">${cards}</div>`, 'wide');
+    document.querySelectorAll('[data-rf-open-approval]').forEach((button) => button.addEventListener('click', () => {
+      const [type, id] = String(button.dataset.rfOpenApproval || '').split(':');
+      if (type && id) openRecruitmentApproval(type, id);
+    }));
   }
 
   async function openRecruitmentApproval(type, id) {
