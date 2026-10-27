@@ -9,13 +9,12 @@
   body #page-interviews .page-head h1 { font-size: 25px; letter-spacing: -.03em; }
   body #page-interviews .page-head p { line-height: 1.7; color: #847b6e; }
   body #page-interviews .interview-schedule-card { border: 0 !important; background: transparent !important; box-shadow: none !important; overflow: visible; }
-  body #page-interviews .schedule-month-bar { display: grid !important; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; padding: 14px !important; border: 1px solid #e5dfd4; border-radius: 16px; background: #fffefa; }
-  body #page-interviews .schedule-filter-copy { display: none; }
-  body #page-interviews .schedule-month-field { min-width: 0; margin: 0; min-height: 44px; }
-  body #page-interviews .schedule-month-field > span { display: none; }
-  body #page-interviews #interview-month-filter { width: 100%; min-width: 0; min-height: 44px; font-size: 16px; border: 0; background: transparent; padding: 6px 0; }
-  body #page-interviews .interview-month-navigation { display: flex; align-items: center; gap: 6px; }
-  body #page-interviews .interview-month-navigation button { min-height: 44px; padding: 0 9px; border: 1px solid #e5dfd4; border-radius: 10px; background: #f6f2e9; color: #645335; font-size: 12px; }
+  body #page-interviews .schedule-month-bar { display: flex !important; justify-content: center; padding: 0 0 14px !important; border: 0; background: transparent; }
+  body #page-interviews .interview-month-switcher { width: min(100%, 420px); }
+  body #page-interviews .interview-month-switcher > button { flex: 0 0 78px; min-width: 0; padding: 0 8px; font-size: 13px; }
+  body #page-interviews .schedule-month-field { flex: 1; min-width: 0; }
+  body #page-interviews .schedule-month-field > button { padding: 0 8px; font-size: 16px; }
+  body #page-interviews .interview-month-panel { width: min(280px, calc(100vw - 32px)); }
   body #page-interviews .schedule-table-body { padding: 16px 0 !important; }
   body #page-interviews .interview-mobile-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-bottom: 20px; }
   .interview-mobile-summary > div { padding: 13px 10px; border-radius: 12px; background: #eee8dc; }
@@ -64,7 +63,6 @@
   body .rf-room-auth-help button { width: 100%; }
 }
 @media (max-width: 360px) {
-  body #page-interviews .schedule-month-bar { grid-template-columns: minmax(0, 1fr); }
-  body #page-interviews .interview-month-navigation button { flex: 1; }
+  body #page-interviews .interview-month-switcher { width: 100%; }
   body #page-interviews .interview-mobile-summary small { display: block; min-height: 32px; line-height: 1.5; }
 }

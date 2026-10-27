@@ -3980,20 +3980,24 @@
 
             <div class="card panel-card interview-schedule-card">
               <div class="schedule-filter-bar schedule-month-bar">
-                <div class="schedule-filter-copy">
-                  <strong>月度排期</strong>
-                  <span>选择月份后自动读取对应日程</span>
+                <div class="interview-month-switcher">
+                  <button type="button" data-interview-month-step="-1" aria-label="查看上个月面试">上个月</button>
+                  <div class="schedule-month-field">
+                    <button type="button" data-interview-month-picker aria-expanded="false" aria-controls="interview-month-panel">月份</button>
+                    <input type="hidden" id="interview-month-filter" value="" />
+                    <div class="interview-month-panel" id="interview-month-panel" hidden></div>
+                  </div>
+                  <button type="button" data-interview-month-step="1" aria-label="查看下个月面试">下个月</button>
                 </div>
-                <label class="schedule-month-field">
-                  <span>月份</span>
-                  <input type="month" id="interview-month-filter" value="" />
-                </label>
-                <div class="interview-month-navigation"><button type="button" data-interview-month-step="-1" aria-label="查看上个月面试">上个月</button><button type="button" data-interview-month-step="1" aria-label="查看下个月面试">下个月</button></div>
               </div>
               <div class="panel-body schedule-table-body" id="interview-schedule-root">
                 <div class="rf-dialog-loading">正在读取日程排期…</div>
               </div>
             </div>
+            <section class="interview-evaluation-panel" id="interview-evaluation-panel" hidden>
+              <div class="interview-evaluation-status" id="interview-evaluation-status"></div>
+              <div id="interview-evaluation-body"></div>
+            </section>
           </section>
 
           <section class="page" id="page-offers">

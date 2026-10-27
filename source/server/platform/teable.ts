@@ -1,3 +1,5 @@
+import { existsSync, readdirSync, readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { callMcp } from './mcp'
 import { invalidateReadTables } from './read-cache'
 
@@ -10,6 +12,80 @@ export interface TeableRecord { id: string; fields: Record<string, any>; created
 export interface TeableRecordPage { records: TeableRecord[]; total?: number; totalIsExact?: boolean }
 export interface TeableReadOptions { take?: number; skip?: number; filterByTql?: string; orderBy?: any[]; fields?: string[] }
 
+const localExportDir = join(process.cwd(), '..', 'database')
+const localExportEnabled = () => process.env.LOCAL_EXPORT_DB === 'true' && process.env.NODE_ENV !== 'production'
+const localTables = new Map<string, TeableRecord[]>()
+let localTablesLoaded = false
+
+function loadLocalTables() {
+  if (localTablesLoaded) return
+  localTablesLoaded = true
+  if (!existsSync(localExportDir)) return
+  for (const fileName of readdirSync(localExportDir)) {
+    const matched = /^(\d+)_(.+)\.json$/.exec(fileName)
+    if (!matched) continue
+    const parsed = JSON.parse(readFileSync(join(localExportDir, fileName), 'utf8'))
+    if (!Array.isArray(parsed)) continue
+    localTables.set(`local:${matched[2]}`, parsed.filter((row) => row && typeof row === 'object' && row.fields && typeof row.fields === 'object'))
+  }
+}
+
+function localTableId(path: string) {
+  return /^\/tables\/(local:[^/?]+)/.exec(path)?.[1] || ''
+}
+
+function localTableName(tableId: string) {
+  return tableId.startsWith('local:') ? tableId.slice('local:'.length) : ''
+}
+
+function filterLocalRecords(records: TeableRecord[], filterByTql?: string) {
+  if (!filterByTql) return records
+  const comparisons = [...filterByTql.matchAll(/\{([^{}]+)\}\s*(=|!=|>=|<=|>|<)\s*"((?:\\.|[^"])*)"/g)].map((match) => ({
+    field: match[1],
+    operator: match[2],
+    value: match[3].replace(/\\"/g, '"').replace(/\\\\/g, '\\'),
+  }))
+  const prefixes = [...filterByTql.matchAll(/\{([^{}]+)\}\s*(?:=|LIKE)\s*"((?:\\.|[^"])*)%?"/g)].map((match) => ({
+    field: match[1],
+    value: match[2].replace(/\\"/g, '"').replace(/\\\\/g, '\\'),
+  }))
+  if (!comparisons.length && !prefixes.length) return records
+  const orGroups = filterByTql.split(/\s+OR\s+/i)
+  return records.filter((record) => orGroups.some((group) => {
+    const groupComparisons = comparisons.filter((item) => group.includes(`{${item.field}}`) && group.includes(`"${item.value}"`))
+    const groupPrefixes = prefixes.filter((item) => group.includes(`{${item.field}}`) && group.includes(`"${item.value}`))
+    return [...groupComparisons, ...groupPrefixes].every((item) => {
+      const actual = String(record.fields[item.field] ?? '')
+      if ('operator' in item) {
+        if (item.operator === '!=') return actual !== item.value
+        if (item.operator === '>') return actual > item.value
+        if (item.operator === '>=') return actual >= item.value
+        if (item.operator === '<') return actual < item.value
+        if (item.operator === '<=') return actual <= item.value
+        return actual === item.value
+      }
+      return actual.startsWith(item.value)
+    })
+  }))
+}
+
+function localRead(path: string, options: TeableReadOptions = {}): TeableRecordPage | TeableField[] | TeableRecord | undefined {
+  loadLocalTables()
+  if (path.endsWith('/fields')) {
+    const tableId = localTableId(path)
+    const sample = localTables.get(tableId)?.[0]
+    return Object.keys(sample?.fields || {}).map((name) => ({ id: `${tableId}:${name}`, name, type: 'singleLineText' }))
+  }
+  const recordMatch = /^\/tables\/(local:[^/]+)\/records\/([^/?]+)$/.exec(path)
+  if (recordMatch) return localTables.get(recordMatch[1])?.find((row) => row.id === decodeURIComponent(recordMatch[2]))
+  const tableId = localTableId(path)
+  let records = filterLocalRecords([...(localTables.get(tableId) || [])], options.filterByTql)
+  if (options.fields?.length) records = records.map((row) => ({ ...row, fields: Object.fromEntries(options.fields!.filter((field) => field in row.fields).map((field) => [field, row.fields[field]])) }))
+  const skip = options.skip || 0
+  const take = options.take ?? records.length
+  return { records: records.slice(skip, skip + take), total: records.length, totalIsExact: true }
+}
+
 async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
   const tableId = method !== 'GET' ? /^\/tables\/([^/?]+)/.exec(path)?.[1] : undefined
   if (tableId) invalidateReadTables(decodeURIComponent(tableId))
@@ -21,7 +97,19 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
 }
 
 async function sendRequest<T>(method: string, path: string, body?: unknown): Promise<T> {
-  if (!BASE) throw new Error('缺少 STUDIO_PLATFORM_URL，无法访问平台数据服务')
+  const decodedPath = decodeURIComponent(path)
+  if (localExportEnabled() && decodedPath.startsWith('/tables/local:')) {
+    if (method !== 'GET') throw new Error('本地导出数据库是只读快照，不能写入')
+    const query = new URLSearchParams(decodedPath.split('?')[1] || '')
+    const options: TeableReadOptions = {
+      take: query.has('take') ? Number(query.get('take')) : undefined,
+      skip: query.has('skip') ? Number(query.get('skip')) : undefined,
+      filterByTql: query.get('filterByTql') || undefined,
+      fields: query.has('fields') ? String(query.get('fields')).split(',') : undefined,
+    }
+    return localRead(decodedPath.split('?')[0], options) as T
+  }
+  if (!BASE) throw new Error(`缺少 STUDIO_PLATFORM_URL，无法访问平台数据服务：${method} ${path}`)
   const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${TOKEN}` }
   const response = await fetch(`${BASE}/teable${path}`, {
     method,
@@ -37,6 +125,16 @@ async function sendRequest<T>(method: string, path: string, body?: unknown): Pro
 
 async function listRecordPage(tableId: string, options: number | TeableReadOptions = 1000): Promise<TeableRecordPage> {
   const opts = typeof options === 'number' ? { take: options } : options
+  if (localExportEnabled() && tableId.startsWith('local:')) {
+    const query = new URLSearchParams()
+    query.set('take', String(opts.take ?? 1000))
+    if (opts.skip != null) query.set('skip', String(opts.skip))
+    if (opts.filterByTql) query.set('filterByTql', opts.filterByTql)
+    if (opts.fields?.length) query.set('fields', opts.fields.map((field) => encodeURIComponent(field)).join(','))
+    const result: any = await request('GET', `/tables/${encodeURIComponent(tableId)}/records?${query}`)
+    const records = result?.records || []
+    return { records, total: result?.total, totalIsExact: Boolean(result?.totalIsExact) }
+  }
   if (opts.fields?.length) {
     const fieldBatches: string[][] = []
     for (let index = 0; index < opts.fields.length; index += PROJECTION_FIELD_LIMIT) {
@@ -82,6 +180,10 @@ async function listRecordPage(tableId: string, options: number | TeableReadOptio
 
 export const teable = {
   async countRecords(tableId: string): Promise<number> {
+    if (localExportEnabled() && tableId.startsWith('local:')) {
+      loadLocalTables()
+      return localTables.get(tableId)?.length || 0
+    }
     let result: any = await callMcp('teable_get_table_row_count', { table_id: tableId })
     if (result?.isError || result?.error) throw new Error('Teable 记录计数失败')
     if (Array.isArray(result?.content)) result = JSON.parse(result.content.filter((item: any) => item.type === 'text').map((item: any) => item.text).join('\n'))
@@ -91,6 +193,12 @@ export const teable = {
     return result.row_count
   },
   async ensureTable(name: string) {
+    if (localExportEnabled()) {
+      loadLocalTables()
+      const tableId = `local:${name}`
+      if (!localTables.has(tableId)) throw new Error(`本地导出数据库缺少表：${name}`)
+      return { id: tableId, name, created: false }
+    }
     const result: any = await request('POST', '/tables', { name, base_id: process.env.STUDIO_TEABLE_BASE_ID || '' })
     return { id: result.id, name: result.name, created: !result.reused }
   },

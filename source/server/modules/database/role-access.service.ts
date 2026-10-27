@@ -3,6 +3,8 @@ import { teable } from '../../platform/teable'
 import { DatabaseService } from './database.service'
 import type { Request } from 'express'
 import { createHash, randomBytes, randomUUID } from 'node:crypto'
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { canReadInterview, InterviewAccessScope } from '../interviews/interview-access'
 
 export const EMPLOYEE_SESSION_COOKIE_EXPIRES_AT = '2099-12-31T23:59:59.999Z'
@@ -132,6 +134,12 @@ export class RoleAccessService {
   }
 
   async getUserAccess(userId: string): Promise<RoleAccessProfile> {
+    if (process.env.LOCAL_EMPLOYEE_LOGIN === 'true' && process.env.NODE_ENV !== 'production' && this.exportedEmployees().some((row) => String(row.fields['用户ID'] || row.id) === userId)) {
+      return this.exportedEmployeeAccess(userId)
+    }
+    if (userId === 'local-preview' && process.env.LOCAL_PREVIEW_LOGIN === 'true' && process.env.NODE_ENV !== 'production') {
+      return this.localPreviewAccess()
+    }
     if (!userId.trim()) return { userId: '', roleCodes: [], pages: [], actions: [], dataScopes: [], sensitiveFields: [] }
     const cached = this.accessCache.get(userId)
     if (cached && cached.expiresAt > Date.now()) return cached.profile
@@ -228,6 +236,10 @@ export class RoleAccessService {
 
   async resolveRequestIdentity(headers: Record<string, string | string[] | undefined>): Promise<RequestIdentity | null> {
     const token = this.sessionToken(headers)
+    const exported = this.exportedEmployeeIdentity(token)
+    if (exported) return exported
+    const preview = this.previewIdentity(token)
+    if (preview) return preview
     if (!token) return this.resolveIdentity(headers)
     const tableId = this.database.getTableId('recruitment_login_sessions')
     if (!tableId) return null
@@ -247,6 +259,12 @@ export class RoleAccessService {
   }
 
   async loginWithEmployeeProfile(input: { name?: string; mobile?: string }, meta: { ip?: string; userAgent?: string }) {
+    if (process.env.LOCAL_EMPLOYEE_LOGIN === 'true' && process.env.NODE_ENV !== 'production') {
+      return this.loginFromExportedEmployees(input)
+    }
+    if (process.env.LOCAL_PREVIEW_LOGIN === 'true' && process.env.NODE_ENV !== 'production') {
+      return this.loginLocalPreview(input)
+    }
     const name = String(input.name || '').normalize('NFKC').trim().replace(/\s+/g, '')
     const mobile = String(input.mobile || '').replace(/\s|-/g, '')
     if (!name) throw new UnauthorizedException('请填写姓名')
@@ -280,9 +298,129 @@ export class RoleAccessService {
     return { token, expiresAt: expiresAt.toISOString(), identity: { userId, userName, source: 'session' as const } }
   }
 
+  private localPreviewEnabled() {
+    return process.env.LOCAL_PREVIEW_LOGIN === 'true' && process.env.NODE_ENV !== 'production'
+  }
+
+  private loginFromExportedEmployees(input: { name?: string; mobile?: string }) {
+    const name = String(input.name || '').normalize('NFKC').trim().replace(/\s+/g, '')
+    const mobile = String(input.mobile || '').replace(/\s|-/g, '')
+    if (!name) throw new UnauthorizedException('请填写姓名')
+    if (!/^1[3-9]\d{9}$/.test(mobile)) throw new UnauthorizedException('请填写正确的11位手机号')
+    const account = this.exportedEmployees().find((row) => this.sameEmployeeName(row.fields['姓名'], name)
+      && String(row.fields['手机'] || '').replace(/\s|-/g, '') === mobile
+      && String(row.fields['用户状态'] || '') === '启用')
+    if (!account) throw new UnauthorizedException('姓名或手机号不正确，或者账号尚未由管理员启用')
+    const userId = String(account.fields['用户ID'] || account.id)
+    const userName = String(account.fields['姓名'] || name)
+    return {
+      token: `local-employee:${userId}`,
+      expiresAt: EMPLOYEE_SESSION_COOKIE_EXPIRES_AT,
+      identity: { userId, userName, source: 'session' as const },
+    }
+  }
+
+  private exportedEmployeeIdentity(token: string): RequestIdentity | null {
+    if (process.env.LOCAL_EMPLOYEE_LOGIN !== 'true' || process.env.NODE_ENV === 'production' || !token.startsWith('local-employee:')) return null
+    const userId = token.slice('local-employee:'.length)
+    const account = this.exportedEmployees().find((row) => String(row.fields['用户ID'] || row.id) === userId && String(row.fields['用户状态'] || '') === '启用')
+    if (!account) return null
+    return { userId, userName: String(account.fields['姓名'] || userId), source: 'session' }
+  }
+
+  private exportedEmployeeAccess(userId: string): RoleAccessProfile {
+    const bindings = this.exportedRoleBindings().filter((row) => String(row.fields['用户ID'] || '') === userId && String(row.fields['绑定状态'] || '') === '启用')
+    const roleCodes = [...new Set(bindings.map((row) => String(row.fields['角色编码'] || '')).filter(Boolean))]
+    const activeRoles = this.exportedRoles().filter((role) => roleCodes.includes(String(role.fields['角色编码'] || '')) && String(role.fields['角色状态'] || '启用') !== '停用')
+    const pages = new Set<string>()
+    const actions = new Set<string>()
+    const sensitiveFields: Record<string, unknown>[] = []
+    const dataScopes = []
+    for (const role of activeRoles) {
+      const roleCode = String(role.fields['角色编码'] || '')
+      this.parseExportedArray(role.fields['页面权限JSON']).forEach((page) => pages.add(page))
+      this.parseExportedArray(role.fields['操作权限JSON']).forEach((action) => actions.add(action))
+      sensitiveFields.push({ roleCode, ...this.parseExportedObject(role.fields['敏感字段策略JSON']) })
+      for (const binding of bindings.filter((row) => String(row.fields['角色编码'] || '') === roleCode)) {
+        dataScopes.push({
+          roleCode,
+          type: String(role.fields['数据范围类型'] || ''),
+          businessUnitId: String(binding.fields['事业部ID'] || ''),
+          departmentIds: this.parseExportedArray(binding.fields['部门IDJSON']).slice(0, 1),
+        })
+      }
+    }
+    return { userId, roleCodes: activeRoles.map((role) => String(role.fields['角色编码'] || '')), pages: [...pages], actions: [...actions], dataScopes, sensitiveFields }
+  }
+
+  exportedAccount(userId: string) {
+    return this.exportedEmployees().find((row) => String(row.fields['用户ID'] || row.id) === userId) || null
+  }
+
+  private exportedEmployees() {
+    return this.readExport('82_recruitment_users.json')
+  }
+
+  private exportedRoleBindings() {
+    return this.readExport('68_recruitment_user_roles.json')
+  }
+
+  private exportedRoles() {
+    return this.readExport('67_recruitment_roles.json')
+  }
+
+  private readExport(fileName: string) {
+    const filePath = join(process.cwd(), '..', 'database', fileName)
+    const parsed = JSON.parse(readFileSync(filePath, 'utf8'))
+    return Array.isArray(parsed) ? parsed : []
+  }
+
+  private sameEmployeeName(value: unknown, name: string) {
+    return String(value || '').normalize('NFKC').trim().replace(/\s+/g, '') === name
+  }
+
+  private parseExportedArray(value: unknown) {
+    if (Array.isArray(value)) return value.map(String)
+    return parseStringArray(value)
+  }
+
+  private parseExportedObject(value: unknown) {
+    if (value && typeof value === 'object' && !Array.isArray(value)) return value as Record<string, unknown>
+    return parseObject(value)
+  }
+
+  private loginLocalPreview(input: { name?: string; mobile?: string }) {
+    const name = String(input.name || '').normalize('NFKC').trim().replace(/\s+/g, '')
+    const mobile = String(input.mobile || '').replace(/\s|-/g, '')
+    if (!name) throw new UnauthorizedException('请填写姓名')
+    if (!/^1[3-9]\d{9}$/.test(mobile)) throw new UnauthorizedException('请填写正确的11位手机号')
+    return {
+      token: 'local-preview',
+      expiresAt: EMPLOYEE_SESSION_COOKIE_EXPIRES_AT,
+      identity: { userId: 'local-preview', userName: name, source: 'session' as const },
+    }
+  }
+
+  private previewIdentity(token: string): RequestIdentity | null {
+    if (!this.localPreviewEnabled() || token !== 'local-preview') return null
+    return { userId: 'local-preview', userName: '本地预览', source: 'session' }
+  }
+
+  private localPreviewAccess(): RoleAccessProfile {
+    return {
+      userId: 'local-preview',
+      roleCodes: ['system_admin'],
+      pages: ['*'],
+      actions: ['*'],
+      dataScopes: [{ roleCode: 'system_admin', type: 'all', businessUnitId: '', departmentIds: [] }],
+      sensitiveFields: [{ roleCode: 'system_admin', salary: 'full', contacts: 'full', resume: 'full' }],
+    }
+  }
+
   async recordLoginHeartbeat(headers: Record<string, string | string[] | undefined>) {
     const identity = await this.resolveRequestIdentity(headers)
     if (!identity) throw new UnauthorizedException('登录状态已失效，请重新登录')
+    if (process.env.LOCAL_EMPLOYEE_LOGIN === 'true' && process.env.NODE_ENV !== 'production') return { recorded: true, lastActiveAt: new Date().toISOString() }
     const tableId = this.database.requireTableId('recruitment_login_sessions')
     const timestamp = new Date().toISOString()
     if (identity.source === 'session') {
@@ -373,6 +511,7 @@ export class RoleAccessService {
   }
 
   async auditAccess(profile: RoleAccessProfile, userName: string, request: Pick<Request, 'method' | 'path' | 'headers' | 'ip' | 'socket'>, action: string, result: '成功' | '失败', error = '') {
+    if (process.env.LOCAL_EXPORT_DB === 'true' && process.env.NODE_ENV !== 'production') return String(request.headers['x-request-id'] || randomUUID())
     const tableId = this.database.requireTableId('recruitment_audit_logs'), requestId = String(request.headers['x-request-id'] || randomUUID())
     await teable.createRecord(tableId, {
       日志ID: `audit_${randomUUID().replace(/-/g, '').slice(0, 20)}`, 操作人用户ID: profile.userId, 操作人: userName || profile.userId,

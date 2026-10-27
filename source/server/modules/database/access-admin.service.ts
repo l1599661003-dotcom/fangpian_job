@@ -80,12 +80,20 @@ export class AccessAdminService {
 
   async account(userId: string) {
     if (!text(userId)) return null
+    if (process.env.LOCAL_EMPLOYEE_LOGIN === 'true' && process.env.NODE_ENV !== 'production') {
+      const row = this.roleAccess.exportedAccount(text(userId))
+      if (row) return this.mapAccount(row)
+    }
     const table = this.table('recruitment_users')
     let row = await teable.findOneByField(table, '用户ID', text(userId))
     if (row && text(row.fields['用户ID']) !== text(userId)) {
       row = (await teable.listAllRecords(table)).find((item) => text(item.fields['用户ID']) === text(userId))
     }
     if (!row) return null
+    return this.mapAccount(row)
+  }
+
+  private mapAccount(row: { id: string; fields: Record<string, unknown> }) {
     return {
       id: text(row.fields['用户ID']) || row.id,
       name: text(row.fields['姓名']),

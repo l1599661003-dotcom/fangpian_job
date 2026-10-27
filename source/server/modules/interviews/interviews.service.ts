@@ -940,6 +940,16 @@ export class InterviewsService {
       return { status:'企微查询失败', message, action:'企微会议室实时查询失败，请稍后重试；当前不是已确认的空闲状态。', byExternalId:new Map<string,{available:boolean;message:string;needApproval:boolean}>(), rooms:[] }
     }
   }
+  private wecomInterviewSummary(positionName: string, candidateName: string, round: string) {
+    const limit = 20
+    const prefix = '面试｜'
+    const suffix = `｜${candidateName}｜${round}`
+    const minimum = `${prefix}岗位${suffix}`
+    if (Array.from(minimum).length > limit) return Array.from(`面试｜${candidateName}｜${round}`).slice(0, limit).join('')
+    const available = limit - Array.from(minimum).length + Array.from('岗位').length
+    const position = Array.from(positionName).slice(0, Math.max(2, available)).join('')
+    return `${prefix}${position}${suffix}`
+  }
   private formatWecomMeetingTime(value: Date) {
     const values = new Intl.DateTimeFormat('zh-CN', { timeZone: 'Asia/Shanghai', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23' }).formatToParts(value).reduce<Record<string,string>>((result, part) => { result[part.type] = part.value; return result }, {})
     return `${values.year}-${values.month}-${values.day} ${values.hour}:${values.minute}:${values.second}`
@@ -979,7 +989,11 @@ export class InterviewsService {
       const bookingEndTime=Math.floor(reservation.end.getTime()/1000)
       const candidateName=text(candidate?.fields['姓名'])||candidateId||'候选人'
       const round=text(row.fields['面试轮次'])||'面试'
-      const summary=`面试｜${candidateName}｜${round}`
+      const positionId=text(row.fields['职位ID'])
+      const positions=positionId?await teable.listByField(this.table('recruitment_positions'),'职位ID',positionId,2):[]
+      const position=positions.find((item)=>text(item.fields['职位ID'])===positionId)
+      const positionName=text(position?.fields['职位名称'])||text(candidate?.fields['期望职位'])||'岗位待确认'
+      const summary=this.wecomInterviewSummary(positionName,candidateName,round)
       const payload={summary,start_time:startTime,end_time:endTime,location:text(row.fields['面试地点']),description:text(row.fields['备注']),attendees:attendeeIds,meetingroom_id:roomExternalId||undefined}
       const scheduleInput={summary,startTime,endTime,location:payload.location,description:payload.description,attendees:attendeeIds,meetingRoomId:roomExternalId||undefined}
       const booker=organizerWecomUserId||attendeeIds[0]
@@ -1156,5 +1170,5 @@ export class InterviewsService {
   }
   private mapInterviewer=(row:TeableRecord)=>({id:text(row.fields['面试官ID'])||row.id,userId:text(row.fields['用户ID']),name:text(row.fields['姓名']),department:text(row.fields['部门']),roles:json<string[]>(row.fields['擅长岗位JSON'],[]),rounds:json<string[]>(row.fields['可面轮次JSON'],[]),timezone:text(row.fields['时区']),status:text(row.fields['状态']),maxPerDay:num(row.fields['每日最大面试数'])})
   private mapRoom=(row:TeableRecord)=>({id:text(row.fields['会议室ID'])||row.id,name:text(row.fields['会议室名称']),location:text(row.fields['办公地点']),floor:text(row.fields['楼层']),capacity:num(row.fields['容纳人数']),equipment:json<string[]>(row.fields['设备JSON'],[]),externalResourceId:text(row.fields['外部资源ID']),status:text(row.fields['资源状态']),syncStatus:text(row.fields['同步状态']),syncError:text(row.fields['同步错误'])})
-  private mapAppointment(row:TeableRecord,candidates:TeableRecord[],interviewers:any[],rooms:TeableRecord[]){const candidateId=text(row.fields['候选人ID']);const candidate=candidates.find(r=>text(r.fields['候选人ID'])===candidateId);const ids=json<string[]>(row.fields['面试官用户IDJSON'],[]);return{id:text(row.fields['面试ID'])||row.id,candidateId,candidateName:text(candidate?.fields['姓名']),role:text(candidate?.fields['期望职位'])||'岗位待确认',round:text(row.fields['面试轮次']),mode:normalizeInterviewMode(row.fields['面试方式']),startAt:text(row.fields['开始时间']),endAt:text(row.fields['结束时间']),timezone:text(row.fields['时区']),location:text(row.fields['面试地点']),meetingUrl:text(row.fields['会议地址']),room:rooms.find(r=>text(r.fields['会议室ID'])===text(row.fields['会议室ID']))?this.mapRoom(rooms.find(r=>text(r.fields['会议室ID'])===text(row.fields['会议室ID']))!):null,interviewerIds:ids,interviewers:interviewers.filter((item)=>ids.includes(text(item.id))||ids.includes(text(item.userId))).map((item)=>item.fields?this.mapInterviewer(item):item),status:text(row.fields['面试状态']),confirmationStatus:text(row.fields['候选人确认状态']),confirmedAt:text(row.fields['候选人确认时间']),checkInStatus:text(row.fields['签到状态']),syncStatus:text(row.fields['同步状态']),syncError:text(row.fields['同步错误']),externalId:text(row.fields['外部预约ID']),bookingId:text(row.fields['外部会议室预订ID']),note:text(row.fields['备注']),reschedule:{status:text(row.fields['改期审批状态']),reason:text(row.fields['候选人改期原因']),preferredTimes:json<string[]>(row.fields['改期期望时间JSON'],[]),requestedAt:text(row.fields['改期申请时间']),decidedAt:text(row.fields['改期审批时间']),decisionNote:text(row.fields['改期审批说明']),notificationStatus:text(row.fields['改期通知状态']),notificationError:text(row.fields['改期通知错误'])}}}
+  private mapAppointment(row:TeableRecord,candidates:TeableRecord[],interviewers:any[],rooms:TeableRecord[]){const candidateId=text(row.fields['候选人ID']);const candidate=candidates.find(r=>text(r.fields['候选人ID'])===candidateId);const ids=json<string[]>(row.fields['面试官用户IDJSON'],[]);return{id:text(row.fields['面试ID'])||row.id,candidateId,candidateName:text(candidate?.fields['姓名']),role:text(candidate?.fields['期望职位'])||'岗位待确认',round:text(row.fields['面试轮次']),mode:normalizeInterviewMode(row.fields['面试方式']),startAt:text(row.fields['开始时间']),endAt:text(row.fields['结束时间']),timezone:text(row.fields['时区']),location:text(row.fields['面试地点']),meetingUrl:text(row.fields['会议地址']),room:rooms.find(r=>text(r.fields['会议室ID'])===text(row.fields['会议室ID']))?this.mapRoom(rooms.find(r=>text(r.fields['会议室ID'])===text(row.fields['会议室ID']))!):null,interviewerIds:ids,interviewers:interviewers.filter((item)=>ids.includes(text(item.id))||ids.includes(text(item.userId))).map((item)=>item.fields?this.mapInterviewer(item):item),status:text(row.fields['面试状态']),confirmationStatus:text(row.fields['候选人确认状态']),confirmedAt:text(row.fields['候选人确认时间']),evaluationStatus:text(row.fields['评价状态'])||'未开始',checkInStatus:text(row.fields['签到状态']),syncStatus:text(row.fields['同步状态']),syncError:text(row.fields['同步错误']),externalId:text(row.fields['外部预约ID']),bookingId:text(row.fields['外部会议室预订ID']),note:text(row.fields['备注']),reschedule:{status:text(row.fields['改期审批状态']),reason:text(row.fields['候选人改期原因']),preferredTimes:json<string[]>(row.fields['改期期望时间JSON'],[]),requestedAt:text(row.fields['改期申请时间']),decidedAt:text(row.fields['改期审批时间']),decisionNote:text(row.fields['改期审批说明']),notificationStatus:text(row.fields['改期通知状态']),notificationError:text(row.fields['改期通知错误'])}}}
 }

@@ -10,6 +10,7 @@
     reviewQueue: null, communicationTemplates: [], activeCommunicationCandidateId: '',
     assessmentData: null, assessmentPublic: null, assessmentSaveTimer: null,
     interviewData: null,
+    selectedInterviewId: '',
     evaluationData: null,
     offerData: null, backgroundData: [], backgroundCandidateId: '', backgroundSelectedId: '', lifecycleData: null, lifecycleCandidateId: '', lifecycleSelectedId: '', referralData: null, messageData: null, governanceData: null, jobs: [], jobCatalogLoaded: false, jobFormOptions: null, monthlyDemands: [], jobSelectedIds: new Set(), positionOptions: [], positionOptionsPromise: null, accessAdminData: null, currentAccess: null, referralListCache: null, talentPage: 1, talentTotal: 0, talentTotalPages: 1, talentLoadSequence: 0, talentDetailLoadSequence: 0, talentSearchLoading: false, showTalentAdvancedFilters: false, avatarBackfillStarted: false,
   };
@@ -87,7 +88,7 @@
       '[data-rf-generate-flow-questions]', '[data-rf-export-interview-questions]',
       '[data-rf-regenerate-questions]', '[data-qb-import]', '[data-qb-edit]', '[data-qb-status]',
     ],
-    submit_interview_feedback: ['[data-rf-open-interview-feedback]', '[data-rf-write-feedback]', '[data-rf-generate-interview-ai]', '[data-rf-submit-feedback]'],
+    submit_interview_feedback: ['[data-rf-open-interview-feedback]', '[data-rf-write-feedback]', '[data-rf-generate-interview-ai]', '[data-rf-submit-feedback]', '[data-interview-evaluation-form] button'],
     manage_offer: [
       '[data-action="offer-template-manager"]',
       '[data-rf-save-offer-template]', '[data-rf-send-offer-email]', '[data-offer-action]', '[data-rf-confirm-onboard]',
@@ -328,6 +329,8 @@
 
   function conciseError(error) {
     const message = String(error?.message || error || '服务暂时不可用');
+    if (/^forbidden$/i.test(message.trim())) return '当前打开的是静态预览，登录接口没有启动。请改用 http://127.0.0.1:8080/';
+    if (/招聘数据库尚未就绪|缺少 STUDIO_PLATFORM_URL|DATABASE_NOT_READY/.test(message)) return '本地还没有连接招聘数据库，员工账号暂时无法校验。';
     if (/\b404\b/.test(message)) return '接口暂时不可用（404）';
     return message.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 120);
   }
@@ -5203,6 +5206,50 @@ if (!root) return;
     return window.companyCalendar?.monthForDate(new Date()) || localDateValue(new Date()).slice(0, 7);
   }
 
+  function renderInterviewMonthLabel() {
+    const input = document.getElementById('interview-month-filter');
+    const label = input?.closest('.schedule-month-field')?.querySelector('[data-interview-month-picker]');
+    if (!input || !label) return;
+    const [year, month] = String(input.value || currentMonthValue()).split('-').map(Number);
+    if (year && month) label.textContent = `${year}年${month}月`;
+  }
+
+  function setInterviewMonth(value) {
+    const input = document.getElementById('interview-month-filter');
+    if (!input) return;
+    input.value = value;
+    input.dispatchEvent(new Event('change', { bubbles: true }));
+  }
+
+  function renderInterviewMonthPanel(year) {
+    const panel = document.getElementById('interview-month-panel');
+    const input = document.getElementById('interview-month-filter');
+    if (!panel || !input) return;
+    const selected = String(input.value || currentMonthValue());
+    const selectedYear = Number(selected.slice(0, 4));
+    const selectedMonth = Number(selected.slice(5, 7));
+    panel.innerHTML = `<header><button type="button" data-interview-picker-year="-1" aria-label="上一年">‹</button><strong>${year}年</strong><button type="button" data-interview-picker-year="1" aria-label="下一年">›</button></header><div class="months">${Array.from({ length: 12 }, (_, index) => {
+      const month = index + 1;
+      const selectedClass = year === selectedYear && month === selectedMonth ? ' is-selected' : '';
+      return `<button type="button" data-interview-picker-month="${year}-${String(month).padStart(2, '0')}" class="${selectedClass.trim()}">${month}月</button>`;
+    }).join('')}</div>`;
+    panel.querySelectorAll('[data-interview-picker-year]').forEach((button) => button.addEventListener('click', (event) => {
+      event.stopPropagation();
+      renderInterviewMonthPanel(year + Number(button.dataset.interviewPickerYear));
+    }));
+    panel.querySelectorAll('[data-interview-picker-month]').forEach((button) => button.addEventListener('click', () => {
+      setInterviewMonth(button.dataset.interviewPickerMonth);
+      closeInterviewMonthPanel();
+    }));
+  }
+
+  function closeInterviewMonthPanel() {
+    const panel = document.getElementById('interview-month-panel');
+    const trigger = document.querySelector('[data-interview-month-picker]');
+    if (panel) panel.hidden = true;
+    if (trigger) trigger.setAttribute('aria-expanded', 'false');
+  }
+
   function renderInterviewSchedule(data) {
     const root = document.getElementById('interview-schedule-root');
     if (!root) return;
@@ -5229,13 +5276,28 @@ if (!root) return;
     const leadingCells = firstDay.getUTCDay();
     const trailingCells = (7 - ((leadingCells + daysInMonth) % 7)) % 7;
     const todayKey = shanghaiDateTimeParts(new Date()).date;
-    const eventHtml = (item) => {
+    const selectedId = items.some((item) => item.id === state.selectedInterviewId) ? state.selectedInterviewId : '';
+    state.selectedInterviewId = selectedId;
+    const interviewVisualState = (item) => {
       const status = item.status || item.confirmationStatus || '';
-      const eventClass = status === '已取消' ? ' cancelled' : status === '已完成' ? ' done' : '';
+      const evaluated = interviewEvaluationState(item).evaluated;
+      if (status === '已取消' || item.confirmationStatus === '已取消') return { key: 'cancelled', label: '已取消', evaluated: false };
+      if (evaluated) return { key: 'evaluated', label: '已评价', evaluated: true };
+      const started = Date.parse(item.startAt) <= Date.now();
+      return started
+        ? { key: 'pending-evaluation', label: '待评价', evaluated: false }
+        : { key: 'upcoming', label: '待面试', evaluated: false };
+    };
+    const eventHtml = (item) => {
+      const visual = interviewVisualState(item);
+      const eventClass = ` is-${visual.key}${item.id === selectedId ? ' is-selected' : ''}`;
       const time = shanghaiDateTimeParts(item.startAt).time;
-      const summary = [item.candidateName || '候选人', item.round || '', item.mode || '', status].filter(Boolean).join(' · ');
-      const label = `${time} ${item.candidateName || '候选人'} · ${item.round || '面试'}`;
-      return `<button class="calendar-event${eventClass}" type="button" data-interview-schedule-id="${escapeHtml(item.id)}" title="${escapeHtml(summary)}"><span>${escapeHtml(label)}</span><small>${escapeHtml(status || '待确认')}</small></button>`;
+      const candidateName = item.candidateName || '候选人';
+      const interviewers = (item.interviewers || []).map((interviewer) => interviewer.name || interviewer).filter(Boolean).join('、') || '面试官待分配';
+      const place = item.room?.name || item.location || '地点待确认';
+      const summary = [candidateName, item.round || '', item.mode || '', interviewers, place, visual.label].filter(Boolean).join(' · ');
+      const mark = visual.evaluated ? '<i class="evaluation-check" aria-hidden="true">✓</i>' : '';
+      return `<button class="calendar-event${eventClass}" type="button" data-interview-schedule-id="${escapeHtml(item.id)}" aria-pressed="${item.id === selectedId ? 'true' : 'false'}" title="${escapeHtml(summary)}"><span>${mark}${escapeHtml(time)} ${escapeHtml(candidateName)}</span><small>${escapeHtml(item.round || '面试')} · ${escapeHtml(interviewers)}</small><small>${escapeHtml(place)}</small><small>${escapeHtml(visual.label)}</small></button>`;
     };
     let cells = '';
     for (let index = 0; index < leadingCells; index += 1) cells += '<div class="empty"></div>';
@@ -5250,11 +5312,12 @@ if (!root) return;
       const date = new Date(`${dateKey}T00:00:00+08:00`);
       const dateLabel = new Intl.DateTimeFormat('zh-CN', { timeZone: 'Asia/Shanghai', month: 'long', day: 'numeric', weekday: 'short' }).format(date);
       return `<section class="interview-agenda-day"><header><strong>${escapeHtml(dateLabel)}</strong><span>${dayItems.length} 场</span></header><div>${dayItems.sort((left, right) => Date.parse(left.startAt) - Date.parse(right.startAt)).map((item) => {
-        const status = item.status || item.confirmationStatus || '待确认';
-        const statusClass = status === '已取消' ? ' cancelled' : status === '已完成' ? ' done' : '';
+        const visual = interviewVisualState(item);
+        const statusClass = ` is-${visual.key}${item.id === selectedId ? ' is-selected' : ''}`;
         const time = shanghaiDateTimeParts(item.startAt).time;
         const interviewers = (item.interviewers || []).map((interviewer) => interviewer.name || interviewer).filter(Boolean).join('、') || '面试官待分配';
-        return `<button class="interview-agenda-item${statusClass}" type="button" data-interview-agenda-id="${escapeHtml(item.id)}"><time>${escapeHtml(time)}<small>${escapeHtml(shanghaiDateTimeParts(item.endAt).time || '')}</small></time><span><strong>${escapeHtml(item.candidateName || '候选人')} · ${escapeHtml(item.round || '面试')}</strong><small>${escapeHtml(item.role || '岗位待确认')}</small><small>${escapeHtml(item.mode || '方式待确认')} · ${escapeHtml(interviewers)}</small><small class="interview-agenda-location">${escapeHtml(item.room?.name || item.location || '地点待确认')}</small></span><em>${escapeHtml(status)}</em></button>`;
+        const mark = visual.evaluated ? '<i class="evaluation-check" aria-hidden="true">✓</i>' : '';
+        return `<button class="interview-agenda-item${statusClass}" type="button" data-interview-agenda-id="${escapeHtml(item.id)}" aria-pressed="${item.id === selectedId ? 'true' : 'false'}"><time>${escapeHtml(time)}<small>${escapeHtml(shanghaiDateTimeParts(item.endAt).time || '')}</small></time><span><strong>${mark}${escapeHtml(item.candidateName || '候选人')} · ${escapeHtml(item.round || '面试')}</strong><small>${escapeHtml(item.role || '岗位待确认')}</small><small>${escapeHtml(item.mode || '方式待确认')} · ${escapeHtml(interviewers)}</small><small class="interview-agenda-location">${escapeHtml(item.room?.name || item.location || '地点待确认')}</small></span><em>${escapeHtml(visual.label)}</em></button>`;
       }).join('')}</div></section>`;
     }).join('');
     root.innerHTML = `
@@ -5268,8 +5331,168 @@ if (!root) return;
     root.querySelectorAll('[data-interview-schedule-id], [data-interview-agenda-id]').forEach((button) => button.addEventListener('click', () => {
       const appointmentId = button.dataset.interviewScheduleId || button.dataset.interviewAgendaId;
       const appointment = items.find((item) => item.id === appointmentId);
-      if (appointment) openInterviewScheduleDetail(appointment);
+      if (appointment) selectInterviewForEvaluation(appointment);
     }));
+    if (selectedId) {
+      const selected = items.find((item) => item.id === selectedId);
+      if (selected) renderInterviewEvaluationPanel(selected);
+    } else {
+      clearInterviewEvaluationPanel();
+    }
+  }
+
+  function clearInterviewEvaluationPanel() {
+    const panel = document.getElementById('interview-evaluation-panel');
+    const status = document.getElementById('interview-evaluation-status');
+    const body = document.getElementById('interview-evaluation-body');
+    if (panel) panel.hidden = true;
+    if (status) status.innerHTML = '';
+    if (body) body.innerHTML = '';
+  }
+
+  function interviewEvaluationState(appointment, history = []) {
+    const submitted = (history || []).filter((record) => record.submittedAt || record.recommendation || record.interviewerEvaluation || record.finalDecision);
+    const status = appointment.evaluationStatus || '';
+    const evaluated = ['已完成', '部分已提交'].includes(status) || submitted.length > 0;
+    return {
+      evaluated,
+      label: evaluated ? '已评价' : '未评价',
+      detail: evaluated
+        ? (status === '部分已提交' ? `已收到 ${submitted.length || 1} 份评价，仍有面试官未提交` : `已收到 ${submitted.length || 1} 份评价`)
+        : '本场面试还没有提交评价',
+    };
+  }
+
+  function selectInterviewForEvaluation(appointment) {
+    state.selectedInterviewId = appointment.id;
+    document.querySelectorAll('#interview-schedule-root [data-interview-schedule-id], #interview-schedule-root [data-interview-agenda-id]').forEach((button) => {
+      const selected = (button.dataset.interviewScheduleId || button.dataset.interviewAgendaId) === appointment.id;
+      button.classList.toggle('is-selected', selected);
+      button.setAttribute('aria-pressed', selected ? 'true' : 'false');
+    });
+    renderInterviewEvaluationPanel(appointment);
+    document.getElementById('interview-evaluation-panel')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  async function renderInterviewEvaluationPanel(appointment) {
+    const panel = document.getElementById('interview-evaluation-panel');
+    const statusNode = document.getElementById('interview-evaluation-status');
+    const body = document.getElementById('interview-evaluation-body');
+    if (!panel || !statusNode || !body) return;
+    const requestId = appointment.id;
+    state.selectedInterviewId = requestId;
+    panel.hidden = false;
+    const preliminary = interviewEvaluationState(appointment);
+    statusNode.innerHTML = `<span class="${preliminary.evaluated ? 'is-done' : 'is-pending'}">${escapeHtml(preliminary.label)}</span><small>正在读取评价记录…</small>`;
+    body.innerHTML = '<div class="rf-dialog-loading">正在读取本场面试评价…</div>';
+    let history = [];
+    let historyError = '';
+    try {
+      const result = await request(`api/interview-evaluations/interviews/${encodeURIComponent(requestId)}/feedback`);
+      history = (result.history || result.feedback || []).filter((record) => !record.interviewId || record.interviewId === requestId);
+    } catch (error) {
+      historyError = conciseError(error);
+    }
+    if (state.selectedInterviewId !== requestId || !body.isConnected) return;
+    const evaluation = interviewEvaluationState(appointment, history);
+    const interviewers = (appointment.interviewers || []).map((item) => item.name || item).filter(Boolean).join('、') || '面试官待分配';
+    const currentInterviewer = window.recruitmentCurrentUser || {};
+    statusNode.innerHTML = `<span class="${evaluation.evaluated ? 'is-done' : 'is-pending'}">${escapeHtml(evaluation.label)}</span><small>${escapeHtml(evaluation.detail)}</small>`;
+    body.innerHTML = `
+      <header>
+        <div><span>INTERVIEW EVALUATION</span><h2>${escapeHtml(appointment.candidateName || '候选人')} · ${escapeHtml(appointment.round || '面试')}</h2><p>${escapeHtml(formatScheduleTimeRange(appointment.startAt, appointment.endAt))} · ${escapeHtml(appointment.role || '岗位待确认')} · ${escapeHtml(interviewers)}</p></div>
+        <button class="btn-soft" type="button" data-interview-evaluation-detail>查看日程</button>
+      </header>
+      <div class="interview-evaluation-layout">
+        <form class="interview-evaluation-form" data-interview-evaluation-form>
+          <label><span>面试结论 <b>*</b></span><select name="recommendation" required><option value="">请选择面试结论</option>${['通过', '加面', '储备', '待讨论', '淘汰'].map((item) => `<option>${item}</option>`).join('')}</select></label>
+          <label><span>候选人评级 <b>*</b></span><select name="candidateRating" required><option value="">请选择评级</option>${['S', 'a', 'b', 'c', 'z'].map((item) => `<option value="${item}">${item}</option>`).join('')}</select></label>
+          <label class="wide"><span>会议总结</span><textarea name="notes" rows="4" maxlength="20000" placeholder="粘贴会议总结后，可生成 AI 面试总结"></textarea><button class="btn-soft" type="button" data-interview-evaluation-extract>会议总结转评价</button><small data-interview-evaluation-extract-status>AI 只整理会议事实，不会覆盖面试官评价。</small></label>
+          <label class="wide"><span>AI面试总结 <b>*</b></span><textarea name="aiSummary" rows="4" required placeholder="先生成并核对 AI 面试总结"></textarea></label>
+          <label class="wide"><span>面试官评价 <b>*</b></span><textarea name="interviewerEvaluation" rows="6" required placeholder="至少填写50字，结合实际回答、岗位匹配度、优势和风险给出独立评价"></textarea><small data-interview-evaluation-count></small></label>
+          <div class="interview-evaluation-actions"><button class="btn-primary" type="submit">提交面试评价</button><p data-interview-evaluation-message></p></div>
+        </form>
+        <aside><div class="interview-evaluation-history-head"><strong>本场评价记录</strong><span>${history.length} 条</span></div><div class="interview-evaluation-history">${historyError ? `<p class="is-error">${escapeHtml(historyError)}</p>` : history.length ? history.map((record) => `<article><strong>${escapeHtml(record.finalDecision || record.recommendation || '已提交')} · ${escapeHtml(record.candidateRating || '未评级')}</strong><p>${escapeHtml(record.interviewerEvaluation || record.aiSummary || '暂无评价内容')}</p><small>${escapeHtml(record.interviewer || '未记录面试官')} · ${escapeHtml(formatShanghaiDateTime(record.submittedAt) || '')}</small></article>`).join('') : '<p>暂无评价记录。</p>'}</div></aside>
+      </div>`;
+    body.querySelector('[data-interview-evaluation-detail]')?.addEventListener('click', () => openInterviewScheduleDetail(appointment));
+    const form = body.querySelector('[data-interview-evaluation-form]');
+    bindInterviewEvaluationCounter(form?.interviewerEvaluation, form?.querySelector('[data-interview-evaluation-count]'));
+    form?.querySelector('[data-interview-evaluation-extract]')?.addEventListener('click', () => extractScheduleInterviewFeedback(requestId, form));
+    form?.addEventListener('submit', (event) => {
+      event.preventDefault();
+      submitScheduleInterviewFeedback(requestId, form, currentInterviewer);
+    });
+  }
+
+  async function extractScheduleInterviewFeedback(interviewId, form) {
+    const status = form.querySelector('[data-interview-evaluation-extract-status]');
+    const button = form.querySelector('[data-interview-evaluation-extract]');
+    const notes = form.notes?.value.trim() || '';
+    if (!notes) {
+      if (status) status.textContent = '请先粘贴会议总结。';
+      return;
+    }
+    if (button) button.disabled = true;
+    if (status) status.textContent = 'AI 正在整理面试总结…';
+    try {
+      const result = await requestCommunicationExtraction(`api/interview-evaluations/interviews/${encodeURIComponent(interviewId)}/feedback-extract`, notes, status);
+      if (!form.isConnected) return;
+      const extraction = result.extraction || {};
+      if (form.recommendation && extraction.recommendation) form.recommendation.value = extraction.recommendation;
+      if (!String(extraction.comment || '').trim()) throw new Error('AI 未生成面试总结，请补充会议记录后重试。');
+      form.aiSummary.value = extraction.comment;
+      form.notes.dataset.convertedNotes = notes;
+      if (status) status.textContent = '已生成 AI 面试总结，请核对后再提交。';
+    } catch (error) {
+      if (status) status.textContent = conciseError(error);
+    } finally {
+      if (button) button.disabled = false;
+    }
+  }
+
+  async function submitScheduleInterviewFeedback(interviewId, form, interviewer) {
+    const message = form.querySelector('[data-interview-evaluation-message]');
+    const button = form.querySelector('button[type="submit"]');
+    const interviewerEvaluation = form.interviewerEvaluation?.value.trim() || '';
+    const notes = form.notes?.value.trim() || '';
+    const payload = {
+      interviewerUserId: interviewer.id || '',
+      interviewer: interviewer.name || '',
+      candidateRating: form.candidateRating?.value || '',
+      scores: {},
+      recommendation: form.recommendation?.value || '',
+      otherRoles: '', strengths: '', risks: '',
+      aiSummary: form.aiSummary?.value.trim() || '',
+      interviewerEvaluation,
+      comment: interviewerEvaluation,
+      notes,
+      questionAnswers: {},
+      evidence: { source: '日程面试评价' },
+      operator: interviewer.name || '当前用户',
+    };
+    const evaluationLength = countInterviewEvaluationCharacters(interviewerEvaluation);
+    const summaryReady = Boolean(notes && form.notes?.dataset.convertedNotes === notes && payload.aiSummary);
+    if (!payload.interviewerUserId || !payload.interviewer) {
+      if (message) message.textContent = '无法识别当前面试官身份，请重新登录后再提交。';
+      return;
+    }
+    if (!payload.recommendation || !payload.candidateRating || !summaryReady || evaluationLength < 50) {
+      if (message) message.textContent = !summaryReady ? '请先用会议总结生成并核对 AI 面试总结。' : evaluationLength < 50 ? `面试官评价至少 50 字，当前 ${evaluationLength} 字。` : '请完整填写面试结论和候选人评级。';
+      return;
+    }
+    try {
+      if (button) button.disabled = true;
+      if (message) message.textContent = '正在提交评价…';
+      await request(`api/interview-evaluations/interviews/${encodeURIComponent(interviewId)}/feedback`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      const appointments = state.interviewData?.appointments || [];
+      const current = appointments.find((item) => item.id === interviewId);
+      if (current) current.evaluationStatus = '已完成';
+      notifyUser('面试评价已提交。', 'success');
+      await renderInterviewEvaluationPanel(current || { id: interviewId, evaluationStatus: '已完成' });
+    } catch (error) {
+      if (message) message.textContent = conciseError(error);
+      if (button) button.disabled = false;
+    }
   }
 
   function openInterviewScheduleDetail(appointment) {
@@ -7882,7 +8105,31 @@ if (!root) return;
     const authenticated = await initializeIdentity();
     bindOverviewJobsPages();
     if (authenticated) await applyFlowAction();
-    document.getElementById('interview-month-filter')?.addEventListener('change', loadInterviewSchedulePage);
+    document.getElementById('interview-month-filter')?.addEventListener('change', () => {
+      renderInterviewMonthLabel();
+      loadInterviewSchedulePage();
+    });
+    renderInterviewMonthLabel();
+    document.querySelector('[data-interview-month-picker]')?.addEventListener('click', () => {
+      const panel = document.getElementById('interview-month-panel');
+      const trigger = document.querySelector('[data-interview-month-picker]');
+      if (!panel || !trigger) return;
+      const opening = panel.hidden;
+      if (!opening) {
+        closeInterviewMonthPanel();
+        return;
+      }
+      const input = document.getElementById('interview-month-filter');
+      renderInterviewMonthPanel(Number(String(input.value || currentMonthValue()).slice(0, 4)));
+      panel.hidden = false;
+      trigger.setAttribute('aria-expanded', 'true');
+    });
+    document.addEventListener('click', (event) => {
+      if (!event.target.closest('.schedule-month-field')) closeInterviewMonthPanel();
+    });
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') closeInterviewMonthPanel();
+    });
     document.querySelectorAll('[data-interview-month-step]').forEach(button => button.addEventListener('click', () => {
       const input = document.getElementById('interview-month-filter');
       const [year, month] = (input.value || currentMonthValue()).split('-').map(Number);

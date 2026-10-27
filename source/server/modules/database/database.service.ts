@@ -77,7 +77,15 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
       this.state = 'initializing'
       this.lastAttemptAt = new Date().toISOString()
       try {
-        await this.initialize()
+        if (process.env.LOCAL_EXPORT_DB === 'true' && process.env.NODE_ENV !== 'production') {
+          for (const definition of RECRUITMENT_TABLES) {
+            const table = await teable.ensureTable(definition.name)
+            this.tableIds.set(definition.name, table.id)
+          }
+          this.logger.log(`已加载本地导出数据库：${this.tableIds.size} 张表`)
+        } else {
+          await this.initialize()
+        }
         this.state = 'ready'
         this.readyAt = new Date().toISOString()
         this.lastError = ''

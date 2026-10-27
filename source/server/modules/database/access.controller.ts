@@ -31,7 +31,7 @@ export class AccessController {
     }
     const [profile, account] = await Promise.all([this.access.getUserAccess(identity.userId), this.administration.account(identity.userId)])
     const accessState = !account ? 'unregistered' : account.status === '停用' ? 'disabled' : account.status !== '启用' ? 'pending' : !profile.roleCodes.length ? 'no_role' : !account.mobile ? 'profile_incomplete' : 'active'
-    if (accessState === 'active') await this.access.auditAccess(profile, identity.userName, request, '登录并读取当前权限', '成功')
+    if (accessState === 'active' && process.env.LOCAL_EMPLOYEE_LOGIN !== 'true') await this.access.auditAccess(profile, identity.userName, request, '登录并读取当前权限', '成功')
     return { authenticated: true, authorized: accessState === 'active', accessState, enforcement, identitySource: identity.source, ...profile, account, userName: account?.name || identity.userName }
   }
 
