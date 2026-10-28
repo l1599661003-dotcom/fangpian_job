@@ -203,7 +203,7 @@ test('review, communication, scheduling, feedback and interview decision form on
     assert.equal(savedFeedback['AI面试总结'], 'AI整理了项目量化成果。');
     assert.equal(savedFeedback['面试官评价'], evaluation50);
     await assert.rejects(() => evaluation.submitFeedback(appointment.interviewId, { ...feedbackBase, candidateRating: 'b', scores: { professional: 90, communication: 90, execution: 90, culture: 90, potential: 90 }, strengths: '', risks: '', interviewerEvaluation: evaluation50, comment: evaluation50, operator: '陈经理' }), /已经锁定/);
-    const second = await evaluation.submitFeedback(appointment.interviewId, { interviewerUserId: interviewerB.interviewerId, interviewer: '赵总监', candidateRating: 'b', scores: { professional: 78, communication: 84, execution: 80, culture: 82, potential: 79 }, recommendation: '待讨论', strengths: '沟通清晰', risks: '商业化深度需要二面确认', aiSummary: 'AI已整理本轮会议中的主要事实和风险。', notes: '本轮会议记录包含候选人的项目案例及待核实项。', interviewerEvaluation: evaluation50, comment: evaluation50, operator: '赵总监' });
+    const second = await evaluation.submitFeedback(appointment.interviewId, { interviewerUserId: interviewerB.interviewerId, interviewer: '赵总监', candidateRating: 'b', scores: { professional: 78, communication: 84, execution: 80, culture: 82, potential: 79 }, recommendation: '加面', nextSlots: ['10月29日 14:00'], strengths: '沟通清晰', risks: '商业化深度需要二面确认', aiSummary: 'AI已整理本轮会议中的主要事实和风险。', notes: '本轮会议记录包含候选人的项目案例及待核实项。', interviewerEvaluation: evaluation50, comment: evaluation50, operator: '赵总监' });
     assert.equal(second.submitted, 2); assert.equal(second.expected, 2);
     assert.equal(second.handoff.status, '已通知HR');
     assert.equal(second.handoff.nextStep, '面试待决策');
@@ -213,8 +213,8 @@ test('review, communication, scheduling, feedback and interview decision form on
     assert.ok(feedbackHistory.history.every(item => item.round === '一面'));
     const aggregate = await evaluation.aggregate(appointment.interviewId);
     assert.equal(aggregate.count, 2);
-    assert.deepEqual(aggregate.recommendations, { 通过: 1, 待讨论: 1 });
-    assert.deepEqual(aggregate.disagreements, { 通过: 1, 待讨论: 1 });
+    assert.deepEqual(aggregate.recommendations, { 通过: 1, 加面: 1 });
+    assert.deepEqual(aggregate.disagreements, { 通过: 1, 加面: 1 });
 
     const decision = await evaluation.decide(appointment.interviewId, { decision: '通过', reason: '两位面试官证据总体支持进入Offer决策，风险项转入二面补充核验', operator: '招聘负责人', operatorUserId: 'hr_lead' });
     assert.equal(decision.handoff.status, '已通知HR');
@@ -234,11 +234,12 @@ test('review, communication, scheduling, feedback and interview decision form on
     const interviewRecord = memory.records.get('recruitment_interviews')[0];
     const priorHrPushes = evaluationNotifications.filter(item => item.objectType === '面试后HR处理').length;
     interviewRecord.fields['面试结果'] = '储备';
-    assert.equal((await evaluation.ensureHrHandoff(appointment.interviewId)).status, '无需处理');
+    assert.equal((await evaluation.ensureHrHandoff(appointment.interviewId)).status, '等待最终决策');
     interviewRecord.fields['面试结果'] = '待讨论';
-    assert.equal((await evaluation.ensureHrHandoff(appointment.interviewId)).status, '无需处理');
+    assert.equal((await evaluation.ensureHrHandoff(appointment.interviewId)).status, '等待最终决策');
     assert.equal(evaluationNotifications.filter(item => item.objectType === '面试后HR处理').length, priorHrPushes);
     interviewRecord.fields['面试结果'] = '加面';
+    memory.records.get('recruitment_interview_feedback')[1].fields['评分证据JSON'] = JSON.stringify({ nextSlots: ['10月29日 14:00'] });
     const additionalRound = await evaluation.ensureHrHandoff(appointment.interviewId);
     assert.equal(additionalRound.status, '已通知HR');
     assert.equal(new URL(additionalRound.url).searchParams.get('flow_action'), 'schedule');

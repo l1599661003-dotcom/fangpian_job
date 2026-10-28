@@ -80,7 +80,7 @@ export class ResumesService implements OnModuleInit {
   constructor(
     private readonly files: ResumeFileService,
     private readonly word: ResumeWordService,
-    private readonly talents: TalentsService,
+    readonly talents: TalentsService,
     private readonly database: DatabaseService,
   ) {}
 

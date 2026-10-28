@@ -172,7 +172,7 @@ export const RECRUITMENT_TABLES: RecruitmentTableDefinition[] = [
       number('输入估算Token'), number('输出估算Token'), number('估算成本元'), text('成本估算口径'),
       longText('人才摘要'), longText('优势JSON'), longText('风险与待确认JSON'), longText('技能JSON'),
       number('业务能力分'), number('管理能力分'), number('逻辑能力分'), number('沟通协作分'), number('综合建议分'),
-      longText('评分证据JSON'), longText('推荐岗位JSON'), text('置信度'), text('人工确认状态'),
+      longText('评分证据JSON'), longText('评分维度JSON'), longText('推荐岗位JSON'), text('置信度'), text('人工确认状态'),
       longText('人工修正内容'), longText('人工修正JSON'), longText('生效评分JSON'), longText('生效技能JSON'), longText('生效推荐岗位JSON'),
       longText('人工修正原因'), text('修正人用户ID'), text('修正人'), text('修正时间'), text('确认人用户ID'), text('确认人'), text('确认时间'),
       text('运行人用户ID'), text('运行人'), text('开始时间'), text('完成时间'), text('创建时间'), text('更新时间'),
@@ -543,7 +543,7 @@ export const RECRUITMENT_TABLES: RecruitmentTableDefinition[] = [
     fields: [
       text('内推记录ID'), text('候选人ID'), text('应聘记录ID'), text('职位ID'), text('需求ID'), text('推荐人用户ID'),
       text('推荐人'), text('推荐人部门ID'), text('推荐人部门'), longText('关系说明'), text('候选人姓名快照'),
-      text('候选人电话快照'), text('来源类型'), text('内推状态'), text('当前进度'), text('有效性结论'),
+      text('候选人电话快照'), text('候选人邮箱快照'), text('来源类型'), text('内推状态'), text('当前进度'), text('有效性结论'),
       longText('无效原因'), text('推荐时间'), text('关联状态'), text('来源记录ID'), text('内推活动ID'), text('推荐人手机号'),
       text('源文件名'), text('源文件地址'), text('解析任务ID'), text('解析状态'), longText('解析错误'), text('查重状态'),
       text('进度Token哈希'), text('进度Token前缀'), text('进度查询过期时间'), text('创建时间'), text('更新时间'),

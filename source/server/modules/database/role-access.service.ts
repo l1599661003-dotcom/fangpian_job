@@ -370,7 +370,7 @@ export class RoleAccessService {
   }
 
   private readExport(fileName: string) {
-    const filePath = join(process.cwd(), '..', 'database', fileName)
+    const filePath = join(__dirname, '..', '..', '..', '..', 'database', fileName)
     const parsed = JSON.parse(readFileSync(filePath, 'utf8'))
     return Array.isArray(parsed) ? parsed : []
   }

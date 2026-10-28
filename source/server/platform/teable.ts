@@ -12,10 +12,11 @@ export interface TeableRecord { id: string; fields: Record<string, any>; created
 export interface TeableRecordPage { records: TeableRecord[]; total?: number; totalIsExact?: boolean }
 export interface TeableReadOptions { take?: number; skip?: number; filterByTql?: string; orderBy?: any[]; fields?: string[] }
 
-const localExportDir = join(process.cwd(), '..', 'database')
+const localExportDir = join(__dirname, '..', '..', '..', 'database')
 const localExportEnabled = () => process.env.LOCAL_EXPORT_DB === 'true' && process.env.NODE_ENV !== 'production'
 const localTables = new Map<string, TeableRecord[]>()
 let localTablesLoaded = false
+let localRecordSequence = 0
 
 function loadLocalTables() {
   if (localTablesLoaded) return
@@ -26,7 +27,7 @@ function loadLocalTables() {
     if (!matched) continue
     const parsed = JSON.parse(readFileSync(join(localExportDir, fileName), 'utf8'))
     if (!Array.isArray(parsed)) continue
-    localTables.set(`local:${matched[2]}`, parsed.filter((row) => row && typeof row === 'object' && row.fields && typeof row.fields === 'object'))
+    localTables.set(`local:${matched[2]}`, parsed.filter((row) => row && typeof row === 'object' && row.fields && typeof row.fields === 'object').map((row) => ({ ...row, fields: { ...row.fields } })))
   }
 }
 
@@ -96,10 +97,42 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
   }
 }
 
+function localWrite(method: string, path: string, body?: any) {
+  loadLocalTables()
+  const recordMatch = /^\/tables\/(local:[^/]+)\/records\/([^/?]+)$/.exec(path)
+  const tableMatch = /^\/tables\/(local:[^/?]+)/.exec(path)
+  const tableId = recordMatch?.[1] || tableMatch?.[1] || ''
+  const records = localTables.get(tableId)
+  if (!records) throw new Error(`本地导出数据库缺少表：${localTableName(tableId)}`)
+  if (method === 'POST' && path.endsWith('/records')) {
+    const created = (body?.records || []).map((item: { fields?: Record<string, any> }) => {
+      const row = { id: `${tableId}_local_${++localRecordSequence}`, fields: { ...(item.fields || {}) }, createdTime: new Date().toISOString() }
+      records.push(row)
+      return row
+    })
+    return { records: created }
+  }
+  if (method === 'POST' && path.endsWith('/fields')) return { id: `${tableId}:${body?.name || 'field'}`, name: body?.name || '', type: body?.type || 'singleLineText' }
+  const fieldMatch = /^\/tables\/(local:[^/]+)\/fields\/([^/?]+)$/.exec(path)
+  if (fieldMatch && method === 'PATCH') return { id: decodeURIComponent(fieldMatch[2]), name: body?.name || '', type: 'singleLineText' }
+  const recordId = recordMatch ? decodeURIComponent(recordMatch[2]) : ''
+  const row = records.find((item) => item.id === recordId)
+  if (!row) throw new Error(`本地测试记录不存在：${recordId}`)
+  if (method === 'PATCH') {
+    row.fields = { ...row.fields, ...(body?.fields || {}) }
+    return row
+  }
+  if (method === 'DELETE') {
+    localTables.set(tableId, records.filter((item) => item.id !== recordId))
+    return { id: recordId, deleted: true }
+  }
+  throw new Error(`本地测试数据库不支持 ${method} ${path}`)
+}
+
 async function sendRequest<T>(method: string, path: string, body?: unknown): Promise<T> {
   const decodedPath = decodeURIComponent(path)
   if (localExportEnabled() && decodedPath.startsWith('/tables/local:')) {
-    if (method !== 'GET') throw new Error('本地导出数据库是只读快照，不能写入')
+    if (method !== 'GET') return localWrite(method, decodedPath.split('?')[0], body) as T
     const query = new URLSearchParams(decodedPath.split('?')[1] || '')
     const options: TeableReadOptions = {
       take: query.has('take') ? Number(query.get('take')) : undefined,

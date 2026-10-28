@@ -191,6 +191,11 @@ export class TalentsController {
   @Post(':id/review')
   review(@Param('id') id: string, @Body() body: TalentReviewInput) { return this.talents.reviewTalent(id, body) }
 
+  @Post(':id/referral-hr-review')
+  referralHrReview(@Param('id') id: string, @Body() body: { decision?: string; reason?: string; operator?: string; operatorUserId?: string }) {
+    return this.talents.reviewReferralByHr(id, body)
+  }
+
   @Get(':id/communications')
   communications(@Param('id') id: string) { return this.talents.listCommunications(id) }
 
@@ -245,12 +250,13 @@ export class PublicTalentReviewsController {
     if (!identity) throw new UnauthorizedException('请先登录系统，再打开简历评审')
     const account = await this.administration.account(identity.userId)
     if (!account || account.status !== '启用') throw new ForbiddenException('当前账号暂无简历评审权限，请联系管理员')
+    const access = await this.access.getUserAccess(identity.userId)
     return {
       userId: identity.userId,
       name: account.name || identity.userName,
       departmentIds: account.departmentIds || [],
       departments: account.departments || [],
-      canViewAllPositions: true,
+      canViewAllPositions: access.roleCodes.includes('system_admin') || access.dataScopes.some((scope) => scope.type === 'all'),
     }
   }
 

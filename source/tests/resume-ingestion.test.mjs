@@ -152,6 +152,16 @@ test('resume ingestion starts AI analysis automatically and uploader-selected po
   assert.equal(matches[0].positionId, 'position_uploader_selected');
   assert.equal(matches[0].positionName, '财务BP');
   assert.match(memory.records.get('recruitment_job_matches')[0].fields['推荐理由'], /上传人选择该岗位/);
+
+  const lowScoreAnalysis = { ...analysis, recommendedRoles: ['总账会计'], scores: { ...analysis.scores, business: 20, management: 20, overall: 30 } };
+  const lowScoreMatches = await talents.saveMatches(candidate.fields['候选人ID'], 'assessment_low_score_primary', {
+    jobIntention: '总账会计', skillsCertificates: '总账核算', workExperience: '负责总账和凭证审核', yearsOfExperience: '1年',
+  }, lowScoreAnalysis, 'position_uploader_selected');
+  assert.equal(lowScoreMatches[0].positionId, 'position_uploader_selected');
+  assert.equal(lowScoreMatches[0].positionName, '财务BP');
+  const profile = await talents.detail(candidate.fields['候选人ID']);
+  assert.equal(profile.matches[0].positionId, 'position_uploader_selected');
+  assert.equal(profile.bestMatchRole, '财务BP');
 });
 
 test('AI backfill retries the latest zero-score resume even when an older analysis exists', async (context) => {

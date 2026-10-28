@@ -3997,6 +3997,114 @@ body .rf-dialog.rf-feedback-dialog .rf-feedback-submit-actions {
   text-align: center !important;
 }
 
+#page-resume-archive .rf-talent-command {
+  display: grid !important;
+  gap: 14px !important;
+  margin: 0 0 16px !important;
+}
+
+#page-resume-archive .rf-talent-metrics {
+  display: grid !important;
+  grid-template-columns: 1.35fr repeat(3, minmax(0, 1fr)) !important;
+  gap: 12px !important;
+}
+
+#page-resume-archive .rf-talent-metrics article,
+#page-resume-archive .rf-talent-metrics button {
+  display: grid !important;
+  align-content: center !important;
+  min-height: 108px !important;
+  padding: 16px 18px !important;
+  border: 1px solid #eadfca !important;
+  border-radius: 14px !important;
+  background: #fff !important;
+  color: inherit !important;
+  text-align: left !important;
+}
+
+#page-resume-archive .rf-talent-metrics .is-primary {
+  background: linear-gradient(135deg, #fff, #fbf6ec) !important;
+}
+
+#page-resume-archive .rf-talent-metrics .is-active {
+  border-color: #c6a967 !important;
+  box-shadow: inset 3px 0 #c6a967 !important;
+}
+
+#page-resume-archive .rf-talent-metrics span,
+#page-resume-archive .rf-talent-metrics small {
+  color: #8d8272 !important;
+  font-size: 12px !important;
+}
+
+#page-resume-archive .rf-talent-metrics strong {
+  margin: 6px 0 4px !important;
+  color: #2c271f !important;
+  font-size: 30px !important;
+  line-height: 1 !important;
+}
+
+#page-resume-archive .rf-talent-filter-grid {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 12px 14px !important;
+}
+
+#page-resume-archive .rf-talent-filter-grid .is-wide {
+  grid-column: span 2 !important;
+}
+
+#page-resume-archive .rf-talent-filter-grid :is(input, select) {
+  width: 100% !important;
+  height: 42px !important;
+  padding: 0 12px !important;
+  border: 1px solid #ddd3c2 !important;
+  border-radius: 10px !important;
+  background: #fff !important;
+  color: #2c271f !important;
+}
+
+#page-resume-archive .rf-talent-active-filters {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 8px !important;
+}
+
+#page-resume-archive .rf-talent-active-filters button {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  min-height: 32px !important;
+  padding: 0 10px !important;
+  border: 1px solid #e4d8c2 !important;
+  border-radius: 999px !important;
+  background: #fbf7ef !important;
+  color: #6d5a32 !important;
+}
+
+#page-resume-archive .rf-talent-active-filters strong {
+  color: #2c271f !important;
+  font-weight: 650 !important;
+}
+
+@media (max-width: 1180px) {
+  #page-resume-archive .rf-talent-metrics,
+  #page-resume-archive .rf-talent-filter-grid {
+    grid-template-columns: 1fr 1fr !important;
+  }
+}
+
+@media (max-width: 760px) {
+  #page-resume-archive .rf-talent-metrics,
+  #page-resume-archive .rf-talent-filter-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  #page-resume-archive .rf-talent-filter-grid .is-wide {
+    grid-column: auto !important;
+  }
+}
+
 #page-resume-archive .rf-talent-pager small {
   color: #8d8272 !important;
   font-size: 12px !important;

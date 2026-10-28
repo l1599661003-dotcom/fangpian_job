@@ -233,7 +233,7 @@ export class TalentsService implements OnModuleInit {
       && text(row.fields['当前状态']) !== '已结束',
     ) || applications.filter((row) => text(row.fields['候选人ID']) === candidateId && text(row.fields['当前状态']) !== '已结束').sort((a, b) => text(b.fields['更新时间']).localeCompare(text(a.fields['更新时间'])))[0]
     const selectedPositionId = text(currentApplication?.fields['职位ID'])
-    const run = await this.analyzeRun(resume)
+    const run = await this.analyzeRun(resume, selectedPositionId)
     const assessmentId = await this.saveAssessment(candidateId, resume.id, run.analysis, {
       version, parentId: text(previous?.fields['分析记录ID']) || previous?.id || '', type: options.type || '入库自动分析', reason, operator: '系统', operatorUserId: '', ...run,
     })
@@ -243,27 +243,36 @@ export class TalentsService implements OnModuleInit {
     // 更新当前应聘记录的 AI 匹配分
     const applicationId = text(currentApplication?.fields['应聘记录ID']) || currentApplication?.id || ''
     const qualifiesForReview = run.analysis.scores.overall >= 60
-    const shouldEnterReview = Boolean(currentApplication && qualifiesForReview && text(currentApplication.fields['当前阶段']) === 'AI分析中')
+    const referral = await this.activeReferral(candidateId, applicationId)
+    const referralNeedsHr = Boolean(referral && text(referral.fields['有效性结论']) !== '疑似重复' && text(referral.fields['职位ID']))
+    const shouldEnterReview = Boolean(currentApplication && !referralNeedsHr && qualifiesForReview && text(currentApplication.fields['当前阶段']) === 'AI分析中')
+    const shouldEnterHrReview = Boolean(currentApplication && referralNeedsHr && text(currentApplication.fields['当前阶段']) === 'AI分析中')
     if (currentApplication) {
       await teable.updateRecord(this.table('recruitment_applications'), currentApplication.id, {
         AI匹配分: matches[0]?.score || run.analysis.scores.overall,
         AI评分版本: `talent-v${version}`,
         人工复核结果: selectedPositionId ? '已确认' : '待确认',
         ...(shouldEnterReview ? { 当前阶段: '待业务群评审', 最近处理时间: now() } : {}),
+        ...(shouldEnterHrReview ? { 当前阶段: '待HR审核', 最近处理时间: now() } : {}),
         更新时间: now(),
       })
     }
-    if (shouldEnterReview) {
-      await teable.updateRecord(this.table('recruitment_candidates'), candidate.id, { 候选人状态: '待业务群评审', 更新时间: now() })
+    if (shouldEnterReview || shouldEnterHrReview) {
+      const nextStage = shouldEnterHrReview ? '待HR审核' : '待业务群评审'
+      await teable.updateRecord(this.table('recruitment_candidates'), candidate.id, { 候选人状态: nextStage, 更新时间: now() })
       await teable.createRecord(this.table('recruitment_stage_events'), {
         事件ID: id('evt'), 应聘记录ID: applicationId, 候选人ID: candidateId, 职位ID: text(currentApplication?.fields['职位ID']),
-        原阶段: 'AI分析中', 新阶段: '待业务群评审', 操作: 'AI分析完成', 结果: `综合评分${run.analysis.scores.overall}分，进入业务群评审`,
+        原阶段: 'AI分析中', 新阶段: nextStage, 操作: 'AI分析完成', 结果: shouldEnterHrReview ? `综合评分${run.analysis.scores.overall}分，等待岗位HR审核` : `综合评分${run.analysis.scores.overall}分，进入业务群评审`,
         操作人: '系统', 发生时间: now(), 来源类型: '系统自动',
       })
     }
 
     console.log(`[AI队列] ${candidateId} 分析完成，评分${run.analysis.scores.overall}，匹配${matches.length}个岗位`)
-    if (shouldEnterReview && !suppressGroupPush) {
+    if (shouldEnterHrReview && referral) {
+      await this.notifyReferralHr(candidateId, applicationId, referral, run.analysis.scores.overall).catch((error) => {
+        console.error(`[流程通知] 内推HR审核通知失败 ${candidateId}: ${error instanceof Error ? error.message : String(error)}`)
+      })
+    } else if (shouldEnterReview && !suppressGroupPush) {
       await this.pushAutomaticReview(candidateId).catch((error) => {
         console.error(`[流程通知] AI自动评审推送失败 ${candidateId}: ${error instanceof Error ? error.message : String(error)}`)
       })
@@ -272,11 +281,36 @@ export class TalentsService implements OnModuleInit {
     }
   }
 
-  async pushAutomaticReview(candidateId: string) {
+  private async activeReferral(candidateId: string, applicationId: string) {
+    const rows = await teable.listAllRecords(this.table('recruitment_referrals'))
+    return rows.filter((row) =>
+      (applicationId && text(row.fields['应聘记录ID']) === applicationId) || text(row.fields['候选人ID']) === candidateId,
+    ).sort((a, b) => text(b.fields['更新时间']).localeCompare(text(a.fields['更新时间'])))[0]
+  }
+
+  private async notifyReferralHr(candidateId: string, applicationId: string, referral: TeableRecord, score: number) {
+    const profile = await this.detail(candidateId)
+    const positionName = text(referral.fields['职位ID']) ? (profile.matches || []).find((item: any) => text(item.positionId) === text(referral.fields['职位ID']))?.positionName || profile.bestMatchRole : profile.bestMatchRole
+    const publicBase = text(process.env.APP_PUBLIC_URL).replace(/\/+$/, '')
+    const reviewUrl = publicBase ? `${publicBase}/#candidates` : ''
+    await this.messages.notifyPositionHr({
+      category: '内推HR审核', candidateId, applicationId, positionId: text(referral.fields['职位ID']), objectId: text(referral.fields['内推记录ID']) || referral.id,
+      operator: '内推评分完成',
+      markdown: [
+        `## 【内推待审核】${wecomInline(this.reviewCandidateName(profile), '候选人', 20)}`,
+        `> 内推人 ${wecomInline(referral.fields['推荐人'], '员工', 20)} 推荐至 ${wecomInline(positionName, '所选岗位', 30)}`,
+        `> AI综合评分 ${score} 分。请先审核，通过后再推送业务群。`,
+        reviewUrl ? `[打开人才档案 →](${reviewUrl})` : '',
+      ].filter(Boolean).join('\n\n'),
+    })
+    await teable.updateRecord(this.table('recruitment_referrals'), referral.id, { 内推状态: '待HR审核', 当前进度: 'HR审核', 更新时间: now() })
+  }
+
+  async pushAutomaticReview(candidateId: string, options: { ignoreScoreThreshold?: boolean } = {}) {
     const profile = await this.detail(candidateId)
     if (profile.suppressGroupPush) return { status: '已跳过', reason: '本次导入已设置不推送企微群' }
     const application = (profile.applications || []).find((item: any) => text(item['当前状态']) !== '已结束')
-    if (!profile.analysis?.id || num(profile.analysis?.scores?.overall) < 60 || text(application?.['当前阶段']) !== '待业务群评审') {
+    if (!profile.analysis?.id || (!options.ignoreScoreThreshold && num(profile.analysis?.scores?.overall) < 60) || text(application?.['当前阶段']) !== '待业务群评审') {
       return { status: '无需发送', reason: '尚未完成达标评分，或应聘记录已不在待业务群评审阶段' }
     }
     const share = await this.shareForWecomReview(candidateId, { operator: 'AI评分自动推送', applicationId: text(application?.['应聘记录ID']), assessmentId: text(profile.analysis.id), expiresInDays: 7, sendMessage: false })
@@ -284,7 +318,9 @@ export class TalentsService implements OnModuleInit {
     const row = shares[0]
     if (!row) throw new ServiceUnavailableException('评审链接记录未保存成功，无法确认自动推送')
     if (text(row.fields['发送时间']) && text(row.fields['分享状态']) === '评审中') return { status: '已跳过', reason: '该评审链接已发送' }
-    const delivery = await this.notifyFlow('AI自动业务群评审', candidateId, 'business', this.reviewMarkdown(profile, share.reviewUrl, 7, application), share.shareId)
+    const ownerNotice = await this.positionOwnerNotice(text(application?.positionId) || text(application?.['职位ID']))
+    const delivery = await this.notifyFlow('AI自动业务群评审', candidateId, 'business', this.reviewMarkdown(profile, share.reviewUrl, 7, application, ownerNotice), share.shareId, undefined, ownerNotice.mentionIds)
+    await this.notifyPositionOwner(candidateId, share.shareId, profile, share.reviewUrl, application, ownerNotice)
     const deliveryStatus = text((delivery as any)?.status), reason = text((delivery as any)?.reason) || text((delivery as any)?.error)
     const delivered = deliveryStatus === '已发送' || (deliveryStatus === '已跳过' && reason === '相同流程通知已发送')
     await teable.updateRecord(this.table('recruitment_talent_review_shares'), row.id, {
@@ -312,7 +348,112 @@ export class TalentsService implements OnModuleInit {
     return fromFile && !invalid.test(fromFile) ? fromFile : '未识别姓名'
   }
 
-  private reviewMarkdown(profile: any, reviewUrl: string, expiresInDays: number, application: any = {}) {
+  private async positionOwnerNotice(positionId: string) {
+    const empty = { name: '', userId: '', mentionIds: [] as string[] }
+    if (!text(positionId)) return empty
+    let position = await teable.findOneByField(this.table('recruitment_positions'), '职位ID', positionId)
+    if (!position) { try { position = await teable.getRecord(this.table('recruitment_positions'), positionId) } catch { position = undefined } }
+    const userId = text(position?.fields['负责人用户ID'])
+    const name = text(position?.fields['负责人'])
+    if (!userId && !name) return empty
+    const user = userId ? await this.messages.findReviewUser(userId) : undefined
+    const mentionId = text(user?.fields['企业微信用户ID']) || text(user?.fields['天玑微信ID'])
+    return { name: text(user?.fields['姓名']) || name, userId: user ? userId : '', mentionIds: mentionId ? [mentionId] : [] }
+  }
+
+  private async notifyPositionOwner(candidateId: string, shareId: string, profile: any, reviewUrl: string, application: any, owner: { userId?: string }) {
+    if (!owner.userId) return
+    await this.messages.notifyDirectUsers({
+      category: '岗位负责人简历提醒', candidateId, objectType: '人才评审', objectId: shareId,
+      userIds: [owner.userId], markdown: this.ownerDirectMarkdown(profile, reviewUrl, application), operator: '招聘流程自动通知',
+    }).catch((error) => console.error(`[岗位负责人私信] ${candidateId}: ${error instanceof Error ? error.message : String(error)}`))
+  }
+
+  private ownerDirectMarkdown(profile: any, reviewUrl: string, application: any = {}) {
+    const candidateName = wecomInline(this.reviewCandidateName(profile), '未识别姓名', 20)
+    const position = wecomInline(application.positionName || application['职位名称'] || profile.matches?.[0]?.positionName, '岗位待确认', 30)
+    const reasons = this.reviewReasons(profile)
+    return [
+      `## 【岗位负责人请看】${candidateName}`,
+      `> 推荐岗位　<font color="info">${position}</font>`,
+      `**推荐理由**`,
+      ...reasons.map((reason) => `- ${reason}`),
+      `[查看这份简历 →](${reviewUrl})`,
+      `<font color="comment">这是单独发给你的这一份简历，群里不再混入其他人的内容。</font>`,
+    ].join('\n\n')
+  }
+
+  private async reviewAccessiblePositions(rows: TeableRecord[], organizations: TeableRecord[], viewer?: TalentReviewViewer) {
+    if (!viewer || viewer.canViewAllPositions) return rows
+    const organizationById = new Map(organizations.map((row) => [text(row.fields['组织单元ID']) || row.id, row]))
+    const departmentIds = new Set(viewer.departmentIds.map(text).filter(Boolean))
+    const departmentNames = new Set(viewer.departments.map((name) => text(name).normalize('NFKC').replace(/\s+/g, '').replace(/(事业部|部门|中心|部)$/u, '')).filter(Boolean))
+    for (const name of departmentNames) {
+      const matches = organizations.filter((row) => text(row.fields['组织名称']).normalize('NFKC').replace(/\s+/g, '').replace(/(事业部|部门|中心|部)$/u, '') === name && text(row.fields['组织状态']) !== '停用')
+      if (matches.length === 1) departmentIds.add(text(matches[0].fields['组织单元ID']) || matches[0].id)
+    }
+    if ([...departmentIds].some((id) => text(organizationById.get(id)?.fields['组织类型']) === '公司' || text(organizationById.get(id)?.fields['组织名称']) === '方片')) return []
+    const ownDepartmentIds = new Set(departmentIds)
+    let previousSize = -1
+    while (previousSize !== departmentIds.size) {
+      previousSize = departmentIds.size
+      for (const row of organizations) {
+        const id = text(row.fields['组织单元ID']) || row.id
+        if (departmentIds.has(text(row.fields['上级组织单元ID']))) departmentIds.add(id)
+      }
+    }
+    for (const ownId of ownDepartmentIds) {
+      let current = organizationById.get(ownId)
+      const visited = new Set<string>()
+      while (current) {
+        const currentId = text(current.fields['组织单元ID']) || current.id
+        if (visited.has(currentId)) break
+        visited.add(currentId)
+        if (text(current.fields['组织类型']) === '公司' || text(current.fields['组织名称']) === '方片') break
+        departmentIds.add(currentId)
+        const parentId = text(current.fields['上级组织单元ID'])
+        if (!parentId) break
+        current = organizationById.get(parentId)
+      }
+    }
+    const visibleNames = new Set<string>()
+    for (const row of organizations) {
+      const id = text(row.fields['组织单元ID']) || row.id
+      const name = text(row.fields['组织名称']).normalize('NFKC').replace(/\s+/g, '').replace(/(事业部|部门|中心|部)$/u, '')
+      if (departmentIds.has(id) && name) visibleNames.add(name)
+    }
+    return rows.filter((row) => {
+      const departmentId = text(row.fields['部门ID'])
+      if (departmentId && departmentIds.has(departmentId)) return true
+      const departmentName = text(organizationById.get(departmentId)?.fields['组织名称'] || row.fields['部门']).normalize('NFKC').replace(/\s+/g, '').replace(/(事业部|部门|中心|部)$/u, '')
+      return Boolean(departmentName && visibleNames.has(departmentName))
+    })
+  }
+
+  private reviewScoreBreakdown(profile: any) {
+    const dimensions = profile?.analysis?.scoreDimensions
+    const items = [
+      { key: 'skillMatch', name: '技能匹配', weight: 30 },
+      { key: 'experience', name: '工作经验', weight: 25 },
+      { key: 'industryMatch', name: '行业匹配', weight: 20 },
+      { key: 'education', name: '学历匹配', weight: 15 },
+      { key: 'stability', name: '稳定性', weight: 10 },
+    ].map((item) => ({ ...item, score: Number(dimensions?.[item.key]) }))
+    return { available: items.every((item) => Number.isFinite(item.score)), items }
+  }
+
+  private reviewReasons(profile: any) {
+    const analysis = profile?.analysis || {}
+    const collected = [
+      ...((analysis.strengths || []).map((item: unknown) => text(item))),
+      ...((analysis.recommendedReasons || analysis.reasons || []).map((item: unknown) => text(item))),
+      text(analysis.summary),
+    ].map((item) => item.replace(/[ \t\r\f\v]+/g, ' ').trim()).filter(Boolean)
+    const unique = [...new Set(collected)]
+    return unique.length ? unique : ['请打开简历查看匹配依据']
+  }
+
+  private reviewMarkdown(profile: any, reviewUrl: string, expiresInDays: number, application: any = {}, owner: { name?: string; mentionIds?: string[] } = {}) {
     const bestMatch = profile.matches?.[0]
     const matchScore = Number(bestMatch?.score || profile.analysis.scores?.overall || 0)
     const candidateName = wecomInline(this.reviewCandidateName(profile), '未识别姓名', 20)
@@ -328,8 +469,8 @@ export class TalentsService implements OnModuleInit {
     const experience = wecomInline(profile.yearsOfExperience, '经验待补充', 16)
     const city = wecomInline(profile.address, '城市待补充', 18)
     const currentExperience = wecomInline(profile.currentRole || profile.currentCompany, '当前经历待补充', 36)
-    const strengths = wecomList(profile.analysis.strengths || [], '等待人工确认', 3)
-    const tags = wecomList(profile.skills || [], '待补充', 6)
+    const reasons = this.reviewReasons(profile)
+    const ownerName = wecomInline(owner.name, '', 20)
     return [
       `## 【${isReferral ? '内推简历 · 待评审' : '待评审'}】${candidateName}`,
       `<font color="comment">请业务负责人快速判断是否适合本部门岗位</font>`,
@@ -342,12 +483,11 @@ export class TalentsService implements OnModuleInit {
         `> **AI推荐岗位**　<font color="info">${aiRecommendedPositions}</font>　　**AI综合评分**　<font color="warning">${Number(profile.analysis.scores?.overall || 0)} 分</font>`,
       ] : [`> **推荐岗位**　<font color="info">${recommendedPosition}</font>　　**综合匹配**　<font color="warning">${matchScore} 分</font>`]),
       `> ${experience}　|　${city}　|　${currentExperience}`,
-      `**候选人速览**`,
-      `- 核心优势：${strengths}`,
-      `- 技能标签：${tags}`,
-      `<font color="comment">选择“适合我的岗位”即可认领，每次认领都会通知所选岗位的招聘HR进行意向沟通。</font>`,
+      ownerName ? `> **岗位负责人**　<font color="info">${ownerName}</font>${owner.mentionIds?.length ? '' : '　<font color="comment">未同步企微，无法单独提醒</font>'}` : `> **岗位负责人**　<font color="comment">该岗位未设置负责人</font>`,
+      `**推荐理由**`,
+      ...reasons.map((reason) => `- ${reason}`),
       `[进入简历评审 →](${reviewUrl})`,
-      `<font color="comment">请在 ${expiresInDays} 天内完成判断；在线页支持“适合 / 不适合 / 其他意见”，可打印或保存为 PDF。请勿转发候选人信息。</font>`,
+      `<font color="comment">请在 ${expiresInDays} 天内判断。选择“合适”时至少提交 2 个可面试时间；选择“推荐其他部门”前必须确认目标岗位。请勿转发候选人信息。</font>`,
     ].join('\n\n')
   }
 
@@ -366,8 +506,8 @@ export class TalentsService implements OnModuleInit {
     return `${publicBase}/communication?token=${encodeURIComponent(token)}`
   }
 
-  private async notifyFlow(category: string, candidateId: string, group: 'business' | 'talent', markdown: string, objectId?: string, operator?: string) {
-    return this.messages.notifyFlowEvent({ category, candidateId, objectId, group, markdown, operator }).catch((error) => {
+  private async notifyFlow(category: string, candidateId: string, group: 'business' | 'talent', markdown: string, objectId?: string, operator?: string, mentionedList: string[] = []) {
+    return this.messages.notifyFlowEvent({ category, candidateId, objectId, group, markdown, operator, mentionedList }).catch((error) => {
       console.error(`[流程通知] ${category} 失败: ${error instanceof Error ? error.message : String(error)}`)
       return { status: '发送失败', error: error instanceof Error ? error.message : String(error) }
     })
@@ -533,7 +673,8 @@ export class TalentsService implements OnModuleInit {
     const start = hasComplexFilter ? (safePage - 1) * pageSize : 0
     const pageItems = candidates.slice(start, start + pageSize)
     const talents = hasComplexFilter ? await this.hydrateComplexDirectoryPage(data, pageItems) : pageItems
-    return { talents, total, page: safePage, pageSize, totalPages, jobMap: this.jobMap(candidates), overview: this.overview(candidates) }
+    const archiveTotal = canViewArchive && !hasComplexFilter && !serverFilter ? total : undefined
+    return { talents, total, page: safePage, pageSize, totalPages, archiveTotal, jobMap: this.jobMap(candidates), overview: this.overview(candidates), facets: this.directoryFacets(data, positionOptions) }
   }
 
   /**
@@ -715,10 +856,12 @@ export class TalentsService implements OnModuleInit {
       const existingExpiresAt = text(activeShare.fields['过期时间'])
       if (!sendMessage || !input.forceSend) return { shareId: existingShareId, status: text(activeShare.fields['分享状态']), sent: false, reviewUrl: existingReviewUrl, expiresAt: existingExpiresAt, needsNotification: false, message: '已复用现有评审链接，本次未发送企微群消息' }
 
-      const markdown = this.reviewMarkdown(profile, existingReviewUrl, expiresInDays, application)
+      const ownerNotice = await this.positionOwnerNotice(text(application.positionId) || text(application['职位ID']))
+      const markdown = this.reviewMarkdown(profile, existingReviewUrl, expiresInDays, application, ownerNotice)
 
       try {
-        const delivered = await this.deliverReviewMessage({ markdown, sendMode, webhookKey, directUserIds, candidateId, shareId: existingShareId, operator: text(input.operator), operatorUserId: text(input.operatorUserId) })
+        const delivered = await this.deliverReviewMessage({ markdown, sendMode, webhookKey, directUserIds, mentionedList: ownerNotice.mentionIds, candidateId, shareId: existingShareId, operator: text(input.operator), operatorUserId: text(input.operatorUserId) })
+        await this.notifyPositionOwner(candidateId, existingShareId, profile, existingReviewUrl, application, ownerNotice)
         const sentAt = now()
         await teable.updateRecord(sharesTable, activeShare.id, { 分享状态: '评审中', 企微消息ID: delivered.externalId, 发送错误: delivered.partialError || '', 发送时间: sentAt, 更新时间: sentAt })
         return { shareId: existingShareId, status: '评审中', sent: true, partial: Boolean(delivered.partialError), sentAt, reviewUrl: existingReviewUrl, expiresAt: existingExpiresAt, message: delivered.message }
@@ -752,12 +895,14 @@ export class TalentsService implements OnModuleInit {
       创建人用户ID: text(input.operatorUserId), 创建人: text(input.operator) || '当前用户', 过期时间: expiresAt, 创建时间: timestamp, 更新时间: timestamp,
     })
 
-    const markdown = this.reviewMarkdown(profile, reviewUrl, expiresInDays, application)
+    const ownerNotice = await this.positionOwnerNotice(text(application.positionId) || text(application['职位ID']))
+    const markdown = this.reviewMarkdown(profile, reviewUrl, expiresInDays, application, ownerNotice)
 
-    if (!sendMessage) return { shareId, status: '评审中', sent: false, reviewUrl, expiresAt, needsNotification: true, markdown, message: '已创建评审链接，等待自动通知发送' }
+    if (!sendMessage) return { shareId, status: '评审中', sent: false, reviewUrl, expiresAt, needsNotification: true, markdown, mentionedList: ownerNotice.mentionIds, ownerUserId: ownerNotice.userId, message: '已创建评审链接，等待自动通知发送' }
 
     try {
-      const delivered = await this.deliverReviewMessage({ markdown, sendMode, webhookKey, directUserIds, candidateId, shareId, operator: text(input.operator), operatorUserId: text(input.operatorUserId) })
+      const delivered = await this.deliverReviewMessage({ markdown, sendMode, webhookKey, directUserIds, mentionedList: ownerNotice.mentionIds, candidateId, shareId, operator: text(input.operator), operatorUserId: text(input.operatorUserId) })
+      await this.notifyPositionOwner(candidateId, shareId, profile, reviewUrl, application, ownerNotice)
       const sentAt = now()
       await teable.updateRecord(sharesTable, shareRecord.id, { 分享状态: '评审中', 企微消息ID: delivered.externalId, 发送错误: delivered.partialError || '', 发送时间: sentAt, 更新时间: sentAt })
       return { shareId, status: '评审中', sent: true, partial: Boolean(delivered.partialError), sentAt, reviewUrl, expiresAt, message: delivered.message }
@@ -768,7 +913,7 @@ export class TalentsService implements OnModuleInit {
     }
   }
 
-  private async deliverReviewMessage(input: { markdown: string; sendMode: 'group' | 'direct' | 'both'; webhookKey: string; directUserIds: string[]; candidateId: string; shareId: string; operator?: string; operatorUserId?: string }) {
+  private async deliverReviewMessage(input: { markdown: string; sendMode: 'group' | 'direct' | 'both'; webhookKey: string; directUserIds: string[]; mentionedList?: string[]; candidateId: string; shareId: string; operator?: string; operatorUserId?: string }) {
     const sendGroup = input.sendMode === 'group' || input.sendMode === 'both'
     const sendDirect = input.sendMode === 'direct' || input.sendMode === 'both'
     const delivered: { externalId: string; message: string }[] = []
@@ -796,6 +941,13 @@ export class TalentsService implements OnModuleInit {
         })
         const result = await response.json().catch(() => ({} as any))
         if (!response.ok || result?.errcode !== 0) throw new Error(text(result?.errmsg) || `未收到企微成功回执（HTTP ${response.status}）`)
+        const mentionedList = [...new Set((input.mentionedList || []).map(text).filter(Boolean))]
+        if (mentionedList.length) {
+          await fetch(`https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=${encodeURIComponent(input.webhookKey)}`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ msgtype: 'text', text: { content: '请岗位负责人查看上面这份简历。', mentioned_list: mentionedList } }),
+          }).catch((error) => console.error(`[评审群提醒] 负责人提醒失败: ${error instanceof Error ? error.message : String(error)}`))
+        }
         delivered.push({ externalId: text(result?.msgid), message: '已推送企微群，等待业务部门反馈' })
       } catch (error) {
         failed.push(`企微群推送失败：${error instanceof Error ? error.message : String(error)}`)
@@ -817,7 +969,7 @@ export class TalentsService implements OnModuleInit {
       teable.listAllRecords(this.table('recruitment_organization_units')),
       teable.listAllRecords(this.table('recruitment_talent_review_responses')),
     ])
-    const availablePositions = positions
+    const availablePositions = (await this.reviewAccessiblePositions(positions, organizations, viewer))
       .filter((row) => !['已下线', '关闭'].includes(text(row.fields['发布状态'])))
       .map((row) => ({ id: text(row.fields['职位ID']) || row.id, name: text(row.fields['职位名称']), departmentId: text(row.fields['部门ID']), department: text(row.fields['部门']) }))
     const shareResponses = responses.filter((row) => text(row.fields['分享批次ID']) === (text(share.fields['分享批次ID']) || share.id))
@@ -828,6 +980,11 @@ export class TalentsService implements OnModuleInit {
       candidate: snapshot,
       viewer: viewer ? { userId: viewer.userId, name: viewer.name, departments: viewer.departments } : undefined,
       departments: organizations.filter((row) => !viewer || !viewer.departmentIds.length || viewer.departmentIds.includes(text(row.fields['组织单元ID']))).map((row) => ({ id: text(row.fields['组织单元ID']) || row.id, name: text(row.fields['组织名称']) })),
+      fitScore: Number(snapshot?.matches?.[0]?.score || snapshot?.analysis?.scores?.overall || 0),
+      scoreBreakdown: this.reviewScoreBreakdown(snapshot),
+      reasons: this.reviewReasons(snapshot),
+      resumeUrl: text(snapshot?.sourceFileUrl),
+      otherPositions: (snapshot?.matches || []).slice(1, 4).map((item: any) => ({ name: text(item.positionName), score: Number(item.score || 0), reason: text(item.reason) })),
       positions: availablePositions,
       responseCount: shareResponses.length,
       reviewed: Boolean(latestResponse || text(share.fields['认领反馈ID'])),
@@ -887,12 +1044,18 @@ export class TalentsService implements OnModuleInit {
 
   async submitPublicReview(token: string, input: TalentPublicReviewInput, viewer?: TalentReviewViewer) {
     const start = Date.now()
-    const decision = text(input.decision)
-    if (!['适合', '不适合', '其他'].includes(decision)) throw new BadRequestException('请选择有效的评审结论')
+    const decisionMap: Record<string, string> = { 合适: '合适', 适合: '合适', 不合适: '不合适', 不适合: '不合适', 推荐其他部门: '推荐其他部门', 其他: '推荐其他部门' }
+    const decision = decisionMap[text(input.decision)] || ''
+    if (!decision) throw new BadRequestException('请选择合适、不合适或推荐其他部门')
     const reviewer = viewer?.name || text(input.reviewer)
     const reviewerUserId = viewer?.userId || text(input.reviewerUserId)
     if (!reviewer) throw new BadRequestException('登录身份缺少姓名，请联系管理员完善员工资料')
-    if (decision === '适合' && !text(input.positionId) && !text(input.position)) throw new BadRequestException('选择适合时必须选择岗位')
+    const availableSlots = decision === '合适' ? [...new Set((input.availableSlots || []).map(text).filter(Boolean))] : []
+    const rejectReason = decision === '不合适' ? text(input.comment) : ''
+    if (decision === '合适' && !text(input.positionId) && !text(input.position)) throw new BadRequestException('选择合适时必须选择岗位')
+    if (decision === '合适' && availableSlots.length < 2) throw new BadRequestException('选择合适时请至少填写 2 个可面试时间')
+    if (decision === '不合适' && !rejectReason) throw new BadRequestException('选择不合适时必须填写原因')
+    if (decision === '推荐其他部门' && !text(input.targetPositionId)) throw new BadRequestException('推荐其他部门前必须确认目标岗位')
 
     const share = await this.findReviewShare(token)
     const shareId = text(share.fields['分享批次ID']) || share.id
@@ -904,9 +1067,14 @@ export class TalentsService implements OnModuleInit {
     await previous
     try {
     const candidateId = text(share.fields['候选人ID'])
-    const positions = await teable.listAllRecords(this.table('recruitment_positions'))
-    const position = positions.find((row) => text(row.fields['职位ID']) === text(input.positionId) || row.id === text(input.positionId))
-    if (decision === '适合' && (!position || ['已下线', '关闭'].includes(text(position.fields['发布状态'])))) throw new BadRequestException('请选择有效的认领岗位')
+    const [positionRows, organizations] = await Promise.all([
+      teable.listAllRecords(this.table('recruitment_positions')),
+      teable.listAllRecords(this.table('recruitment_organization_units')),
+    ])
+    const positions = await this.reviewAccessiblePositions(positionRows, organizations, viewer)
+    const selectedPositionId = decision === '推荐其他部门' ? text(input.targetPositionId) : text(input.positionId)
+    const position = positions.find((row) => text(row.fields['职位ID']) === selectedPositionId || row.id === selectedPositionId)
+    if ((decision === '合适' || decision === '推荐其他部门') && (!position || ['已下线', '关闭'].includes(text(position.fields['发布状态'])))) throw new BadRequestException('请选择有效的岗位')
     const positionId = text(position?.fields['职位ID']) || text(input.positionId)
     const positionName = text(position?.fields['职位名称']) || text(input.position)
     const departmentId = text(position?.fields['部门ID']) || viewer?.departmentIds[0] || text(input.departmentId)
@@ -915,11 +1083,11 @@ export class TalentsService implements OnModuleInit {
     if ((await teable.listByField(responsesTable, '分享批次ID', shareId, 1)).length) throw new ConflictException('本次简历已完成评审，其他人员仅可查看')
     const responseId = id('talresponse')
     const timestamp = now()
-    let processing = decision === '适合' ? '已认领待HR跟进' : '已记录'
+    let processing = decision === '合适' ? '已认领待HR跟进' : decision === '推荐其他部门' ? '已推荐其他部门' : '已记录'
     let taskId = ''
     let applicationId = text(share.fields['应聘记录ID'])
 
-    if (decision === '适合' && !text(share.fields['认领反馈ID'])) {
+    if ((decision === '合适' || decision === '推荐其他部门') && !text(share.fields['认领反馈ID'])) {
       processing = '已认领并进入意向沟通'
       const applicationsTable = this.table('recruitment_applications')
       const applications = await teable.listAllRecords(applicationsTable)
@@ -929,19 +1097,21 @@ export class TalentsService implements OnModuleInit {
       const oldStage = mapLegacyStage(text(application.fields['当前阶段'])) || '待业务群评审'
       await teable.updateRecord(applicationsTable, application.id, {
         职位ID: positionId, 需求ID: text(position?.fields['需求ID']), 负责人用户ID: reviewerUserId, 负责人: reviewer,
-        当前阶段: '意向沟通', 当前状态: '进行中', 人工复核结果: '业务部门确认适合', 最近处理时间: timestamp, 更新时间: timestamp,
+        当前阶段: '意向沟通', 当前状态: '进行中', 人工复核结果: decision === '合适' ? '业务部门确认合适' : '业务部门推荐其他部门', 最近处理时间: timestamp, 更新时间: timestamp,
       })
       const candidate = await this.findCandidateRow(candidateId)
       await teable.updateRecord(this.table('recruitment_candidates'), candidate.id, { 候选人状态: '意向沟通', 负责人用户ID: reviewerUserId, 负责人: reviewer, 更新时间: timestamp })
       await teable.createRecord(this.table('recruitment_stage_events'), {
         事件ID: id('evt'), 应聘记录ID: applicationId, 候选人ID: candidateId, 职位ID: positionId, 原阶段: oldStage, 新阶段: '意向沟通',
-        操作: '企微业务部门认领', 结果: '成功', 原因: `${department || '业务部门'} ${reviewer}确认适合${input.comment ? `：${text(input.comment)}` : ''}`,
+        操作: decision === '合适' ? '企微业务部门认领' : '企微推荐其他部门', 结果: '成功', 原因: `${department || '业务部门'} ${reviewer}${decision === '合适' ? `确认合适，可面试时间：${availableSlots.join('、')}` : `推荐至${positionName}`}${input.comment ? `：${text(input.comment)}` : ''}`,
         操作人用户ID: reviewerUserId, 操作人: reviewer, 发生时间: timestamp, 来源类型: '企微人才评审', 来源记录ID: responseId,
       })
       taskId = id('task')
       await teable.createRecord(this.table('recruitment_tasks'), {
         待办ID: taskId, 待办类型: '意向沟通', 对象类型: '应聘记录', 对象ID: applicationId, 标题: `联系${json<any>(share.fields['人才快照JSON'], {}).name || '候选人'}进行意向沟通`,
-        描述: `${department || '业务部门'}已通过企微认领，岗位：${positionName || '待确认'}。请先完成意向沟通，再协调面试时间和面试官。`,
+        描述: decision === '合适'
+          ? `${department || '业务部门'}已确认合适，岗位：${positionName || '待确认'}。可面试时间：${availableSlots.join('、')}。请先完成意向沟通。`
+          : `${reviewer}推荐至${department || '其他部门'} · ${positionName || '待确认'}。请确认后跟进意向沟通。`,
         处理人用户ID: reviewerUserId, 处理人: reviewer, 部门ID: departmentId, 优先级: '高', 待办状态: '待处理',
         截止时间: new Date(Date.now() + 2 * 86_400_000).toISOString(), 创建时间: timestamp, 更新时间: timestamp,
       })
@@ -952,19 +1122,21 @@ export class TalentsService implements OnModuleInit {
 
     await teable.createRecord(responsesTable, {
       反馈ID: responseId, 分享批次ID: shareId, 候选人ID: candidateId, 反馈结论: decision, 部门ID: departmentId, 部门: department,
-      职位ID: positionId, 职位: positionName, 评审人用户ID: reviewerUserId, 评审人: reviewer, 评审意见: text(input.comment),
+      职位ID: positionId, 职位: positionName, 评审人用户ID: reviewerUserId, 评审人: reviewer, 评审意见: [availableSlots.length ? `可面试时间：${availableSlots.join('、')}` : '', rejectReason].filter(Boolean).join('；'),
       处理结果: processing, 应聘记录ID: applicationId, 面试待办ID: taskId, 提交时间: timestamp, 创建时间: timestamp, 更新时间: timestamp,
     })
     const responses = await teable.listAllRecords(responsesTable)
     await teable.updateRecord(this.table('recruitment_talent_review_shares'), share.id, { 反馈数: responses.filter((row) => text(row.fields['分享批次ID']) === shareId).length, 更新时间: now() })
     let notification: { status: string; reason?: string } | undefined
-    if (decision === '适合') {
+    if (decision === '合适' || decision === '推荐其他部门') {
       try {
         const communicationUrl = await this.createCommunicationLink(candidateId)
+        const candidateName = wecomInline(json<any>(share.fields['人才快照JSON'], {}).name, '候选人', 20)
+        const slotText = availableSlots.length ? `\n> 可面试时间：${availableSlots.map((slot) => wecomInline(slot, '', 40)).join('、')}` : ''
         notification = await this.messages.notifyPositionHr({
-          category: '业务群评审确认', candidateId, positionId, applicationId, objectId: responseId,
+          category: decision === '合适' ? '业务群评审确认' : '推荐其他部门', candidateId, positionId, applicationId, objectId: responseId,
           operator: reviewer, operatorUserId: reviewerUserId,
-          markdown: `## 【待意向沟通】${wecomInline(json<any>(share.fields['人才快照JSON'], {}).name, '候选人', 20)}\n> ${wecomInline(reviewer)}认领了${wecomInline(department)} · ${wecomInline(positionName)}，请跟进意向沟通。\n[打开意向沟通表单 →](${communicationUrl})\n<font color="comment">请结合人才档案中的当前进度跟进，避免重复联系。</font>`,
+          markdown: `## 【${decision === '合适' ? '待意向沟通' : '推荐其他部门'}】${candidateName}\n> ${wecomInline(reviewer)}${decision === '合适' ? '确认合适' : '推荐'}：${wecomInline(department)} · ${wecomInline(positionName)}。${slotText}\n[打开意向沟通表单 →](${communicationUrl})\n<font color="comment">请结合人才档案中的当前进度跟进，避免重复联系。</font>`,
         })
       } catch (error) {
         notification = { status: '发送失败', reason: error instanceof Error ? error.message : String(error) }
@@ -973,7 +1145,7 @@ export class TalentsService implements OnModuleInit {
     }
     this.invalidateDirectoryCache()
     this.logSlow('submitPublicReview', start)
-    return { responseId, decision, processing, claimed: decision === '适合', candidateId, applicationId, taskId, notification }
+    return { responseId, decision, processing, claimed: decision === '合适' || decision === '推荐其他部门', availableSlots, candidateId, applicationId, taskId, notification }
     } finally {
       release()
       if (this.reviewSubmitLocks.get(shareId) === queued) this.reviewSubmitLocks.delete(shareId)
@@ -1155,13 +1327,14 @@ export class TalentsService implements OnModuleInit {
     const assessments = assessmentsRaw.filter((row) => text(row.fields['候选人ID']) === candidateId).sort((a, b) => (num(b.fields['版本号']) || 1) - (num(a.fields['版本号']) || 1) || text(b.fields['创建时间']).localeCompare(text(a.fields['创建时间'])))
     const previous = assessments[0], version = Math.max(0, ...assessments.map((row) => num(row.fields['版本号']) || 1)) + 1
     const resume = this.resumeInput(resumeRow)
-    const run = await this.analyzeRun(resume), operator = text(input.operator) || '当前用户'
-    const assessmentId = await this.saveAssessment(candidateId, resume.id, run.analysis, { version, parentId: text(previous?.fields['分析记录ID']) || previous?.id || '', type: '人工重跑', reason: input.reason, operator, operatorUserId: text(input.operatorUserId), ...run })
-    await this.saveTags(candidateId, assessmentId, run.analysis)
-    const matches = await this.saveMatches(candidateId, assessmentId, resume, run.analysis)
     const applications = await teable.listAllRecords(this.table('recruitment_applications'))
     const currentApplication = applications.filter((row) => text(row.fields['候选人ID']) === candidateId && text(row.fields['当前状态']) !== '已结束').sort((a, b) => text(b.fields['更新时间']).localeCompare(text(a.fields['更新时间'])))[0]
-    if (currentApplication) await teable.updateRecord(this.table('recruitment_applications'), currentApplication.id, { AI匹配分: matches[0]?.score || run.analysis.scores.overall, AI评分版本: `talent-v${version}`, 人工复核结果: '待确认', 更新时间: now() })
+    const selectedPositionId = text(currentApplication?.fields['职位ID'])
+    const run = await this.analyzeRun(resume, selectedPositionId), operator = text(input.operator) || '当前用户'
+    const assessmentId = await this.saveAssessment(candidateId, resume.id, run.analysis, { version, parentId: text(previous?.fields['分析记录ID']) || previous?.id || '', type: '人工重跑', reason: input.reason, operator, operatorUserId: text(input.operatorUserId), ...run })
+    await this.saveTags(candidateId, assessmentId, run.analysis)
+    const matches = await this.saveMatches(candidateId, assessmentId, resume, run.analysis, selectedPositionId)
+    if (currentApplication) await teable.updateRecord(this.table('recruitment_applications'), currentApplication.id, { AI匹配分: matches[0]?.score || run.analysis.scores.overall, AI评分版本: `talent-v${version}`, 人工复核结果: selectedPositionId ? '已确认' : '待确认', 更新时间: now() })
     await this.talentAudit('重新运行AI人才分析', '人才AI分析', assessmentId, { previousAssessmentId: text(previous?.fields['分析记录ID']) || '', previousVersion: num(previous?.fields['版本号']) || 1 }, { version, status: run.status, matches: matches.length }, operator, input.reason)
     return { candidateId, assessmentId, version, runStatus: run.status, error: run.error, comparison: previous ? await this.compareAnalysisVersions(candidateId, text(previous.fields['分析记录ID']) || previous.id, assessmentId) : null }
   }
@@ -1418,7 +1591,8 @@ export class TalentsService implements OnModuleInit {
 
   private analysisFromAssessment(row: TeableRecord): TalentAnalysis {
     const f = row.fields
-    return { summary: text(f['人才摘要']), strengths: json<string[]>(f['优势JSON'], []), risks: json<string[]>(f['风险与待确认JSON'], []), skills: json<string[]>(f['技能JSON'], []), recommendedRoles: json<string[]>(f['推荐岗位JSON'], []), scores: { business: num(f['业务能力分']), management: num(f['管理能力分']), logic: num(f['逻辑能力分']), communication: num(f['沟通协作分']), overall: num(f['综合建议分']) }, evidence: json<TalentAnalysis['evidence']>(f['评分证据JSON'], { business: '', management: '', logic: '', communication: '' }), confidence: (['高', '中', '低'].includes(text(f['置信度'])) ? text(f['置信度']) : '低') as TalentAnalysis['confidence'] }
+    const storedDimensions = json<TalentAnalysis['scoreDimensions'] | null>(f['评分维度JSON'], null)
+    return { summary: text(f['人才摘要']), strengths: json<string[]>(f['优势JSON'], []), risks: json<string[]>(f['风险与待确认JSON'], []), skills: json<string[]>(f['技能JSON'], []), recommendedRoles: json<string[]>(f['推荐岗位JSON'], []), scores: { business: num(f['业务能力分']), management: num(f['管理能力分']), logic: num(f['逻辑能力分']), communication: num(f['沟通协作分']), overall: num(f['综合建议分']) }, scoreDimensions: storedDimensions || undefined, evidence: json<TalentAnalysis['evidence']>(f['评分证据JSON'], { business: '', management: '', logic: '', communication: '' }), confidence: (['高', '中', '低'].includes(text(f['置信度'])) ? text(f['置信度']) : '低') as TalentAnalysis['confidence'] }
   }
 
   private async applyCorrectedTags(candidateId: string, assessmentId: string, analysis: TalentAnalysis, reason: string) {
@@ -1470,6 +1644,57 @@ export class TalentsService implements OnModuleInit {
       riskPending: items.filter((item: any) => item.risks.length).length, overdue: items.filter((item: any) => item.waitingDays >= 3).length,
       items,
     }
+  }
+
+  async reviewReferralByHr(candidateId: string, input: { decision?: string; reason?: string; operator?: string; operatorUserId?: string }) {
+    const decision = text(input.decision)
+    if (!['通过', '不通过'].includes(decision)) throw new BadRequestException('HR审核结论必须是通过或不通过')
+    const reason = text(input.reason)
+    if (!reason) throw new BadRequestException('HR审核必须填写原因')
+    const candidate = await this.findCandidateRow(candidateId)
+    const applications = await teable.listAllRecords(this.table('recruitment_applications'))
+    const application = applications.filter((row) => text(row.fields['候选人ID']) === candidateId && text(row.fields['当前状态']) !== '已结束')
+      .sort((a, b) => text(b.fields['更新时间']).localeCompare(text(a.fields['更新时间'])))[0]
+    if (!application || text(application.fields['当前阶段']) !== '待HR审核') throw new ConflictException('该内推简历不在待HR审核阶段')
+    const applicationId = text(application.fields['应聘记录ID']) || application.id
+    const referral = await this.activeReferral(candidateId, applicationId)
+    if (!referral) throw new NotFoundException('未找到对应的内推记录')
+    const timestamp = now()
+    const operator = text(input.operator) || '岗位HR'
+    const nextStage = decision === '通过' ? '待业务群评审' : 'HR审核未通过'
+    await teable.updateRecord(this.table('recruitment_applications'), application.id, {
+      当前阶段: nextStage, 当前状态: decision === '通过' ? '进行中' : '已结束', 人工复核结果: decision,
+      最近处理时间: timestamp, ...(decision === '不通过' ? { 流程结束时间: timestamp, 淘汰原因: reason } : {}), 更新时间: timestamp,
+    })
+    await teable.updateRecord(this.table('recruitment_candidates'), candidate.id, { 候选人状态: nextStage, 更新时间: timestamp })
+    await teable.updateRecord(this.table('recruitment_referrals'), referral.id, {
+      内推状态: decision === '通过' ? '待业务群评审' : 'HR审核未通过', 当前进度: nextStage,
+      有效性结论: decision === '通过' ? '有效' : text(referral.fields['有效性结论']), ...(decision === '不通过' ? { 无效原因: reason } : {}), 更新时间: timestamp,
+    })
+    await teable.createRecord(this.table('recruitment_stage_events'), {
+      事件ID: id('evt'), 应聘记录ID: applicationId, 候选人ID: candidateId, 职位ID: text(application.fields['职位ID']),
+      原阶段: '待HR审核', 新阶段: nextStage, 操作: '内推HR审核', 结果: decision, 原因: reason,
+      操作人用户ID: text(input.operatorUserId), 操作人: operator, 发生时间: timestamp, 来源类型: '人工操作',
+    })
+    const delivery = decision === '通过' ? await this.pushAutomaticReview(candidateId, { ignoreScoreThreshold: true }) : { status: '未推送', reason: 'HR审核未通过' }
+    const pushed = decision === '通过' && ['已发送', '已跳过'].includes(text((delivery as any)?.status))
+    const referrerNotice = await this.notifyReferrer(referral, decision, reason, this.candidateName(candidate), pushed)
+    return { candidateId, decision, stage: nextStage, groupPush: delivery, referrerNotice }
+  }
+
+  private async notifyReferrer(referral: TeableRecord, decision: string, reason: string, candidateName: string, pushed = false) {
+    const userId = text(referral.fields['推荐人用户ID'])
+    if (!userId) return { status: '已跳过', reason: '内推记录没有推荐人用户ID' }
+    const passed = decision === '通过'
+    return this.messages.notifyDirectUsers({
+      category: passed ? '内推审核通过' : '内推审核未通过', candidateId: text(referral.fields['候选人ID']),
+      objectId: text(referral.fields['内推记录ID']) || referral.id, objectType: '内推记录', userIds: [userId], operator: '岗位HR',
+      markdown: [
+        `## 【内推${passed ? '已通过' : '未通过'}】${wecomInline(candidateName, '候选人', 20)}`,
+        `> ${passed ? (pushed ? '岗位HR已审核通过，简历已推送业务群。' : '岗位HR已审核通过，但业务群推送未成功，请联系招聘HR确认。') : '岗位HR审核未通过，本次不会推送业务群。'}`,
+        `> 说明：${wecomInline(reason, '未填写', 80)}`,
+      ].join('\n\n'),
+    })
   }
 
   async reviewTalent(candidateId: string, input: TalentReviewInput) {
@@ -2470,19 +2695,27 @@ export class TalentsService implements OnModuleInit {
     return [...new Set(value.split(/[、,，。；;\n\/|]+/).map((item) => item.trim()).filter((item) => item.length >= 2))].slice(0, 20)
   }
 
-  private async analyzeRun(resume: ResumeTalentInput): Promise<AnalysisRun> {
-    const fallback = this.fallbackAnalysis(resume)
-    const startedAt = now(), started = Date.now(), promptVersion = 'talent-analysis-prompt-v4', modelVersion = 'platform-llm'
+  private async analyzeRun(resume: ResumeTalentInput, selectedPositionId = ''): Promise<AnalysisRun> {
+    const startedAt = now(), started = Date.now(), promptVersion = 'talent-analysis-prompt-v5', modelVersion = 'platform-llm'
     const positions = await teable.listAllRecords(this.table('recruitment_positions'))
+    const selectedPosition = selectedPositionId
+      ? positions.find((row) => text(row.fields['职位ID']) === selectedPositionId || row.id === selectedPositionId)
+      : undefined
+    const selectedPositionName = text(selectedPosition?.fields['职位名称'])
+    const fallback = this.fallbackAnalysis(resume, selectedPositionName)
     const positionCatalog = positions.map((row) => {
       const name = text(row.fields['职位名称'])
       if (!name) return ''
       const department = text(row.fields['部门'])
       const details = [row.fields['岗位JD'], row.fields['工作职责'], row.fields['任职要求']]
         .map(text).filter(Boolean).join('；').replace(/\s+/g, ' ').slice(0, 96)
-      return `- ${department ? `${department} / ` : ''}${name}${details ? `：${details}` : ''}`
+      const primary = selectedPosition && row === selectedPosition ? '【导入时选择的主要岗位】' : ''
+      return `- ${primary}${department ? `${department} / ` : ''}${name}${details ? `：${details}` : ''}`
     }).filter(Boolean).join('\n')
-    const prompt = `你是企业招聘人才分析助手。只能依据简历内容和下方真实岗位目录，不得根据年龄、性别等无关特征评分，不得编造。\n评分方法：skillMatch 30%、experience 25%、industryMatch 20%、education 15%、stability 10%；overall按这个权重综合，不要用四个能力分的平均值。experience根据工作经历时间推断；stability根据平均在职时长和跳槽频率推断；authenticityRisk检查时间重叠、夸大描述、模糊描述、经验与年限矛盾。信息不足时降低confidence和对应分，并写入risks。推荐岗位时必须检查完整目录及部门，优先选择与简历经历、技能和任职要求最吻合的岗位；recommendedRoles最多5个，必须使用目录中的准确岗位名称，并与summary中的适配方向保持一致；没有合适岗位时才允许按求职意向给出岗位名。\n返回纯JSON：summary字符串；strengths字符串数组；risks字符串数组（只写待面试确认项）；skills字符串数组；recommendedRoles字符串数组；scores对象含business、management、logic、communication、overall，均为0-100；scoreDimensions对象含education、experience、skillMatch、industryMatch、stability，均为0-100；authenticityRisk只能是低、中、较高、高；evidence对象含business、management、logic、communication，每项必须引用或概括简历证据；confidence只能是高、中、低。\n\n真实岗位目录（每个岗位均列出部门和名称）：\n${positionCatalog}\n\n姓名：${resume.name}\n求职意向：${resume.jobIntention}\n技能：${resume.skillsCertificates}\n教育：${resume.educationBackground}\n工作经历：${resume.workExperience}\n自我评价：${resume.selfEvaluation}\n原文：${resume.rawText.slice(0, 18000)}`
+    const primaryInstruction = selectedPositionName
+      ? `本次简历导入时已选择主要岗位「${selectedPositionName}」。recommendedRoles 的第一项必须使用该岗位的准确名称，summary 也必须把它作为主要适配方向；其余岗位只作为补充推荐，最多再写 4 个。即使简历与该岗位匹配一般，也不要改用其他岗位作为第一推荐。`
+      : '推荐岗位时必须检查完整目录及部门，优先选择与简历经历、技能和任职要求最吻合的岗位；recommendedRoles最多5个，必须使用目录中的准确岗位名称，并与summary中的适配方向保持一致；没有合适岗位时才允许按求职意向给出岗位名。'
+    const prompt = `你是企业招聘人才分析助手。只能依据简历内容和下方真实岗位目录，不得根据年龄、性别等无关特征评分，不得编造。\n评分方法：skillMatch 30%、experience 25%、industryMatch 20%、education 15%、stability 10%；overall按这个权重综合，不要用四个能力分的平均值。experience根据工作经历时间推断；stability根据平均在职时长和跳槽频率推断；authenticityRisk检查时间重叠、夸大描述、模糊描述、经验与年限矛盾。信息不足时降低confidence和对应分，并写入risks。${primaryInstruction}\n返回纯JSON：summary字符串；strengths字符串数组；risks字符串数组（只写待面试确认项）；skills字符串数组；recommendedRoles字符串数组；scores对象含business、management、logic、communication、overall，均为0-100；scoreDimensions对象含education、experience、skillMatch、industryMatch、stability，均为0-100；authenticityRisk只能是低、中、较高、高；evidence对象含business、management、logic、communication，每项必须引用或概括简历证据；confidence只能是高、中、低。\n\n真实岗位目录（每个岗位均列出部门和名称）：\n${positionCatalog}\n\n姓名：${resume.name}\n求职意向：${resume.jobIntention}\n技能：${resume.skillsCertificates}\n教育：${resume.educationBackground}\n工作经历：${resume.workExperience}\n自我评价：${resume.selfEvaluation}\n原文：${resume.rawText.slice(0, 18000)}`
     try {
       const answer = await withTimeout(llm.chat([{ role: 'user', content: prompt }]), 120_000, 'AI分析超时')
       const value = JSON.parse(answer.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim())
@@ -2520,7 +2753,7 @@ export class TalentsService implements OnModuleInit {
     }
   }
 
-  private fallbackAnalysis(resume: ResumeTalentInput): TalentAnalysis {
+  private fallbackAnalysis(resume: ResumeTalentInput, selectedPositionName = ''): TalentAnalysis {
     const combined = `${resume.workExperience}\n${resume.selfEvaluation}\n${resume.skillsCertificates}`
     const skills = this.extractSkills(resume.skillsCertificates)
     const managementEvidence = combined.match(/[^。\n]*(?:带领|带队|管理|负责人|团队|副主席|组织)[^。\n]*/)?.[0] || '简历中未发现明确带队规模，需要面试确认。'
@@ -2547,10 +2780,12 @@ export class TalentsService implements OnModuleInit {
     }
     if (resume.jobIntention) matchedRoles.add(resume.jobIntention)
     if (matchedRoles.size === 0) skills.slice(0, 2).forEach((s) => matchedRoles.add(s))
-    const recommendedRoles = [...matchedRoles].slice(0, 5)
+    const recommendedRoles = selectedPositionName
+      ? [selectedPositionName, ...[...matchedRoles].filter((role) => role !== selectedPositionName)].slice(0, 5)
+      : [...matchedRoles].slice(0, 5)
     const overall = clamp((business + management + logic + communication) / 4)
     return {
-      summary: `${resume.name || '该候选人'}${resume.yearsOfExperience ? `具备${resume.yearsOfExperience}工作经验，` : ''}主要方向为${resume.jobIntention || recommendedRoles.slice(0, 3).join('、') || '待进一步识别'}。${resume.address ? `期望城市：${resume.address}。` : ''}${businessEvidence ? `核心亮点：${businessEvidence.slice(0, 80)}。` : ''}`,
+      summary: `${resume.name || '该候选人'}${resume.yearsOfExperience ? `具备${resume.yearsOfExperience}工作经验，` : ''}主要方向为${selectedPositionName || resume.jobIntention || recommendedRoles.slice(0, 3).join('、') || '待进一步识别'}。${resume.address ? `期望城市：${resume.address}。` : ''}${businessEvidence ? `核心亮点：${businessEvidence.slice(0, 80)}。` : ''}`,
       strengths: [businessEvidence, communicationEvidence].filter(Boolean),
       risks: [managementEvidence.includes('未发现') ? managementEvidence : '', !resume.jobIntention ? '求职意向未明确，需要沟通确认。' : ''].filter(Boolean),
       skills, recommendedRoles,
@@ -2581,6 +2816,7 @@ export class TalentsService implements OnModuleInit {
       人才摘要: analysis.summary, 优势JSON: JSON.stringify(analysis.strengths), 风险与待确认JSON: JSON.stringify(analysis.risks), 技能JSON: JSON.stringify(analysis.skills),
       业务能力分: analysis.scores.business, 管理能力分: analysis.scores.management, 逻辑能力分: analysis.scores.logic,
       沟通协作分: analysis.scores.communication, 综合建议分: analysis.scores.overall, 评分证据JSON: JSON.stringify(analysis.evidence),
+      评分维度JSON: JSON.stringify(analysis.scoreDimensions || null),
       推荐岗位JSON: JSON.stringify(analysis.recommendedRoles), 置信度: analysis.confidence, 人工确认状态: '待人工确认',
       运行人用户ID: options.operatorUserId || '', 运行人: options.operator || '系统', 开始时间: options.startedAt || timestamp, 完成时间: options.completedAt || timestamp, 创建时间: timestamp, 更新时间: timestamp,
     })
@@ -2612,29 +2848,37 @@ export class TalentsService implements OnModuleInit {
     this.logSlow('saveTags', start)
   }
 
+  /** 导入时选择的岗位始终排在最前，其余匹配仍按分数从高到低。 */
+  private orderedMatches(rows: TeableRecord[], selectedPositionId = '') {
+    return [...rows].sort((a, b) => {
+      const selected = (row: TeableRecord) => selectedPositionId && (text(row.fields['职位ID']) === selectedPositionId || row.id === selectedPositionId) ? 1 : 0
+      return selected(b) - selected(a) || num(b.fields['匹配总分']) - num(a.fields['匹配总分'])
+    })
+  }
+
   private async saveMatches(candidateId: string, assessmentId: string, resume: ResumeTalentInput, analysis: TalentAnalysis, selectedPositionId = '') {
     const start = Date.now()
     const positions = await teable.listAllRecords(this.table('recruitment_positions'))
     const scored = positions.map((position) => {
       const positionName = text(position.fields['职位名称'])
+      const positionId = text(position.fields['职位ID']) || position.id
       const requirementText = `${text(position.fields['工作职责'])} ${text(position.fields['任职要求'])} ${text(position.fields['岗位JD'])}`
       const resumeText = `${resume.jobIntention} ${analysis.recommendedRoles.join(' ')} ${analysis.skills.join(' ')} ${resume.workExperience}`
       const overlap = this.sharedTokens(requirementText, resumeText)
-      const direct = positionName && (resume.jobIntention.includes(positionName) || analysis.recommendedRoles.some((role) => role.includes(positionName) || positionName.includes(role)))
+      const selectedByUploader = Boolean(selectedPositionId && (positionId === selectedPositionId || position.id === selectedPositionId))
+      const direct = Boolean(positionName && (selectedByUploader || resume.jobIntention.includes(positionName) || analysis.recommendedRoles.some((role) => role.includes(positionName) || positionName.includes(role))))
       const skillScore = clamp(45 + Math.min(35, overlap * 6) + (direct ? 20 : 0))
       const requiredYears = Number(requirementText.match(/(\d+)\s*年以上/)?.[1] || 0)
       const resumeYears = Number(String(resume.yearsOfExperience).match(/\d+(?:\.\d+)?/)?.[0] || 0)
       const experienceScore = requiredYears && resumeYears ? resumeYears >= requiredYears ? 90 : resumeYears >= requiredYears - 1 ? 78 : resumeYears >= requiredYears - 2 ? 66 : 52 : analysis.scores.business
       const score = clamp(skillScore * 0.45 + experienceScore * 0.25 + analysis.scores.business * 0.20 + analysis.scores.management * 0.10 + (direct ? 5 : 0))
-      return { row: position, positionName, score, overlap, direct, skillScore, experienceScore }
-    }).filter((item) => item.positionName && (item.score >= 60 || item.direct)).sort((a, b) => b.score - a.score)
-    const selected = selectedPositionId
-      ? scored.find((item) => text(item.row.fields['职位ID']) === selectedPositionId || item.row.id === selectedPositionId)
-      : undefined
+      return { row: position, positionName, score, overlap, direct, skillScore, experienceScore, selectedByUploader }
+    }).filter((item) => item.positionName && (item.score >= 60 || item.direct || item.selectedByUploader)).sort((a, b) => Number(b.selectedByUploader) - Number(a.selectedByUploader) || b.score - a.score)
+    const selected = scored.find((item) => item.selectedByUploader)
     const candidates = selected
-      ? [selected, ...scored.filter((item) => item !== selected && text(item.row.fields['职位ID']) !== selectedPositionId && item.row.id !== selectedPositionId).slice(0, 4)]
+      ? [selected, ...scored.filter((item) => item !== selected).slice(0, 4)]
       : scored.slice(0, 5)
-    if (!candidates.length && resume.jobIntention) candidates.push({ row: { id: '', fields: {} }, positionName: resume.jobIntention, score: analysis.scores.overall, overlap: 0, direct: true, skillScore: analysis.scores.business, experienceScore: analysis.scores.business })
+    if (!candidates.length && resume.jobIntention) candidates.push({ row: { id: '', fields: {} }, positionName: resume.jobIntention, score: analysis.scores.overall, overlap: 0, direct: true, skillScore: analysis.scores.business, experienceScore: analysis.scores.business, selectedByUploader: false })
     const result = []
     for (const match of candidates) {
       const matchId = id('match')
@@ -2997,7 +3241,8 @@ export class TalentsService implements OnModuleInit {
     const currentMatches = assessmentId && candidateMatches.some((item) => text(item.fields['分析记录ID']) === assessmentId)
       ? candidateMatches.filter((item) => text(item.fields['分析记录ID']) === assessmentId)
       : candidateMatches
-    const matches = [...currentMatches].sort((a, b) => num(b.fields['匹配总分']) - num(a.fields['匹配总分'])).map((item) => ({
+    const selectedPositionId = text(application?.fields['职位ID'])
+    const matches = this.orderedMatches(currentMatches, selectedPositionId).map((item) => ({
       id: text(item.fields['匹配记录ID']) || item.id, positionId: text(item.fields['职位ID']), positionName: text(item.fields['职位名称']), score: num(item.fields['匹配总分']),
       skillScore: num(item.fields['技能匹配分']), experienceScore: num(item.fields['经验匹配分']), managementScore: num(item.fields['管理匹配分']), businessScore: num(item.fields['业务匹配分']),
       reason: text(item.fields['推荐理由']), gaps: text(item.fields['差距与待确认项']), confidence: text(item.fields['置信度']), reviewStatus: text(item.fields['人工确认状态']),
@@ -3047,7 +3292,7 @@ export class TalentsService implements OnModuleInit {
       // 列表不传输 OCR 正文；文件名/地址来自主档缓存，详情再按最新简历校准。
       sourceFileName: text(f['当前简历文件名']) || text(index.resumes.get(candidateId)?.fields['源文件名']) || '', sourceFileUrl: text(f['当前简历地址']) || text(index.resumes.get(candidateId)?.fields['源文件地址']) || '', rawText: '完整简历原文将在打开详情时按需加载。', avatarUrl: text(f['头像地址']), avatarStatus: text(f['头像提取状态']), editableWordUrl: '', tags: tagRows.map((item) => ({ name: text(item.fields['标签名称']), category: text(item.fields['标签分类']), source: text(item.fields['标签来源']), confidence: num(item.fields['置信度']), evidence: '', reviewStatus: text(item.fields['人工确认状态']), status: text(item.fields['标签状态']) || '当前' })),
       skills: activeSkills.length ? activeSkills : json<string[]>(f['技能JSON'], []), matches, bestMatchScore: matches[0]?.score || num(application?.fields['AI匹配分']), bestMatchRole: matches[0]?.positionName || text(f['期望职位']),
-      analysis: assessment && effectiveAnalysis ? { id: assessmentId, reviewStatus: text(assessment.fields['人工确认状态']) || '待人工确认', scores: effectiveAnalysis.scores, confidence: effectiveAnalysis.confidence, strengths: effectiveAnalysis.strengths || [], summary: effectiveAnalysis.summary || '' } : null,
+      analysis: assessment && effectiveAnalysis ? { id: assessmentId, reviewStatus: text(assessment.fields['人工确认状态']) || '待人工确认', scores: effectiveAnalysis.scores, scoreDimensions: effectiveAnalysis.scoreDimensions || null, confidence: effectiveAnalysis.confidence, strengths: effectiveAnalysis.strengths || [], summary: effectiveAnalysis.summary || '' } : null,
       _access: { candidateId, ownerUserId: text(application?.fields['负责人用户ID']) || text(f['负责人用户ID']), departmentIds, businessUnitId: text(demand?.fields['事业部ID']), interviewerUserIds: index.interviewerUserIds.get(candidateId) || [], stage: text(application?.fields['当前阶段']) || text(f['候选人状态']) } satisfies TalentAccessContext,
     }
   }
@@ -3082,7 +3327,9 @@ export class TalentsService implements OnModuleInit {
     const effectiveAnalysis = analysisCorrection?.effective || originalAnalysis
     const candidateMatches = data.matches.filter((item) => text(item.fields['候选人ID']) === candidateId && !['历史', '已失效'].includes(text(item.fields['匹配状态'])))
     const currentMatches = assessmentId && candidateMatches.some((item) => text(item.fields['分析记录ID']) === assessmentId) ? candidateMatches.filter((item) => text(item.fields['分析记录ID']) === assessmentId) : candidateMatches
-    const matches = currentMatches.sort((a, b) => num(b.fields['匹配总分']) - num(a.fields['匹配总分'])).map((item) => ({
+    const sortedCandidateApplications = candidateApplications.slice().sort((a, b) => (text(b.fields['更新时间']) || text(b.fields['创建时间'])).localeCompare(text(a.fields['更新时间']) || text(a.fields['创建时间'])))
+    const application = sortedCandidateApplications[0]
+    const matches = this.orderedMatches(currentMatches, text(application?.fields['职位ID'])).map((item) => ({
       id: text(item.fields['匹配记录ID']) || item.id, positionId: text(item.fields['职位ID']), positionName: text(item.fields['职位名称']), score: num(item.fields['匹配总分']),
       skillScore: num(item.fields['技能匹配分']), experienceScore: num(item.fields['经验匹配分']), managementScore: num(item.fields['管理匹配分']), businessScore: num(item.fields['业务匹配分']),
       reason: text(item.fields['推荐理由']), gaps: text(item.fields['差距与待确认项']), confidence: text(item.fields['置信度']), reviewStatus: text(item.fields['人工确认状态']),
@@ -3091,8 +3338,6 @@ export class TalentsService implements OnModuleInit {
         reason: text(item.fields['人工修正原因']), operator: text(item.fields['人工修正人']), correctedAt: text(item.fields['人工修正时间']),
       } : null,
     }))
-    const sortedCandidateApplications = candidateApplications.slice().sort((a, b) => (text(b.fields['更新时间']) || text(b.fields['创建时间'])).localeCompare(text(a.fields['更新时间']) || text(a.fields['创建时间'])))
-    const application = sortedCandidateApplications[0]
     const currentApplicationId = text(application?.fields['应聘记录ID']) || application?.id || ''
     const belongsToCurrentApplication = (item: TeableRecord) => {
       if (!currentApplicationId) return text(item.fields['候选人ID']) === candidateId
@@ -3246,6 +3491,16 @@ export class TalentsService implements OnModuleInit {
       current.count += 1; current.total += match.score; if (match.score >= 80) current.highScore += 1; current.average = Math.round(current.total / current.count); map.set(match.positionName, current)
     }))
     return [...map.values()].sort((a, b) => b.count - a.count).map(({ total, ...item }) => item)
+  }
+
+  private directoryFacets(data: Awaited<ReturnType<TalentsService['loadDirectory']>>, positions: Array<{ name?: string }> = []) {
+    const sources = [...new Set(data.candidates.map((row) => text(row.fields['来源类型'])).filter(Boolean))].sort((left, right) => left.localeCompare(right, 'zh-CN'))
+    const regions = [...new Set(data.candidates.map((row) => text(row.fields['当前城市'])).filter(Boolean))].sort((left, right) => left.localeCompare(right, 'zh-CN'))
+    const jobs = [...new Set([
+      ...positions.map((position) => text(position.name)),
+      ...data.positions.map((row) => text(row.fields['职位名称'])),
+    ].filter(Boolean))].sort((left, right) => left.localeCompare(right, 'zh-CN'))
+    return { jobs, sources, regions }
   }
 
   private overview(candidates: any[]) {

@@ -48,12 +48,13 @@ export class EvaluationService{
    (async()=>{const matched=await teable.findOneByField(this.table('recruitment_positions'),'职位ID',positionId);if(matched||!positionId)return matched;try{return await teable.getRecord(this.table('recruitment_positions'),positionId)}catch{return undefined}})(),
   ])
   const candidateName=this.candidateName(candidate),role=text(position?.fields['职位名称'])||text(candidate?.fields['期望职位'])||'岗位待确认',round=text(interview.fields['面试轮次'])||'本轮面试'
-  const prompt=`你是面试评价结构化助手。只根据面试官口述中明确表达的事实和判断整理评价，不得补充未提到的经历、能力或结论。\n候选人：${candidateName}\n岗位：${role}\n轮次：${round}\n返回纯JSON：{"recommendation":"通过|加面|储备|待讨论|淘汰|空","otherRoles":"明确提到的其他匹配岗位或空","strengths":"明确提到的优势或空","risks":"明确提到的短板、风险、待核实项或空","comment":"将明确提到的关键问答、事实、数据和最终判断整理为简洁完整的面试详情或空"}。\n“可以过、建议推进”映射为通过；“再面一轮、还要确认”映射为加面；“先放人才库”映射为储备；“不合适、不通过”映射为淘汰；没有明确判断时recommendation留空。不要返回Markdown。\n\n面试官口述：\n${transcript.slice(0,18000)}`
+  const prompt=`你是面试评价结构化助手。只根据面试官口述中明确表达的事实和判断整理评价，不得补充未提到的经历、能力或结论。\n候选人：${candidateName}\n岗位：${role}\n轮次：${round}\n返回纯JSON：{"recommendation":"通过|不通过|二面|加面|空","otherRoles":"明确提到的其他匹配岗位或空","strengths":"明确提到的优势或空","risks":"明确提到的短板、风险、待核实项或空","comment":"将明确提到的关键问答、事实、数据和最终判断整理为简洁完整的面试详情或空"}。\n“可以过、建议发Offer”映射为通过；“进入下一轮正式面试”映射为二面；“本轮加一场、还要确认”映射为加面；“不合适、不通过、淘汰”映射为不通过；没有明确判断时recommendation留空。不要返回Markdown。\n\n面试官口述：\n${transcript.slice(0,18000)}`
   let value:any
   try{const answer=await withTimeout(llm.chat([{role:'user',content:prompt}],{timeoutMs}),timeoutMs,'AI解析面试结果超时');value=JSON.parse(answer.replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/i,'').trim())}
   catch(error){console.error(`[面试评价AI解析] ${error instanceof Error?error.message:String(error)}`);throw new ServiceUnavailableException('AI解析面试结果失败，请稍后重试或先手动填写')}
   const stringify=(input:unknown)=>Array.isArray(input)?input.map(text).filter(Boolean).join('；'):text(input)
-  const recommendation=['通过','加面','储备','待讨论','淘汰'].includes(text(value?.recommendation))?text(value.recommendation):''
+  const recommendationMap:Record<string,string>={通过:'通过',不通过:'不通过',二面:'二面',加面:'加面',淘汰:'不通过',储备:'二面',待讨论:'加面'}
+  const recommendation=recommendationMap[text(value?.recommendation)]||''
   return{source:'ai',candidateName,role,round,extraction:{recommendation,otherRoles:stringify(value?.otherRoles),strengths:stringify(value?.strengths),risks:stringify(value?.risks),comment:stringify(value?.comment)}}
  }
  async saveNotes(interviewId:string,body:{notes:string;transcript?:string;operator?:string}){if(!text(body.notes)&&!text(body.transcript))throw new BadRequestException('请填写面试记录或转写文本');const interview=await this.findInterview(interviewId),table=this.table('recruitment_interview_notes'),rows=await teable.listAllRecords(table),existing=rows.find(r=>text(r.fields['面试ID'])===interviewId),timestamp=now(),fields={纪要ID:text(existing?.fields['纪要ID'])||id('note'),面试ID:interviewId,候选人ID:text(interview.fields['候选人ID']),原始记录:body.notes,转写文本:text(body.transcript),AI状态:'待生成',创建时间:text(existing?.fields['创建时间'])||timestamp,更新时间:timestamp};if(existing)await teable.updateRecord(table,existing.id,fields);else await teable.createRecord(table,fields);return{noteId:fields.纪要ID,status:'待生成'}}
@@ -63,6 +64,11 @@ export class EvaluationService{
   if(!text(input.interviewerUserId)||!text(input.interviewer))throw new BadRequestException('面试官身份不能为空')
   for(const[key,value]of Object.entries(input.scores||{}))if(num(value)<0||num(value)>100)throw new BadRequestException(`${key}评分必须在0到100之间`)
   const interviewerEvaluation=text(input.interviewerEvaluation)||text(input.comment),aiSummary=text(input.aiSummary),candidateRating=text(input.candidateRating)
+  const recommendationMap:Record<string,string>={通过:'通过',不通过:'不通过',二面:'二面',加面:'加面',淘汰:'不通过',储备:'二面',待讨论:'加面'}
+  const recommendation=recommendationMap[text(input.recommendation)]||''
+  if(!recommendation)throw new BadRequestException('请选择通过、不通过、二面或加面')
+  const nextSlots=[...new Set((input.nextSlots||[]).map(text).filter(Boolean))]
+  if(['二面','加面'].includes(recommendation)&&!nextSlots.length)throw new BadRequestException(`${recommendation}前请至少填写 1 个可安排的面试时间`)
   if(!interviewerEvaluation||!text(input.recommendation))throw new BadRequestException('面试官评价和面试结论不能为空')
   if(!['S','a','b','c','z'].includes(candidateRating))throw new BadRequestException('请选择有效的候选人评级（S、a、b、c、z）')
   const evaluationLength=Array.from(interviewerEvaluation.replace(/\s/g,'')).length
@@ -72,12 +78,11 @@ export class EvaluationService{
   const interview=await this.findInterview(interviewId),table=this.table('recruitment_interview_feedback'),rows=await teable.listAllRecords(table)
   const assignedIds=json<string[]>(interview.fields['面试官用户IDJSON'],[])
   if(!assignedIds.includes(input.interviewerUserId))throw new BadRequestException('该评价人不在本次面试官名单中')
-  if(!['通过','淘汰','加面','储备','待讨论'].includes(input.recommendation))throw new BadRequestException('请选择有效的面试评价结论')
   const existing=rows.filter(r=>text(r.fields['面试ID'])===interviewId&&text(r.fields['面试官用户ID'])===input.interviewerUserId).sort((a,b)=>num(b.fields['版本'])-num(a.fields['版本']))[0]
   if(existing&&text(existing.fields['锁定状态'])==='已锁定')throw new ConflictException('该面试官评价已经锁定，不能覆盖')
   const scores={professional:num(input.scores?.professional),communication:num(input.scores?.communication),execution:num(input.scores?.execution),culture:num(input.scores?.culture),potential:num(input.scores?.potential)}
   const overall=Math.round((scores.professional+scores.communication+scores.execution+scores.culture+scores.potential)/5),feedbackId=id('feedback'),timestamp=now(),deadline=new Date(Date.parse(text(interview.fields['结束时间']))+24*3600000).toISOString()
-  await teable.createRecord(table,{评价ID:feedbackId,面试ID:interviewId,应聘记录ID:text(interview.fields['应聘记录ID']),候选人ID:text(interview.fields['候选人ID']),面试官用户ID:input.interviewerUserId,面试官:input.interviewer,候选人评级:candidateRating,专业能力分:scores.professional,沟通能力分:scores.communication,执行能力分:scores.execution,文化匹配分:scores.culture,发展潜力分:scores.potential,综合分:overall,推荐结论:input.recommendation,其他匹配岗位:text(input.otherRoles),候选人优势:text(input.strengths),风险与待核实项:text(input.risks),面试评价:interviewerEvaluation,面试官评价:interviewerEvaluation,AI面试总结:aiSummary,AI评价草稿:aiSummary,备注:text(input.notes),题目回答JSON:JSON.stringify(input.questionAnswers||{}),评分证据JSON:JSON.stringify(input.evidence||{}),AI草稿状态:aiSummary?'AI总结已人工核对':'未使用AI',人工确认状态:'已确认',提交时间:timestamp,评价截止时间:deadline,评价状态:'已提交',锁定状态:'已锁定',版本:num(existing?.fields['版本'])+1||1,创建时间:timestamp,更新时间:timestamp})
+  await teable.createRecord(table,{评价ID:feedbackId,面试ID:interviewId,应聘记录ID:text(interview.fields['应聘记录ID']),候选人ID:text(interview.fields['候选人ID']),面试官用户ID:input.interviewerUserId,面试官:input.interviewer,候选人评级:candidateRating,专业能力分:scores.professional,沟通能力分:scores.communication,执行能力分:scores.execution,文化匹配分:scores.culture,发展潜力分:scores.potential,综合分:overall,推荐结论:recommendation,其他匹配岗位:text(input.otherRoles),候选人优势:text(input.strengths),风险与待核实项:[nextSlots.length?`下一场可面试时间：${nextSlots.join('、')}`:'',text(input.risks)].filter(Boolean).join('；'),面试评价:interviewerEvaluation,面试官评价:interviewerEvaluation,AI面试总结:aiSummary,AI评价草稿:aiSummary,备注:[text(input.notes),nextSlots.length?`下一场可面试时间：${nextSlots.join('、')}`:''].filter(Boolean).join('\n'),题目回答JSON:JSON.stringify(input.questionAnswers||{}),评分证据JSON:JSON.stringify({...(input.evidence||{}),nextSlots}),AI草稿状态:aiSummary?'AI总结已人工核对':'未使用AI',人工确认状态:'已确认',提交时间:timestamp,评价截止时间:deadline,评价状态:'已提交',锁定状态:'已锁定',版本:num(existing?.fields['版本'])+1||1,创建时间:timestamp,更新时间:timestamp})
   const submittedIds=new Set(rows.filter(r=>text(r.fields['面试ID'])===interviewId&&text(r.fields['评价状态'])==='已提交'&&assignedIds.includes(text(r.fields['面试官用户ID']))).map(r=>text(r.fields['面试官用户ID'])))
   submittedIds.add(text(input.interviewerUserId))
   const interviewerIds=json<string[]>(interview.fields['面试官用户IDJSON'],[]),all=submittedIds.size,expected=interviewerIds.length
@@ -132,17 +137,16 @@ export class EvaluationService{
    await teable.updateRecord(this.table('recruitment_tasks'),saved.id,{扩展信息JSON:JSON.stringify({...details,notificationStatus:delivered?'已发送':'发送失败',lastError:blockedReason,lastAttemptAt:now()}),处理人用户ID:notification.recruiterUserId||taskFields.处理人用户ID,更新时间:now()})
    return{status:delivered?'已通知HR':'待重试',nextStep:phase,url,blockedReason}
   }
-  if(['储备','待讨论'].includes(finalDecision))return{status:'无需处理',decision:finalDecision}
-  const rejected=finalDecision==='淘汰'
+  const rejected=['淘汰','不通过'].includes(finalDecision)
   if(rejected){
    const reason=decision?text((await teable.listByField(this.table('recruitment_interview_decisions'),'面试ID',interviewId,200)).sort((first,second)=>text(second.fields['决策时间']).localeCompare(text(first.fields['决策时间'])))[0]?.fields['决策原因']):submitted.map(row=>text(row?.fields['风险与待核实项'])).filter(Boolean).join('；')
    const mail=await this.sendRejectionEmail(interview,candidate,reason,'面试评价完成自动通知')
    const mailDelivered=['已发送','已跳过'].includes(mail.status)
    return{status:mailDelivered?'已通知候选人':'待重试',nextStep:'面试不通过邮件',mail,blockedReason:mailDelivered?'':text(mail.message)}
   }
-  const passed=finalDecision==='通过',additionalRound=finalDecision==='加面'
-  if(!passed&&!additionalRound)return{status:'等待最终决策'}
-  const phase=passed?'Offer待填写':'安排加面'
+  const passed=finalDecision==='通过',nextRound=['加面','二面'].includes(finalDecision)
+  if(!passed&&!nextRound)return{status:'等待最终决策'}
+  const phase=passed?'Offer待填写':finalDecision==='二面'?'安排二面':'安排加面'
   const action=passed?'offer':'schedule'
   const url=appFlowUrl(action,{candidate_id:candidateId,interview_id:interviewId,position_id:positionId,application_id:applicationId})
   if(!url)throw new BadRequestException('未配置应用公开地址，HR交接将在配置恢复后重试')
@@ -157,11 +161,13 @@ export class EvaluationService{
   if(previous.phase===phase&&previous.notificationStatus==='已发送')return{status:'已通知HR',nextStep:phase,url}
   const summary=submitted.filter(Boolean).map(row=>{const score=num(row!.fields['综合分']);return `${text(row!.fields['面试官'])}：${text(row!.fields['推荐结论'])}${score?`（${score}分）`:''}`}).join('；')
   const details={...previous,phase,url,interviewId,candidateId,applicationId,positionId,attempts:num(previous.attempts)+1,notificationStatus:'待发送',lastError:''}
-  const taskFields={待办类型:'面试后HR处理',对象类型:'面试',对象ID:interviewId,标题:`${this.candidateName(candidate)} · ${phase}`,描述:`${summary}。${passed?'请填写薪资、入职日期和Offer信息，核对后再发送。':'请为候选人安排下一轮面试。'}`,处理人用户ID:text(position?.fields['招聘HR用户ID'])||text(position?.fields['备用招聘HR用户ID']),处理人:text(position?.fields['招聘HR'])||'岗位招聘HR',优先级:'高',待办状态:'待处理',扩展信息JSON:JSON.stringify(details),更新时间:now()}
+  const nextSlots=[...new Set(submitted.flatMap(row=>json<any>(row?.fields['评分证据JSON'],{}).nextSlots||[]).map(text).filter(Boolean))]
+  const slotText=nextSlots.length?`可安排时间：${[...new Set(nextSlots)].join('、')}。`:''
+  const taskFields={待办类型:'面试后HR处理',对象类型:'面试',对象ID:interviewId,标题:`${this.candidateName(candidate)} · ${phase}`,描述:`${summary}。${passed?'请填写薪资、入职日期和Offer信息，核对后再发送。':`请按面试官给出的时间安排${finalDecision}。${slotText}`}`,处理人用户ID:text(position?.fields['招聘HR用户ID'])||text(position?.fields['备用招聘HR用户ID']),处理人:text(position?.fields['招聘HR'])||'岗位招聘HR',优先级:'高',待办状态:'待处理',扩展信息JSON:JSON.stringify(details),更新时间:now()}
   const saved=task?await teable.updateRecord(this.table('recruitment_tasks'),task.id,taskFields):await teable.createRecord(this.table('recruitment_tasks'),{...taskFields,待办ID:id('todo'),创建时间:now()})
   let notification:any
   try{
-   notification=await this.messages.notifyPositionHr({category:passed?'面试通过填Offer':'面试加面安排',candidateId,positionId,applicationId,objectId:interviewId,objectType:'面试后HR处理',markdown:`## 【${phase}】${this.candidateName(candidate)}\n> 岗位：${text(position?.fields['职位名称'])||'待确认'} · ${text(interview.fields['面试轮次'])}\n> 评价结果：${summary||finalDecision}\n${passed?'请填写薪资、入职日期及Offer信息，人工核对后发送。':'请为候选人安排下一轮面试。'}\n[${passed?'填写该候选人的 Offer':'安排该候选人的加面'} →](${url})`,operator:'面试评价完成自动交接'})
+   notification=await this.messages.notifyPositionHr({category:passed?'面试通过填Offer':finalDecision==='二面'?'面试二面安排':'面试加面安排',candidateId,positionId,applicationId,objectId:interviewId,objectType:'面试后HR处理',markdown:`## 【${phase}】${this.candidateName(candidate)}\n> 岗位：${text(position?.fields['职位名称'])||'待确认'} · ${text(interview.fields['面试轮次'])}\n> 评价结果：${summary||finalDecision}\n${passed?'请填写薪资、入职日期及Offer信息，人工核对后发送。':`请按面试官给出的时间安排${finalDecision}。${slotText}`}\n[${passed?'填写该候选人的 Offer':`安排该候选人的${finalDecision}`} →](${url})`,operator:'面试评价完成自动交接'})
   }catch(error){notification={status:'发送失败',reason:error instanceof Error?error.message:String(error)}}
   const delivered=['已发送','已跳过'].includes(notification.status)
   const blockedReason=delivered?'':text(notification.reason||notification.error)||'天玑消息未送达'
@@ -430,19 +436,25 @@ export class EvaluationService{
   const interview=await this.findInterview(interviewId),aggregate=await this.aggregate(interviewId)
   if(!aggregate.count)throw new ConflictException('至少需要一份已提交评价才能决策')
   const feedback=(await teable.listAllRecords(this.table('recruitment_interview_feedback'))).filter(r=>text(r.fields['面试ID'])===interviewId),decisionId=id('decision'),timestamp=now(),operator=text(input.operator)||'当前用户'
-  await teable.createRecord(this.table('recruitment_interview_decisions'),{决策ID:decisionId,面试ID:interviewId,应聘记录ID:text(interview.fields['应聘记录ID']),候选人ID:text(interview.fields['候选人ID']),评价IDJSON:JSON.stringify(feedback.map(r=>text(r.fields['评价ID']))),汇总评分JSON:JSON.stringify(aggregate),意见分歧JSON:JSON.stringify((aggregate as any).disagreements||{}),招聘决策:input.decision,决策原因:input.reason,决策人用户ID:text(input.operatorUserId),决策人:operator,决策时间:timestamp,创建时间:timestamp})
-  const stage={通过:'待Offer决策',淘汰:'已淘汰',加面:'约面',储备:'储备人才'}[input.decision]
-  await teable.updateRecord(this.table('recruitment_interviews'),interview.id,{面试结果:input.decision,面试状态:'已完成',评价状态:'已完成',更新时间:timestamp})
+  const decisionMap:Record<string,string>={通过:'通过',不通过:'不通过',二面:'二面',加面:'加面',淘汰:'不通过',储备:'二面'}
+  const decision=decisionMap[text(input.decision)]||''
+  if(!decision)throw new BadRequestException('请选择通过、不通过、二面或加面')
+  const nextSlots=[...new Set((input.nextSlots||[]).map(text).filter(Boolean))]
+  if(['二面','加面'].includes(decision)&&!nextSlots.length)throw new BadRequestException(`${decision}前请至少填写 1 个可安排的面试时间`)
+  const decisionReason=[text(input.reason),nextSlots.length?`下一场可面试时间：${nextSlots.join('、')}`:''].filter(Boolean).join('；')
+  await teable.createRecord(this.table('recruitment_interview_decisions'),{决策ID:decisionId,面试ID:interviewId,应聘记录ID:text(interview.fields['应聘记录ID']),候选人ID:text(interview.fields['候选人ID']),评价IDJSON:JSON.stringify(feedback.map(r=>text(r.fields['评价ID']))),汇总评分JSON:JSON.stringify(aggregate),意见分歧JSON:JSON.stringify((aggregate as any).disagreements||{}),招聘决策:decision,决策原因:decisionReason,决策人用户ID:text(input.operatorUserId),决策人:operator,决策时间:timestamp,创建时间:timestamp})
+  const stage=({通过:'待Offer决策',不通过:'已淘汰',二面:'约面',加面:'约面'} as Record<string,string>)[decision]
+  await teable.updateRecord(this.table('recruitment_interviews'),interview.id,{面试结果:decision,面试状态:'已完成',评价状态:'已完成',更新时间:timestamp})
   const applications=await teable.listAllRecords(this.table('recruitment_applications')),app=applications.find(r=>text(r.fields['应聘记录ID'])===text(interview.fields['应聘记录ID']))
   const previousStage=text(app?.fields['当前阶段'])||'面试'
-  if(app)await teable.updateRecord(this.table('recruitment_applications'),app.id,{当前阶段:stage,当前状态:input.decision==='淘汰'?'已结束':'进行中',最近处理时间:timestamp,流程结束时间:input.decision==='淘汰'?timestamp:'',更新时间:timestamp})
+  if(app)await teable.updateRecord(this.table('recruitment_applications'),app.id,{当前阶段:stage,当前状态:decision==='不通过'?'已结束':'进行中',最近处理时间:timestamp,流程结束时间:decision==='不通过'?timestamp:'',更新时间:timestamp})
   const candidates=await teable.listAllRecords(this.table('recruitment_candidates')),candidate=candidates.find(r=>text(r.fields['候选人ID'])===text(interview.fields['候选人ID']))
   if(candidate)await teable.updateRecord(this.table('recruitment_candidates'),candidate.id,{候选人状态:stage,更新时间:timestamp})
-  await teable.createRecord(this.table('recruitment_stage_events'),{事件ID:id('evt'),应聘记录ID:text(interview.fields['应聘记录ID']),候选人ID:text(interview.fields['候选人ID']),职位ID:text(interview.fields['职位ID']),原阶段:previousStage,新阶段:stage,操作:'面试招聘决策',结果:input.decision,原因:input.reason,操作人用户ID:text(input.operatorUserId),操作人:operator,发生时间:timestamp,来源类型:'面试决策',来源记录ID:decisionId,扩展信息JSON:JSON.stringify({aggregate})})
+  await teable.createRecord(this.table('recruitment_stage_events'),{事件ID:id('evt'),应聘记录ID:text(interview.fields['应聘记录ID']),候选人ID:text(interview.fields['候选人ID']),职位ID:text(interview.fields['职位ID']),原阶段:previousStage,新阶段:stage,操作:'面试招聘决策',结果:decision,原因:decisionReason,操作人用户ID:text(input.operatorUserId),操作人:operator,发生时间:timestamp,来源类型:'面试决策',来源记录ID:decisionId,扩展信息JSON:JSON.stringify({aggregate,nextSlots})})
   let handoff:any
   try{handoff=await this.ensureHrHandoff(interviewId)}catch(error){handoff={status:'待重试',message:error instanceof Error?error.message:String(error)}}
   await this.audit('面试招聘决策','面试',interviewId,aggregate,input,operator,input.reason)
-  return{decisionId,decision:input.decision,targetStage:stage,aggregate,handoff}
+  return{decisionId,decision,targetStage:stage,aggregate,handoff}
  }
  private async sendRejectionEmail(interview:TeableRecord,candidate:TeableRecord|undefined,reason:string,operator:string){
   const interviewId=text(interview.fields['面试ID'])||interview.id,candidateId=text(interview.fields['候选人ID']),email=text(candidate?.fields['邮箱']),candidateName=this.candidateName(candidate),round=text(interview.fields['面试轮次'])||'本轮',subject=`方片新媒体｜${round}面试结果通知｜${candidateName}`,content=rejectionEmailHtml(candidateName,round,reason),mailTable=this.table('recruitment_interview_mail_events')

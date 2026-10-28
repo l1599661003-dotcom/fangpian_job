@@ -4,7 +4,7 @@
   const state = {
     file: null, resumes: [], talents: [], talentOverview: null, jobMap: [], talentDetails: {}, activeId: '',
     talentPageSize: 25,
-    talentFilters: { q: '', job: '全部岗位', status: '全部状态', source: '全部来源', tag: '全部标签', importer: '', age: '全部年龄', region: '全部地区', score: '全部评分' }, talentSearchDraft: '',
+    talentFilters: { q: '', job: '全部岗位', status: '全部状态', source: '全部来源', tag: '全部标签', importer: '', age: '全部年龄', region: '全部地区', score: '全部评分' }, talentSearchDraft: '', talentFacets: null, archiveTotal: 0,
     archiveMode: 'api', archiveMessage: '', apiConfig: null, codeTab: 'curl', resumeVersionData: null, resumeBatchId: '', resumeBatchConfirmItems: [], analysisVersionData: null, analysisComparison: null,
     duplicateCases: [], duplicateCase: null, duplicateResult: null,
     reviewQueue: null, communicationTemplates: [], activeCommunicationCandidateId: '',
@@ -211,11 +211,12 @@
     pendingBackgroundActions.set(key, pending);
     const button = options.initiator || (document.activeElement instanceof HTMLButtonElement ? document.activeElement : null);
     const originalLabel = button?.getAttribute('aria-label');
+    const progressText = pending.jobId ? '正在查询上次处理结果…' : '正在后台处理，请勿重复提交…';
     const progressNode = button?.isConnected ? document.createElement('small') : null;
     if (progressNode) {
       progressNode.className = 'rf-background-action-progress';
       progressNode.setAttribute('role', 'status');
-      progressNode.textContent = pending.jobId ? '正在查询上次处理结果…' : '正在后台处理，请勿重复提交…';
+      progressNode.textContent = progressText;
       button.after(progressNode);
     }
     setRequestButtonBusy(button, true);
@@ -1514,9 +1515,34 @@
     talentListSnapshots.clear();
   }
 
+  function mergeFacetValues(current, incoming) {
+    return [...new Set([...(current || []), ...(incoming || [])].map((value) => String(value || '').trim()).filter(Boolean))]
+      .sort((left, right) => left.localeCompare(right, 'zh-CN'));
+  }
+
+  function rememberTalentFacets(result) {
+    const incoming = result?.facets || {};
+    const current = state.talentFacets || { jobs: [], sources: [], regions: [] };
+    const pageSources = (result?.talents || []).map((item) => item.source);
+    const pageRegions = (result?.talents || []).map((item) => item.address);
+    const pageJobs = [
+      ...(result?.jobMap || []).map((item) => item.role),
+      ...(result?.talents || []).flatMap((item) => (item.matches || []).map((match) => match.positionName)),
+    ];
+    state.talentFacets = {
+      jobs: mergeFacetValues(current.jobs, incoming.jobs?.length ? incoming.jobs : pageJobs),
+      sources: mergeFacetValues(current.sources, incoming.sources?.length ? incoming.sources : pageSources),
+      regions: mergeFacetValues(current.regions, incoming.regions?.length ? incoming.regions : pageRegions),
+    };
+  }
+
   function applyTalentArchiveResult(result) {
     state.talents = result.talents || [];
     state.talentTotal = Number(result.total ?? state.talents.length);
+    const queriedWithoutFilters = Object.values(state.talentFilters).every((value) => !String(value || '').trim() || String(value).startsWith('全部'));
+    if (Number.isFinite(Number(result.archiveTotal))) state.archiveTotal = Number(result.archiveTotal);
+    else if (queriedWithoutFilters || !state.archiveTotal) state.archiveTotal = state.talentTotal;
+    rememberTalentFacets(result);
     state.talentPage = Number(result.page || state.talentPage);
     state.talentPageSize = Number(result.pageSize || state.talentPageSize);
     state.talentTotalPages = Number(result.totalPages || Math.max(1, Math.ceil(state.talentTotal / state.talentPageSize)));
@@ -1688,7 +1714,19 @@
   }
 
   function talentOptions(values, current, allLabel) {
-    return [allLabel, ...new Set(values.filter(Boolean))].map((value) => `<option ${value === current ? 'selected' : ''}>${escapeHtml(value)}</option>`).join('');
+    const choices = [allLabel, ...new Set([current, ...(values || [])].map((value) => String(value || '').trim()).filter(Boolean))];
+    return [...new Set(choices)].map((value) => `<option value="${escapeHtml(value)}" ${value === current ? 'selected' : ''}>${escapeHtml(value)}</option>`).join('');
+  }
+
+  const TALENT_FILTER_DEFAULTS = { q: '', job: '全部岗位', status: '全部状态', source: '全部来源', tag: '全部标签', importer: '', age: '全部年龄', region: '全部地区', score: '全部评分' };
+  const TALENT_FILTER_LABELS = { q: '姓名', job: '岗位', status: '在职状态', source: '来源', importer: '导入人', age: '年龄', region: '地区', score: '评分' };
+
+  function activeTalentFilters() {
+    return Object.entries(state.talentFilters).flatMap(([key, value]) => {
+      const textValue = String(value || '').trim();
+      if (!textValue || textValue.startsWith('全部') || key === 'tag') return [];
+      return [{ key, label: TALENT_FILTER_LABELS[key] || key, value: textValue }];
+    });
   }
 
   function scoreTone(score) {
@@ -1725,57 +1763,49 @@
       ? root.querySelector('.rf-candidate-list')?.scrollTop
       : null;
     const overview = state.talentOverview || fallbackOverview(state.talents);
-    const statuses = state.talents.map((item) => item.status);
-    const sources = state.talents.map((item) => item.source);
-    const tags = state.talents.flatMap((item) => (item.tags || []).map((tag) => tag.name));
-    const activeFilterCount = Object.entries(state.talentFilters).filter(([key, value]) => {
-      if (!value) return false;
-      return key === 'q' ? Boolean(String(value).trim()) : !String(value).startsWith('全部');
-    }).length;
-    const advancedFilterCount = ['age', 'region', 'score'].filter((key) => {
-      const value = state.talentFilters[key];
-      return value && !String(value).startsWith('全部');
-    }).length;
-    const jobFilterValues = state.positionOptions.length
-      ? state.positionOptions.map((position) => position.name)
-      : state.jobMap.map((item) => item.role);
+    const activeFilters = activeTalentFilters();
+    const facets = state.talentFacets || { jobs: [], sources: [], regions: [] };
+    const jobFilterValues = mergeFacetValues(facets.jobs, state.positionOptions.map((position) => position.name));
+    const filtered = activeFilters.length > 0;
+    const archiveTotal = Number(state.archiveTotal || 0);
+    const resultLabel = filtered ? '筛选结果' : '当前人才';
+    const rangeStart = state.talentTotal ? (state.talentPage - 1) * state.talentPageSize + 1 : 0;
+    const rangeEnd = Math.min(state.talentTotal, state.talentPage * state.talentPageSize);
     root.innerHTML = `
       ${state.archiveMessage ? `<div class="rf-inline-warning">${escapeHtml(state.archiveMessage)}</div>` : ''}
       <header class="page-head rf-talent-page-head">
-        <div><h1>人才档案</h1><p>从 AI 匹配到入职的招聘流程工作台</p></div>
+        <div><h1>人才档案</h1><p>按姓名、岗位和档案条件查找候选人</p></div>
         <div class="head-actions rf-talent-head-actions"><button class="btn-primary rf-import-resume" id="rf-import-resume" type="button"><i aria-hidden="true">＋</i>导入简历</button></div>
       </header>
-      <section class="rf-talent-filterbar">
-        <div class="rf-talent-dashboard-summary" aria-label="当前人才概况">
-          <article><strong>${state.talentTotal}</strong><span>人才总数</span></article>
-          <article><strong>${overview.pendingReview}</strong><span>待确认</span></article>
-          <article><strong>${overview.highMatch}</strong><span>高匹配</span></article>
-          <article><strong>${overview.referral}</strong><span>内部推荐</span></article>
-          <button data-rf-duplicates type="button"><strong>${overview.duplicatePending}</strong><span>疑似重复</span></button>
+      <section class="rf-talent-command" aria-label="人才档案查询">
+        <div class="rf-talent-metrics" aria-label="人才数量">
+          <article class="is-primary"><span>人才库总数</span><strong>${archiveTotal || state.talentTotal}</strong><small>不含已删除和已合并档案</small></article>
+          <article class="${filtered ? 'is-active' : ''}"><span>${resultLabel}</span><strong>${state.talentTotal}</strong><small>${state.talentTotal ? `本页 ${rangeStart}–${rangeEnd}` : '没有符合条件的人才'}</small></article>
+          <article><span>本页待确认</span><strong>${overview.pendingReview}</strong><small>当前列表中的 AI 结果</small></article>
+          <button type="button" data-rf-duplicates><span>疑似重复</span><strong>${overview.duplicatePending}</strong><small>打开重复处理</small></button>
         </div>
-        <div class="rf-talent-filter-panel">
+        <form class="rf-talent-filter-panel" id="rf-talent-filter-form">
           <div class="rf-talent-filter-heading">
-            <div><strong>筛选人才</strong><span>${activeFilterCount ? `已启用 ${activeFilterCount} 个筛选条件` : '先选择常用条件，再点击查询更新列表'}</span></div>
-            <div class="rf-talent-filter-actions"><button class="btn-soft rf-filter-reset" id="rf-reset-filter" type="button">清空筛选</button><button class="btn-soft rf-advanced-filter" id="rf-advanced-filter" type="button" aria-expanded="${state.showTalentAdvancedFilters}" aria-controls="rf-talent-advanced-row"><span>更多筛选</span>${advancedFilterCount ? `<em>${advancedFilterCount}</em>` : ''}<i aria-hidden="true">⌄</i></button></div>
+            <div><strong>查找人才</strong><span>${activeFilters.length ? `已使用 ${activeFilters.length} 个条件` : '条件会保留，可组合后一次查询'}</span></div>
+            <div class="rf-talent-filter-actions"><button class="btn-soft rf-filter-reset" id="rf-reset-filter" type="button">清空</button><button class="btn-primary rf-list-search-submit${state.talentSearchLoading ? ' is-loading' : ''}" id="rf-search-submit" type="submit" ${state.talentSearchLoading ? 'disabled' : ''}>${state.talentSearchLoading ? '<i class="rf-search-spinner" aria-hidden="true"></i><span>查询中</span>' : '查询'}</button><button id="rf-refresh" type="button" title="刷新人才列表" aria-label="刷新人才列表">↻</button></div>
           </div>
-          <div class="rf-talent-list-tools" role="search"><label class="rf-list-search"><span class="sr-only">按姓名搜索人才</span><i aria-hidden="true">⌕</i><input id="rf-search" type="search" placeholder="输入候选人姓名" value="${escapeHtml(state.talentSearchDraft)}" aria-label="按姓名搜索人才" autocomplete="off" enterkeyhint="search" aria-busy="${state.talentSearchLoading}"></label><button class="btn-primary rf-list-search-submit${state.talentSearchLoading ? ' is-loading' : ''}" id="rf-search-submit" type="button" ${state.talentSearchLoading ? 'disabled' : ''}>${state.talentSearchLoading ? '<i class="rf-search-spinner" aria-hidden="true"></i><span>查询中</span>' : '查询'}</button><button id="rf-refresh" type="button" title="刷新人才列表" aria-label="刷新人才列表">↻</button></div>
-          <div class="rf-talent-filter-tools">
+          <div class="rf-talent-filter-grid">
+            <label class="is-wide"><span>姓名</span><input id="rf-search" type="search" placeholder="输入候选人姓名" value="${escapeHtml(state.talentSearchDraft)}" autocomplete="off" enterkeyhint="search" aria-busy="${state.talentSearchLoading}"></label>
             <label><span>岗位</span><select id="rf-job-filter">${talentOptions(jobFilterValues, state.talentFilters.job, '全部岗位')}</select></label>
             <label><span>在职状态</span><select id="rf-status-filter">${talentOptions(['在职','离职','未入职'], state.talentFilters.status, '全部状态')}</select></label>
-            <label><span>人才来源</span><select id="rf-source-filter">${talentOptions(sources, state.talentFilters.source, '全部来源')}</select></label>
-            <label><span>导入人 / 内推人</span><input id="rf-importer-filter" type="search" value="${escapeHtml(state.talentFilters.importer)}" placeholder="输入姓名搜索" autocomplete="off" enterkeyhint="search" aria-label="按导入人或内推人搜索人才"></label>
-          </div>
-          <div class="rf-talent-advanced-row" id="rf-talent-advanced-row" ${state.showTalentAdvancedFilters ? '' : 'hidden'}>
+            <label><span>人才来源</span><select id="rf-source-filter">${talentOptions(facets.sources, state.talentFilters.source, '全部来源')}</select></label>
+            <label><span>导入人 / 内推人</span><input id="rf-importer-filter" type="search" value="${escapeHtml(state.talentFilters.importer)}" placeholder="输入姓名" autocomplete="off" enterkeyhint="search"></label>
             <label><span>年龄</span><select id="rf-age-filter">${talentOptions(['18-25岁','26-30岁','31-35岁','36岁以上'], state.talentFilters.age, '全部年龄')}</select></label>
-            <label><span>地区</span><select id="rf-region-filter">${talentOptions([...new Set(state.talents.map((item) => item.address).filter(Boolean))], state.talentFilters.region, '全部地区')}</select></label>
+            <label><span>地区</span><select id="rf-region-filter">${talentOptions(facets.regions, state.talentFilters.region, '全部地区')}</select></label>
             <label><span>AI 评分</span><select id="rf-score-filter">${talentOptions(['90-100分','80-89分','70-79分','60-69分','0-59分'], state.talentFilters.score, '全部评分')}</select></label>
           </div>
-        </div>
+          <div class="rf-talent-active-filters" ${activeFilters.length ? '' : 'hidden'}>${activeFilters.map((item) => `<button type="button" data-rf-clear-filter="${escapeHtml(item.key)}"><span>${escapeHtml(item.label)}</span><strong>${escapeHtml(item.value)}</strong><i aria-hidden="true">×</i></button>`).join('')}</div>
+        </form>
       </section>
       <section class="rf-archive-shell rf-talent-shell rf-talent-list-mode" aria-busy="${state.talentSearchLoading}">
         <div class="rf-talent-search-feedback" id="rf-talent-search-feedback" role="status" aria-live="polite" ${state.talentSearchLoading ? '' : 'hidden'}><i class="rf-search-spinner" aria-hidden="true"></i><span>正在搜索人才，请稍候…</span></div>
         <div class="rf-candidate-list rf-talent-cards${state.talentSearchLoading ? ' is-searching' : ''}">${state.talents.length ? state.talents.map((item) => talentCandidateRow(item, false)).join('') : '<div class="rf-list-empty">当前条件下暂无人才<br><small>可以清除筛选条件后重试</small></div>'}</div>
-        <nav class="rf-talent-pager" aria-label="人才档案分页"><button type="button" data-rf-talent-page="1" ${state.talentPage <= 1 ? 'disabled' : ''}>首页</button><button type="button" data-rf-talent-page="${state.talentPage - 1}" ${state.talentPage <= 1 ? 'disabled' : ''}>上一页</button><span>第 ${state.talentPage} / ${state.talentTotalPages} 页<small>共 ${state.talentTotal} 位</small></span><button type="button" data-rf-talent-page="${state.talentPage + 1}" ${state.talentPage >= state.talentTotalPages ? 'disabled' : ''}>下一页</button><button type="button" data-rf-talent-page="${state.talentTotalPages}" ${state.talentPage >= state.talentTotalPages ? 'disabled' : ''}>尾页</button></nav>
+        <nav class="rf-talent-pager" aria-label="人才档案分页"><button type="button" data-rf-talent-page="1" ${state.talentPage <= 1 ? 'disabled' : ''}>首页</button><button type="button" data-rf-talent-page="${state.talentPage - 1}" ${state.talentPage <= 1 ? 'disabled' : ''}>上一页</button><span>第 ${state.talentPage} / ${state.talentTotalPages} 页<small>${filtered ? `筛选结果 ${state.talentTotal} 位` : `共 ${state.talentTotal} 位`}</small></span><button type="button" data-rf-talent-page="${state.talentPage + 1}" ${state.talentPage >= state.talentTotalPages ? 'disabled' : ''}>下一页</button><button type="button" data-rf-talent-page="${state.talentTotalPages}" ${state.talentPage >= state.talentTotalPages ? 'disabled' : ''}>尾页</button></nav>
       </section>`;
     bindTalentArchive();
     if (Number.isFinite(previousListScrollTop)) {
@@ -1918,11 +1948,26 @@
       { name: '离职', done: Boolean(flow.offboarding?.actualDate), current: false, detail: flow.offboarding ? `${flow.offboarding.actualDate ? `已离职 ${flow.offboarding.actualDate}` : flow.offboarding.status || '办理中'} · ${flow.offboarding.reason || '原因待补充'}` : '可直接进入生命周期', action: '生命周期', actionType: 'data-rf-lifecycle', disabled: false },
       { name: '回访', done: flow.followup?.status === '已完成', current: false, detail: flow.followup ? `${flow.followup.status || '待回访'} · ${flow.followup.result || flow.followup.plannedDate || '时间待补充'}` : '可直接进入生命周期', action: '查看回访', actionType: 'data-rf-lifecycle', disabled: false },
     ];
+    const firstOpenIndex = flowSteps.findIndex((step) => !step.done);
     const flowStepHtml = (step, index, candidate) => {
+      const stateClass = step.done ? 'done' : index === firstOpenIndex ? 'current' : 'pending';
+      const stateLabel = stateClass === 'done' ? '已完成' : stateClass === 'current' ? '下一步' : '未开始';
       const contextAttrs = step.actionType === 'data-rf-open-interview-feedback'
         ? ` data-rf-candidate-id="${escapeHtml(candidate.candidateId || candidate.id || '')}" data-rf-interview-id="${escapeHtml(flow.interview?.id || '')}"`
         : '';
-      return `<article class="${step.done ? 'done' : step.current ? 'current' : ''}" aria-label="${escapeHtml(`${step.name} · ${step.done ? '已完成' : '未完成'} · ${step.detail}`)}"><i>${index + 1}</i><div><strong>${escapeHtml(step.name)}</strong><span class="rf-flow-actions"><button type="button" ${step.actionType}${contextAttrs} ${step.disabled ? 'disabled' : ''}>${escapeHtml(step.action)}</button>${step.pushStep ? `<button type="button" data-rf-flow-wecom="${escapeHtml(step.pushStep)}" ${step.pushDisabled ? 'disabled' : ''}>推送企微</button>` : ''}</span></div></article>`;
+      const push = step.pushStep
+        ? `<button type="button" class="rf-flow-push" data-rf-flow-wecom="${escapeHtml(step.pushStep)}" ${step.pushDisabled ? 'disabled' : ''} title="推送到企微">企微</button>`
+        : '<span class="rf-flow-push is-empty" aria-hidden="true"></span>';
+      const connector = index < flowSteps.length - 1 ? '<i class="rf-flow-link" aria-hidden="true"></i>' : '';
+      return `<article class="rf-flow-node ${stateClass}${step.disabled ? ' is-locked' : ''}">
+        ${connector}
+        <button type="button" class="rf-flow-card" ${step.actionType}${contextAttrs} ${step.disabled ? 'disabled' : ''} title="${escapeHtml(step.detail)}" aria-label="${escapeHtml(`${index + 1} ${step.name}，${stateLabel}。${step.detail}`)}">
+          <b aria-hidden="true">${stateClass === 'done' ? '✓' : index + 1}</b>
+          <strong>${escapeHtml(step.name)}</strong>
+          <em>${escapeHtml(stateLabel)}</em>
+        </button>
+        ${push}
+      </article>`;
     };
     const gender = safeGender(item.gender);
     const tagText = tags.slice(0, 5).map((tag) => tag.name).join('、') || '待生成';
@@ -1937,8 +1982,9 @@
         </div>
       </section>
       <section class="rf-evaluation-workbench" id="rf-detail-evaluation">
-        <div class="rf-section-title"><div><span>TALENT DECISION FLOW</span><strong>招聘流程</strong></div><small>10个核心阶段 · 状态来自真实业务记录</small></div>
-        <div class="rf-evaluation-steps rf-flow-steps">${flowSteps.map((step, index) => flowStepHtml(step, index, item)).join('')}</div>
+        <div class="rf-section-title"><div><span>TALENT DECISION FLOW</span><strong>招聘流程</strong></div><small>${flowSteps.filter((step) => step.done).length} / ${flowSteps.length} 已完成 · 点击步骤直接处理</small></div>
+        <div class="rf-flow-legend"><span class="done">已完成</span><span class="current">下一步</span><span class="pending">未开始</span></div>
+        <div class="rf-flow-track">${flowSteps.map((step, index) => flowStepHtml(step, index, item)).join('')}</div>
       </section>
       <section class="rf-resume-detail-panel" id="rf-detail-resume">
         <div class="rf-section-title"><div><span>RESUME DETAILS</span><strong>简历详细信息</strong></div><small>按原始简历结构整理，便于快速阅读与人工复核</small></div>
@@ -1989,12 +2035,7 @@
       void loadTalentArchive(false);
     };
     document.getElementById('rf-import-resume')?.addEventListener('click', openResumeImportDialog);
-    document.getElementById('rf-advanced-filter')?.addEventListener('click', (event) => {
-      state.showTalentAdvancedFilters = !state.showTalentAdvancedFilters;
-      event.currentTarget.setAttribute('aria-expanded', String(state.showTalentAdvancedFilters));
-      const advancedRow = document.getElementById('rf-talent-advanced-row');
-      if (advancedRow) advancedRow.hidden = !state.showTalentAdvancedFilters;
-    });
+    document.getElementById('rf-talent-filter-form')?.addEventListener('submit', (event) => { event.preventDefault(); applyFilters(); });
     document.getElementById('rf-search-submit')?.addEventListener('click', applyFilters);
     search?.addEventListener('input', () => { state.talentSearchDraft = search.value; });
     search?.addEventListener('keydown', (event) => { if (event.key === 'Enter') { event.preventDefault(); applyFilters(); } });
@@ -2005,7 +2046,14 @@
       applyFilters();
     });
     document.getElementById('rf-refresh')?.addEventListener('click', () => loadTalentArchive(true, true));
-    document.getElementById('rf-reset-filter')?.addEventListener('click', () => { state.talentSearchDraft = ''; state.talentFilters = { q: '', job: '全部岗位', status: '全部状态', source: '全部来源', tag: '全部标签', importer: '', age: '全部年龄', region: '全部地区', score: '全部评分' }; state.showTalentAdvancedFilters = false; state.talentPage = 1; loadTalentArchive(false); });
+    document.getElementById('rf-reset-filter')?.addEventListener('click', () => { state.talentSearchDraft = ''; state.talentFilters = { ...TALENT_FILTER_DEFAULTS }; state.talentPage = 1; loadTalentArchive(false); });
+    document.querySelectorAll('[data-rf-clear-filter]').forEach((button) => button.addEventListener('click', () => {
+      const key = button.dataset.rfClearFilter;
+      state.talentFilters = { ...state.talentFilters, [key]: TALENT_FILTER_DEFAULTS[key] || '' };
+      if (key === 'q') state.talentSearchDraft = '';
+      state.talentPage = 1;
+      loadTalentArchive(false);
+    }));
     document.querySelectorAll('[data-rf-talent-page]:not([disabled])').forEach((button) => button.addEventListener('click', () => { state.talentPage = Number(button.dataset.rfTalentPage); loadTalentArchive(); }));
     document.querySelector('[data-rf-duplicates]')?.addEventListener('click', openDuplicateWorkbench);
     const talentButtons = rootQueryAll('[data-rf-talent]');
@@ -3798,7 +3846,7 @@
     const candidateId = state.talentDetails[state.activeId]?.candidateId || state.activeId;
     return (items || []).filter((item) => item.candidateId === candidateId).sort((a, b) => String(b.startAt || '').localeCompare(String(a.startAt || '')))[0]?.id || '';
   }
-  async function openFeedbackFormLegacy(interviewId){const item=(state.evaluationData?.items||[]).find(x=>x.id===interviewId);if(!item)return;const token=talentDialogToken;const template=item.template||{questions:[],dimensions:[]};let salary={benchmarks:[]};try{salary=await request(`api/interview-evaluations/salary-benchmarks?role=${encodeURIComponent(item.role||'')}`)}catch{}if(!isTalentDialogCurrent(token))return;showTalentDialog(`<header class="rf-dialog-head"><div><button class="rf-dialog-back" data-rf-evaluation-back>← 返回评价工作台</button><span>STRUCTURED INTERVIEW</span><h2>${escapeHtml(item.candidateName)} · ${escapeHtml(template.name||'面试评价')}</h2><p>最近测评 ${Number(item.assessment?.score||0)}分；薪酬参考 ${salary.benchmarks?.length?`${salary.benchmarks[0].min}-${salary.benchmarks[0].max} 元/月`:'暂无可靠数据'}。</p></div></header><div class="rf-interview-question-list">${(template.questions||[]).map((q,index)=>`<article data-eval-question="${escapeHtml(q.id||`q${index+1}`)}"><span>${index+1}</span><div><strong>${escapeHtml(q.question)}</strong><small>${escapeHtml(q.followUp||q.observation||'请记录事实证据')}</small><textarea placeholder="记录候选人回答和可核验事实"></textarea></div></article>`).join('')||'<div class="rf-dialog-empty"><p>当前模板暂无结构化问题，可在模板管理中补充。</p></div>'}</div><label class="rf-dialog-note"><span>面试记录 / 纪要原文</span><textarea id="rf-interview-raw-notes" placeholder="记录关键问答、事实、数据和待确认项"></textarea></label><div class="rf-evaluation-score-grid">${[['professional','专业能力'],['communication','沟通能力'],['execution','执行能力'],['culture','文化匹配'],['potential','发展潜力']].map(([key,label])=>`<label><span>${label}</span><input data-eval-score="${key}" type="number" min="0" max="100" value="70"></label>`).join('')}</div><div class="rf-dialog-form"><label><span>推荐结论</span><select id="rf-feedback-recommendation"><option>通过</option><option>加面</option><option>储备</option><option>待讨论</option><option>淘汰</option></select></label><label><span>面试官用户ID</span><input id="rf-feedback-user-id" value="current_interviewer"></label><label><span>面试官姓名</span><input id="rf-feedback-name" value="当前面试官"></label><label class="wide"><span>候选人优势</span><textarea id="rf-feedback-strengths"></textarea></label><label class="wide"><span>风险与待核实项</span><textarea id="rf-feedback-risks"></textarea></label><label class="wide"><span>完整面试评价</span><textarea id="rf-feedback-comment"></textarea></label></div><div class="rf-dialog-actions"><button class="btn-soft" data-rf-generate-interview-ai>生成AI纪要草稿</button><button class="btn-primary" data-rf-submit-feedback>独立提交并锁定评价</button></div><p class="rf-dialog-message" id="rf-feedback-message"></p>`,'wide');document.querySelector('[data-rf-evaluation-back]')?.addEventListener('click',renderEvaluationWorkbench);document.querySelector('[data-rf-generate-interview-ai]')?.addEventListener('click',()=>generateInterviewAi(interviewId));document.querySelector('[data-rf-submit-feedback]')?.addEventListener('click',()=>submitInterviewFeedback(interviewId))}
+  async function openFeedbackFormLegacy(interviewId){const item=(state.evaluationData?.items||[]).find(x=>x.id===interviewId);if(!item)return;const token=talentDialogToken;const template=item.template||{questions:[],dimensions:[]};let salary={benchmarks:[]};try{salary=await request(`api/interview-evaluations/salary-benchmarks?role=${encodeURIComponent(item.role||'')}`)}catch{}if(!isTalentDialogCurrent(token))return;showTalentDialog(`<header class="rf-dialog-head"><div><button class="rf-dialog-back" data-rf-evaluation-back>← 返回评价工作台</button><span>STRUCTURED INTERVIEW</span><h2>${escapeHtml(item.candidateName)} · ${escapeHtml(template.name||'面试评价')}</h2><p>最近测评 ${Number(item.assessment?.score||0)}分；薪酬参考 ${salary.benchmarks?.length?`${salary.benchmarks[0].min}-${salary.benchmarks[0].max} 元/月`:'暂无可靠数据'}。</p></div></header><div class="rf-interview-question-list">${(template.questions||[]).map((q,index)=>`<article data-eval-question="${escapeHtml(q.id||`q${index+1}`)}"><span>${index+1}</span><div><strong>${escapeHtml(q.question)}</strong><small>${escapeHtml(q.followUp||q.observation||'请记录事实证据')}</small><textarea placeholder="记录候选人回答和可核验事实"></textarea></div></article>`).join('')||'<div class="rf-dialog-empty"><p>当前模板暂无结构化问题，可在模板管理中补充。</p></div>'}</div><label class="rf-dialog-note"><span>面试记录 / 纪要原文</span><textarea id="rf-interview-raw-notes" placeholder="记录关键问答、事实、数据和待确认项"></textarea></label><div class="rf-evaluation-score-grid">${[['professional','专业能力'],['communication','沟通能力'],['execution','执行能力'],['culture','文化匹配'],['potential','发展潜力']].map(([key,label])=>`<label><span>${label}</span><input data-eval-score="${key}" type="number" min="0" max="100" value="70"></label>`).join('')}</div><div class="rf-dialog-form"><label><span>推荐结论</span><select id="rf-feedback-recommendation"><option>通过</option><option>不通过</option><option>二面</option><option>加面</option></select></label><label class="wide"><span>下一场可安排时间</span><input id="rf-feedback-next-slot" maxlength="40" placeholder="二面或加面时填写"></label><label><span>面试官用户ID</span><input id="rf-feedback-user-id" value="current_interviewer"></label><label><span>面试官姓名</span><input id="rf-feedback-name" value="当前面试官"></label><label class="wide"><span>候选人优势</span><textarea id="rf-feedback-strengths"></textarea></label><label class="wide"><span>风险与待核实项</span><textarea id="rf-feedback-risks"></textarea></label><label class="wide"><span>完整面试评价</span><textarea id="rf-feedback-comment"></textarea></label></div><div class="rf-dialog-actions"><button class="btn-soft" data-rf-generate-interview-ai>生成AI纪要草稿</button><button class="btn-primary" data-rf-submit-feedback>独立提交并锁定评价</button></div><p class="rf-dialog-message" id="rf-feedback-message"></p>`,'wide');document.querySelector('[data-rf-evaluation-back]')?.addEventListener('click',renderEvaluationWorkbench);document.querySelector('[data-rf-generate-interview-ai]')?.addEventListener('click',()=>generateInterviewAi(interviewId));document.querySelector('[data-rf-submit-feedback]')?.addEventListener('click',()=>submitInterviewFeedback(interviewId))}
   async function importInterviewFeedbackFile(event) {
     const input = event.currentTarget;
     const status = document.getElementById('rf-feedback-transcript-file-status');
@@ -3884,6 +3932,7 @@
         if (node) node.value = value || '';
       };
       setValue('rf-feedback-recommendation', extraction.recommendation);
+      document.getElementById('rf-feedback-recommendation')?.dispatchEvent(new Event('change'));
       const aiSummary = String(extraction.comment || '').trim();
       if (!aiSummary) throw new Error('AI未生成面试总结，请补充会议记录后重试。');
       setValue('rf-feedback-ai-summary', aiSummary);
@@ -3948,7 +3997,8 @@
           </div>
           <small id="rf-feedback-transcript-status">请粘贴会议总结并点击按钮生成AI面试总结，再填写面试官评价。</small>
         </section>
-        <label data-feedback-field="recommendation"><span>面试结论 <b>*</b></span><select id="rf-feedback-recommendation" required><option value="">请选择面试结论</option><option>通过</option><option>加面</option><option>储备</option><option>待讨论</option><option>淘汰</option></select><small class="rf-schedule-error" hidden></small></label>
+        <label data-feedback-field="recommendation"><span>面试结论 <b>*</b></span><select id="rf-feedback-recommendation" required><option value="">请选择面试结论</option><option>通过</option><option>不通过</option><option>二面</option><option>加面</option></select><small class="rf-schedule-error" hidden></small></label>
+        <label class="wide" id="rf-feedback-next-slots" hidden data-feedback-field="nextSlots"><span>下一场可安排时间 <b>*</b></span><input id="rf-feedback-next-slot" maxlength="40" placeholder="例如 10月29日 14:00"><small class="rf-schedule-error" hidden></small></label>
         <label data-feedback-field="rating"><span>候选人评级 <b>*</b></span><select id="rf-feedback-candidate-rating" required><option value="">请选择评级</option><option value="S">S</option><option value="a">a</option><option value="b">b</option><option value="c">c</option><option value="z">z</option></select><small class="rf-schedule-error" hidden></small></label>
         <label class="wide" data-feedback-field="summary"><span>AI面试总结 <b>*</b></span><textarea id="rf-feedback-ai-summary" rows="5" required placeholder="请先点击“会议总结转评价”生成，再核对或修改"></textarea><small class="rf-schedule-error" hidden></small></label>
         <label class="wide" data-feedback-field="evaluation"><span>面试官评价 <b>*</b></span><textarea id="rf-feedback-interviewer-evaluation" rows="7" required placeholder="至少填写50字，结合候选人实际回答、岗位匹配度、优势与风险给出独立评价；AI不会生成或覆盖此项。"></textarea><small id="rf-feedback-interviewer-count" aria-live="polite"></small><small class="rf-schedule-error" hidden></small></label>
@@ -3980,6 +4030,10 @@
       node?.addEventListener('input', clear);
       node?.addEventListener('change', clear);
     });
+    document.getElementById('rf-feedback-recommendation')?.addEventListener('change', (event) => {
+      const slots = document.getElementById('rf-feedback-next-slots');
+      if (slots) slots.hidden = !['二面', '加面'].includes(event.currentTarget.value);
+    });
     document.querySelector('[data-rf-evaluation-back]')?.addEventListener('click', renderEvaluationWorkbench);
     document.querySelector('[data-rf-feedback-extract]')?.addEventListener('click', () => extractInterviewFeedback(interviewId));
     document.querySelector('[data-rf-submit-feedback]')?.addEventListener('click', () => submitInterviewFeedback(interviewId));
@@ -4007,6 +4061,7 @@
       interviewer: document.getElementById('rf-feedback-name')?.value.trim(),
       candidateRating: document.getElementById('rf-feedback-candidate-rating')?.value,
       scores: {}, recommendation: document.getElementById('rf-feedback-recommendation')?.value,
+      nextSlots: ['二面', '加面'].includes(document.getElementById('rf-feedback-recommendation')?.value) ? [document.getElementById('rf-feedback-next-slot')?.value.trim()].filter(Boolean) : [],
       otherRoles: '', strengths: '', risks: '',
       aiSummary: document.getElementById('rf-feedback-ai-summary')?.value.trim(),
       interviewerEvaluation, comment: interviewerEvaluation,
@@ -4021,7 +4076,10 @@
     const evaluationNode = document.getElementById('rf-feedback-interviewer-evaluation');
     const evaluationLength = countInterviewEvaluationCharacters(payload.interviewerEvaluation);
     const summaryReady = Boolean(payload.notes && transcriptField?.dataset.convertedTranscript === payload.notes && payload.aiSummary);
+    const nextSlotNode = document.getElementById('rf-feedback-next-slot');
+    const needsNextSlot = ['二面', '加面'].includes(payload.recommendation);
     markScheduleField(recommendationNode, payload.recommendation ? '' : '请选择面试结论');
+    markScheduleField(nextSlotNode, !needsNextSlot || payload.nextSlots.length ? '' : '请填写下一场可安排时间');
     markScheduleField(ratingNode, payload.candidateRating ? '' : '请选择候选人评级');
     markScheduleField(summaryNode, summaryReady ? '' : '请先生成并核对AI面试总结');
     transcriptField?.closest('.rf-feedback-ai-panel')?.classList.toggle('is-invalid', !summaryReady);
@@ -4030,6 +4088,7 @@
     const firstInvalid = [
       [summaryReady, transcriptField],
       [payload.recommendation, recommendationNode],
+      [!needsNextSlot || payload.nextSlots.length, nextSlotNode],
       [payload.candidateRating, ratingNode],
       [evaluationLength >= 50, evaluationNode],
     ].find(([ok]) => !ok)?.[1];
@@ -4040,12 +4099,35 @@
       if (message) message.textContent = '';
       return;
     }
+    const submitButton = document.querySelector('[data-rf-submit-feedback]');
+    const snapshot = {
+      transcript: transcriptField?.value || '',
+      recommendation: recommendationNode?.value || '',
+      nextSlot: nextSlotNode?.value || '',
+      rating: ratingNode?.value || '',
+      summary: summaryNode?.value || '',
+      evaluation: evaluationNode?.value || '',
+      converted: transcriptField?.dataset.convertedTranscript || '',
+    };
+    const restoreSnapshot = () => {
+      const restore = (node, value) => { if (node && node.value !== value) node.value = value; };
+      restore(document.getElementById('rf-feedback-transcript'), snapshot.transcript);
+      restore(document.getElementById('rf-feedback-recommendation'), snapshot.recommendation);
+      restore(document.getElementById('rf-feedback-next-slot'), snapshot.nextSlot);
+      restore(document.getElementById('rf-feedback-candidate-rating'), snapshot.rating);
+      restore(document.getElementById('rf-feedback-ai-summary'), snapshot.summary);
+      restore(document.getElementById('rf-feedback-interviewer-evaluation'), snapshot.evaluation);
+      const currentTranscript = document.getElementById('rf-feedback-transcript');
+      if (currentTranscript && snapshot.converted) currentTranscript.dataset.convertedTranscript = snapshot.converted;
+      document.getElementById('rf-feedback-recommendation')?.dispatchEvent(new Event('change'));
+    };
+    if (message) { message.textContent = '正在提交面试评价，已填写内容会保留…'; message.classList.remove('error'); }
     try {
-      const result = await request(`api/interview-evaluations/interviews/${encodeURIComponent(interviewId)}/feedback`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      const result = await request(`api/interview-evaluations/interviews/${encodeURIComponent(interviewId)}/feedback`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), initiator: submitButton });
       const handoff = result.handoff || {};
       const followup = handoff.status === '已通知HR'
-        ? (handoff.nextStep === '安排加面' ? '已通知岗位HR安排加面。' : '已通知岗位HR填写Offer。')
-        : handoff.status === '已通知候选人' ? '淘汰结果邮件已发送给候选人。'
+        ? (handoff.nextStep === '安排二面' ? '已通知岗位HR安排二面。' : handoff.nextStep === '安排加面' ? '已通知岗位HR安排加面。' : '已通知岗位HR填写Offer。')
+        : handoff.status === '已通知候选人' ? '不通过结果邮件已发送给候选人。'
           : handoff.status === '等待其他面试官评价' ? `已提交 ${result.submitted || 1}/${result.expected || 1} 份评价，等待其他面试官完成后再自动处理。`
             : handoff.status === '等待最终决策' ? '面试官意见存在分歧，暂不推送；请招聘负责人确认最终结论。'
               : handoff.status === '无需处理' ? '该结论已记录，不触发后续推送。'
@@ -4054,11 +4136,21 @@
       showTalentDialog(`<section class="rf-feedback-result"><i>✓</i><span>INTERVIEW FEEDBACK</span><h2>面试评价已提交</h2><p>${escapeHtml(followup)}</p><button class="btn-primary" data-rf-feedback-result-back type="button">返回面试评价工作台</button></section>`, 'wide');
       document.querySelector('[data-rf-feedback-result-back]')?.addEventListener('click', renderEvaluationWorkbench);
     } catch (error) {
-      if (message) { message.textContent = error.message || '评价提交失败'; message.classList.add('error'); }
+      restoreSnapshot();
+      const currentMessage = document.getElementById('rf-feedback-message');
+      if (currentMessage) {
+        currentMessage.textContent = `${error.message || '评价提交失败'}。已填写内容已保留，可修改后重新提交。`;
+        currentMessage.classList.add('error');
+      }
+      if (submitButton instanceof HTMLButtonElement) {
+        submitButton.disabled = false;
+        submitButton.classList.remove('is-busy');
+        submitButton.removeAttribute('aria-busy');
+      }
     }
   }
-  async function openEvaluationAggregate(interviewId){const token=talentDialogToken;try{const aggregate=await request(`api/interview-evaluations/interviews/${encodeURIComponent(interviewId)}/aggregate`);if(!isTalentDialogCurrent(token))return;showTalentDialog(`<header class="rf-dialog-head"><div><button class="rf-dialog-back" data-rf-evaluation-back>← 返回评价工作台</button><span>HIRING DECISION</span><h2>多人评价汇总与决策</h2><p>${Number(aggregate.count||0)}位面试官已提交；有分歧时必须在决策原因中说明如何处理。</p></div></header><div class="rf-assessment-score-summary"><article><span>综合均分</span><strong>${Number(aggregate.scores?.overall||0)}</strong><small>${Object.entries(aggregate.recommendations||{}).map(([k,v])=>`${k}${v}票`).join(' · ')}</small></article><article><span>意见分歧</span><strong>${Object.keys(aggregate.disagreements||{}).length?'有':'无'}</strong><small>${Object.entries(aggregate.disagreements||{}).map(([k,v])=>`${k}${v}票`).join(' · ')||'当前意见一致'}</small></article></div><div class="rf-review-evidence"><section><strong>共同优势</strong><ul>${(aggregate.strengths||[]).map(x=>`<li>${escapeHtml(x)}</li>`).join('')}</ul></section><section class="risk"><strong>风险与待核实项</strong><ul>${(aggregate.risks||[]).map(x=>`<li>${escapeHtml(x)}</li>`).join('')}</ul></section></div><div class="rf-dialog-form"><label><span>最终决策</span><select id="rf-final-decision"><option>通过</option><option>加面</option><option>储备</option><option>淘汰</option></select></label><label class="wide"><span>决策原因</span><textarea id="rf-final-decision-reason" placeholder="结合面试证据、测评结果和意见分歧说明决策依据"></textarea></label></div><div class="rf-dialog-actions"><button class="btn-primary" data-rf-submit-decision>确认招聘决策</button></div><p id="rf-decision-message" class="rf-dialog-message"></p>`,'wide');document.querySelector('[data-rf-evaluation-back]')?.addEventListener('click',renderEvaluationWorkbench);document.querySelector('[data-rf-submit-decision]')?.addEventListener('click',()=>submitInterviewDecision(interviewId))}catch(error){if(isTalentDialogCurrent(token))showTalentDialog(`<div class="rf-dialog-error"><strong>评价汇总失败</strong><p>${escapeHtml(conciseError(error))}</p></div>`)}}
-  async function submitInterviewDecision(interviewId){const payload={decision:document.getElementById('rf-final-decision')?.value,reason:document.getElementById('rf-final-decision-reason')?.value.trim(),operator:'当前用户'};const message=document.getElementById('rf-decision-message');try{await request(`api/interview-evaluations/interviews/${encodeURIComponent(interviewId)}/decision`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});await openEvaluationWorkbench()}catch(error){if(message){message.textContent=error.message||'决策保存失败';message.classList.add('error')}}}
+  async function openEvaluationAggregate(interviewId){const token=talentDialogToken;try{const aggregate=await request(`api/interview-evaluations/interviews/${encodeURIComponent(interviewId)}/aggregate`);if(!isTalentDialogCurrent(token))return;showTalentDialog(`<header class="rf-dialog-head"><div><button class="rf-dialog-back" data-rf-evaluation-back>← 返回评价工作台</button><span>HIRING DECISION</span><h2>多人评价汇总与决策</h2><p>${Number(aggregate.count||0)}位面试官已提交；有分歧时必须在决策原因中说明如何处理。</p></div></header><div class="rf-assessment-score-summary"><article><span>综合均分</span><strong>${Number(aggregate.scores?.overall||0)}</strong><small>${Object.entries(aggregate.recommendations||{}).map(([k,v])=>`${k}${v}票`).join(' · ')}</small></article><article><span>意见分歧</span><strong>${Object.keys(aggregate.disagreements||{}).length?'有':'无'}</strong><small>${Object.entries(aggregate.disagreements||{}).map(([k,v])=>`${k}${v}票`).join(' · ')||'当前意见一致'}</small></article></div><div class="rf-review-evidence"><section><strong>共同优势</strong><ul>${(aggregate.strengths||[]).map(x=>`<li>${escapeHtml(x)}</li>`).join('')}</ul></section><section class="risk"><strong>风险与待核实项</strong><ul>${(aggregate.risks||[]).map(x=>`<li>${escapeHtml(x)}</li>`).join('')}</ul></section></div><div class="rf-dialog-form"><label><span>最终决策</span><select id="rf-final-decision"><option>通过</option><option>不通过</option><option>二面</option><option>加面</option></select></label><label class="wide" id="rf-final-next-slots" hidden><span>下一场可安排时间</span><input id="rf-final-next-slot" maxlength="40" placeholder="二面或加面时必填，例如 10月29日 14:00"></label><label class="wide"><span>决策原因</span><textarea id="rf-final-decision-reason" placeholder="结合面试证据、测评结果和意见分歧说明决策依据"></textarea></label></div><div class="rf-dialog-actions"><button class="btn-primary" data-rf-submit-decision>确认招聘决策</button></div><p id="rf-decision-message" class="rf-dialog-message"></p>`,'wide');document.querySelector('[data-rf-evaluation-back]')?.addEventListener('click',renderEvaluationWorkbench);document.getElementById('rf-final-decision')?.addEventListener('change',event=>{const slots=document.getElementById('rf-final-next-slots');if(slots)slots.hidden=!['二面','加面'].includes(event.currentTarget.value)});document.querySelector('[data-rf-submit-decision]')?.addEventListener('click',()=>submitInterviewDecision(interviewId))}catch(error){if(isTalentDialogCurrent(token))showTalentDialog(`<div class="rf-dialog-error"><strong>评价汇总失败</strong><p>${escapeHtml(conciseError(error))}</p></div>`)}}
+  async function submitInterviewDecision(interviewId){const decision=document.getElementById('rf-final-decision')?.value;const nextSlot=document.getElementById('rf-final-next-slot')?.value.trim();const payload={decision,nextSlots:['二面','加面'].includes(decision)&&nextSlot?[nextSlot]:[],reason:document.getElementById('rf-final-decision-reason')?.value.trim(),operator:'当前用户'};const message=document.getElementById('rf-decision-message');if(['二面','加面'].includes(decision)&&!nextSlot){if(message){message.textContent='二面或加面请先填写下一场可安排时间';message.classList.add('error')}return}try{await request(`api/interview-evaluations/interviews/${encodeURIComponent(interviewId)}/decision`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});await openEvaluationWorkbench()}catch(error){if(message){message.textContent=error.message||'决策保存失败';message.classList.add('error')}}}
 
   function offerHonorificFromGender(gender) {
     const value = safeGender(gender);
@@ -5405,7 +5497,8 @@ if (!root) return;
       </header>
       <div class="interview-evaluation-layout">
         <form class="interview-evaluation-form" data-interview-evaluation-form>
-          <label><span>面试结论 <b>*</b></span><select name="recommendation" required><option value="">请选择面试结论</option>${['通过', '加面', '储备', '待讨论', '淘汰'].map((item) => `<option>${item}</option>`).join('')}</select></label>
+          <label><span>面试结论 <b>*</b></span><select name="recommendation" required><option value="">请选择面试结论</option>${['通过', '不通过', '二面', '加面'].map((item) => `<option>${item}</option>`).join('')}</select></label>
+          <label class="wide" data-interview-next-slots hidden><span>下一场可安排时间 <b>*</b></span><input name="nextSlot" maxlength="40" placeholder="二面或加面时必填，例如 10月29日 14:00"></label>
           <label><span>候选人评级 <b>*</b></span><select name="candidateRating" required><option value="">请选择评级</option>${['S', 'a', 'b', 'c', 'z'].map((item) => `<option value="${item}">${item}</option>`).join('')}</select></label>
           <label class="wide"><span>会议总结</span><textarea name="notes" rows="4" maxlength="20000" placeholder="粘贴会议总结后，可生成 AI 面试总结"></textarea><button class="btn-soft" type="button" data-interview-evaluation-extract>会议总结转评价</button><small data-interview-evaluation-extract-status>AI 只整理会议事实，不会覆盖面试官评价。</small></label>
           <label class="wide"><span>AI面试总结 <b>*</b></span><textarea name="aiSummary" rows="4" required placeholder="先生成并核对 AI 面试总结"></textarea></label>
@@ -5417,6 +5510,10 @@ if (!root) return;
     body.querySelector('[data-interview-evaluation-detail]')?.addEventListener('click', () => openInterviewScheduleDetail(appointment));
     const form = body.querySelector('[data-interview-evaluation-form]');
     bindInterviewEvaluationCounter(form?.interviewerEvaluation, form?.querySelector('[data-interview-evaluation-count]'));
+    form?.recommendation?.addEventListener('change', () => {
+      const slots = form.querySelector('[data-interview-next-slots]');
+      if (slots) slots.hidden = !['二面', '加面'].includes(form.recommendation.value);
+    });
     form?.querySelector('[data-interview-evaluation-extract]')?.addEventListener('click', () => extractScheduleInterviewFeedback(requestId, form));
     form?.addEventListener('submit', (event) => {
       event.preventDefault();
@@ -5438,7 +5535,10 @@ if (!root) return;
       const result = await requestCommunicationExtraction(`api/interview-evaluations/interviews/${encodeURIComponent(interviewId)}/feedback-extract`, notes, status);
       if (!form.isConnected) return;
       const extraction = result.extraction || {};
-      if (form.recommendation && extraction.recommendation) form.recommendation.value = extraction.recommendation;
+      if (form.recommendation && extraction.recommendation) {
+        form.recommendation.value = extraction.recommendation;
+        form.recommendation.dispatchEvent(new Event('change'));
+      }
       if (!String(extraction.comment || '').trim()) throw new Error('AI 未生成面试总结，请补充会议记录后重试。');
       form.aiSummary.value = extraction.comment;
       form.notes.dataset.convertedNotes = notes;
@@ -5461,6 +5561,7 @@ if (!root) return;
       candidateRating: form.candidateRating?.value || '',
       scores: {},
       recommendation: form.recommendation?.value || '',
+      nextSlots: ['二面', '加面'].includes(form.recommendation?.value) && form.nextSlot?.value.trim() ? [form.nextSlot.value.trim()] : [],
       otherRoles: '', strengths: '', risks: '',
       aiSummary: form.aiSummary?.value.trim() || '',
       interviewerEvaluation,
@@ -5476,8 +5577,8 @@ if (!root) return;
       if (message) message.textContent = '无法识别当前面试官身份，请重新登录后再提交。';
       return;
     }
-    if (!payload.recommendation || !payload.candidateRating || !summaryReady || evaluationLength < 50) {
-      if (message) message.textContent = !summaryReady ? '请先用会议总结生成并核对 AI 面试总结。' : evaluationLength < 50 ? `面试官评价至少 50 字，当前 ${evaluationLength} 字。` : '请完整填写面试结论和候选人评级。';
+    if (!payload.recommendation || !payload.candidateRating || !summaryReady || evaluationLength < 50 || (['二面', '加面'].includes(payload.recommendation) && !payload.nextSlots.length)) {
+      if (message) message.textContent = !summaryReady ? '请先用会议总结生成并核对 AI 面试总结。' : evaluationLength < 50 ? `面试官评价至少 50 字，当前 ${evaluationLength} 字。` : ['二面', '加面'].includes(payload.recommendation) && !payload.nextSlots.length ? '二面或加面请先填写下一场可安排时间。' : '请完整填写面试结论和候选人评级。';
       return;
     }
     try {
@@ -6550,7 +6651,7 @@ if (!root) return;
             <p data-public-record-status role="status" aria-live="polite">尚未修改，可随时保存过程记录。</p>
           </section>
           <section><div class="rf-public-form-title"><b>01</b><div><strong>面试结论</strong><small>AI会从记录中提取，可人工确认或修改。</small></div></div>
-            <div class="rf-public-preparation-grid"><label><span>面试结论 *</span><select name="recommendation" required><option value="">请选择</option><option>通过</option><option>淘汰</option><option>加面</option><option>储备</option><option>待讨论</option></select></label><label><span>候选人评级 *</span><select name="candidateRating" required><option value="">请选择评级</option><option value="S">S</option><option value="a">a</option><option value="b">b</option><option value="c">c</option><option value="z">z</option></select></label></div>
+            <div class="rf-public-preparation-grid"><label><span>面试结论 *</span><select name="recommendation" required><option value="">请选择</option><option>通过</option><option>不通过</option><option>二面</option><option>加面</option></select></label><label><span>候选人评级 *</span><select name="candidateRating" required><option value="">请选择评级</option><option value="S">S</option><option value="a">a</option><option value="b">b</option><option value="c">c</option><option value="z">z</option></select></label><label data-public-next-slots hidden><span>下一场可安排时间 *</span><input name="nextSlot" maxlength="40" placeholder="二面或加面时必填"></label></div>
           </section>
           <section><div class="rf-public-form-title"><b>02</b><div><strong>AI面试总结 *</strong><small>需先使用会议总结转换生成，可人工调整；不会代替面试官评价。</small></div></div>
             <label class="rf-public-textarea"><textarea name="aiSummary" rows="5" placeholder="请先点击“会议总结转评价”生成，再核对或修改"></textarea></label>
@@ -6589,6 +6690,10 @@ if (!root) return;
         }).catch((error) => { recordStatus.textContent = `草稿保存失败：${conciseError(error)}。请稍后重试。`; throw error; });
         return saveChain;
       };
+      evaluationForm.elements.recommendation?.addEventListener('change', () => {
+        const slots = evaluationForm.querySelector('[data-public-next-slots]');
+        if (slots) slots.hidden = !['二面', '加面'].includes(evaluationForm.elements.recommendation.value);
+      });
       evaluationForm.addEventListener('input', (event) => {
         if (submitting) return;
         if (event.target === evaluationForm.elements.transcript && convertedTranscript && evaluationForm.elements.transcript.value.trim() !== convertedTranscript) convertedTranscript = '';
@@ -6608,7 +6713,10 @@ if (!root) return;
           if (!evaluationForm.isConnected) return;
           const aiSummary = String(result.extraction?.comment || '').trim();
           if (!aiSummary) throw new Error('AI未生成面试总结，请补充会议记录后重试。');
-          if (result.extraction?.recommendation) evaluationForm.elements.recommendation.value = result.extraction.recommendation;
+          if (result.extraction?.recommendation) {
+            evaluationForm.elements.recommendation.value = result.extraction.recommendation;
+            evaluationForm.elements.recommendation.dispatchEvent(new Event('change'));
+          }
           evaluationForm.elements.aiSummary.value = aiSummary;
           convertedTranscript = transcript;
           await saveDraft();
@@ -6624,7 +6732,7 @@ if (!root) return;
         const button = form.querySelector('button[type="submit"]');
         const data = new FormData(form);
         const body = {
-          scores: {}, recommendation: String(data.get('recommendation') || ''), candidateRating: String(data.get('candidateRating') || ''),
+          scores: {}, recommendation: String(data.get('recommendation') || ''), nextSlots: ['二面', '加面'].includes(String(data.get('recommendation') || '')) && String(data.get('nextSlot') || '').trim() ? [String(data.get('nextSlot') || '').trim()] : [], candidateRating: String(data.get('candidateRating') || ''),
           aiSummary: String(data.get('aiSummary') || '').trim(), interviewerEvaluation: String(data.get('interviewerEvaluation') || '').trim(),
           otherRoles: '', strengths: '', risks: '', comment: String(data.get('interviewerEvaluation') || '').trim(),
           notes: String(data.get('transcript') || ''), questionAnswers: {}, evidence: { transcript: String(data.get('transcript') || '') },
@@ -6636,6 +6744,11 @@ if (!root) return;
           return;
         }
         const evaluationLength = countInterviewEvaluationCharacters(body.interviewerEvaluation);
+        if (['二面', '加面'].includes(body.recommendation) && !body.nextSlots.length) {
+          message.textContent = '二面或加面请先填写下一场可安排时间。';
+          form.elements.nextSlot?.focus();
+          return;
+        }
         if (evaluationLength < 50) {
           message.textContent = `面试官评价至少填写50字（不含空白），当前${evaluationLength}字。`;
           interviewerEvaluationField.focus();

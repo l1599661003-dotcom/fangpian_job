@@ -222,14 +222,16 @@ export interface TalentWecomShareInput {
 }
 
 export interface TalentPublicReviewInput {
-  decision: '适合' | '不适合' | '其他'
+  decision: '合适' | '不合适' | '推荐其他部门' | '适合' | '不适合' | '其他'
   departmentId?: string
   department?: string
   positionId?: string
   position?: string
+  targetPositionId?: string
   reviewer?: string
   reviewerUserId?: string
   comment?: string
+  availableSlots?: string[]
 }
 
 export interface TalentReviewViewer {
