@@ -4000,7 +4000,29 @@ body .rf-dialog.rf-feedback-dialog .rf-feedback-submit-actions {
 #page-resume-archive .rf-talent-command {
   display: grid !important;
   gap: 14px !important;
+  min-width: 0 !important;
   margin: 0 0 16px !important;
+}
+
+#page-resume-archive .rf-talent-filter-heading,
+#page-resume-archive .rf-talent-filter-actions {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  gap: 10px !important;
+  min-width: 0 !important;
+}
+
+#page-resume-archive .rf-talent-filter-heading {
+  justify-content: space-between !important;
+}
+
+#page-resume-archive .rf-talent-filter-heading > div:first-child {
+  min-width: 0 !important;
+}
+
+#page-resume-archive .rf-talent-filter-actions > button {
+  min-height: 40px !important;
 }
 
 #page-resume-archive .rf-talent-metrics {
@@ -4087,10 +4109,14 @@ body .rf-dialog.rf-feedback-dialog .rf-feedback-submit-actions {
   font-weight: 650 !important;
 }
 
-@media (max-width: 1180px) {
+@media (max-width: 1280px) {
   #page-resume-archive .rf-talent-metrics,
   #page-resume-archive .rf-talent-filter-grid {
     grid-template-columns: 1fr 1fr !important;
+  }
+
+  #page-resume-archive .rf-talent-metrics strong {
+    font-size: 26px !important;
   }
 }
 
