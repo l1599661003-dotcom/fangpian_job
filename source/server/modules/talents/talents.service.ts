@@ -3,7 +3,7 @@ import { createHash, randomBytes, randomUUID } from 'node:crypto'
 import { llm } from '../../platform/llm'
 import { teable, TeableRecord } from '../../platform/teable'
 import { DatabaseService } from '../database/database.service'
-import { MessagesService } from '../messages/messages.service'
+import { appendWecomMentions, MessagesService } from '../messages/messages.service'
 import { appFlowUrl, interviewQuestionsUrl, interviewScheduleUrl } from '../../platform/app-links'
 import { CommunicationTemplateInput, CommunicationTranscriptExtraction, PositionRematchInput, ResumeTalentInput, TalentAnalysis, TalentAnalysisCorrectionInput, TalentAnalysisRerunInput, TalentArchiveDeleteInput, TalentBatchInput, TalentBirthYearInput, TalentCommunicationInput, TalentContactLockInput, TalentMatchCorrectionInput, TalentMergeInput, TalentNameInput, TalentOwnershipInput, TalentPublicReviewInput, TalentReviewInput, TalentReviewViewer, TalentWecomShareInput } from './talent.types'
 import { RecruitmentService } from '../recruitment/recruitment.service'
@@ -936,18 +936,12 @@ export class TalentsService implements OnModuleInit {
 
     if (sendGroup) {
       try {
+        const mentionedList = [...new Set((input.mentionedList || []).map(text).filter(Boolean))]
         const response = await fetch(`https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=${encodeURIComponent(input.webhookKey)}`, {
-          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ msgtype: 'markdown', markdown: { content: input.markdown } }),
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ msgtype: 'markdown', markdown: { content: appendWecomMentions(input.markdown, mentionedList) } }),
         })
         const result = await response.json().catch(() => ({} as any))
         if (!response.ok || result?.errcode !== 0) throw new Error(text(result?.errmsg) || `未收到企微成功回执（HTTP ${response.status}）`)
-        const mentionedList = [...new Set((input.mentionedList || []).map(text).filter(Boolean))]
-        if (mentionedList.length) {
-          await fetch(`https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=${encodeURIComponent(input.webhookKey)}`, {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ msgtype: 'text', text: { content: '请岗位负责人查看上面这份简历。', mentioned_list: mentionedList } }),
-          }).catch((error) => console.error(`[评审群提醒] 负责人提醒失败: ${error instanceof Error ? error.message : String(error)}`))
-        }
         delivered.push({ externalId: text(result?.msgid), message: '已推送企微群，等待业务部门反馈' })
       } catch (error) {
         failed.push(`企微群推送失败：${error instanceof Error ? error.message : String(error)}`)

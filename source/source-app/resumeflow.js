@@ -3270,12 +3270,25 @@
     return { date: start.slice(0, 10), currentStartTime: start.slice(11, 16) };
   }
   function interviewStartOptions(selected) {
-    return '<option value="">请选择</option>' + Array.from({ length: 96 }, (_, index) => {
+    const options = Array.from({ length: 96 }, (_, index) => {
       const hour = String(Math.floor(index / 4)).padStart(2, '0');
       const minute = String((index % 4) * 15).padStart(2, '0');
-      const value = `${hour}:${minute}`;
-      return `<option value="${value}"${value === selected ? ' selected' : ''}>${value}</option>`;
-    }).join('');
+      return `${hour}:${minute}`;
+    });
+    const current = options.includes(selected) ? selected : '';
+    return '<option value="">请选择</option>' + options.map((value) => `<option value="${value}"${value === current ? ' selected' : ''}>${value}</option>`).join('');
+  }
+  function refreshInterviewStartOptions() {
+    const dateInput = document.getElementById('rf-interview-date');
+    const timeSelect = document.getElementById('rf-interview-time');
+    if (!dateInput || !timeSelect) return;
+    dateInput.removeAttribute('min');
+    dateInput.removeAttribute('max');
+    const today = localDateValue(new Date());
+    const selectedTime = timeSelect.value;
+    timeSelect.innerHTML = interviewStartOptions(selectedTime);
+    timeSelect.value = selectedTime;
+    timeSelect.dataset.defaultOption = !selectedTime && dateInput.value === today ? upcomingInterviewTimeRange().currentStartTime : (selectedTime || '');
   }
   function interviewDurationOptions(selectedMinutes) {
     return '<option value="">请选择</option>' + [
@@ -3309,7 +3322,6 @@
     const end = shanghaiDateTimeMs(endAt);
     if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start) return '结束时间必须晚于开始时间。';
     if (end - start > MAX_SINGLE_INTERVIEW_DURATION_MS) return '单场面试时段最长 8 小时；这里不是多日日期范围，请选择具体的开始和结束时间。';
-    if (start <= Date.now()) return '开始时间已过去或已开始，请选择当前时间之后的具体时段再查询会议室。';
     return '';
   }
 
@@ -3455,7 +3467,7 @@
       document.querySelector('.rf-dialog-form')?.classList.add('rf-schedule-main');
       const startLabel = document.getElementById('rf-interview-start')?.closest('label');
       const endLabel = document.getElementById('rf-interview-end')?.closest('label');
-      startLabel?.replaceWith(Object.assign(document.createElement('section'), { className: 'wide rf-schedule-time', innerHTML: `<label data-schedule-field="date"><span>面试日期 <b>*</b></span><input id="rf-interview-date" type="date" min="${localDateValue(new Date())}" value="${defaultDate}" required><small class="rf-schedule-error" hidden></small></label><label data-schedule-field="time"><span>开始时间（北京时间） <b>*</b></span><select id="rf-interview-time" required data-placeholder="请选择开始时间">${interviewStartOptions('')}</select><small class="rf-schedule-error" hidden></small></label><label data-schedule-field="duration"><span>面试时长 <b>*</b></span><select id="rf-interview-duration" required data-placeholder="请选择面试时长">${interviewDurationOptions(0)}</select><small class="rf-schedule-error" hidden></small></label><input id="rf-interview-start" type="hidden"><input id="rf-interview-end" type="hidden">` }));
+      startLabel?.replaceWith(Object.assign(document.createElement('section'), { className: 'wide rf-schedule-time', innerHTML: `<label data-schedule-field="date"><span>面试日期 <b>*</b></span><input id="rf-interview-date" type="date" value="${defaultDate}" required><small class="rf-schedule-error" hidden></small></label><label data-schedule-field="time"><span>开始时间（北京时间） <b>*</b></span><select id="rf-interview-time" required data-placeholder="请选择开始时间" data-default-option="${defaultInterviewTime.currentStartTime}">${interviewStartOptions('')}</select><small class="rf-schedule-error" hidden></small></label><label data-schedule-field="duration"><span>面试时长 <b>*</b></span><select id="rf-interview-duration" required data-placeholder="请选择面试时长">${interviewDurationOptions(0)}</select><small class="rf-schedule-error" hidden></small></label><input id="rf-interview-start" type="hidden"><input id="rf-interview-end" type="hidden">` }));
       endLabel?.remove();
       const modeSelect = document.getElementById('rf-interview-mode');
       if (modeSelect) {
@@ -3472,13 +3484,7 @@
       const roundLabel = document.getElementById('rf-interview-round')?.closest('label');
       const roundTitle = roundLabel?.querySelector('span');
       if (roundTitle && !roundTitle.querySelector('b')) roundTitle.insertAdjacentHTML('beforeend', ' <b>*</b>');
-      document.getElementById('rf-interview-time')?.addEventListener('pointerdown', () => {
-        const startSelect = document.getElementById('rf-interview-time');
-        if (!startSelect?.value) {
-          startSelect.value = upcomingInterviewTimeRange().currentStartTime;
-          syncInterviewTimeFields();
-        }
-      });
+      document.getElementById('rf-interview-date')?.addEventListener('change', refreshInterviewStartOptions);
       document.querySelector('.rf-schedule-main')?.addEventListener('input', (event) => clearScheduleFieldError(event.target));
       document.querySelector('.rf-schedule-main')?.addEventListener('change', (event) => clearScheduleFieldError(event.target));
       const scheduleHeader = document.querySelector('.rf-dialog-head');

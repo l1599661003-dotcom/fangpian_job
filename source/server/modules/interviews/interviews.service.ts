@@ -1159,9 +1159,7 @@ export class InterviewsService {
   private timeRange(startAt:string,endAt:string){const start=new Date(startAt),end=new Date(endAt);if(!Number.isFinite(start.getTime())||!Number.isFinite(end.getTime())||end<=start)throw new BadRequestException('面试开始和结束时间无效');return{start,end}}
   private interviewRange(startAt:string,endAt:string){const range=this.timeRange(startAt,endAt);if(range.end.getTime()-range.start.getTime()>MAX_SINGLE_INTERVIEW_DURATION_MS)throw new BadRequestException('单场面试时段最长 8 小时；此处不是多日日期范围，请选择具体的开始和结束时间');return range}
   private scheduledInterviewRange(startAt:string,endAt:string){
-    const range=this.interviewRange(startAt,endAt)
-    if(range.start.getTime()<=Date.now())throw new BadRequestException('面试开始时间已过去或已开始，请选择当前时间之后的具体时段再预约')
-    return range
+    return this.interviewRange(startAt,endAt)
   }
   private meetingRoomReservationRange(start:Date,end:Date){
     const slot=30*60_000,reservationStart=new Date(Math.floor(start.getTime()/slot)*slot),reservationEnd=new Date(Math.ceil(end.getTime()/slot)*slot)

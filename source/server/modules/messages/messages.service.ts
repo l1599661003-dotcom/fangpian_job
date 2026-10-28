@@ -1,5 +1,6 @@
 import{BadRequestException,ConflictException,Injectable,NotFoundException,ServiceUnavailableException}from'@nestjs/common';import{randomUUID}from'node:crypto';import{im}from'../../platform/im';import{tianji}from'../../platform/tianji';import{teable,TeableRecord}from'../../platform/teable';import{tianjiWeixinMessage}from'../../platform/tianji-weixin-message';import{DatabaseService}from'../database/database.service';import{MessagePreviewInput,MessageRuleInput,MessageTemplateInput}from'./message.types';
 const now=()=>new Date().toISOString(),id=(p:string)=>`${p}_${randomUUID().replace(/-/g,'').slice(0,20)}`,text=(v:unknown)=>String(v??'').trim(),num=(v:unknown)=>Number.isFinite(Number(v))?Number(v):0,json=<T>(v:unknown,f:T):T=>{try{return v?JSON.parse(String(v))as T:f}catch{return f}};
+export function appendWecomMentions(markdown:string,userIds:string[]){const mentions=[...new Set(userIds.map(text).filter(Boolean))].map(userId=>`<@${userId}>`).join(' ');return mentions?`${markdown}\n\n${mentions}`:markdown}
 export function sanitizeMessageContent(content:string,channel:string){const fields:string[]=[];let value=content;if(channel==='企业微信群'){const rules:Array<[string,RegExp,string]>=[['手机号',/(?<!\d)1[3-9]\d{9}(?!\d)/g,'[手机号已隐藏]'],['邮箱',/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g,'[邮箱已隐藏]'],['微信号',/(微信(?:号)?[：:\s]+)[A-Za-z][\w-]{5,19}/gi,'$1[已隐藏]'],['身份证号',/(?<!\d)\d{17}[\dXx](?!\d)/g,'[身份证已隐藏]'],['薪酬信息',/(?:月薪|薪资|Offer薪酬|基本月薪)[：:\s]*\d+(?:\.\d+)?(?:元|k|K)?/g,'[薪酬信息已隐藏]'],['背调信息',/(?:背调|背景调查)[：:\s]*[^\n]{1,80}/g,'[背调信息已隐藏]'],['内部评价',/(?:内部评价|淘汰原因|风险结论)[：:\s]*[^\n]{1,100}/g,'[内部评价已隐藏]']];for(const[name,pattern,replacement]of rules){if(pattern.test(value)){fields.push(name);pattern.lastIndex=0;value=value.replace(pattern,replacement)}}}return{content:value.trim().slice(0,3900),fields}}
 @Injectable()export class MessagesService{constructor(private readonly database:DatabaseService){}private table(n:string){return this.database.requireTableId(n)}
 private flowNotifyLocks = new Map<string, Promise<void>>()
@@ -38,14 +39,8 @@ async notifyFlowEvent(input:{category:string;candidateId?:string;objectId?:strin
     try {
       const mentionedList = [...new Set((input.mentionedList || []).map(text).filter(Boolean))]
       const response = await fetch(`https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=${encodeURIComponent(webhookKey)}`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ msgtype: 'markdown', markdown: { content: input.markdown } }),
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ msgtype: 'markdown', markdown: { content: appendWecomMentions(input.markdown, mentionedList) } }),
       })
-      if (mentionedList.length) {
-        await fetch(`https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=${encodeURIComponent(webhookKey)}`, {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ msgtype: 'text', text: { content: '请岗位负责人查看上面这份简历。', mentioned_list: mentionedList } }),
-        }).catch((error) => console.error(`[流程通知] 负责人提醒失败: ${error instanceof Error ? error.message : String(error)}`))
-      }
       const result = await response.json().catch(() => ({} as any))
       if (!response.ok || result?.errcode !== 0) throw new Error(text(result?.errmsg) || `未收到企微成功回执（HTTP ${response.status}）`)
       await teable.createRecord(this.table('recruitment_message_send_events'), {

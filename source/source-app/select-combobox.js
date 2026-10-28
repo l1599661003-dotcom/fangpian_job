@@ -110,15 +110,19 @@
       const query = typed ? input.value.trim().toLowerCase() : '';
       return [...select.options].filter((option) => {
         const searchText = [optionLabel(option), option.value, option.dataset.search || ''].join(' ').toLowerCase();
-        return !query || searchText.includes(query);
+        return !option.disabled && (!query || searchText.includes(query));
       });
     };
 
     const initialActiveIndex = () => {
       const options = visibleOptions();
-      const selectedIndex = select.multiple || typed ? -1 : options.findIndex((option) => option.selected);
+      const selectedIndex = select.multiple || typed ? -1 : options.findIndex((option) => option.selected && option.value !== '');
       if (selectedIndex >= 0) return selectedIndex;
-      return options.length ? 0 : -1;
+      const preferred = select.dataset.defaultOption || '';
+      const preferredIndex = preferred ? options.findIndex((option) => option.value === preferred) : -1;
+      if (preferredIndex >= 0) return preferredIndex;
+      const firstValue = options.findIndex((option) => option.value !== '');
+      return firstValue >= 0 ? firstValue : (options.length ? 0 : -1);
     };
 
     const resetQuery = () => {
@@ -203,8 +207,13 @@
         empty.textContent = '没有匹配项，请换个关键词';
         list.append(empty);
       }
-      setActive(Math.max(0, activeIndex), { scroll: !keepPosition });
+      const nextActive = Math.max(0, activeIndex);
+      setActive(nextActive, { scroll: false });
       if (keepPosition) list.scrollTop = scrollTop;
+      else if (nextActive >= 0) {
+        const activeItem = list.querySelector('.rf-combobox-option.is-active');
+        if (activeItem) list.scrollTop = Math.max(0, activeItem.offsetTop - (list.clientHeight - activeItem.offsetHeight) / 2);
+      }
     }
 
     function renderSelected() {
@@ -289,9 +298,9 @@
     const instance = { select, wrapper, close: () => setOpen(false) };
     comboboxes.add(instance);
     new MutationObserver(() => {
-      activeIndex = -1;
+      if (!open) activeIndex = initialActiveIndex();
       syncDisplay();
-      if (open) renderOptions();
+      if (open) renderOptions({ keepPosition: true });
     }).observe(select, { childList: true, subtree: true, attributes: true, attributeFilter: ['selected', 'disabled', 'label'] });
 
     syncDisplay();
