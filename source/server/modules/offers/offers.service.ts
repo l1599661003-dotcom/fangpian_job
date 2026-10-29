@@ -1021,28 +1021,33 @@ export class OffersService {
     }
     put(first, values.reportingTo, 190, 537, bodySize)
     const startParts = dateParts(values.startDate)
+    const centerInSlot = (page: any, value: string, left: number, right: number, y: number, size = 10.5) => {
+      const width = font.widthOfTextAtSize(value, size)
+      put(page, value, left + Math.max(0, (right - left - width) / 2), y, size)
+    }
     put(first, startParts[0], 184, 463, 10.5)
-    put(first, startParts[1], 219, 463, 10.5)
-    put(first, startParts[2], 254, 463, 10.5)
+    centerInSlot(first, startParts[1], 228, 248, 463)
+    centerInSlot(first, startParts[2], 262, 286, 463)
     const salaryExtras: string[] = []
     if (values.performanceIncluded) salaryExtras.push(values.performanceSalary)
     if (values.commissionIncluded) salaryExtras.push(values.commissionSalary)
     const probationText = text(values.probationMonths)
     const salarySummary = `底薪${values.monthlySalary}元${salaryExtras.length ? `+${salaryExtras.join('+')}` : ''}${probationText ? `，${probationText}` : ''}。`
     const salaryLines = wrapText(salarySummary, 386, bodySize).slice(0, 3)
-    cover(first, 88, 322, 432, 50)
-    salaryLines.forEach((line, index) => put(first, line, 124, 352 - index * 15, bodySize))
+    cover(first, 88, 322, 432, 58)
+    const salaryTop = 368
+    salaryLines.forEach((line, index) => put(first, line, 124, salaryTop - index * 15, bodySize))
     const deadlineParts = dateParts(values.deadlineDate)
     put(second, deadlineParts[0], 137, 593, 10.5)
-    put(second, deadlineParts[1], 185, 593, 10.5)
-    put(second, deadlineParts[2], 220, 593, 10.5)
+    centerInSlot(second, deadlineParts[1], 178, 198, 593)
+    centerInSlot(second, deadlineParts[2], 214, 236, 593)
     const validFrom = dateParts(values.validFrom), validTo = dateParts(values.validTo)
     put(second, validFrom[0], 205, 420, 10.5)
-    put(second, validFrom[1], 252, 420, 10.5)
-    put(second, validFrom[2], 288, 420, 10.5)
+    centerInSlot(second, validFrom[1], 246, 266, 420)
+    centerInSlot(second, validFrom[2], 282, 304, 420)
     put(second, validTo[0], 331, 420, 10.5)
-    put(second, validTo[1], 374, 420, 10.5)
-    put(second, validTo[2], 407, 420, 10.5)
+    centerInSlot(second, validTo[1], 368, 388, 420)
+    centerInSlot(second, validTo[2], 402, 424, 420)
     return Buffer.from(await document.save())
   }
 
