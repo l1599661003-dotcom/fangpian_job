@@ -15,6 +15,7 @@ const featureCards = [
   { tag: 'LIMIT', title: '请求限制', description: '单文件最大 10MB，支持 PDF、Word、图片与文本格式。' },
   { tag: 'ERROR', title: '错误码', description: '400 参数或格式错误，401 鉴权失效，404 任务不存在。' },
   { tag: 'RESULT', title: '结果结构', description: '返回候选人字段、源文件地址和数据库记录 ID。' },
+  { tag: 'DEMAND', title: '月度招聘需求', description: '同一把长期 Key 可查询岗位需求、完成数和缺口，不含候选人姓名。' },
 ];
 
 let selectedCodeTab = 'curl';
@@ -95,7 +96,7 @@ const ApiDocumentationPage = {
     const examples = computed(() => {
       const exampleKey = apiConfig.value?.apiKey || '请进入开发者中心获取 API Key';
       return {
-        curl: `# 1. 先验证服务地址和 API Key\ncurl '${base.value}/api/public/resumes/formats' \\\n  -H 'X-API-Key: ${exampleKey}' \\\n  -H 'Accept: application/json'\n\n# 2. 上传任意支持格式的简历\ncurl -X POST '${base.value}/api/public/resumes/parse' \\\n  -H 'X-API-Key: ${exampleKey}' \\\n  -H 'Accept: application/json' \\\n  -F 'file=@/path/to/resume.docx'\n\n# 3. 查询解析结果\ncurl '${base.value}/api/public/resumes/jobs/job_xxx' \\\n  -H 'X-API-Key: ${exampleKey}'`,
+        curl: `# 1. 先验证服务地址和 API Key\ncurl '${base.value}/api/public/resumes/formats' \\\n  -H 'X-API-Key: ${exampleKey}' \\\n  -H 'Accept: application/json'\n\n# 2. 上传任意支持格式的简历\ncurl -X POST '${base.value}/api/public/resumes/parse' \\\n  -H 'X-API-Key: ${exampleKey}' \\\n  -H 'Accept: application/json' \\\n  -F 'file=@/path/to/resume.docx'\n\n# 3. 查询解析结果\ncurl '${base.value}/api/public/resumes/jobs/job_xxx' \\\n  -H 'X-API-Key: ${exampleKey}'\n\n# 4. 查询月度招聘需求（month 可省略，默认当前月；period=day|week|month）\ncurl '${base.value}/api/public/recruitment/monthly-hiring?month=2026-10&period=month' \\\n  -H 'X-API-Key: ${exampleKey}' \\\n  -H 'Accept: application/json'`,
         python: `import os\nimport time\nimport requests\n\nbase_url = '${base.value}'\napi_key = os.environ['RESUME_API_KEY'].strip()\nheaders = {'X-API-Key': api_key, 'Accept': 'application/json'}\n\ncheck = requests.get(base_url + '/api/public/resumes/formats', headers=headers, timeout=30)\ncheck.raise_for_status()\n\nwith open(file_path, 'rb') as file:\n    response = requests.post(\n        base_url + '/api/public/resumes/parse',\n        headers=headers,\n        files={'file': (os.path.basename(file_path), file)},\n        timeout=60,\n    )\n    response.raise_for_status()\n    started = response.json()\n\nwhile True:\n    response = requests.get(\n        base_url + '/api/public/resumes/jobs/' + started['jobId'],\n        headers=headers,\n        timeout=30,\n    )\n    response.raise_for_status()\n    job = response.json()\n    if job['status'] in ('done', 'failed'):\n        break\n    time.sleep(2)`,
         xbot: `推荐配置：\n1. 在 XBot 全局变量中创建 resume_api_key，粘贴本页当前 Key\n2. 删除“调用流程”节点里写死的旧 api_key，避免旧值覆盖全局变量\n3. 服务地址固定为：${base.value}\n4. main(args) 中先执行 file_path = _resolve_file_path(args)\n5. 再执行 api_key = _get_api_key(args)，优先读取全局变量 resume_api_key\n6. 上传前 GET /api/public/resumes/formats，并在 Header 传 X-API-Key\n7. 校验成功后 POST /api/public/resumes/parse，multipart 文件字段名为 file\n8. 保存 jobId，每隔 1–3 秒 GET /api/public/resumes/jobs/{jobId}\n9. status 为 done 时读取 data，为 failed 时读取 error\n\n完整可用代码：project-docs/xbot-resume-parser.py`,
       };
