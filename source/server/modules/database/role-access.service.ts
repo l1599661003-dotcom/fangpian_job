@@ -523,6 +523,7 @@ export class RoleAccessService {
   }
 
   canAccessTalent(profile: RoleAccessProfile, context: TalentAccessContext) {
+    if (context.stage === '待HR审核' && this.hasAction(profile, 'review_candidate')) return true
     if (profile.dataScopes.some((scope) => scope.type === 'all')) return true
     return profile.dataScopes.some((scope) => {
       if (scope.type === 'deidentified_all') return true

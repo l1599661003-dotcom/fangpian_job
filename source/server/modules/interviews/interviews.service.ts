@@ -8,7 +8,7 @@ import { DatabaseService } from '../database/database.service'
 import { MessagesService } from '../messages/messages.service'
 import { appFlowUrl, interviewScheduleUrl } from '../../platform/app-links'
 import { candidateEmailCard } from '../../platform/candidate-email'
-import { AvailabilityInput, InterviewAppointmentInput, InterviewerInput, MeetingRoomAvailabilityQuery, MeetingRoomInput } from './interview.types'
+import { AvailabilityInput, GroupInterviewInput, InterviewAppointmentInput, InterviewerInput, MeetingRoomAvailabilityQuery, MeetingRoomInput } from './interview.types'
 import { EvaluationService } from './evaluation.service'
 import { structuredInterviewTargetCount } from './interview-question-blueprint'
 import { canReadInterview, InterviewAccessScope } from './interview-access'
@@ -22,7 +22,7 @@ const json = <T>(value: unknown, fallback: T): T => { try { return value ? JSON.
 const hash = (value: string) => createHash('sha256').update(value).digest('hex')
 const MAX_SINGLE_INTERVIEW_DURATION_MS = 8 * 60 * 60 * 1000
 const isWecomAuthorizationExpired = (message: string) => /\b850003\b|authorization\s+expired|企微认证已过期/i.test(message)
-type TianjiRoomBookingSnapshot = { meetingRoomId: string; booker: string; startTime: number; endTime: number; subject: string; attendees: string[] }
+type TianjiRoomBookingSnapshot = { meetingRoomId: string; booker: string; startTime: number; endTime: number; subject: string; attendees: string[]; scheduleId?: string }
 type TianjiMeetingSnapshot = { meetingId: string; meetingLink: string; adminUserId: string; startTime: number; endTime: number; attendees: string[] }
 function sameMeetingSchedule(meeting: TianjiMeetingSnapshot, requested: Pick<TianjiMeetingSnapshot, 'startTime' | 'endTime' | 'adminUserId' | 'attendees'>) {
   return Boolean(meeting.meetingId && meeting.meetingLink) && meeting.startTime === requested.startTime && meeting.endTime === requested.endTime && meeting.adminUserId === requested.adminUserId && JSON.stringify([...(meeting.attendees || [])].sort()) === JSON.stringify([...requested.attendees].sort())
@@ -392,10 +392,48 @@ export class InterviewsService {
     ])
     return { appointment:this.mapAppointment(row,candidates,directory.interviewers,rooms) }
   }
+  async createGroupAppointments(input: GroupInterviewInput, progress: (message: string) => void = () => {}) {
+    const candidateIds = [...new Set((input.candidateIds || []).map(text).filter(Boolean))]
+    if (candidateIds.length < 2) throw new BadRequestException('群面至少选择两位候选人')
+    if (candidateIds.length > 30) throw new BadRequestException('一次群面最多选择 30 位候选人')
+    const groupId = id('group')
+    const created: Array<{ candidateId: string; interviewId: string }> = []
+    let sharedBooking: { bookingId: string; scheduleId: string; snapshot: TianjiRoomBookingSnapshot } | null = null
+    progress(`正在创建群面，共 ${candidateIds.length} 位候选人…`)
+    for (const [index, candidateId] of candidateIds.entries()) {
+      progress(`正在保存第 ${index + 1}/${candidateIds.length} 位候选人…`)
+      try {
+        const result = await this.createAppointment({
+          ...input,
+          candidateId,
+          groupId,
+          sharedRoom: index > 0,
+          meetingRoomSelectionId: index === 0 ? input.meetingRoomSelectionId : '',
+          sharedRoomBooking: sharedBooking || undefined,
+        }, () => {})
+        if (result.roomBooking) sharedBooking = result.roomBooking
+        created.push({ candidateId, interviewId: result.interviewId })
+      } catch (error) {
+        for (const item of created.reverse()) {
+          const row = await this.findInterview(item.interviewId).catch(() => null)
+          if (row) await this.cancelAppointment(item.interviewId, { reason: '群面创建未完成，已自动取消已保存的候选人', operator: text(input.operator) || '当前用户' }).catch(() => {})
+        }
+        const message = error instanceof Error ? error.message : String(error)
+        throw new BadRequestException(`群面在第 ${index + 1} 位候选人处失败，已取消本次已保存记录：${message}`)
+      }
+    }
+    return { groupId, total: created.length, interviews: created }
+  }
+
   async createAppointment(input: InterviewAppointmentInput, progress: (message: string) => void = () => {}) {
     progress('正在核对候选人与面试官信息…')
     const { start, end } = this.scheduledInterviewRange(input.startAt, input.endAt)
-    const reservation = this.meetingRoomReservationRange(start, end)
+    const historical = start.getTime() <= Date.now()
+    const reservation = historical ? { start, end } : this.meetingRoomReservationRange(start, end)
+    if (historical) {
+      input = { ...input, meetingRoomId: '', meetingRoomSelectionId: '', location: text(input.location) }
+      if (!input.location) throw new BadRequestException('补录已过去的面试时，请手动填写当时使用的会议室')
+    }
     if (!input.interviewerIds?.length) throw new BadRequestException('请选择一位面试官')
     const directory = await this.listInterviewers()
     const legacyPool = input.interviewerIds.every(value => directory.interviewers.some(item => item.id === text(value)))
@@ -411,8 +449,8 @@ export class InterviewsService {
       teable.listByField(this.table('recruitment_applications'), '候选人ID', input.candidateId, 1000),
     ])
     const candidate = candidates.find((row) => text(row.fields['候选人ID']) === input.candidateId || row.id === input.candidateId); if (!candidate) throw new NotFoundException('候选人不存在')
-    if (input.sendCandidateEmail !== false && !text(candidate.fields['邮箱'])) throw new BadRequestException('该候选人没有可用邮箱，无法发送面试邀请；请先在人才档案补充邮箱，或选择不发送邮件')
-    const directRoom = input.meetingRoomSelectionId
+    if (!historical && input.sendCandidateEmail !== false && !text(candidate.fields['邮箱'])) throw new BadRequestException('该候选人没有可用邮箱，无法发送面试邀请；请先在人才档案补充邮箱，或选择不发送邮件')
+    const directRoom = !historical && input.meetingRoomSelectionId
       ? await this.resolveRoomSelection(input.meetingRoomSelectionId, text(input.meetingRoomId), reservation.start, reservation.end)
       : undefined
     if (directRoom) input = { ...input, meetingRoomId: directRoom.roomId }
@@ -426,47 +464,55 @@ export class InterviewsService {
       const token = randomBytes(32).toString('base64url')
       const expiresAt = new Date(start.getTime() + 2 * 3_600_000).toISOString()
       await teable.updateRecord(this.table('recruitment_interviews'), recoverable.id, {
-        应聘记录ID: text(application?.fields['应聘记录ID']) || text(recoverable.fields['应聘记录ID']), 职位ID: text(input.positionId) || text(application?.fields['职位ID']) || text(recoverable.fields['职位ID']), 面试轮次: input.round, 面试类型: text(input.type) || text(recoverable.fields['面试类型']) || '招聘面试', 面试方式: normalizeInterviewMode(input.mode), 开始时间: start.toISOString(), 结束时间: end.toISOString(), 时区: text(input.timezone) || 'Asia/Shanghai', 面试地点: text(input.location) || '山东省烟台市莱山区方片新媒体', 会议地址: text(input.meetingUrl), 会议室ID: text(input.meetingRoomId), 面试官用户IDJSON: JSON.stringify(input.interviewerIds), 面试官姓名JSON: JSON.stringify(selected.map((item) => item!.name)), 组织者用户ID: text(input.organizerUserId) || text(recoverable.fields['组织者用户ID']), 面试状态: '已确认', 候选人确认状态: '已确认', 候选人确认时间: text(recoverable.fields['候选人确认时间']) || timestamp, 签到状态: text(recoverable.fields['签到状态']) || '未签到', 评价状态: text(recoverable.fields['评价状态']) || '未开始', 面试题状态: ['已发布','生成中'].includes(text(recoverable.fields['面试题状态'])) ? text(recoverable.fields['面试题状态']) : '待生成', 备注: text(input.note), 候选人操作Token哈希: hash(token), Token前缀: token.slice(0,8), 操作链接过期时间: expiresAt, 同步状态: '待同步', 提醒状态: text(recoverable.fields['提醒状态']) || '待提醒', 更新时间: timestamp,
+        应聘记录ID: text(application?.fields['应聘记录ID']) || text(recoverable.fields['应聘记录ID']), 职位ID: text(input.positionId) || text(application?.fields['职位ID']) || text(recoverable.fields['职位ID']), 面试轮次: input.round, 面试类型: text(input.type) || text(recoverable.fields['面试类型']) || '招聘面试', 面试方式: normalizeInterviewMode(input.mode), 开始时间: start.toISOString(), 结束时间: end.toISOString(), 时区: text(input.timezone) || 'Asia/Shanghai', 面试地点: text(input.location) || '山东省烟台市莱山区方片新媒体', 会议地址: text(input.meetingUrl), 会议室ID: text(input.meetingRoomId), 面试官用户IDJSON: JSON.stringify(input.interviewerIds), 面试官姓名JSON: JSON.stringify(selected.map((item) => item!.name)), 组织者用户ID: text(input.organizerUserId) || text(recoverable.fields['组织者用户ID']), 面试状态: '已确认', 候选人确认状态: '已确认', 候选人确认时间: text(recoverable.fields['候选人确认时间']) || timestamp, 签到状态: text(recoverable.fields['签到状态']) || '未签到', 评价状态: text(recoverable.fields['评价状态']) || '未开始', 面试题状态: ['已发布','生成中'].includes(text(recoverable.fields['面试题状态'])) ? text(recoverable.fields['面试题状态']) : '待生成', 备注: text(input.note), 候选人操作Token哈希: hash(token), Token前缀: token.slice(0,8), 操作链接过期时间: expiresAt, 同步状态: historical ? '无需同步' : '待同步', 提醒状态: text(recoverable.fields['提醒状态']) || '待提醒', 更新时间: timestamp,
       })
-      await teable.updateRecord(this.table('recruitment_interviews'), recoverable.id, { 候选人邮件发送选项: input.sendCandidateEmail === false ? '否' : '是' })
-      progress('正在重试企业微信日程并发送候选人邮件…')
-      const sync = await this.syncAppointment(interviewId, text(recoverable.fields['外部预约ID']) ? '修改预约' : '创建预约', text(input.operator) || '当前用户', { attendeeIds, roomExternalId: directRoom?.externalResourceId })
-      if (sync.status !== '已同步') throw new ServiceUnavailableException(sync.roomRejected ? sync.message : `企微日程创建失败：${sync.message || '未收到成功回执'}。本次操作未完成，请修正后重新提交。`)
-      const questionJob = text(recoverable.fields['面试题状态']) === '已发布'
+      await teable.updateRecord(this.table('recruitment_interviews'), recoverable.id, { 候选人邮件发送选项: historical || input.sendCandidateEmail === false ? '否' : '是' })
+      progress(historical ? '正在保存历史面试补录…' : '正在重试企业微信日程并发送候选人邮件…')
+      const sync = historical
+        ? await this.markHistoricalAppointment(interviewId, text(input.operator) || '当前用户')
+        : await this.syncAppointment(interviewId, text(recoverable.fields['外部预约ID']) ? '修改预约' : '创建预约', text(input.operator) || '当前用户', { attendeeIds, roomExternalId: directRoom?.externalResourceId, sharedRoomBooking: input.sharedRoomBooking })
+      if (sync.status !== '已同步' && sync.status !== '无需同步') throw new ServiceUnavailableException(sync.roomRejected ? sync.message : `企微日程创建失败：${sync.message || '未收到成功回执'}。本次操作未完成，请修正后重新提交。`)
+      const questionJob = historical
+        ? { status: '未生成' }
+        : text(recoverable.fields['面试题状态']) === '已发布'
         ? { status: '已发布' }
         : this.evaluations.queueInterviewQuestionGeneration({ interviewId, count: structuredInterviewTargetCount, operator: '创建面试后自动生成' })
-      const email = input.sendCandidateEmail === false
-        ? { status: '未发送', message: '已按设置跳过候选人邮件' }
+      const email = historical || input.sendCandidateEmail === false
+        ? { status: '未发送', message: historical ? '历史补录不发送候选人邮件' : '已按设置跳过候选人邮件' }
         : await this.sendCandidateInterviewEmail(interviewId, token, input.publicUrl, text(input.operator) || '当前用户')
       await this.audit('恢复面试预约','面试',interviewId,recoverable.fields,input,text(input.operator)||'当前用户','检测到同候选人同时段已保存记录，复用原面试')
       this.invalidateCache()
-      return { interviewId, token, path: `?interview_token=${encodeURIComponent(token)}`, expiresAt, sync, email, invitation: await this.renderInvite(interviewId, token, input.publicUrl), questionJob, reused: true }
+      return { interviewId, token, path: `?interview_token=${encodeURIComponent(token)}`, expiresAt, sync, email, invitation: await this.renderInvite(interviewId, token, input.publicUrl), questionJob, reused: true, roomBooking: sync.roomBooking }
     }
-    await this.assertNoConflict(start, end, reservation.start, reservation.end, input.interviewerIds, text(input.meetingRoomId))
+    if (!historical) await this.assertNoConflict(start, end, reservation.start, reservation.end, input.interviewerIds, text(input.meetingRoomId), '', { allowSharedResources: Boolean(input.groupId), skipRoomAvailability: Boolean(input.sharedRoom) })
     const token = randomBytes(32).toString('base64url'); const interviewId = id('interview'); const expiresAt = new Date(start.getTime() + 2 * 3_600_000).toISOString()
-    const location = text(input.location) || '山东省烟台市莱山区方片新媒体'
-    const interviewRecord = await teable.createRecord(this.table('recruitment_interviews'), { 面试ID: interviewId, 应聘记录ID: text(application?.fields['应聘记录ID']), 候选人ID: input.candidateId, 职位ID: text(input.positionId) || text(application?.fields['职位ID']), 面试轮次: input.round, 面试类型: text(input.type) || '招聘面试', 面试方式: normalizeInterviewMode(input.mode), 开始时间: start.toISOString(), 结束时间: end.toISOString(), 时区: text(input.timezone) || 'Asia/Shanghai', 面试地点: location, 会议地址: text(input.meetingUrl), 会议室ID: text(input.meetingRoomId), 面试官用户IDJSON: JSON.stringify(input.interviewerIds), 面试官姓名JSON: JSON.stringify(selected.map((item) => item!.name)), 组织者用户ID: text(input.organizerUserId), 面试状态: '已确认', 候选人确认状态: '已确认', 候选人确认时间: timestamp, 签到状态: '未签到', 评价状态: '未开始', 面试题状态: '待生成', 备注: text(input.note), 候选人操作Token哈希: hash(token), Token前缀: token.slice(0,8), 操作链接过期时间: expiresAt, 同步状态: '待同步', 提醒状态: '待提醒', 创建时间: timestamp, 更新时间: timestamp })
-    await teable.updateRecord(this.table('recruitment_interviews'), interviewRecord.id, { 候选人邮件发送选项: input.sendCandidateEmail === false ? '否' : '是' })
-    progress('正在创建企业微信日程，请勿重复提交…')
-    const sync = await this.syncAppointment(interviewId, '创建预约', text(input.operator) || '当前用户', { attendeeIds, roomExternalId: directRoom?.externalResourceId })
-    if (sync.status !== '已同步') {
+    const location = text(input.location) || (historical ? '' : '山东省烟台市莱山区方片新媒体')
+    const interviewRecord = await teable.createRecord(this.table('recruitment_interviews'), { 面试ID: interviewId, 应聘记录ID: text(application?.fields['应聘记录ID']), 候选人ID: input.candidateId, 职位ID: text(input.positionId) || text(application?.fields['职位ID']), 面试轮次: input.round, 面试类型: text(input.type) || (input.groupId ? '群面' : '招聘面试'), 面试方式: normalizeInterviewMode(input.mode), 开始时间: start.toISOString(), 结束时间: end.toISOString(), 时区: text(input.timezone) || 'Asia/Shanghai', 面试地点: location, 会议地址: text(input.meetingUrl), 会议室ID: text(input.meetingRoomId), 面试官用户IDJSON: JSON.stringify(input.interviewerIds), 面试官姓名JSON: JSON.stringify(selected.map((item) => item!.name)), 组织者用户ID: text(input.organizerUserId), 面试状态: '已确认', 候选人确认状态: '已确认', 候选人确认时间: timestamp, 签到状态: '未签到', 评价状态: '未开始', 面试题状态: historical ? '无需生成' : '待生成', 备注: [text(input.note), input.groupId ? `群面 ${input.groupId}` : ''].filter(Boolean).join('\n'), 候选人操作Token哈希: hash(token), Token前缀: token.slice(0,8), 操作链接过期时间: expiresAt, 同步状态: historical ? '无需同步' : '待同步', 提醒状态: '待提醒', 创建时间: timestamp, 更新时间: timestamp })
+    await teable.updateRecord(this.table('recruitment_interviews'), interviewRecord.id, { 候选人邮件发送选项: historical || input.sendCandidateEmail === false ? '否' : '是' })
+    progress(historical ? '正在保存历史面试，不创建企微日程…' : '正在创建企业微信日程，请勿重复提交…')
+    const sync = historical
+      ? await this.markHistoricalAppointment(interviewId, text(input.operator) || '当前用户')
+      : await this.syncAppointment(interviewId, '创建预约', text(input.operator) || '当前用户', { attendeeIds, roomExternalId: directRoom?.externalResourceId, sharedRoomBooking: input.sharedRoomBooking })
+    if (sync.status !== '已同步' && sync.status !== '无需同步') {
       await this.rollbackFailedAppointment(interviewRecord.id, interviewId)
       if (input.meetingRoomSelectionId && !sync.roomRejected) this.roomSelections.delete(input.meetingRoomSelectionId)
       throw new ServiceUnavailableException(sync.roomRejected ? '该会议室暂时无法预约，系统未生成面试记录，请换一间会议室后重新提交。' : `企微日程创建失败：${sync.message || '未收到成功回执'}。系统未生成面试记录，请修正后重新提交。`)
     }
-    const questionJob = this.evaluations.queueInterviewQuestionGeneration({ interviewId, count: structuredInterviewTargetCount, operator: '创建面试后自动生成' })
+    const questionJob = historical
+      ? { status: '未生成' }
+      : this.evaluations.queueInterviewQuestionGeneration({ interviewId, count: structuredInterviewTargetCount, operator: '创建面试后自动生成' })
     const previousStage = text(application?.fields['当前阶段']) || '意向沟通'
     if (application && ['负责人审查', '意向沟通', '待约面', '简历待补充'].includes(previousStage)) {
       await teable.updateRecord(this.table('recruitment_applications'), application.id, { 当前阶段: '约面', 当前状态: '进行中', 最近处理时间: timestamp, 更新时间: timestamp })
       await teable.updateRecord(this.table('recruitment_candidates'), candidate.id, { 候选人状态: '约面', 更新时间: timestamp })
       await teable.createRecord(this.table('recruitment_stage_events'), { 事件ID: id('evt'), 应聘记录ID: text(application.fields['应聘记录ID']) || application.id, 候选人ID: input.candidateId, 职位ID: text(input.positionId) || text(application.fields['职位ID']), 原阶段: previousStage, 新阶段: '约面', 操作: '创建面试预约', 结果: '成功', 原因: text(input.note) || `${input.round}面试已排期`, 操作人: text(input.operator) || '当前用户', 发生时间: timestamp, 来源类型: '面试预约', 来源记录ID: interviewId })
     }
-    progress('正在生成邀请并发送候选人邮件…')
-    const invitation=await this.renderInvite(interviewId,token,input.publicUrl)
-    const email = input.sendCandidateEmail === false
-      ? { status: '未发送', message: '已按设置跳过候选人邮件' }
+    progress(historical ? '历史面试已保存。' : '正在生成邀请并发送候选人邮件…')
+    const invitation = historical ? null : await this.renderInvite(interviewId,token,input.publicUrl)
+    const email = historical || input.sendCandidateEmail === false
+      ? { status: '未发送', message: historical ? '历史补录不发送候选人邮件' : '已按设置跳过候选人邮件' }
       : await this.sendCandidateInterviewEmail(interviewId, token, input.publicUrl, text(input.operator) || '当前用户')
-    await teable.createRecord(this.table('recruitment_tasks'), {
+    if (!historical) await teable.createRecord(this.table('recruitment_tasks'), {
       待办ID: id('todo'), 待办类型: '面试题生成', 对象类型: '面试', 对象ID: interviewId,
       标题: `生成${text(input.round) || '本轮'}面试题`, 描述: '面试创建后，根据岗位、意向沟通和题库预生成面试题；开始前10分钟向面试官发送题单链接',
       处理人用户ID: text(input.organizerUserId), 处理人: '系统', 优先级: '高', 待办状态: '待处理',
@@ -475,7 +521,7 @@ export class InterviewsService {
     })
     await this.audit('创建面试预约','面试',interviewId,{},input,text(input.operator)||'当前用户')
     this.invalidateCache()
-    return { interviewId, token, path: `?interview_token=${encodeURIComponent(token)}`, expiresAt, sync, email, invitation, questionJob }
+    return { interviewId, token, path: `?interview_token=${encodeURIComponent(token)}`, expiresAt, sync, email, invitation, questionJob, roomBooking: sync.roomBooking }
   }
   async updateAppointment(interviewId: string, input: Partial<InterviewAppointmentInput>, options: { resendInvitation?: boolean } = {}) {
     const row = await this.findInterview(interviewId); if (['已取消','已完成'].includes(text(row.fields['面试状态']))) throw new ConflictException('已取消或已完成面试不能修改')
@@ -547,7 +593,7 @@ export class InterviewsService {
           }
           continue
         }
-        if(Date.parse(text(row.fields['开始时间']))<=Date.now())continue
+        if(Date.parse(text(row.fields['开始时间']))<=Date.now() || text(row.fields['同步状态'])==='无需同步')continue
         const stalePending=text(row.fields['同步状态'])==='待同步'&&Date.now()-(Date.parse(text(row.fields['更新时间']))||0)>10*60_000
         if(text(row.fields['同步状态'])==='同步失败'||stalePending){
           if(!text(row.fields['外部预约ID']))throw new Error('日程创建未取得企微ID，需在排期中核实并重试，避免重复占用会议室')
@@ -859,10 +905,10 @@ export class InterviewsService {
     && Date.parse(text(row.fields['结束时间'])) === end.getTime()
     && json<string[]>(row.fields['面试官用户IDJSON'], []).some(id => interviewerIds.includes(id)))
  }
- private async assertNoConflict(start:Date,end:Date,reservationStart:Date,reservationEnd:Date,interviewerIds:string[],roomId:string,excludeId='') {
+ private async assertNoConflict(start:Date,end:Date,reservationStart:Date,reservationEnd:Date,interviewerIds:string[],roomId:string,excludeId='', options: { allowSharedResources?: boolean; skipRoomAvailability?: boolean } = {}) {
   const [rows,roomRows]=await Promise.all([this.interviewsInRange(start,end),this.interviewsInRange(reservationStart,reservationEnd)])
   const active=rows.filter(r=>text(r.fields['面试ID'])!==excludeId&&!['已取消','已完成'].includes(text(r.fields['面试状态'])))
-  const interviewerConflict=active.find(r=>json<string[]>(r.fields['面试官用户IDJSON'],[]).some(x=>interviewerIds.includes(x)))
+  const interviewerConflict=!options.allowSharedResources && active.find(r=>json<string[]>(r.fields['面试官用户IDJSON'],[]).some(x=>interviewerIds.includes(x)))
   if(interviewerConflict) throw new ConflictException({message:'所选面试官在该时间段已有面试',code:'INTERVIEWER_CONFLICT',interviewId:text(interviewerConflict.fields['面试ID'])})
   if(roomId){
     const roomConflict=roomRows.find(r=>{
@@ -870,7 +916,8 @@ export class InterviewsService {
       const reservation=this.meetingRoomReservationRange(new Date(text(r.fields['开始时间'])),new Date(text(r.fields['结束时间'])))
       return reservation.start.getTime()<reservationEnd.getTime()&&reservation.end.getTime()>reservationStart.getTime()
     })
-    if(roomConflict) throw new ConflictException({message:'所选会议室在该时间段已被占用',code:'MEETING_ROOM_CONFLICT',interviewId:text(roomConflict.fields['面试ID'])})
+    if(roomConflict && !options.allowSharedResources) throw new ConflictException({message:'所选会议室在该时间段已被占用',code:'MEETING_ROOM_CONFLICT',interviewId:text(roomConflict.fields['面试ID'])})
+    if (options.allowSharedResources) return
     const roomAvailability=await this.roomAvailability({startAt:start.toISOString(),endAt:end.toISOString(),roomIds:[roomId]},excludeId)
     const room=roomAvailability.rooms[0]
     if(!room||!room.reservable) throw new ConflictException({message:'企微会议室当前不可确认空闲，请重新查询并选择空闲会议室',code:'WECOM_MEETING_ROOM_CONFLICT',interviewId:room?.conflictInterviewId})
@@ -958,7 +1005,7 @@ export class InterviewsService {
     if (typeof response?.text === 'string') { try { return JSON.parse(response.text) } catch { return {} } }
     return response?.data || response?.result || response || {}
   }
-  private async syncAppointment(interviewId:string,type:string,operator:string, context?: { attendeeIds?: string[]; roomExternalId?: string }) {
+  private async syncAppointment(interviewId:string,type:string,operator:string, context?: { attendeeIds?: string[]; roomExternalId?: string; sharedRoomBooking?: { bookingId: string; scheduleId: string; snapshot: TianjiRoomBookingSnapshot } }) {
     const row=await this.findInterview(interviewId)
     const old=text(row.fields['同步状态'])
     const eventId=id('sync')
@@ -1007,15 +1054,26 @@ export class InterviewsService {
       }
       const bookingInput=roomExternalId?{meetingRoomId:roomExternalId,booker,startTime:bookingStartTime,endTime:bookingEndTime,subject:summary,attendees:attendeeIds}:undefined
       const requestedBookingSnapshot: TianjiRoomBookingSnapshot|null=bookingInput?{meetingRoomId:bookingInput.meetingRoomId,booker:bookingInput.booker,startTime:bookingStartTime,endTime:bookingEndTime,subject:bookingInput.subject,attendees:[...bookingInput.attendees]}:null
+      const sharedRoomBooking=context?.sharedRoomBooking
+      const reuseSharedRoom=Boolean(sharedRoomBooking&&requestedBookingSnapshot&&sharedRoomBooking.snapshot.meetingRoomId===requestedBookingSnapshot.meetingRoomId&&sharedRoomBooking.snapshot.startTime===requestedBookingSnapshot.startTime&&sharedRoomBooking.snapshot.endTime===requestedBookingSnapshot.endTime)
       let result:any
       let nextBookingId=''
       let nextBookingSnapshot:TianjiRoomBookingSnapshot|null=null
       if(type==='取消预约') {
         if(!externalId) throw new Error('缺少企微日程ID，无法取消企微日程')
+        const sharedWithActivePeer=bookingId ? (await teable.listAllRecords(this.table('recruitment_interviews'))).some((item) => item.id !== row.id && text(item.fields['面试状态']) !== '已取消' && text(item.fields['外部会议室预订ID']) === bookingId) : false
+        const sharedRoomScheduleId=bookingSnapshot?.scheduleId || ''
+        const releasesSharedRoom=Boolean(bookingId && !sharedWithActivePeer && sharedRoomScheduleId && sharedRoomScheduleId !== externalId)
+        if(releasesSharedRoom) await tianjiWeixinMessage.cancelSchedule(sharedRoomScheduleId)
         result=await tianjiWeixinMessage.cancelSchedule(externalId)
         externalId=''
+      } else if(reuseSharedRoom) {
+        result=await tianjiWeixinMessage.createSchedule(scheduleInput)
+        externalId=result.scheduleId
+        nextBookingId=sharedRoomBooking!.bookingId
+        nextBookingSnapshot=sharedRoomBooking!.snapshot
       } else if(requestedBookingSnapshot) {
-        if(bookingId&&externalId&&bookingSnapshot&&JSON.stringify(bookingSnapshot)===JSON.stringify(requestedBookingSnapshot)) {
+        if(bookingId&&externalId&&bookingSnapshot&&JSON.stringify({...bookingSnapshot,scheduleId:undefined})===JSON.stringify(requestedBookingSnapshot)) {
           result={scheduleId:externalId,bookingId,response:{reused:true},reused:true}
           nextBookingId=bookingId
           nextBookingSnapshot=requestedBookingSnapshot
@@ -1052,7 +1110,7 @@ export class InterviewsService {
           }
           externalId=result.scheduleId
           nextBookingId=result.bookingId
-          nextBookingSnapshot=requestedBookingSnapshot
+          nextBookingSnapshot={...requestedBookingSnapshot,scheduleId:result.scheduleId}
         }
       } else if((type==='修改预约'||type==='确认预约')&&externalId) {
         result=await tianjiWeixinMessage.createSchedule(scheduleInput)
@@ -1075,7 +1133,7 @@ export class InterviewsService {
       await teable.updateRecord(this.table('recruitment_interviews'),row.id,{外部预约ID:syncedExternalId,外部会议室预订ID:syncedBookingId,外部会议室预订信息JSON:syncedBookingSnapshot,外部会议信息JSON:syncedMeetingSnapshot,...(meetingRequired?{会议地址:nextMeetingSnapshot?.meetingLink||''}:{}),同步状态:'已同步',同步错误:'',最近同步时间:now(),更新时间:now()})
       meetingCommitted=true
       await this.syncEvent(eventId,interviewId,type,old,'已同步',eventExternalId,payload,result,'',operator)
-      return {status:'已同步',externalId:syncedExternalId,bookingId:syncedBookingId,reused:Boolean(result?.reused)}
+      return {status:'已同步',externalId:syncedExternalId,bookingId:syncedBookingId,reused:Boolean(result?.reused),roomBooking:nextBookingSnapshot&&syncedBookingId&&syncedExternalId&&!reuseSharedRoom?{bookingId:syncedBookingId,scheduleId:syncedExternalId,snapshot:nextBookingSnapshot}:undefined}
     } catch(error){
       const rawMessage=error instanceof Error?error.message:String(error)
       if(createdMeeting&&!meetingCommitted) await tianjiWeixinMessage.cancelMeeting(createdMeeting.meetingId).catch(()=>undefined)
@@ -1084,7 +1142,7 @@ export class InterviewsService {
       const message=roomRejected?'该会议室暂时无法预约，请换一间会议室后重新提交。':rawMessage
       await teable.updateRecord(this.table('recruitment_interviews'),row.id,{同步状态:'同步失败',同步错误:message,最近同步时间:now(),更新时间:now()})
       await this.syncEvent(eventId,interviewId,type,old,'同步失败',externalId||previousExternalId,{}, {},message,operator)
-      return {status:'同步失败',message,roomRejected,action:'请按错误信息检查天玑企微接口参数后，再使用人工重试'}
+      return {status:'同步失败',message,roomRejected,roomBooking:undefined,action:'请按错误信息检查天玑企微接口参数后，再使用人工重试'}
     }
   }
   private async resolveWecomAttendees(ids:string[]){const [directory,pool]=await Promise.all([this.listInterviewers(),teable.listAllRecords(this.table('recruitment_interviewer_pool'))]);const resolved=ids.map((id)=>{const user=directory.interviewers.find((item)=>item.id===id);if(user?.wecomUserId)return user.wecomUserId;const legacy=pool.find((item)=>text(item.fields['面试官ID'])===id||text(item.fields['用户ID'])===id);return text(legacy?.fields['用户ID'])}).filter(Boolean);if(!resolved.length)throw new Error('预约中没有可用于企微日程的面试官成员 ID');return resolved}
@@ -1160,6 +1218,16 @@ export class InterviewsService {
   private interviewRange(startAt:string,endAt:string){const range=this.timeRange(startAt,endAt);if(range.end.getTime()-range.start.getTime()>MAX_SINGLE_INTERVIEW_DURATION_MS)throw new BadRequestException('单场面试时段最长 8 小时；此处不是多日日期范围，请选择具体的开始和结束时间');return range}
   private scheduledInterviewRange(startAt:string,endAt:string){
     return this.interviewRange(startAt,endAt)
+  }
+  private async markHistoricalAppointment(interviewId: string, operator: string) {
+    const row = await this.findInterview(interviewId)
+    const timestamp = now()
+    await teable.updateRecord(this.table('recruitment_interviews'), row.id, {
+      会议室ID: '', 外部预约ID: '', 外部会议室预订ID: '', 外部会议室预订信息JSON: '',
+      同步状态: '无需同步', 同步错误: '', 最近同步时间: timestamp, 更新时间: timestamp,
+    })
+    await this.syncEvent(id('sync'), interviewId, '补录历史面试', text(row.fields['同步状态']), '无需同步', '', { historical: true }, { status: '无需同步' }, '已过去的面试只补录数据，不查询企微会议室，也不创建企微日程', operator)
+    return { status: '无需同步', message: '历史面试已补录，未创建企微日程', roomRejected: false, roomBooking: undefined }
   }
   private meetingRoomReservationRange(start:Date,end:Date){
     const slot=30*60_000,reservationStart=new Date(Math.floor(start.getTime()/slot)*slot),reservationEnd=new Date(Math.ceil(end.getTime()/slot)*slot)

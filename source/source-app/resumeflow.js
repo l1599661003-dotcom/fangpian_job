@@ -71,10 +71,10 @@
       '[data-rf-delete-talent]', '[data-rf-owner]', '[data-rf-save-owner]', '[data-rf-birth-year]', '[data-rf-save-birth-year]', '[data-rf-contact-lock]',
       '[data-rf-communication]', '[data-rf-queue-communication]', '[data-rf-save-communication]', '[data-rf-comm-transcript-extract]', '[data-rf-sync-followups]',
     ],
-    review_candidate: ['[data-rf-wecom]', '[data-rf-wecom-submit]', '[data-rf-queue-review]', '[data-rf-submit-review]', '[data-rf-submit-decision]', '[data-rf-confirm-ai]'],
+    review_candidate: ['[data-rf-wecom]', '[data-rf-wecom-submit]', '[data-rf-queue-review]', '[data-rf-submit-review]', '[data-rf-submit-decision]', '[data-rf-confirm-ai]', '[data-rf-referral-review]', '[data-rf-referral-pass]', '[data-rf-referral-reject]'],
     advance_application: ['[data-rf-advance]', '[data-rf-stage-action]'],
     arrange_interview: [
-      '[data-rf-schedule-interview]', '[data-rf-schedule-current]', '[data-rf-create-interview]', '[data-rf-cancel-interview]', '[data-rf-confirm-cancel-interview]',
+      '[data-rf-schedule-interview]', '[data-rf-schedule-current]', '[data-rf-group-interview]', '[data-rf-create-interview]', '[data-rf-cancel-interview]', '[data-rf-confirm-cancel-interview]',
       '[data-rf-retry-interview]', '[data-rf-send-result]', '[data-rf-review-reschedule]', '[data-rf-approve-reschedule]', '[data-rf-reject-reschedule]',
       '[data-rf-new-interviewer]', '[data-rf-save-interviewer]', '[data-rf-new-availability]', '[data-rf-save-availability]', '[data-rf-new-room]',
       '[data-rf-save-room]', '[data-rf-sync-wecom-resources]', '[data-rf-sync-wecom-rooms]', '[data-rf-lookup-wecom-user]',
@@ -3290,6 +3290,11 @@
     timeSelect.value = selectedTime;
     timeSelect.dataset.defaultOption = !selectedTime && dateInput.value === today ? upcomingInterviewTimeRange().currentStartTime : (selectedTime || '');
   }
+  function interviewScheduleIsPast() {
+    const startAt = document.getElementById('rf-interview-start')?.value || '';
+    const start = shanghaiDateTimeMs(startAt);
+    return Number.isFinite(start) && start <= Date.now();
+  }
   function interviewDurationOptions(selectedMinutes) {
     return '<option value="">请选择</option>' + [
       [15, '15 分钟'], [30, '30 分钟'], [60, '1 小时'],
@@ -3362,6 +3367,8 @@
   function scheduleMeetingRoomAvailability() {
     window.clearTimeout(roomAvailabilityTimer);
     roomAvailabilitySequence += 1;
+    applyInterviewRoomEntryMode();
+    if (interviewScheduleIsPast()) return;
     const roomSelect = document.getElementById('rf-interview-room');
     if (roomSelect?.dataset.source === 'wecom') {
       roomSelect.value = '';
@@ -3371,9 +3378,35 @@
     if (button) { button.disabled = false; button.textContent = '查询'; }
     roomAvailabilityTimer = window.setTimeout(() => refreshMeetingRoomAvailability().catch(() => {}), 450);
   }
+  function applyInterviewRoomEntryMode() {
+    const past = interviewScheduleIsPast();
+    const roomField = document.querySelector('.rf-interview-room-field');
+    const manualField = document.querySelector('.rf-interview-manual-room-field');
+    const panel = document.querySelector('.rf-room-availability-panel');
+    const roomSelect = document.getElementById('rf-interview-room');
+    const manualRoom = document.getElementById('rf-interview-manual-room');
+    if (roomField) roomField.hidden = past;
+    if (manualField) manualField.hidden = !past;
+    if (panel) panel.hidden = past;
+    if (roomSelect) roomSelect.required = !past;
+    if (manualRoom) manualRoom.required = past;
+    if (!past && manualRoom) manualRoom.value = '';
+    const submit = document.querySelector('[data-rf-create-interview]');
+    if (submit && !submit.disabled) submit.textContent = past ? '保存补录' : '确认并发送邀请';
+    const emailOption = document.querySelector('.rf-send-email-option');
+    const emailInput = document.getElementById('rf-send-candidate-email');
+    if (emailOption) emailOption.hidden = past;
+    if (emailInput) emailInput.checked = !past;
+    const note = document.getElementById('rf-room-availability-note');
+    if (past && note) {
+      note.textContent = '这是已过去的面试，只补录一条记录：会议室手填，不查企微、不建日程、不发邮件。';
+      note.classList.remove('warning');
+    }
+  }
 
   async function refreshMeetingRoomAvailability() {
     window.clearTimeout(roomAvailabilityTimer);
+    if (interviewScheduleIsPast()) { applyInterviewRoomEntryMode(); return null; }
     const mode = document.getElementById('rf-interview-mode')?.value;
     const startAt = document.getElementById('rf-interview-start')?.value || '';
     const endAt = document.getElementById('rf-interview-end')?.value || '';
@@ -3442,20 +3475,39 @@
     });
   }
 
-  async function openScheduleInterview(candidateId = '', candidateHint = null) {
-    if (!candidateId) return openInterviewCandidateRecovery();
-    const token = showTalentDialog('<div class="rf-dialog-loading">正在读取候选人、面试官和会议室…</div>', 'wide');
+  async function openGroupInterview() {
+    if (!window.canOpenRecruitmentPage?.('interviews') || !hasAccessAction('arrange_interview')) return notifyUser('当前账号没有安排面试的权限，请联系招聘负责人。', 'info');
+    const token = showTalentDialog('<div class="rf-dialog-loading">正在读取候选人和面试官…</div>', 'wide');
+    try {
+      const [candidates, interviewers] = await Promise.all([
+        request('api/interviews/candidates'),
+        request('api/interviews/interviewers'),
+      ]);
+      if (token !== talentDialogToken) return;
+      const options = (candidates.candidates || []).map((item) => `<option value="${escapeHtml(item.id)}" data-search="${escapeHtml([item.name, item.role, item.status].filter(Boolean).join(' '))}">${escapeHtml(item.name)} · ${escapeHtml(item.role || '岗位待确认')}</option>`).join('');
+      await openScheduleInterview('', null, { group: true, candidateOptions: options, interviewers, rooms: { rooms: [] } });
+    } catch (error) {
+      if (token === talentDialogToken) showTalentDialog(`<div class="rf-dialog-error"><strong>群面准备失败</strong><p>${escapeHtml(conciseError(error))}</p></div>`);
+    }
+  }
+
+  async function openScheduleInterview(candidateId = '', candidateHint = null, preset = null) {
+    if (!candidateId && !preset?.group) return openInterviewCandidateRecovery();
+    const token = preset?.group ? talentDialogToken : showTalentDialog('<div class="rf-dialog-loading">正在读取候选人、面试官和会议室…</div>', 'wide');
     const isStale = () => token !== talentDialogToken;
     try {
-      const [interviewers, rooms, current] = await Promise.all([
+      const [interviewers, rooms, current] = preset?.group ? [preset.interviewers, preset.rooms, { id: '', name: '' }] : await Promise.all([
         request('api/interviews/interviewers'),
         Promise.resolve({ rooms: [] }),
         candidateHint?.id === candidateId ? candidateHint : state.talentDetails[candidateId] || (window.canOpenRecruitmentPage?.('resume-archive') ? fetchTalentDetail(candidateId) : request('api/interviews/scheduling-candidate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ candidateId }) }).then(result => result.candidate)),
       ]);
       if (isStale()) return;
-      if (current.id !== candidateId) throw new Error('候选人信息读取失败，请从人才档案或安排面试待办重新进入。');
+      if (!preset?.group && current.id !== candidateId) throw new Error('候选人信息读取失败，请从人才档案或安排面试待办重新进入。');
       const selectedCandidateId = candidateId;
-      showTalentDialog(`<header class="rf-dialog-head"><div><span>INTERVIEW INVITATION</span><h2>创建面试邀请</h2><p>确认后将先创建企业微信日程，再向候选人发送正式的面试邀请邮件。</p></div></header><div class="rf-dialog-form"><label class="wide"><span>本次面试候选人</span><input id="rf-interview-candidate" type="hidden" value="${escapeHtml(selectedCandidateId)}"><input value="${escapeHtml(current.name || '未识别姓名')}" readonly aria-label="本次面试候选人"><small>${escapeHtml(current.bestMatchRole || current.jobIntention || current.role || '岗位待确认')} · 已绑定当前候选人，无需选择</small></label><label><span>面试轮次</span><select id="rf-interview-round"><option>一面</option><option>二面</option><option>加面</option></select></label><label><span>面试方式</span><select id="rf-interview-mode"><option>线下面试</option><option>线上面试</option></select></label><label><span>开始时间</span><input id="rf-interview-start" type="datetime-local"></label><label><span>结束时间（单场最多 8 小时）</span><input id="rf-interview-end" type="datetime-local"></label><label class="rf-interview-room-field"><span>会议室 <b>*</b></span><span class="rf-room-query"><select id="rf-interview-room" required data-placeholder="输入会议室名称搜索">${interviewRoomOptions(rooms.rooms || [])}</select><button class="btn-soft" data-rf-refresh-room-availability type="button" aria-label="查询会议室">查询</button></span><small id="rf-room-availability-note">${(rooms.rooms || []).length ? '请选择单场面试的具体开始和结束时间（最长 8 小时）。' : '请先填写面试时间，再查询当前时段的会议室。'}</small><small class="rf-schedule-error" hidden></small></label><label class="wide rf-interviewer-field"><span>面试官 <b>*</b></span><select id="rf-interviewer-select" multiple required data-placeholder="输入姓名或角色搜索并添加面试官">${(interviewers.interviewers || []).map((item) => `<option value="${escapeHtml(item.id)}" data-wecom-id="${escapeHtml(item.wecomUserId || '')}" data-roles="${escapeHtml((item.roles || []).join('|'))}">${escapeHtml(item.name)}</option>`).join('')}</select><small id="rf-interviewer-role-note"></small><small class="rf-schedule-error" hidden></small></label><label class="wide"><span>给候选人的备注（可选）</span><textarea id="rf-interview-note" placeholder="例如：请提前10分钟到达，并携带作品集或案例材料。"></textarea></label></div><div class="rf-dialog-actions"><button class="btn-primary" data-rf-create-interview type="button">创建企微日程并发送邮件</button></div><p id="rf-create-interview-message" class="rf-dialog-message"></p>`, 'wide');
+      const candidateField = preset?.group
+        ? `<label class="wide rf-group-candidate-field"><span>群面候选人 <b>*</b></span><select id="rf-group-candidates" multiple required data-placeholder="搜索姓名或岗位，选择多位候选人">${preset.candidateOptions}</select><small>至少选择 2 位。群面共用同一时间、面试官和会议室，每人仍保存一条面试记录。</small><small class="rf-schedule-error" hidden></small></label>`
+        : `<label class="wide"><span>本次面试候选人</span><input id="rf-interview-candidate" type="hidden" value="${escapeHtml(selectedCandidateId)}"><input value="${escapeHtml(current.name || '未识别姓名')}" readonly aria-label="本次面试候选人"><small>${escapeHtml(current.bestMatchRole || current.jobIntention || current.role || '岗位待确认')} · 已绑定当前候选人，无需选择</small></label>`;
+      showTalentDialog(`<header class="rf-dialog-head"><div><span>${preset?.group ? 'GROUP INTERVIEW' : 'INTERVIEW INVITATION'}</span><h2>${preset?.group ? '安排群面' : '创建面试邀请'}</h2><p>${preset?.group ? '一次选择多位候选人。确认后按正常面试分别保存，并共用同一企微会议室。' : '确认后将先创建企业微信日程，再向候选人发送正式的面试邀请邮件。'}</p></div></header><div class="rf-dialog-form">${candidateField}<label><span>面试轮次</span><select id="rf-interview-round"><option>一面</option><option>二面</option><option>加面</option></select></label><label><span>面试方式</span><select id="rf-interview-mode"><option>线下面试</option><option>线上面试</option></select></label><label><span>开始时间</span><input id="rf-interview-start" type="datetime-local"></label><label><span>结束时间（单场最多 8 小时）</span><input id="rf-interview-end" type="datetime-local"></label><label class="rf-interview-room-field"><span>会议室 <b>*</b></span><span class="rf-room-query"><select id="rf-interview-room" required data-placeholder="输入会议室名称搜索">${interviewRoomOptions(rooms.rooms || [])}</select><button class="btn-soft" data-rf-refresh-room-availability type="button" aria-label="查询会议室">查询</button></span><small id="rf-room-availability-note">${(rooms.rooms || []).length ? '请选择单场面试的具体开始和结束时间（最长 8 小时）。' : '请先填写面试时间，再查询当前时段的会议室。'}</small><small class="rf-schedule-error" hidden></small></label><label class="wide rf-interviewer-field"><span>面试官 <b>*</b></span><select id="rf-interviewer-select" multiple required data-placeholder="输入姓名或角色搜索并添加面试官">${(interviewers.interviewers || []).map((item) => `<option value="${escapeHtml(item.id)}" data-wecom-id="${escapeHtml(item.wecomUserId || '')}" data-roles="${escapeHtml((item.roles || []).join('|'))}">${escapeHtml(item.name)}</option>`).join('')}</select><small id="rf-interviewer-role-note"></small><small class="rf-schedule-error" hidden></small></label><label class="wide"><span>给候选人的备注（可选）</span><textarea id="rf-interview-note" placeholder="例如：请提前10分钟到达，并携带作品集或案例材料。"></textarea></label></div><div class="rf-dialog-actions"><button class="btn-primary" data-rf-create-interview type="button">创建企微日程并发送邮件</button></div><p id="rf-create-interview-message" class="rf-dialog-message"></p>`, 'wide');
       // 把原来的两个 datetime-local 输入收敛为「日期 + 开始时间 + 面试时长」，
       // 实际接口仍使用隐藏的开始/结束值，保留既有的企微实时校验契约。
       const candidateEmailOption = document.createElement('label');
@@ -3491,7 +3543,7 @@
       scheduleHeader?.classList.add('rf-schedule-head');
       if (scheduleHeader?.querySelector('span')) scheduleHeader.querySelector('span').textContent = '安排面试';
       if (scheduleHeader?.querySelector('h2')) scheduleHeader.querySelector('h2').textContent = `为${current.name || '当前候选人'}安排面试`;
-      if (scheduleHeader?.querySelector('p')) scheduleHeader.querySelector('p').textContent = '确认时间和面试官后发送邀请，处理结果会在这里显示。';
+      if (scheduleHeader?.querySelector('p')) scheduleHeader.querySelector('p').textContent = '未来面试会创建企微日程并发送邀请；已过去的时间只补录记录，不发邮件、不建日程。';
       const scheduleForm = document.querySelector('.rf-dialog-form.rf-schedule-main');
       scheduleForm?.closest('.rf-dialog')?.classList.add('rf-invitation-editor');
       const historyItems = await request(`api/interviews/appointments?candidateId=${encodeURIComponent(selectedCandidateId)}`).then((result) => result.appointments || []).catch(() => []);
@@ -3509,8 +3561,7 @@
         scheduleForm.before(scheduleLayout);
         scheduleLayout.append(scheduleForm, historyAside);
       }
-      const candidateField = document.getElementById('rf-interview-candidate')?.closest('label');
-      candidateField?.classList.add('rf-invitation-person');
+      document.getElementById('rf-interview-candidate')?.closest('label')?.classList.add('rf-invitation-person');
       const scheduleActions = document.querySelector('.rf-dialog-actions');
       const scheduleMessage = document.getElementById('rf-create-interview-message');
       if (scheduleForm && scheduleActions) {
@@ -3529,6 +3580,10 @@
       if (roomSelect) roomSelect.dataset.source = 'wecom';
       const roomNote = document.getElementById('rf-room-availability-note');
       if (roomNote) roomNote.textContent = '选择面试时间后，系统将获取该时段企微会议室的空闲与占用状态。';
+      const roomField = document.querySelector('.rf-interview-room-field');
+      if (roomField && !document.getElementById('rf-interview-manual-room')) {
+        roomField.insertAdjacentHTML('afterend', '<label class="wide rf-interview-manual-room-field" hidden><span>会议室 <b>*</b></span><input id="rf-interview-manual-room" maxlength="80" placeholder="填写当时使用的会议室，例如：3楼大会议室"><small>补录只保存记录，不查询会议室、不创建日程、不发送邮件。</small><small class="rf-schedule-error" hidden></small></label>');
+      }
       syncInterviewTimeFields();
       const interviewerRoleNote = document.getElementById('rf-interviewer-role-note');
       const candidateRole = current.bestMatchRole || current.jobIntention || current.role || '';
@@ -3555,8 +3610,10 @@
       document.querySelector('[data-rf-refresh-room-availability]')?.addEventListener('click', () => refreshMeetingRoomAvailability().catch(() => {}));
       document.querySelector('[data-rf-sync-wecom-rooms]')?.addEventListener('click', () => syncWecomRoomsForSchedule(selectedCandidateId));
       document.querySelector('[data-rf-cancel-schedule]')?.addEventListener('click', cancelTalentDialog);
-      document.querySelector('[data-rf-create-interview]')?.addEventListener('click', createInterview);
+      document.querySelector('[data-rf-create-interview]')?.addEventListener('click', preset?.group ? createGroupInterview : createInterview);
+      document.querySelector('[data-rf-group-interview]')?.addEventListener('click', openGroupInterview);
       applyInterviewMode();
+      applyInterviewRoomEntryMode();
     } catch (error) { showTalentDialog(`<div class="rf-dialog-error"><strong>资源读取失败</strong><p>${escapeHtml(conciseError(error))}</p></div>`); }
   }
 
@@ -3588,19 +3645,22 @@
     markScheduleField(control || node, '');
   }
 
-  function validateScheduleForm() {
+  function validateScheduleForm(group = false) {
+    const past = interviewScheduleIsPast();
     const checks = [
       ['rf-interview-mode', '请选择面试方式'],
       ['rf-interview-date', '请选择面试日期'],
       ['rf-interview-time', '请选择开始时间'],
       ['rf-interview-duration', '请选择面试时长'],
-      ['rf-interview-room', '请选择会议室'],
+      [past ? 'rf-interview-manual-room' : 'rf-interview-room', past ? '请填写当时使用的会议室' : '请选择会议室'],
       ['rf-interviewer-select', '请选择面试官'],
     ];
+    if (group) checks.unshift(['rf-group-candidates', '请至少选择两位候选人']);
     let firstInvalid = null;
     checks.forEach(([id, error]) => {
       const node = document.getElementById(id);
-      const invalid = node?.multiple ? !node.selectedOptions.length : !String(node?.value || '').trim();
+      const minimum = node?.id === 'rf-group-candidates' ? 2 : 1;
+      const invalid = node?.multiple ? node.selectedOptions.length < minimum : !String(node?.value || '').trim();
       markScheduleField(node, invalid ? error : '');
       if (invalid && !firstInvalid) firstInvalid = node;
     });
@@ -3618,44 +3678,122 @@
     return !firstInvalid;
   }
 
+  function interviewSchedulePayload(past, manualRoom, roomId) {
+    const interviewerSelect = document.getElementById('rf-interviewer-select');
+    const interviewerOptions = [...(interviewerSelect?.selectedOptions || [])];
+    const interviewerIds = interviewerOptions.map((option) => option.value).filter(Boolean);
+    const interviewerWecomIds = interviewerOptions.map((option) => option.dataset.wecomId || '').filter(Boolean);
+    const roomSelect = document.getElementById('rf-interview-room');
+    const meetingRoomSelectionId = past || !roomId ? '' : roomSelect?.dataset.selectionId || '';
+    const publicUrl = new URL(window.location.href); publicUrl.search = ''; publicUrl.hash = '';
+    return {
+      interviewerIds,
+      interviewerWecomIds,
+      meetingRoomSelectionId,
+      payload: {
+        round: document.getElementById('rf-interview-round')?.value,
+        mode: document.getElementById('rf-interview-mode')?.value || '',
+        startAt: shanghaiDateTimeIso(document.getElementById('rf-interview-start')?.value),
+        endAt: shanghaiDateTimeIso(document.getElementById('rf-interview-end')?.value),
+        timezone: 'Asia/Shanghai',
+        meetingRoomId: roomId,
+        location: past ? manualRoom : '山东省烟台市莱山区方片新媒体',
+        interviewerIds,
+        ...(interviewerWecomIds.length ? { interviewerWecomIds } : {}),
+        ...(meetingRoomSelectionId ? { meetingRoomSelectionId } : {}),
+        note: document.getElementById('rf-interview-note')?.value.trim(),
+        sendCandidateEmail: past ? false : document.getElementById('rf-send-candidate-email')?.checked !== false,
+        operator: '当前用户',
+        publicUrl: publicUrl.toString(),
+      },
+    };
+  }
+
+  async function createGroupInterview() {
+    const past = interviewScheduleIsPast();
+    const manualRoom = document.getElementById('rf-interview-manual-room')?.value.trim() || '';
+    const roomId = past ? '' : interviewRoomIdFrom(document.getElementById('rf-interview-room')?.value);
+    const message = document.getElementById('rf-create-interview-message');
+    const submit = document.querySelector('[data-rf-create-interview]');
+    if (submit?.disabled) return;
+    if (!validateScheduleForm(true)) return;
+    const selected = [...(document.getElementById('rf-group-candidates')?.selectedOptions || [])];
+    const candidateIds = selected.map((option) => option.value).filter(Boolean);
+    const loading = showGlobalLoading(past ? '正在保存群面补录…' : '正在创建群面…');
+    try {
+      if (submit) { submit.disabled = true; submit.dataset.originalText = submit.textContent; submit.textContent = '正在保存群面…'; }
+      const schedule = interviewSchedulePayload(past, manualRoom, roomId);
+      const roomSelect = document.getElementById('rf-interview-room');
+      if (!past && roomId && roomSelect?.dataset.source === 'wecom' && !schedule.meetingRoomSelectionId) throw new Error('请先查询当前时段的企微会议室，再确认群面。');
+      if (!schedule.interviewerIds.length || schedule.interviewerWecomIds.length !== schedule.interviewerIds.length) throw new Error('所选面试官未配置企微成员 ID，请先在组织与权限中同步。');
+      const payload = { ...schedule.payload, candidateIds };
+      if (message) { message.textContent = `正在保存 ${candidateIds.length} 位候选人的群面…`; message.classList.remove('error'); }
+      if (!submit.dataset.requestId) submit.dataset.requestId = crypto.randomUUID();
+      const started = submit.dataset.jobId ? { jobId: submit.dataset.jobId } : await request(`api/interviews/appointments/group?background=true&requestId=${encodeURIComponent(submit.dataset.requestId)}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      if (started.jobId) submit.dataset.jobId = started.jobId;
+      const result = started.jobId ? await pollInterviewCreation(started.jobId, (progress) => { loading(progress); if (message?.isConnected) message.textContent = progress; }) : started;
+      hideGlobalLoading();
+      const names = selected.map((option) => option.textContent.trim()).join('、');
+      showTalentDialog(`<div class="rf-operation-result rf-invitation-result is-success" role="status"><i>✓</i><span>群面安排结果</span><h2>群面已保存</h2><p class="rf-invitation-summary">${escapeHtml(names)}</p><div class="rf-invitation-receipt"><article class="done"><b>01</b><div><strong>候选人</strong><small>已保存 ${Number(result.total || candidateIds.length)} 条面试记录</small></div></article><article class="done"><b>02</b><div><strong>面试官与会议室</strong><small>${past ? '历史补录，未创建企微日程' : '共用同一时间和会议室'}</small></div></article></div><div class="rf-dialog-actions"><button class="btn-primary" data-rf-invitation-done type="button">知道了</button></div></div>`);
+      document.querySelector('[data-rf-invitation-done]')?.addEventListener('click', () => { closeTalentDialog(); loadInterviewSchedulePage(); });
+      notifyUser(`群面已保存，共 ${Number(result.total || candidateIds.length)} 位候选人。`, 'success');
+    } catch (error) {
+      hideGlobalLoading();
+      if (submit && error.jobFailed) { delete submit.dataset.jobId; delete submit.dataset.requestId; }
+      if (submit) { submit.disabled = false; submit.textContent = submit.dataset.originalText || '确认并发送邀请'; }
+      const errorMessage = error.message || '群面保存失败，请确认已保存的记录后重试。';
+      if (message) { message.textContent = errorMessage; message.classList.add('error'); }
+      notifyUser(errorMessage, 'error');
+    }
+  }
+
   async function createInterview() {
     const candidateId = document.getElementById('rf-interview-candidate')?.value || '';
     const mode = document.getElementById('rf-interview-mode')?.value || '';
-    const roomId = interviewRoomIdFrom(document.getElementById('rf-interview-room')?.value);
+    const past = interviewScheduleIsPast();
+    const manualRoom = document.getElementById('rf-interview-manual-room')?.value.trim() || '';
+    const roomId = past ? '' : interviewRoomIdFrom(document.getElementById('rf-interview-room')?.value);
     const message = document.getElementById('rf-create-interview-message');
     const submit = document.querySelector('[data-rf-create-interview]');
     if (submit?.disabled) return;
     const candidateName = document.querySelector('[aria-label="本次面试候选人"]')?.value || '候选人';
     const scheduleSummary = document.getElementById('rf-interview-time-preview')?.textContent || '';
-    if (!validateScheduleForm()) return;
-    const loading = showGlobalLoading('正在校验会议室并创建企微日程…');
+    if (!validateScheduleForm(false)) return;
+    const loading = showGlobalLoading(past ? '正在保存历史面试…' : '正在校验会议室并创建企微日程…');
     try {
-      if (submit) { submit.disabled = true; submit.dataset.originalText = submit.textContent; submit.textContent = '正在创建日程并发送邮件…'; }
+      if (submit) { submit.disabled = true; submit.dataset.originalText = submit.textContent; submit.textContent = past ? '正在保存补录…' : '正在创建日程并发送邮件…'; }
       if (!candidateId) throw new Error('未找到本次面试的候选人，请重新打开面试安排。');
       const interviewerSelect = document.getElementById('rf-interviewer-select');
       const interviewerOptions = [...(interviewerSelect?.selectedOptions || [])];
       const interviewerIds = interviewerOptions.map((option) => option.value).filter(Boolean);
       const publicUrl = new URL(window.location.href); publicUrl.search = ''; publicUrl.hash = '';
       const roomSelect = document.getElementById('rf-interview-room');
-      const meetingRoomSelectionId = roomId ? roomSelect?.dataset.selectionId || '' : '';
-      if (roomId && roomSelect?.dataset.source === 'wecom' && !meetingRoomSelectionId) throw new Error('请先查询当前时段的企微会议室，再确认邀请。');
+      const meetingRoomSelectionId = past || !roomId ? '' : roomSelect?.dataset.selectionId || '';
+      if (!past && roomId && roomSelect?.dataset.source === 'wecom' && !meetingRoomSelectionId) throw new Error('请先查询当前时段的企微会议室，再确认邀请。');
       const interviewerWecomIds = interviewerOptions.map((option) => option.dataset.wecomId || '').filter(Boolean);
       if (!interviewerIds.length || interviewerWecomIds.length !== interviewerIds.length) throw new Error('所选面试官未配置企微成员 ID，请先在组织与权限中同步。');
-      const payload = { candidateId, round: document.getElementById('rf-interview-round')?.value, mode, startAt: shanghaiDateTimeIso(document.getElementById('rf-interview-start')?.value), endAt: shanghaiDateTimeIso(document.getElementById('rf-interview-end')?.value), timezone: 'Asia/Shanghai', meetingRoomId: roomId, location: '山东省烟台市莱山区方片新媒体', interviewerIds, ...(interviewerWecomIds.length ? { interviewerWecomIds } : {}), ...(meetingRoomSelectionId ? { meetingRoomSelectionId } : {}), note: document.getElementById('rf-interview-note')?.value.trim(), sendCandidateEmail: document.getElementById('rf-send-candidate-email')?.checked !== false, operator: '当前用户', publicUrl: publicUrl.toString() };
-      if (message) { message.textContent = '正在创建企微日程并发送邀请，请勿重复提交…'; message.classList.remove('error'); }
-      loading('正在创建企微日程并发送邀请邮件，请稍候…');
+      const payload = { candidateId, round: document.getElementById('rf-interview-round')?.value, mode, startAt: shanghaiDateTimeIso(document.getElementById('rf-interview-start')?.value), endAt: shanghaiDateTimeIso(document.getElementById('rf-interview-end')?.value), timezone: 'Asia/Shanghai', meetingRoomId: roomId, location: past ? manualRoom : '山东省烟台市莱山区方片新媒体', interviewerIds, ...(interviewerWecomIds.length ? { interviewerWecomIds } : {}), ...(meetingRoomSelectionId ? { meetingRoomSelectionId } : {}), note: document.getElementById('rf-interview-note')?.value.trim(), sendCandidateEmail: past ? false : document.getElementById('rf-send-candidate-email')?.checked !== false, operator: '当前用户', publicUrl: publicUrl.toString() };
+      if (message) { message.textContent = past ? '正在保存历史面试，请勿重复提交…' : '正在创建企微日程并发送邀请，请勿重复提交…'; message.classList.remove('error'); }
+      loading(past ? '正在保存历史面试，请稍候…' : '正在创建企微日程并发送邀请邮件，请稍候…');
       if (!submit.dataset.requestId) submit.dataset.requestId = crypto.randomUUID();
       const started = submit.dataset.jobId ? { jobId: submit.dataset.jobId } : await request(`api/interviews/appointments?background=true&requestId=${encodeURIComponent(submit.dataset.requestId)}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
       if (started.jobId) submit.dataset.jobId = started.jobId;
       const result = started.jobId ? await pollInterviewCreation(started.jobId, (progress) => { loading(progress); if (message?.isConnected) message.textContent = progress; }) : started;
       hideGlobalLoading();
       document.dispatchEvent(new CustomEvent('resumeflow:interview-created', { detail: { interviewId: result.interviewId } }));
-      const calendarOk = result.sync?.status === '已同步', emailOk = ['已发送', '未发送'].includes(result.email?.status), completeOk = calendarOk && emailOk;
+      const calendarOk = past ? result.sync?.status === '无需同步' : result.sync?.status === '已同步', emailOk = ['已发送', '未发送'].includes(result.email?.status), completeOk = calendarOk && emailOk;
      const questionStatus = result.questionJob?.status === 'running' ? '已开始生成' : result.questionJob?.status || '已发布';
-     showTalentDialog(`<div class="rf-operation-result rf-invitation-result ${completeOk ? 'is-success' : 'is-warning'}" role="status" aria-live="polite"><i>${completeOk ? '✓' : '!'}</i><span>面试邀请处理结果</span><h2>${completeOk ? (result.email?.status === '已发送' ? '面试邀请已发送' : '企微日程已创建，邮件已跳过') : '面试处理未完成'}</h2><p class="rf-invitation-summary">${escapeHtml(candidateName)}<br>${escapeHtml(scheduleSummary)}</p><div class="rf-invitation-receipt"><article class="${calendarOk ? 'done' : 'failed'}"><b>01</b><div><strong>创建企微日程</strong><small>${escapeHtml(result.sync?.status || '未完成')}${result.sync?.message ? ` · ${escapeHtml(result.sync.message)}` : ''}</small></div></article><article class="${emailOk ? 'done' : 'failed'}"><b>02</b><div><strong>发送候选人邮件</strong><small>${escapeHtml(result.email?.status || '未发送')}${result.email?.message ? ` · ${escapeHtml(result.email.message)}` : ''}</small></div></article><article class="done"><b>03</b><div><strong>生成面试题</strong><small>${escapeHtml(questionStatus)} · 已预生成，开始前 10 分钟发送链接</small></div></article></div><p>${completeOk ? '面试题已预生成；面试前 10 分钟将发给面试官，面试结束后再发送评价入口。' : '请按错误信息修正后重新提交；本次未生成有效面试记录。'}</p><div class="rf-dialog-actions"><button class="btn-primary" data-rf-invitation-done type="button">知道了</button><button class="btn-soft" data-rf-open-interview-page type="button">查看面试排期</button></div></div>`);
+     const calendarTitle = past ? '补录历史面试' : '创建企微日程';
+     const calendarDetail = past ? '只保存记录，未创建企微日程' : `${result.sync?.status || '未完成'}${result.sync?.message ? ` · ${result.sync.message}` : ''}`;
+     const resultTitle = completeOk ? (past ? '历史面试已补录' : result.email?.status === '已发送' ? '面试邀请已发送' : '企微日程已创建，邮件已跳过') : '面试处理未完成';
+     const resultNote = completeOk ? (past ? '只保存了这条面试记录，没有发送邮件、创建日程或生成面试题。' : '面试题已预生成；面试前 10 分钟将发给面试官，面试结束后再发送评价入口。') : '请按错误信息修正后重新提交；本次未生成有效面试记录。';
+     const receipt = past
+       ? `<article class="done"><b>01</b><div><strong>${calendarTitle}</strong><small>${escapeHtml(calendarDetail)}</small></div></article><article class="done"><b>02</b><div><strong>候选人邮件</strong><small>未发送</small></div></article><article class="done"><b>03</b><div><strong>面试题</strong><small>未生成</small></div></article>`
+       : `<article class="${calendarOk ? 'done' : 'failed'}"><b>01</b><div><strong>${calendarTitle}</strong><small>${escapeHtml(calendarDetail)}</small></div></article><article class="${emailOk ? 'done' : 'failed'}"><b>02</b><div><strong>发送候选人邮件</strong><small>${escapeHtml(result.email?.status || '未发送')}${result.email?.message ? ` · ${escapeHtml(result.email.message)}` : ''}</small></div></article><article class="done"><b>03</b><div><strong>生成面试题</strong><small>${escapeHtml(questionStatus)} · 已预生成，开始前 10 分钟发送链接</small></div></article>`;
+     showTalentDialog(`<div class="rf-operation-result rf-invitation-result ${completeOk ? 'is-success' : 'is-warning'}" role="status" aria-live="polite"><i>${completeOk ? '✓' : '!'}</i><span>${past ? '历史面试补录结果' : '面试邀请处理结果'}</span><h2>${escapeHtml(resultTitle)}</h2><p class="rf-invitation-summary">${escapeHtml(candidateName)}<br>${escapeHtml(scheduleSummary)}</p><div class="rf-invitation-receipt">${receipt}</div><p>${escapeHtml(resultNote)}</p><div class="rf-dialog-actions"><button class="btn-primary" data-rf-invitation-done type="button">知道了</button><button class="btn-soft" data-rf-open-interview-page type="button">查看面试排期</button></div></div>`);
       document.querySelector('[data-rf-invitation-done]')?.addEventListener('click', closeTalentDialog);
       document.querySelector('[data-rf-open-interview-page]')?.addEventListener('click', () => { closeTalentDialog(false); window.setPage?.('interviews'); });
-      notifyUser(completeOk ? `${candidateName}的面试处理完成，面试题已预生成，将在开始前 10 分钟发送。` : '面试处理未完成，请按提示修正后重新提交。', completeOk ? 'success' : 'info');
+      notifyUser(completeOk ? (past ? `${candidateName}的历史面试已补录，未发送邮件。` : `${candidateName}的面试处理完成，面试题已预生成，将在开始前 10 分钟发送。`) : '面试处理未完成，请按提示修正后重新提交。', completeOk ? 'success' : 'info');
     } catch (error) {
       hideGlobalLoading();
       if (submit && error.jobFailed) { delete submit.dataset.jobId; delete submit.dataset.requestId; }
@@ -5610,7 +5748,7 @@ if (!root) return;
     const meetingLink = /^https?:\/\//i.test(String(appointment.meetingUrl || ''))
       ? `<a href="${escapeHtml(appointment.meetingUrl)}" target="_blank" rel="noopener">打开会议链接 ↗</a>`
       : '';
-    showTalentDialog(`<header class="rf-dialog-head rf-schedule-detail-head"><div><span>INTERVIEW SCHEDULE</span><h2>${escapeHtml(appointment.candidateName || '候选人')} · ${escapeHtml(appointment.round || '面试')}</h2><p>${escapeHtml(formatScheduleTimeRange(appointment.startAt, appointment.endAt))} · ${escapeHtml(status)}</p></div><b class="rf-schedule-status ${status === '已取消' ? 'cancelled' : status === '已完成' ? 'done' : ''}">${escapeHtml(status)}</b></header><section class="rf-schedule-detail-grid"><article><span>面试方式</span><strong>${escapeHtml(appointment.mode || '待确认')}</strong></article><article><span>面试官</span><strong>${escapeHtml(interviewers)}</strong></article><article><span>地点 / 会议室</span><strong>${escapeHtml(room)}</strong>${meetingLink}</article><article><span>候选人确认</span><strong>${escapeHtml(appointment.confirmationStatus || '待确认')}</strong></article></section>${appointment.note ? `<section class="rf-schedule-detail-note"><span>备注</span><p>${escapeHtml(appointment.note)}</p></section>` : ''}${appointment.syncStatus === '同步失败' ? `<p class="rf-dialog-message error" role="alert">${escapeHtml(appointment.syncError || '企微日程同步失败')}</p><button class="btn-primary" type="button" data-interview-recover="retry-sync">重试${status === '已取消' ? '取消会议' : '日程同步'}</button>` : ''}${appointment.syncStatus === '已同步' && ['待确认', '待重新确认'].includes(appointment.confirmationStatus) && status !== '已取消' ? '<button class="btn-soft" type="button" data-interview-recover="retry-invitation">重新发送邀请邮件</button>' : ''}<p id="rf-interview-recovery-message" role="status"></p><div class="rf-dialog-actions"><button class="btn-soft" type="button" data-interview-schedule-close>返回日程</button>${cancellable ? `<button class="danger" type="button" data-interview-schedule-cancel="${escapeHtml(appointment.id)}">取消面试</button>` : ''}</div>`, 'wide', false);
+    showTalentDialog(`<header class="rf-dialog-head rf-schedule-detail-head"><div><span>INTERVIEW SCHEDULE</span><h2>${escapeHtml(appointment.candidateName || '候选人')} · ${escapeHtml(appointment.round || '面试')}</h2><p>${escapeHtml(formatScheduleTimeRange(appointment.startAt, appointment.endAt))} · ${escapeHtml(status)}</p></div><b class="rf-schedule-status ${status === '已取消' ? 'cancelled' : status === '已完成' ? 'done' : ''}">${escapeHtml(status)}</b></header><section class="rf-schedule-detail-grid"><article><span>面试方式</span><strong>${escapeHtml(appointment.mode || '待确认')}</strong></article><article><span>面试官</span><strong>${escapeHtml(interviewers)}</strong></article><article><span>地点 / 会议室</span><strong>${escapeHtml(room)}</strong>${meetingLink}</article><article><span>候选人确认</span><strong>${escapeHtml(appointment.confirmationStatus || '待确认')}</strong></article></section>${appointment.syncStatus === '无需同步' ? '<p class="rf-dialog-message">历史补录，未创建企微日程。</p>' : ''}${appointment.note ? `<section class="rf-schedule-detail-note"><span>备注</span><p>${escapeHtml(appointment.note)}</p></section>` : ''}${appointment.syncStatus === '同步失败' ? `<p class="rf-dialog-message error" role="alert">${escapeHtml(appointment.syncError || '企微日程同步失败')}</p><button class="btn-primary" type="button" data-interview-recover="retry-sync">重试${status === '已取消' ? '取消会议' : '日程同步'}</button>` : ''}${appointment.syncStatus === '已同步' && ['待确认', '待重新确认'].includes(appointment.confirmationStatus) && status !== '已取消' ? '<button class="btn-soft" type="button" data-interview-recover="retry-invitation">重新发送邀请邮件</button>' : ''}<p id="rf-interview-recovery-message" role="status"></p><div class="rf-dialog-actions"><button class="btn-soft" type="button" data-interview-schedule-close>返回日程</button>${cancellable ? `<button class="danger" type="button" data-interview-schedule-cancel="${escapeHtml(appointment.id)}">取消面试</button>` : ''}</div>`, 'wide', false);
     document.querySelectorAll('[data-interview-recover]').forEach((button) => button.addEventListener('click', async () => {
       const message = document.getElementById('rf-interview-recovery-message');
       button.disabled = true;
@@ -5655,6 +5793,8 @@ if (!root) return;
       if (button) button.disabled = false;
     }
   }
+
+  document.querySelector('[data-rf-group-interview]')?.addEventListener('click', openGroupInterview);
 
   async function loadInterviewSchedulePage() {
     const monthInput = document.getElementById('interview-month-filter');
@@ -6245,6 +6385,71 @@ if (!root) return;
 
   async function loadScheduledTasks() {
     window.mountScheduledTasksPage?.();
+  }
+
+  function referralResumePreview(detail) {
+    const url = String(detail.sourceFileUrl || '');
+    const name = String(detail.sourceFileName || url).toLowerCase();
+    if (/\.(png|jpe?g|webp|gif|bmp)(?:$|\?)/.test(name)) return `<img src="${escapeHtml(url)}" alt="${escapeHtml(detail.name || '候选人简历')}">`;
+    if (/\.pdf(?:$|\?)/.test(name)) return `<iframe title="${escapeHtml(detail.name || '候选人')}简历" src="${escapeHtml(url)}"></iframe>`;
+    const text = String(detail.rawText || '').trim();
+    if (text && text !== '完整简历原文将在打开详情时按需加载。') return `<div class="rf-referral-text">${escapeHtml(text)}</div>`;
+    return `<div class="rf-dialog-empty"><strong>简历原件暂不能内嵌预览</strong><p>${url ? `<a href="${escapeHtml(url)}" target="_blank" rel="noopener">打开原始简历</a>` : '这份内推简历还没有可用的文件地址。'}</p></div>`;
+  }
+
+  async function openReferralResumeReview(candidateId) {
+    if (!candidateId) return;
+    const token = showTalentDialog('<div class="rf-dialog-loading">正在打开内推简历…</div>', 'wide');
+    try {
+      const detail = await fetchTalentDetail(candidateId);
+      if (!isTalentDialogCurrent(token)) return;
+      storeTalentDetail(detail);
+      const pending = detail.status === '待HR审核';
+      const facts = [
+        ['候选人', detail.name || '未识别姓名'],
+        ['内推岗位', detail.bestMatchRole || detail.jobIntention || '岗位待确认'],
+        ['推荐人', detail.referrer || '未记录'],
+        ['当前阶段', detail.status || '待确认'],
+        ['综合评分', `${Number(detail.analysis?.scores?.overall || detail.bestMatchScore || 0)} 分`],
+      ];
+      showTalentDialog(`
+        <header class="rf-dialog-head"><div><span>REFERRAL REVIEW</span><h2>内推简历审核</h2><p>${escapeHtml(detail.referrer || '员工')} 推荐的 ${escapeHtml(detail.name || '候选人')}。打开后直接查看简历并给出审核结论。</p></div></header>
+        <div class="rf-referral-review">
+          <section class="rf-referral-resume">
+            <header><div><span>原始简历</span><strong>${escapeHtml(detail.sourceFileName || '简历文件')}</strong></div>${detail.sourceFileUrl ? `<a href="${escapeHtml(detail.sourceFileUrl)}" target="_blank" rel="noopener">新窗口打开</a>` : ''}</header>
+            ${referralResumePreview(detail)}
+          </section>
+          <form class="rf-referral-decision" id="rf-referral-review-form">
+            <header><div><span>审核结论</span><strong>${pending ? '等待岗位 HR 审核' : escapeHtml(detail.status || '已处理')}</strong></div></header>
+            <dl class="rf-referral-facts">${facts.map(([label, value]) => `<div><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd></div>`).join('')}</dl>
+            <label><span>审核说明 <b>*</b></span><textarea id="rf-referral-review-reason" ${pending ? '' : 'disabled'} placeholder="说明通过或不通过的原因"></textarea><small class="rf-schedule-error" hidden></small></label>
+            <div class="rf-referral-actions"><button class="btn-soft" type="button" data-rf-referral-reject ${pending ? '' : 'disabled'}>不通过</button><button class="btn-primary" type="button" data-rf-referral-pass ${pending ? '' : 'disabled'}>通过并推送业务群</button></div>
+            <p class="rf-dialog-message" id="rf-referral-review-message">${pending ? '' : '这份简历当前不在待 HR 审核阶段，只能查看，不能重复审核。'}</p>
+          </form>
+        </div>`, 'wide');
+      document.querySelector('[data-rf-referral-pass]')?.addEventListener('click', () => submitReferralResumeReview(candidateId, '通过'));
+      document.querySelector('[data-rf-referral-reject]')?.addEventListener('click', () => submitReferralResumeReview(candidateId, '不通过'));
+    } catch (error) {
+      if (isTalentDialogCurrent(token)) dialogFailure('内推简历打开失败', error, () => openReferralResumeReview(candidateId), token);
+    }
+  }
+
+  async function submitReferralResumeReview(candidateId, decision) {
+    const reasonNode = document.getElementById('rf-referral-review-reason');
+    const reason = reasonNode?.value.trim() || '';
+    const message = document.getElementById('rf-referral-review-message');
+    markScheduleField(reasonNode, reason ? '' : '请填写审核说明');
+    if (!reason) { reasonNode?.focus(); return; }
+    try {
+      if (message) { message.textContent = decision === '通过' ? '正在保存审核并通过到业务群…' : '正在保存审核结论…'; message.classList.remove('error'); }
+      document.querySelectorAll('[data-rf-referral-pass], [data-rf-referral-reject]').forEach((button) => { button.disabled = true; });
+      await request(`api/talents/${encodeURIComponent(candidateId)}/referral-hr-review`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ decision, reason, operator: '当前用户' }) });
+      notifyUser(decision === '通过' ? '内推简历已通过，并进入业务群评审。' : '内推简历已标记为不通过。', 'success');
+      closeTalentDialog();
+    } catch (error) {
+      document.querySelectorAll('[data-rf-referral-pass], [data-rf-referral-reject]').forEach((button) => { button.disabled = false; });
+      if (message) { message.textContent = error.message || '审核提交失败'; message.classList.add('error'); }
+    }
   }
 
   async function loadReferralQrSummary() {
@@ -7991,8 +8196,8 @@ if (!root) return;
     const demandMonth = params.get('demand_month') || '';
     const overviewMonth = params.get('overview_month') || '';
     try {
-      const destinations = { schedule: 'interviews', questions: 'interviews', evaluation: 'interviews', decision: 'interviews', reschedule: 'interviews', interview_status: 'interviews', offer: 'offers', onboarding: 'resume-archive', recruitment_approval: 'jobs', demand: 'jobs', overview: 'overview' };
-      const requiredActions = { schedule: 'arrange_interview', evaluation: 'submit_interview_feedback', decision: 'review_candidate', reschedule: 'arrange_interview', offer: 'manage_offer', onboarding: 'manage_employee_lifecycle', demand: 'create_demand' };
+      const destinations = { schedule: 'interviews', questions: 'interviews', evaluation: 'interviews', decision: 'interviews', reschedule: 'interviews', interview_status: 'interviews', offer: 'offers', onboarding: 'resume-archive', recruitment_approval: 'jobs', demand: 'jobs', overview: 'overview', referral_review: 'resume-archive' };
+      const requiredActions = { schedule: 'arrange_interview', evaluation: 'submit_interview_feedback', decision: 'review_candidate', reschedule: 'arrange_interview', offer: 'manage_offer', onboarding: 'manage_employee_lifecycle', demand: 'create_demand', referral_review: 'review_candidate' };
       const allowedDestinations = action === 'onboarding' ? ['resume-archive', 'overview'] : action === 'recruitment_approval' ? ['jobs', 'overview'] : [destinations[action]];
       if (!destinations[action] || !allowedDestinations.some(page => window.canOpenRecruitmentPage?.(page)) || (requiredActions[action] && !hasAccessAction(requiredActions[action]))) {
         notifyUser('当前账号没有此页面或操作的权限，请联系管理员。', 'error');
@@ -8043,6 +8248,10 @@ if (!root) return;
         const monthInput = document.getElementById('job-month-filter');
         if (monthInput && /^\d{4}-\d{2}$/.test(demandMonth)) monthInput.value = demandMonth;
         await window.openDepartmentDemandWorkbench({ request, escapeHtml, showTalentDialog, isTalentDialogCurrent, openMonthlyDemandDialog, notifyUser }, /^\d{4}-(0[1-9]|1[0-2])$/.test(demandMonth) ? demandMonth : currentMonthValue());
+      } else if (action === 'referral_review') {
+        window.setPage?.('resume-archive');
+        if (!candidateId) throw new Error('审核链接缺少候选人，无法打开简历');
+        await openReferralResumeReview(candidateId);
       } else if (action === 'overview') {
         window.setPage?.('overview');
         if (/^\d{4}-\d{2}$/.test(overviewMonth)) {
@@ -8305,7 +8514,7 @@ if (!root) return;
       const recordAction = event.target.closest('button, a, input, select, textarea, label, summary');
       if (referralRecord && !recordAction) {
         event.preventDefault();
-        openTalentDetailDialog(referralRecord.dataset.refRecordCandidate);
+        openReferralResumeReview(referralRecord.dataset.refRecordCandidate);
         return;
       }
       const workbenchButton = event.target.closest('[data-referral-workbench]');
@@ -8331,7 +8540,7 @@ if (!root) return;
       const referralRecord = event.target.closest('[data-ref-record-candidate]');
       if (!referralRecord || event.target !== referralRecord) return;
       event.preventDefault();
-      openTalentDetailDialog(referralRecord.dataset.refRecordCandidate);
+      openReferralResumeReview(referralRecord.dataset.refRecordCandidate);
     });
     document.addEventListener('resumeflow:page', (event) => { if (event.detail?.page === 'referral') loadReferralQrSummary(); });
     if (document.getElementById('page-referral')?.classList.contains('active')) loadReferralQrSummary();

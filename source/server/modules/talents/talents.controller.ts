@@ -192,7 +192,14 @@ export class TalentsController {
   review(@Param('id') id: string, @Body() body: TalentReviewInput) { return this.talents.reviewTalent(id, body) }
 
   @Post(':id/referral-hr-review')
-  referralHrReview(@Param('id') id: string, @Body() body: { decision?: string; reason?: string; operator?: string; operatorUserId?: string }) {
+  async referralHrReview(@Param('id') id: string, @Headers() headers: Record<string, string | string[] | undefined>, @Body() body: { decision?: string; reason?: string; operator?: string; operatorUserId?: string }) {
+    const requestAccess = await this.access.getRequestAccess(headers)
+    if (requestAccess) {
+      this.access.assertPage(requestAccess.profile, 'candidates')
+      this.access.assertAction(requestAccess.profile, 'review_candidate')
+      body.operator = requestAccess.identity.userName || body.operator
+      body.operatorUserId = requestAccess.identity.userId || body.operatorUserId
+    }
     return this.talents.reviewReferralByHr(id, body)
   }
 

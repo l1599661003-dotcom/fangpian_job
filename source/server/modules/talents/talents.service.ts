@@ -292,7 +292,7 @@ export class TalentsService implements OnModuleInit {
     const profile = await this.detail(candidateId)
     const positionName = text(referral.fields['职位ID']) ? (profile.matches || []).find((item: any) => text(item.positionId) === text(referral.fields['职位ID']))?.positionName || profile.bestMatchRole : profile.bestMatchRole
     const publicBase = text(process.env.APP_PUBLIC_URL).replace(/\/+$/, '')
-    const reviewUrl = publicBase ? `${publicBase}/#candidates` : ''
+    const reviewUrl = publicBase ? `${publicBase}/?flow_action=referral_review&candidate_id=${encodeURIComponent(candidateId)}` : ''
     await this.messages.notifyPositionHr({
       category: '内推HR审核', candidateId, applicationId, positionId: text(referral.fields['职位ID']), objectId: text(referral.fields['内推记录ID']) || referral.id,
       operator: '内推评分完成',
@@ -300,7 +300,7 @@ export class TalentsService implements OnModuleInit {
         `## 【内推待审核】${wecomInline(this.reviewCandidateName(profile), '候选人', 20)}`,
         `> 内推人 ${wecomInline(referral.fields['推荐人'], '员工', 20)} 推荐至 ${wecomInline(positionName, '所选岗位', 30)}`,
         `> AI综合评分 ${score} 分。请先审核，通过后再推送业务群。`,
-        reviewUrl ? `[打开人才档案 →](${reviewUrl})` : '',
+        reviewUrl ? `[打开简历并审核 →](${reviewUrl})` : '',
       ].filter(Boolean).join('\n\n'),
     })
     await teable.updateRecord(this.table('recruitment_referrals'), referral.id, { 内推状态: '待HR审核', 当前进度: 'HR审核', 更新时间: now() })
