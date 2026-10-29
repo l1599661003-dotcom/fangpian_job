@@ -158,10 +158,11 @@ const offerDocument = (values: OfferFileValues, templateType: OfferTemplateType)
   const salaryParts = [`底薪${underline(values.monthlySalary)}元`]
   if (values.performanceIncluded) salaryParts.push(underline(values.performanceSalary))
   if (values.commissionIncluded) salaryParts.push(underline(values.commissionSalary))
+  const socialSalaryText = `${salaryParts.join('+')}${text(values.probationMonths) ? `，${underline(values.probationMonths)}` : ''}。`
   const internshipUnit = values.internshipPayUnit === 'month' ? '月' : '天'
   const salaryText = internship
     ? `薪酬${underline(values.internshipPayUnit === 'month' ? values.monthlySalary : values.dailySalary)}元/${internshipUnit}，入职后缴纳意外险。`
-    : `薪酬${underline(values.totalSalary)}元/月，包含${salaryParts.join('+')}，试用期${underline(values.probationMonths)}。`
+    : socialSalaryText
   const materialItems = internship
     ? ['学生证原件及复印件1份', '身份证原件及复印件1份（正反面在一张上）', '招商银行卡复印件1份（用于薪酬发放）']
     : ['身份证原件及复印件1份（正反面在一张上）', '上一家工作单位解除劳动合同证明原件', '最高学历毕业证书、学位证书原件及复印件各1份', '招商银行卡复印件1份（用于薪酬发放）']
@@ -411,7 +412,7 @@ export class OffersService {
     if (baseSalary < 0) throw new BadRequestException('薪资不能小于0')
     if (performanceIncluded && !performanceNote) throw new BadRequestException('已勾选绩效时请填写绩效说明')
     if (commissionIncluded && !commissionNote) throw new BadRequestException('已勾选其他时请填写其他说明')
-    const probationMonths = text(input.probationMonths) || '3个月，试用期薪资100%'
+    const probationMonths = text(input.probationMonths) || '试用期3个月，试用期薪资100%'
     const scheduleFields = this.offerScheduleInput(input)
     const honorific = this.offerHonorificInput(input)
 
@@ -554,7 +555,7 @@ export class OffersService {
     if (baseSalary < 0) throw new BadRequestException('薪资不能小于0')
     if (performanceIncluded && !performanceNote) throw new BadRequestException('已勾选绩效时请填写绩效说明')
     if (commissionIncluded && !commissionNote) throw new BadRequestException('已勾选其他时请填写其他说明')
-    const probationMonths = text(input.probationMonths) || '3个月，试用期薪资100%'
+    const probationMonths = text(input.probationMonths) || '试用期3个月，试用期薪资100%'
     const scheduleFields = this.offerScheduleInput(input)
     const honorific = this.offerHonorificInput(input)
     const newVersion = (num(row.fields['当前版本']) || 1) + 1
@@ -940,7 +941,7 @@ export class OffersService {
       commissionSalary: commissionNote,
       performanceIncluded,
       commissionIncluded,
-      probationMonths: /^\d+$/.test(text(row.fields['试用期月数'])) ? `${text(row.fields['试用期月数'])}个月` : text(row.fields['试用期月数']) || '3个月，试用期薪资100%',
+      probationMonths: /^\d+$/.test(text(row.fields['试用期月数'])) ? `${text(row.fields['试用期月数'])}个月` : text(row.fields['试用期月数']) || '试用期3个月，试用期薪资100%',
       deadlineDate: validTo,
       validFrom,
       validTo,
@@ -1027,7 +1028,7 @@ export class OffersService {
     if (values.performanceIncluded) salaryExtras.push(values.performanceSalary)
     if (values.commissionIncluded) salaryExtras.push(values.commissionSalary)
     const probationText = text(values.probationMonths)
-    const salarySummary = `薪酬${values.totalSalary}元/月，包含底薪${values.monthlySalary}元${salaryExtras.length ? `+${salaryExtras.join('+')}` : ''}${probationText ? `，${probationText}` : ''}。`
+    const salarySummary = `底薪${values.monthlySalary}元${salaryExtras.length ? `+${salaryExtras.join('+')}` : ''}${probationText ? `，${probationText}` : ''}。`
     const salaryLines = wrapText(salarySummary, 386, bodySize).slice(0, 3)
     cover(first, 88, 322, 432, 50)
     salaryLines.forEach((line, index) => put(first, line, 124, 352 - index * 15, bodySize))

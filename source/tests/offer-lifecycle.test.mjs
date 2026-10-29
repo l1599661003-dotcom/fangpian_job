@@ -65,7 +65,7 @@ test('social Offer PDF uses a stable embedded TrueType font', async () => {
     assert.match(text.stdout, /顾承昀/);
     assert.match(text.stdout, /AI产品经理/);
     assert.match(text.stdout, /顾承昀\s+女士/);
-    assert.match(text.stdout, /薪酬5000元\/月，包含底薪5000元，试用期3个月，试用薪资100%，试用期即缴纳五险一金。/);
+    assert.match(text.stdout, /底薪5000元，3个月，试用期薪资100%。/);
     const fonts = await execute('pdffonts', [pdfPath]);
     assert.match(fonts.stdout, /HarmonyOS_Sans_SC/);
     assert.doesNotMatch(fonts.stdout, /SourceHanSansCN-Regular/);

@@ -323,7 +323,7 @@ test('Offer adjustment reopens every editable field and regenerates the PDF befo
     id: 'offer_adjust', candidateId: 'talent_a', candidateName: '林悦', candidateEmail: 'lin@example.test',
     positionId: 'pos_any', templateId: 'offer_tpl_social', templateType: '社招', role: '商务提报', department: '商务部',
     location: '山东省烟台市', startDate: '2026-11-02', reportingTo: '张总', validFrom: '2026-10-20', validTo: '2026-11-02',
-    candidateHonorific: '女士', probationMonths: '3个月，试用期薪资100%', baseSalary: 9000, dailySalary: 0,
+    candidateHonorific: '女士', probationMonths: '试用期3个月，试用期薪资100%', baseSalary: 9000, dailySalary: 0,
     performanceSalary: 1500, performanceIncluded: true, commission: 0, commissionIncluded: false,
     status: '待发送', approvalStatus: '已通过', version: 1, fileUrl: 'https://cdn.example.test/offer-old.pdf',
     sendStatus: '待人工发送', response: '', updatedAt: '2026-10-22T00:00:00.000Z',
@@ -354,7 +354,7 @@ test('Offer adjustment reopens every editable field and regenerates the PDF befo
   await expect(page.locator('#rf-offer-base')).toHaveValue('9000');
   await expect(page.locator('#rf-offer-performance-included')).toBeChecked();
   await expect(page.locator('#rf-offer-performance')).toHaveValue('1500');
-  await expect(page.locator('#rf-offer-probation')).toHaveValue('3个月，试用期薪资100%');
+  await expect(page.locator('#rf-offer-probation')).toHaveValue('试用期3个月，试用期薪资100%');
   await expect(page.locator('#offer-management-root')).not.toContainText('谈薪结果');
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
 
@@ -369,7 +369,7 @@ test('Offer adjustment reopens every editable field and regenerates the PDF befo
   expect(patchPayload).toMatchObject({
     candidateId: 'talent_a', positionId: 'pos_ops', role: '运营专员', department: '运营部', location: '山东省烟台市',
     baseSalary: 9800, performanceSalary: 1500, reportingTo: '李总', candidateHonorific: '女士', templateId: 'offer_tpl_social',
-    validFrom: '2026-10-20', validTo: '2026-11-02', probationMonths: '3个月，试用期薪资100%',
+    validFrom: '2026-10-20', validTo: '2026-11-02', probationMonths: '试用期3个月，试用期薪资100%',
   });
 });
 
@@ -1460,7 +1460,7 @@ test('mobile HR Offer handoff locks the interview candidate and position and wai
   await expect(page.locator('#rf-offer-base')).toHaveValue('');
   await expect(page.locator('#rf-offer-performance')).toBeDisabled();
   await expect(page.locator('#rf-offer-commission')).toBeDisabled();
-  await expect(page.locator('#rf-offer-probation')).toHaveValue('3个月，试用期薪资100%');
+  await expect(page.locator('#rf-offer-probation')).toHaveValue('试用期3个月，试用期薪资100%');
   expect(offerWrites).toBe(0);
   await page.locator('#rf-offer-create-form button[type="submit"]').scrollIntoViewIfNeeded();
   await expect(page.locator('#rf-offer-create-form button[type="submit"]')).toBeInViewport();
