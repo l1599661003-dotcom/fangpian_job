@@ -1026,8 +1026,8 @@ export class OffersService {
       put(page, value, left + Math.max(0, (right - left - width) / 2), y, size)
     }
     put(first, startParts[0], 184, 463, 10.5)
-    centerInSlot(first, startParts[1], 228, 248, 463)
-    centerInSlot(first, startParts[2], 262, 286, 463)
+    centerInSlot(first, startParts[1], 214, 236, 463)
+    centerInSlot(first, startParts[2], 246, 270, 463)
     const salaryExtras: string[] = []
     if (values.performanceIncluded) salaryExtras.push(values.performanceSalary)
     if (values.commissionIncluded) salaryExtras.push(values.commissionSalary)
