@@ -1636,12 +1636,14 @@
   }
 
   const talentDetailRequests = new Map();
-  function fetchTalentDetail(candidateId) {
-    if (!talentDetailRequests.has(candidateId)) {
-      const pending = request(`api/talents/${encodeURIComponent(candidateId)}`).finally(() => talentDetailRequests.delete(candidateId));
-      talentDetailRequests.set(candidateId, pending);
+  function fetchTalentDetail(candidateId, referralId = '') {
+    const cacheKey = referralId ? `${candidateId}#${referralId}` : candidateId;
+    if (!talentDetailRequests.has(cacheKey)) {
+      const query = referralId ? `?referralId=${encodeURIComponent(referralId)}` : '';
+      const pending = request(`api/talents/${encodeURIComponent(candidateId)}${query}`).finally(() => talentDetailRequests.delete(cacheKey));
+      talentDetailRequests.set(cacheKey, pending);
     }
-    return talentDetailRequests.get(candidateId);
+    return talentDetailRequests.get(cacheKey);
   }
 
   async function openTalentDetailDialog(candidateId) {
@@ -1752,6 +1754,8 @@
       matches: Array.isArray(detail.matches) ? detail.matches : summary.matches,
       bestMatchScore: detail.bestMatchScore ?? summary.bestMatchScore,
       bestMatchRole: detail.bestMatchRole ?? summary.bestMatchRole,
+      referralPositionId: detail.referralPositionId ?? summary.referralPositionId,
+      referralPositionName: detail.referralPositionName ?? summary.referralPositionName,
       updatedTime: detail.updatedTime || summary.updatedTime,
     };
   }
@@ -1975,7 +1979,7 @@
       <section class="rf-talent-basic-card">
         <div class="rf-profile-top rf-talent-profile-top">
           <div class="rf-profile-identity">${profileAvatar(item)}<div><div class="rf-profile-name"><h2>${escapeHtml(item.name || '未识别姓名')}</h2><b class="rf-profile-score">${overallScore}分<b>综合评分</b></b></div><div class="rf-profile-quick-facts">${[gender || '', item.phone || '', item.age ? `${item.age}岁` : '', item.yearsOfExperience || '', item.currentCompany || '', item.currentRole || '', item.address || '', item.employmentStatus || '', item.tianjiHireDate ? `入职 ${formatTalentEntryTime(item.tianjiHireDate)}` : '', item.tianjiLeaveDate ? `离职 ${formatTalentEntryTime(item.tianjiLeaveDate)}` : '', item.source || '', item.importedBy ? `导入人 ${item.importedBy}` : '', item.latestApplicationTime ? `最近投递 ${formatTalentEntryTime(item.latestApplicationTime)}` : item.createdTime ? `首次入库 ${formatTalentEntryTime(item.createdTime)}` : ''].filter(Boolean).map((value) => `<span>${escapeHtml(value)}</span>`).join('<i>|</i>') || '待补充'}</div></div></div>
-          <div class="rf-profile-job-intent"><div><span>适配岗位</span><strong>${escapeHtml(matches[0]?.positionName || item.jobIntention || '岗位匹配待生成')}</strong>${manualCorrection ? `<small>人工修正：${escapeHtml(manualCorrection.previousPositionName || '原岗位未记录')} → ${escapeHtml(matches[0]?.positionName || '')} · ${escapeHtml(manualCorrection.operator || '人工')} · ${escapeHtml(manualCorrection.reason || '')}</small>` : ''}</div><label class="rf-profile-tag-pill"><b>人才标签：</b>${escapeHtml(tagText)}</label></div>
+          <div class="rf-profile-job-intent">${item.referralPositionName ? `<div><span>内推岗位</span><strong>${escapeHtml(item.referralPositionName)}</strong></div>` : ''}<div><span>AI推荐岗位</span><strong>${escapeHtml(matches[0]?.positionName || item.jobIntention || '岗位匹配待生成')}</strong>${manualCorrection ? `<small>人工修正：${escapeHtml(manualCorrection.previousPositionName || '原岗位未记录')} → ${escapeHtml(matches[0]?.positionName || '')} · ${escapeHtml(manualCorrection.operator || '人工')} · ${escapeHtml(manualCorrection.reason || '')}</small>` : ''}</div><label class="rf-profile-tag-pill"><b>人才标签：</b>${escapeHtml(tagText)}</label></div>
           <div class="rf-profile-stage-actions">${analysis.id ? '' : '<button class="btn-soft" type="button" data-rf-ai-versions>AI分析</button>'}<div class="rf-more-actions"><button type="button" class="btn-soft" data-rf-more-toggle aria-expanded="false">更多操作</button><div class="rf-more-menu" data-rf-more-menu hidden><button type="button" data-rf-correct-ai>修正AI标签/评分</button><button type="button" data-rf-correct-match>人工修改适配岗位</button>${item.latestResumeId || item.resumeId ? `<button type="button" data-rf-resume-review="${escapeHtml(item.latestResumeId || item.resumeId)}">复核简历字段</button>` : ''}<button type="button" data-rf-reparse-resume="${escapeHtml(item.latestResumeId || item.resumeId || '')}">重新识别简历</button><button type="button" data-rf-rename-talent>修改人才名称</button><button type="button" data-rf-open-background>发起背调</button>${item.sourceFileUrl ? `<a href="${escapeHtml(item.sourceFileUrl)}" target="_blank" rel="noopener">查看原始简历</a>` : ''}${item.editableWordUrl ? `<a href="${escapeHtml(item.editableWordUrl)}" target="_blank" rel="noopener">可编辑Word ↗</a>` : ''}${item.latestResumeId || item.resumeId ? `<button type="button" class="danger" data-rf-delete-talent-resume="${escapeHtml(item.latestResumeId || item.resumeId)}" data-rf-delete-candidate="${escapeHtml(item.candidateId || item.id || state.activeId || '')}">删除简历</button>` : ''}${item.candidateId ? `<button type="button" class="danger" data-rf-delete-talent>删除人才档案</button>` : ''}</div>
         </div>
         <div class="rf-detail-overview" id="rf-detail-basic">
@@ -3213,7 +3217,7 @@
 
   function interviewRoomIdFrom(value) { return value === '__no_room__' ? '' : value || ''; }
   function interviewRoomOptions(rooms, selected = '') {
-    return [`<option value="">请选择会议室</option>`, `<option value="__no_room__" ${selected === '__no_room__' ? 'selected' : ''}>不选择会议室</option>`, ...(rooms || []).map((item) => {
+    return [`<option value="">请选择会议室</option>`, `<option value="__no_room__" ${selected === '__no_room__' ? 'selected' : ''}>不使用会议室</option>`, ...(rooms || []).map((item) => {
       const status = item.status || '待选择时间';
       const source = item.source === '企微实时' ? '企微实时' : item.source === '企微待确认' ? '待企微确认' : '';
       return `<option value="${escapeHtml(item.id)}" ${item.id === selected ? 'selected' : ''} ${item.reservable === false ? 'disabled' : ''}>${escapeHtml(item.name)} · ${Number(item.capacity || 0)}人 · ${escapeHtml(status)}${source ? ` · ${source}` : ''}</option>`;
@@ -3291,9 +3295,8 @@
     timeSelect.dataset.defaultOption = !selectedTime && dateInput.value === today ? upcomingInterviewTimeRange().currentStartTime : (selectedTime || '');
   }
   function interviewScheduleIsPast() {
-    const startAt = document.getElementById('rf-interview-start')?.value || '';
-    const start = shanghaiDateTimeMs(startAt);
-    return Number.isFinite(start) && start <= Date.now();
+    const date = document.getElementById('rf-interview-date')?.value || '';
+    return /^\d{4}-\d{2}-\d{2}$/.test(date) && date < localDateValue(new Date());
   }
   function interviewDurationOptions(selectedMinutes) {
     return '<option value="">请选择</option>' + [
@@ -3380,17 +3383,11 @@
   }
   function applyInterviewRoomEntryMode() {
     const past = interviewScheduleIsPast();
+    document.querySelector('.rf-interview-manual-room-field')?.remove();
     const roomField = document.querySelector('.rf-interview-room-field');
-    const manualField = document.querySelector('.rf-interview-manual-room-field');
-    const panel = document.querySelector('.rf-room-availability-panel');
     const roomSelect = document.getElementById('rf-interview-room');
-    const manualRoom = document.getElementById('rf-interview-manual-room');
-    if (roomField) roomField.hidden = past;
-    if (manualField) manualField.hidden = !past;
-    if (panel) panel.hidden = past;
-    if (roomSelect) roomSelect.required = !past;
-    if (manualRoom) manualRoom.required = past;
-    if (!past && manualRoom) manualRoom.value = '';
+    if (roomField) roomField.hidden = false;
+    if (roomSelect) roomSelect.required = true;
     const submit = document.querySelector('[data-rf-create-interview]');
     if (submit && !submit.disabled) submit.textContent = past ? '保存补录' : '确认并发送邀请';
     const emailOption = document.querySelector('.rf-send-email-option');
@@ -3398,15 +3395,24 @@
     if (emailOption) emailOption.hidden = past;
     if (emailInput) emailInput.checked = !past;
     const note = document.getElementById('rf-room-availability-note');
+    if (past && roomSelect && !roomSelect.value) {
+      roomSelect.innerHTML = interviewRoomOptions([], '__no_room__');
+      roomSelect.value = '__no_room__';
+    }
     if (past && note) {
-      note.textContent = '这是已过去的面试，只补录一条记录：会议室手填，不查企微、不建日程、不发邮件。';
+      note.textContent = '这是已过去的面试：请选择「不使用会议室」。只保存记录，不查企微、不建日程、不发邮件。';
       note.classList.remove('warning');
     }
   }
 
   async function refreshMeetingRoomAvailability() {
     window.clearTimeout(roomAvailabilityTimer);
-    if (interviewScheduleIsPast()) { applyInterviewRoomEntryMode(); return null; }
+    if (interviewScheduleIsPast()) {
+      applyInterviewRoomEntryMode();
+      const note = document.getElementById('rf-room-availability-note');
+      if (note) note.textContent = '已过去的面试不查询会议室，请在下拉中选择「不使用会议室」。';
+      return null;
+    }
     const mode = document.getElementById('rf-interview-mode')?.value;
     const startAt = document.getElementById('rf-interview-start')?.value || '';
     const endAt = document.getElementById('rf-interview-end')?.value || '';
@@ -3580,10 +3586,7 @@
       if (roomSelect) roomSelect.dataset.source = 'wecom';
       const roomNote = document.getElementById('rf-room-availability-note');
       if (roomNote) roomNote.textContent = '选择面试时间后，系统将获取该时段企微会议室的空闲与占用状态。';
-      const roomField = document.querySelector('.rf-interview-room-field');
-      if (roomField && !document.getElementById('rf-interview-manual-room')) {
-        roomField.insertAdjacentHTML('afterend', '<label class="wide rf-interview-manual-room-field" hidden><span>会议室 <b>*</b></span><input id="rf-interview-manual-room" maxlength="80" placeholder="填写当时使用的会议室，例如：3楼大会议室"><small>补录只保存记录，不查询会议室、不创建日程、不发送邮件。</small><small class="rf-schedule-error" hidden></small></label>');
-      }
+      document.querySelector('.rf-interview-manual-room-field')?.remove();
       syncInterviewTimeFields();
       const interviewerRoleNote = document.getElementById('rf-interviewer-role-note');
       const candidateRole = current.bestMatchRole || current.jobIntention || current.role || '';
@@ -3652,7 +3655,7 @@
       ['rf-interview-date', '请选择面试日期'],
       ['rf-interview-time', '请选择开始时间'],
       ['rf-interview-duration', '请选择面试时长'],
-      [past ? 'rf-interview-manual-room' : 'rf-interview-room', past ? '请填写当时使用的会议室' : '请选择会议室'],
+      ['rf-interview-room', past ? '补录请在下拉中选择「不使用会议室」' : '请选择会议室'],
       ['rf-interviewer-select', '请选择面试官'],
     ];
     if (group) checks.unshift(['rf-group-candidates', '请至少选择两位候选人']);
@@ -3660,7 +3663,8 @@
     checks.forEach(([id, error]) => {
       const node = document.getElementById(id);
       const minimum = node?.id === 'rf-group-candidates' ? 2 : 1;
-      const invalid = node?.multiple ? node.selectedOptions.length < minimum : !String(node?.value || '').trim();
+      const roomInvalid = past && node?.id === 'rf-interview-room' && node.value !== '__no_room__';
+      const invalid = roomInvalid || (node?.multiple ? node.selectedOptions.length < minimum : !String(node?.value || '').trim());
       markScheduleField(node, invalid ? error : '');
       if (invalid && !firstInvalid) firstInvalid = node;
     });
@@ -3678,7 +3682,7 @@
     return !firstInvalid;
   }
 
-  function interviewSchedulePayload(past, manualRoom, roomId) {
+  function interviewSchedulePayload(past, roomId) {
     const interviewerSelect = document.getElementById('rf-interviewer-select');
     const interviewerOptions = [...(interviewerSelect?.selectedOptions || [])];
     const interviewerIds = interviewerOptions.map((option) => option.value).filter(Boolean);
@@ -3697,7 +3701,7 @@
         endAt: shanghaiDateTimeIso(document.getElementById('rf-interview-end')?.value),
         timezone: 'Asia/Shanghai',
         meetingRoomId: roomId,
-        location: past ? manualRoom : '山东省烟台市莱山区方片新媒体',
+        location: '山东省烟台市莱山区方片新媒体',
         interviewerIds,
         ...(interviewerWecomIds.length ? { interviewerWecomIds } : {}),
         ...(meetingRoomSelectionId ? { meetingRoomSelectionId } : {}),
@@ -3711,8 +3715,7 @@
 
   async function createGroupInterview() {
     const past = interviewScheduleIsPast();
-    const manualRoom = document.getElementById('rf-interview-manual-room')?.value.trim() || '';
-    const roomId = past ? '' : interviewRoomIdFrom(document.getElementById('rf-interview-room')?.value);
+    const roomId = interviewRoomIdFrom(document.getElementById('rf-interview-room')?.value);
     const message = document.getElementById('rf-create-interview-message');
     const submit = document.querySelector('[data-rf-create-interview]');
     if (submit?.disabled) return;
@@ -3722,7 +3725,7 @@
     const loading = showGlobalLoading(past ? '正在保存群面补录…' : '正在创建群面…');
     try {
       if (submit) { submit.disabled = true; submit.dataset.originalText = submit.textContent; submit.textContent = '正在保存群面…'; }
-      const schedule = interviewSchedulePayload(past, manualRoom, roomId);
+      const schedule = interviewSchedulePayload(past, roomId);
       const roomSelect = document.getElementById('rf-interview-room');
       if (!past && roomId && roomSelect?.dataset.source === 'wecom' && !schedule.meetingRoomSelectionId) throw new Error('请先查询当前时段的企微会议室，再确认群面。');
       if (!schedule.interviewerIds.length || schedule.interviewerWecomIds.length !== schedule.interviewerIds.length) throw new Error('所选面试官未配置企微成员 ID，请先在组织与权限中同步。');
@@ -3751,8 +3754,7 @@
     const candidateId = document.getElementById('rf-interview-candidate')?.value || '';
     const mode = document.getElementById('rf-interview-mode')?.value || '';
     const past = interviewScheduleIsPast();
-    const manualRoom = document.getElementById('rf-interview-manual-room')?.value.trim() || '';
-    const roomId = past ? '' : interviewRoomIdFrom(document.getElementById('rf-interview-room')?.value);
+    const roomId = interviewRoomIdFrom(document.getElementById('rf-interview-room')?.value);
     const message = document.getElementById('rf-create-interview-message');
     const submit = document.querySelector('[data-rf-create-interview]');
     if (submit?.disabled) return;
@@ -3772,7 +3774,7 @@
       if (!past && roomId && roomSelect?.dataset.source === 'wecom' && !meetingRoomSelectionId) throw new Error('请先查询当前时段的企微会议室，再确认邀请。');
       const interviewerWecomIds = interviewerOptions.map((option) => option.dataset.wecomId || '').filter(Boolean);
       if (!interviewerIds.length || interviewerWecomIds.length !== interviewerIds.length) throw new Error('所选面试官未配置企微成员 ID，请先在组织与权限中同步。');
-      const payload = { candidateId, round: document.getElementById('rf-interview-round')?.value, mode, startAt: shanghaiDateTimeIso(document.getElementById('rf-interview-start')?.value), endAt: shanghaiDateTimeIso(document.getElementById('rf-interview-end')?.value), timezone: 'Asia/Shanghai', meetingRoomId: roomId, location: past ? manualRoom : '山东省烟台市莱山区方片新媒体', interviewerIds, ...(interviewerWecomIds.length ? { interviewerWecomIds } : {}), ...(meetingRoomSelectionId ? { meetingRoomSelectionId } : {}), note: document.getElementById('rf-interview-note')?.value.trim(), sendCandidateEmail: past ? false : document.getElementById('rf-send-candidate-email')?.checked !== false, operator: '当前用户', publicUrl: publicUrl.toString() };
+      const payload = { candidateId, round: document.getElementById('rf-interview-round')?.value, mode, startAt: shanghaiDateTimeIso(document.getElementById('rf-interview-start')?.value), endAt: shanghaiDateTimeIso(document.getElementById('rf-interview-end')?.value), timezone: 'Asia/Shanghai', meetingRoomId: roomId, location: '山东省烟台市莱山区方片新媒体', interviewerIds, ...(interviewerWecomIds.length ? { interviewerWecomIds } : {}), ...(meetingRoomSelectionId ? { meetingRoomSelectionId } : {}), note: document.getElementById('rf-interview-note')?.value.trim(), sendCandidateEmail: past ? false : document.getElementById('rf-send-candidate-email')?.checked !== false, operator: '当前用户', publicUrl: publicUrl.toString() };
       if (message) { message.textContent = past ? '正在保存历史面试，请勿重复提交…' : '正在创建企微日程并发送邀请，请勿重复提交…'; message.classList.remove('error'); }
       loading(past ? '正在保存历史面试，请稍候…' : '正在创建企微日程并发送邀请邮件，请稍候…');
       if (!submit.dataset.requestId) submit.dataset.requestId = crypto.randomUUID();
@@ -5824,28 +5826,26 @@ if (!root) return;
     const resultCount = document.getElementById('jobs-result-count');
     const keyword = (document.getElementById('job-keyword-filter')?.value || '').trim().toLowerCase();
     const selectedMonth = document.getElementById('job-month-filter')?.value || '';
-    const demandMap = new Map((state.monthlyDemands || []).filter((item) => !selectedMonth || item.month === selectedMonth).map((item) => [item.positionId, item]));
-    const activeDemandFor = (item) => {
-      const demand = demandMap.get(item.id);
-      return demand && Number(demand.headcount || 0) > 0 && !['已停用', '审批驳回'].includes(demand.status) && demand.approvalStatus !== '已驳回' ? demand : null;
-    };
+    const demandsFor = (positionId) => (state.monthlyDemands || []).filter((item) => item.positionId === positionId && (!selectedMonth || item.month === selectedMonth));
+    const activeDemandsFor = (item) => demandsFor(item.id).filter((demand) => Number(demand.headcount || 0) > 0 && !['已停用', '审批驳回'].includes(demand.status) && demand.approvalStatus !== '已驳回');
+    const demandPriorityRank = (priority) => ({ 紧急: 0, 高: 0, 重要: 1, 中: 1, 储备: 2, 一般: 2, 低: 2 }[priority] ?? 3);
     const demandPriority = (item) => {
-      const demand = activeDemandFor(item);
-      if (!demand) return 4;
-      return ({ 紧急: 0, 高: 0, 重要: 1, 中: 1, 储备: 2, 一般: 2, 低: 2 }[demand.priority] ?? 3);
+      const demands = activeDemandsFor(item);
+      if (!demands.length) return 4;
+      return Math.min(...demands.map((demand) => demandPriorityRank(demand.priority)));
     };
     const statusPriority = (item) => item.status === '招聘中' ? 0 : item.status === '待发布' ? 1 : 2;
     const approvedJobs = (state.jobs || []).filter((item) => (item.approvalStatus || '已通过') === '已通过');
     const rows = approvedJobs.slice().sort((left, right) => demandPriority(left) - demandPriority(right) || statusPriority(left) - statusPriority(right) || (left.department || '').localeCompare(right.department || '', 'zh-CN') || (left.name || '').localeCompare(right.name || '', 'zh-CN')).filter((item) => {
       if (!keyword) return true;
-      const demand = demandMap.get(item.id);
-      const haystack = [item.name, item.code, item.department, item.owner, item.recruiter, item.backupRecruiter, item.responsibilities, item.requirements, (item.tags || []).join(' '), demand?.positionName].join('|').toLowerCase();
+      const demandNames = demandsFor(item.id).map((demand) => demand.positionName);
+      const haystack = [item.name, item.code, item.department, item.owner, item.recruiter, item.backupRecruiter, item.responsibilities, item.requirements, (item.tags || []).join(' '), ...demandNames].join('|').toLowerCase();
       return haystack.includes(keyword);
     });
     const totalPositions = approvedJobs.length;
     const recruitingPositions = approvedJobs.filter((item) => item.status === '招聘中').length;
     const pendingApprovals = pendingRecruitmentApprovals().length;
-    const demandHeadcount = Array.from(demandMap.values()).reduce((total, item) => total + Number(item.headcount || 0), 0);
+    const demandHeadcount = (state.monthlyDemands || []).filter((item) => !selectedMonth || item.month === selectedMonth).reduce((total, item) => total + Number(item.headcount || 0), 0);
     const selectedRange = selectedMonth ? window.companyCalendar?.monthRange(selectedMonth) : null;
     const monthLabel = selectedMonth ? `${selectedMonth.slice(0, 4)}年${Number(selectedMonth.slice(5, 7))}月${selectedRange ? `（${selectedRange.label}）` : ''}` : '当前月份';
     if (summary) summary.innerHTML = `
@@ -5866,9 +5866,10 @@ if (!root) return;
       <div><strong>已选 ${selectedCount} 个岗位</strong><button class="btn-soft" data-rf-job-batch="publish" type="button" ${selectedCount ? '' : 'disabled'}>批量开放</button><button class="btn-soft danger" data-rf-job-batch="offline" type="button" ${selectedCount ? '' : 'disabled'}>批量暂停</button><button class="text-btn" data-rf-job-selection-clear type="button" ${selectedCount ? '' : 'disabled'}>清空选择</button></div>
     </div><div class="rf-job-card-grid">
       ${rows.map((item) => {
-        const demand = activeDemandFor(item);
+        const demands = activeDemandsFor(item);
+        const demand = demands.slice().sort((left, right) => demandPriorityRank(left.priority) - demandPriorityRank(right.priority))[0];
         const approvalStatus = item.approvalStatus || '待审批';
-        const demandStatus = demand?.approvalStatus || demand?.status || '';
+        const demandStatus = demands.map((item) => `${item.demandType || '新增需求'} ${item.approvalStatus || item.status || '已确认'}`).join(' / ');
         const isRecruiting = item.status === '招聘中';
         const isSelected = state.jobSelectedIds.has(item.id);
         const priority = ({ 高: '紧急', 中: '重要', 低: '储备', 一般: '储备' }[demand?.priority] || demand?.priority || '');
@@ -5887,8 +5888,8 @@ if (!root) return;
           <div class="rf-job-card-body">
             <section class="rf-job-demand ${demand ? '' : 'empty'}">
               <div><span>${escapeHtml(monthLabel)}需求</span>${demand ? `<b>${escapeHtml(({ 一般: '储备', 低: '储备', 高: '紧急', 中: '重要' })[demand.priority] || demand.priority || '储备')} · ${escapeHtml(demandStatus || '已确认')}</b>` : '<b>未配置</b>'}</div>
-              ${demand ? `<strong>${Number(demand.headcount || 0)}<small>人</small></strong><em>更新于 ${escapeHtml((demand.updatedAt || '').slice(0, 10) || '最近')}</em>` : '<strong>—</strong><em>可点击下方按钮补充需求</em>'}
-              ${demand?.demandRequirement ? `<p class="rf-job-demand-requirement"><b>需求要求</b>${escapeHtml(demand.demandRequirement)}</p>` : ''}
+              ${demands.length ? `<strong>${demands.reduce((total, item) => total + Number(item.headcount || 0), 0)}<small>人</small></strong><em>${demands.map((item) => `${escapeHtml(item.demandType || '新增需求')} ${Number(item.headcount || 0)}人`).join(' · ')}</em>` : '<strong>—</strong><em>可点击下方按钮补充需求</em>'}
+              ${demands.some((item) => item.demandRequirement) ? `<p class="rf-job-demand-requirement"><b>需求要求</b>${escapeHtml(demands.map((item) => item.demandRequirement).filter(Boolean).join('；'))}</p>` : ''}
             </section>
             <section class="rf-job-owners">
               <div><span>业务负责人</span><strong>${escapeHtml(item.owner || '待补充')}</strong></div>
@@ -6164,23 +6165,24 @@ if (!root) return;
     const selected = (state.jobs || []).find((item) => item.id === positionId);
     const department = selected?.department || '当前部门';
     const jobs = (state.jobs || []).filter((item) => !selected?.department || item.department === selected.department);
-    const demandMap = new Map((state.monthlyDemands || []).filter((item) => item.month === month).map((item) => [item.positionId, item]));
+    const demandsFor = (positionId) => (state.monthlyDemands || []).filter((item) => item.month === month && item.positionId === positionId);
     const activeCount = jobs.filter((item) => item.status === '招聘中').length;
-    const totalDemand = jobs.reduce((sum, item) => sum + Number(demandMap.get(item.id)?.headcount || 0), 0);
+    const totalDemand = jobs.reduce((sum, item) => sum + demandsFor(item.id).reduce((total, demand) => total + Number(demand.headcount || 0), 0), 0);
     showTalentDialog(`
       <section class="rf-demand-summary">
         <header class="rf-dialog-head"><div><span>DEPARTMENT HIRING PLAN</span><h2>${escapeHtml(department)} · ${escapeHtml(month)} 招聘计划</h2><p>需求已保存。这里汇总本部门岗位和本月人数，方便继续补录或现场核对。</p></div><b>已保存</b></header>
         <div class="rf-demand-summary-metrics"><article><span>部门岗位</span><strong>${jobs.length}</strong></article><article><span>招聘中</span><strong>${activeCount}</strong></article><article><span>本月需求</span><strong>${totalDemand}</strong></article></div>
         <div class="rf-demand-summary-list">${jobs.map((job) => {
-          const demand = demandMap.get(job.id);
-          return `<article class="${demand ? 'has-demand' : 'empty'}"><div><span>${escapeHtml(job.department || department)}</span><strong>${escapeHtml(job.name || '未命名岗位')}</strong></div><aside><b>${demand ? `${Number(demand.headcount || 0)}人` : '未录入'}</b><small>${demand ? `${escapeHtml(({ 一般: '储备', 低: '储备', 高: '紧急', 中: '重要' })[demand.priority] || demand.priority || '储备')} · ${escapeHtml(demand.demandType || '新增需求')} · ${escapeHtml(demand.approvalStatus || demand.status || '待审批')}` : escapeHtml(job.status || '待发布')}</small></aside></article>`;
+          const demands = demandsFor(job.id);
+          const demandTotal = demands.reduce((total, demand) => total + Number(demand.headcount || 0), 0);
+          return `<article class="${demands.length ? 'has-demand' : 'empty'}"><div><span>${escapeHtml(job.department || department)}</span><strong>${escapeHtml(job.name || '未命名岗位')}</strong></div><aside><b>${demands.length ? `${demandTotal}人` : '未录入'}</b><small>${demands.length ? demands.map((demand) => `${escapeHtml(demand.demandType || '新增需求')} ${Number(demand.headcount || 0)}人 · ${escapeHtml(({ 一般: '储备', 低: '储备', 高: '紧急', 中: '重要' })[demand.priority] || demand.priority || '储备')}`).join('<br>') : escapeHtml(job.status || '待发布')}</small></aside></article>`;
         }).join('') || '<div class="rf-dialog-empty"><p>当前部门暂无岗位。</p></div>'}</div>
         <div class="rf-dialog-actions"><button class="btn-soft" data-rf-demand-summary-close type="button">完成，返回岗位库</button><button class="btn-primary" data-rf-demand-summary-continue type="button">继续录入其他岗位</button></div>
       </section>
     `, 'wide');
     document.querySelector('[data-rf-demand-summary-close]')?.addEventListener('click', closeTalentDialog);
     document.querySelector('[data-rf-demand-summary-continue]')?.addEventListener('click', () => {
-      const next = jobs.find((item) => !demandMap.has(item.id)) || jobs[0] || selected;
+      const next = jobs.find((item) => !demandsFor(item.id).length) || jobs[0] || selected;
       openMonthlyDemandDialog(next || null);
     });
   }
@@ -6217,7 +6219,8 @@ if (!root) return;
       <p class="rf-dialog-message" id="rf-demand-message"></p>
     `, 'wide');
     document.querySelector('#rf-talent-dialog .rf-dialog')?.classList.add('rf-demand-dialog');
-    const existingDemand = (context?.demands || state.monthlyDemands || []).find(item => item.month === month && item.positionId === document.getElementById('rf-demand-position').value);
+    const demandMatches = (item, monthValue, positionId, demandType) => item.month === monthValue && item.positionId === positionId && (!demandType || (item.demandType || '新增需求') === demandType);
+    const existingDemand = (context?.demands || state.monthlyDemands || []).find(item => demandMatches(item, month, document.getElementById('rf-demand-position').value, document.getElementById('rf-demand-type').value));
     if (existingDemand) {
       document.getElementById('rf-demand-headcount').value = Number(existingDemand.headcount || 1);
       document.getElementById('rf-demand-type').value = existingDemand.demandType || '新增需求';
@@ -6229,9 +6232,9 @@ if (!root) return;
     }
     const fillSelectedDemand = () => {
       const selected = jobs.find(item => item.id === document.getElementById('rf-demand-position').value);
-      const demand = (context?.demands || state.monthlyDemands || []).find(item => item.positionId === selected?.id && item.month === document.getElementById('rf-demand-month').value);
+      const demand = (context?.demands || state.monthlyDemands || []).find(item => demandMatches(item, document.getElementById('rf-demand-month').value, selected?.id, document.getElementById('rf-demand-type').value));
       document.getElementById('rf-demand-headcount').value = demand?.headcount ?? '';
-      document.getElementById('rf-demand-type').value = demand?.demandType || '';
+      if (demand?.demandType) document.getElementById('rf-demand-type').value = demand.demandType;
       document.getElementById('rf-demand-priority').value = ({ 一般: '储备', 高: '紧急', 中: '重要', 低: '储备' })[demand?.priority] || demand?.priority || '';
       document.getElementById('rf-demand-arrival').value = demand?.expectedArrivalDate || '';
       document.getElementById('rf-demand-latest-arrival').value = demand?.latestArrivalDate || '';
@@ -6240,6 +6243,7 @@ if (!root) return;
     };
     document.getElementById('rf-demand-position').addEventListener('change', fillSelectedDemand);
     document.getElementById('rf-demand-month').addEventListener('change', fillSelectedDemand);
+    document.getElementById('rf-demand-type').addEventListener('change', fillSelectedDemand);
     document.getElementById('rf-demand-transcript-file')?.addEventListener('change', importDemandTranscriptFile);
     document.querySelector('[data-rf-demand-voice]')?.addEventListener('click', startDemandVoiceInput);
     document.querySelector('[data-rf-demand-transcript-extract]')?.addEventListener('click', () => extractDemandTranscript(context ? `${context.endpoint}/transcript-extract` : undefined));
@@ -6397,17 +6401,25 @@ if (!root) return;
     return `<div class="rf-dialog-empty"><strong>简历原件暂不能内嵌预览</strong><p>${url ? `<a href="${escapeHtml(url)}" target="_blank" rel="noopener">打开原始简历</a>` : '这份内推简历还没有可用的文件地址。'}</p></div>`;
   }
 
-  async function openReferralResumeReview(candidateId) {
-    if (!candidateId) return;
+  async function openReferralResumeReview(candidateId, intendedRole = '', referralId = '') {
+    if (!candidateId && !referralId) return;
     const token = showTalentDialog('<div class="rf-dialog-loading">正在打开内推简历…</div>', 'wide');
     try {
-      const detail = await fetchTalentDetail(candidateId);
+      const referral = referralId
+        ? (window.referralOverviewRecords?.() || []).find((item) => item.id === referralId) || null
+        : null;
+      const resolvedCandidateId = candidateId || referral?.candidateId || '';
+      if (!resolvedCandidateId) throw new Error('这条内推还没有关联候选人，暂时不能打开简历');
+      const detail = await fetchTalentDetail(resolvedCandidateId, referral?.id || referralId);
       if (!isTalentDialogCurrent(token)) return;
       storeTalentDetail(detail);
       const pending = detail.status === '待HR审核';
+      const referralRole = referral?.role || intendedRole || (referralId ? detail.referralPositionName : '') || '';
+      const aiMatch = [...(detail.matches || [])].sort((left, right) => Number(right?.score || 0) - Number(left?.score || 0))[0];
       const facts = [
         ['候选人', detail.name || '未识别姓名'],
-        ['内推岗位', detail.bestMatchRole || detail.jobIntention || '岗位待确认'],
+        ['内推岗位', referralRole || '岗位待关联'],
+        ['AI推荐岗位', aiMatch?.positionName ? `${aiMatch.positionName}（${Math.round(Number(aiMatch.score || 0))}分）` : '暂无AI推荐'],
         ['推荐人', detail.referrer || '未记录'],
         ['当前阶段', detail.status || '待确认'],
         ['综合评分', `${Number(detail.analysis?.scores?.overall || detail.bestMatchScore || 0)} 分`],
@@ -6427,10 +6439,10 @@ if (!root) return;
             <p class="rf-dialog-message" id="rf-referral-review-message">${pending ? '' : '这份简历当前不在待 HR 审核阶段，只能查看，不能重复审核。'}</p>
           </form>
         </div>`, 'wide');
-      document.querySelector('[data-rf-referral-pass]')?.addEventListener('click', () => submitReferralResumeReview(candidateId, '通过'));
-      document.querySelector('[data-rf-referral-reject]')?.addEventListener('click', () => submitReferralResumeReview(candidateId, '不通过'));
+      document.querySelector('[data-rf-referral-pass]')?.addEventListener('click', () => submitReferralResumeReview(resolvedCandidateId, '通过'));
+      document.querySelector('[data-rf-referral-reject]')?.addEventListener('click', () => submitReferralResumeReview(resolvedCandidateId, '不通过'));
     } catch (error) {
-      if (isTalentDialogCurrent(token)) dialogFailure('内推简历打开失败', error, () => openReferralResumeReview(candidateId), token);
+      if (isTalentDialogCurrent(token)) dialogFailure('内推简历打开失败', error, () => openReferralResumeReview(candidateId, intendedRole, referralId), token);
     }
   }
 
@@ -8188,17 +8200,17 @@ if (!root) return;
     const params = new URLSearchParams(window.location.search.replace(/&amp;/g, '&'));
     const action = params.has('interview_questions') ? 'questions' : params.get('flow_action') || '';
     if (!action) return;
-    flowActionHandled = true;
     let candidateId = params.get('candidate_id') || params.get('candidateId') || '';
     const interviewId = params.get('interview_questions') || params.get('interview_id') || params.get('interviewId') || '';
     const approvalType = params.get('approval_type') || '';
     const approvalId = params.get('approval_id') || '';
     const demandMonth = params.get('demand_month') || '';
     const overviewMonth = params.get('overview_month') || '';
+    const referralId = params.get('referral_id') || '';
     try {
-      const destinations = { schedule: 'interviews', questions: 'interviews', evaluation: 'interviews', decision: 'interviews', reschedule: 'interviews', interview_status: 'interviews', offer: 'offers', onboarding: 'resume-archive', recruitment_approval: 'jobs', demand: 'jobs', overview: 'overview', referral_review: 'resume-archive' };
+      const destinations = { schedule: 'interviews', questions: 'interviews', evaluation: 'interviews', decision: 'interviews', reschedule: 'interviews', interview_status: 'interviews', offer: 'offers', onboarding: 'resume-archive', recruitment_approval: 'jobs', demand: 'jobs', overview: 'overview', referral_review: 'overview' };
       const requiredActions = { schedule: 'arrange_interview', evaluation: 'submit_interview_feedback', decision: 'review_candidate', reschedule: 'arrange_interview', offer: 'manage_offer', onboarding: 'manage_employee_lifecycle', demand: 'create_demand', referral_review: 'review_candidate' };
-      const allowedDestinations = action === 'onboarding' ? ['resume-archive', 'overview'] : action === 'recruitment_approval' ? ['jobs', 'overview'] : [destinations[action]];
+      const allowedDestinations = action === 'onboarding' ? ['resume-archive', 'overview'] : action === 'recruitment_approval' ? ['jobs', 'overview'] : action === 'referral_review' ? ['overview', 'resume-archive', 'referral'] : [destinations[action]];
       if (!destinations[action] || !allowedDestinations.some(page => window.canOpenRecruitmentPage?.(page)) || (requiredActions[action] && !hasAccessAction(requiredActions[action]))) {
         notifyUser('当前账号没有此页面或操作的权限，请联系管理员。', 'error');
         return;
@@ -8249,9 +8261,8 @@ if (!root) return;
         if (monthInput && /^\d{4}-\d{2}$/.test(demandMonth)) monthInput.value = demandMonth;
         await window.openDepartmentDemandWorkbench({ request, escapeHtml, showTalentDialog, isTalentDialogCurrent, openMonthlyDemandDialog, notifyUser }, /^\d{4}-(0[1-9]|1[0-2])$/.test(demandMonth) ? demandMonth : currentMonthValue());
       } else if (action === 'referral_review') {
-        window.setPage?.('resume-archive');
-        if (!candidateId) throw new Error('审核链接缺少候选人，无法打开简历');
-        await openReferralResumeReview(candidateId);
+        if (!candidateId) throw new Error('审核链接缺少候选人，无法打开审批');
+        await openReferralResumeReview(candidateId, '', referralId);
       } else if (action === 'overview') {
         window.setPage?.('overview');
         if (/^\d{4}-\d{2}$/.test(overviewMonth)) {
@@ -8260,7 +8271,12 @@ if (!root) return;
         }
         await loadOverviewPage();
       }
+      flowActionHandled = true;
+    } catch (error) {
+      notifyUser(error?.message || '审核页面打开失败，请从原链接重试。', 'error');
+      return;
     } finally {
+      if (!flowActionHandled) return;
       const cleanUrl = new URL(window.location.href);
       cleanUrl.searchParams.delete('flow_action');
       cleanUrl.searchParams.delete('candidate_id');
@@ -8270,6 +8286,7 @@ if (!root) return;
       cleanUrl.searchParams.delete('approval_id');
       cleanUrl.searchParams.delete('demand_month');
       cleanUrl.searchParams.delete('overview_month');
+      cleanUrl.searchParams.delete('referral_id');
       if (action === 'schedule' && candidateId) {
         cleanUrl.searchParams.set('flow_action', 'schedule');
         cleanUrl.searchParams.set('candidate_id', candidateId);
@@ -8514,7 +8531,7 @@ if (!root) return;
       const recordAction = event.target.closest('button, a, input, select, textarea, label, summary');
       if (referralRecord && !recordAction) {
         event.preventDefault();
-        openReferralResumeReview(referralRecord.dataset.refRecordCandidate);
+        openReferralResumeReview(referralRecord.dataset.refRecordCandidate, referralRecord.dataset.refRecordRole || '', referralRecord.dataset.refRecordId || '');
         return;
       }
       const workbenchButton = event.target.closest('[data-referral-workbench]');
@@ -8540,7 +8557,7 @@ if (!root) return;
       const referralRecord = event.target.closest('[data-ref-record-candidate]');
       if (!referralRecord || event.target !== referralRecord) return;
       event.preventDefault();
-      openReferralResumeReview(referralRecord.dataset.refRecordCandidate);
+      openReferralResumeReview(referralRecord.dataset.refRecordCandidate, referralRecord.dataset.refRecordRole || '', referralRecord.dataset.refRecordId || '');
     });
     document.addEventListener('resumeflow:page', (event) => { if (event.detail?.page === 'referral') loadReferralQrSummary(); });
     if (document.getElementById('page-referral')?.classList.contains('active')) loadReferralQrSummary();

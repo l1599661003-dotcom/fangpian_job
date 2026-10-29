@@ -3,6 +3,7 @@ import { computed, createApp, h, onBeforeUnmount, onMounted, ref, watch } from '
 let activeApp = null;
 let activeLoad = null;
 let referralCache = { expiresAt: 0, referrals: [], analytics: {} };
+window.referralOverviewRecords = () => referralCache.referrals;
 
 function conciseError(error) {
   const message = String(error?.message || error || '服务暂时不可用');
@@ -210,14 +211,16 @@ const ReferralOverviewPage = {
               <div class="rf-ref-table-shell">
                 <table class="rf-ref-table">
                   <thead>
-                    <tr><th>候选人</th><th>意向岗位</th><th>推荐人</th><th>部门</th><th>有效性</th><th>状态</th><th>推荐时间</th></tr>
+                    <tr><th>候选人</th><th>内推岗位</th><th>推荐人</th><th>部门</th><th>有效性</th><th>状态</th><th>推荐时间</th></tr>
                   </thead>
                   <tbody>
                     {visibleReferrals.value.map((item, index) => (
                       <tr
                         key={item.id || `${item.candidateId}-${index}`}
                         class={{ 'referral-record-clickable': Boolean(item.candidateId) }}
+                        data-ref-record-id={item.id || undefined}
                         data-ref-record-candidate={item.candidateId || undefined}
+                        data-ref-record-role={item.role || undefined}
                         tabindex={item.candidateId ? 0 : undefined}
                         aria-label={item.candidateId ? `点击查看${item.candidateName || '候选人'}的简历` : undefined}
                       >

@@ -693,10 +693,10 @@ export class RecruitmentService implements OnApplicationBootstrap {
     }
     const timestampNow = timestamp()
     const rows = await teable.listByField(tableId, '职位ID', position.id, 200)
-    const existing = rows.find((row) => text(row.fields['需求月份']) === text(input.month) && text(row.fields['职位ID']) === position.id)
-    const dates = this.arrivalDates(input, existing?.fields || { 期望到岗日期: position.expectedArrivalDate, 最晚到岗日期: position.latestArrivalDate })
     const demandType = text(input.demandType) || '新增需求'
     if (!['新增需求', '储备需求'].includes(demandType)) throw new BadRequestException('需求类型只能是新增需求或储备需求')
+    const existing = rows.find((row) => text(row.fields['需求月份']) === text(input.month) && text(row.fields['职位ID']) === position.id && (text(row.fields['需求类型']) || '新增需求') === demandType)
+    const dates = this.arrivalDates(input, existing?.fields || { 期望到岗日期: position.expectedArrivalDate, 最晚到岗日期: position.latestArrivalDate })
     const priorityAliases: Record<string, string> = { 高: '紧急', 中: '重要', 低: '储备', 一般: '储备' }
     const priority = priorityAliases[text(input.priority)] || text(input.priority) || '储备'
     if (!['紧急', '重要', '储备'].includes(priority)) throw new BadRequestException('优先级只能是紧急、重要或储备')

@@ -431,8 +431,7 @@ export class InterviewsService {
     const historical = start.getTime() <= Date.now()
     const reservation = historical ? { start, end } : this.meetingRoomReservationRange(start, end)
     if (historical) {
-      input = { ...input, meetingRoomId: '', meetingRoomSelectionId: '', location: text(input.location) }
-      if (!input.location) throw new BadRequestException('补录已过去的面试时，请手动填写当时使用的会议室')
+      input = { ...input, meetingRoomId: '', meetingRoomSelectionId: '', location: text(input.location) || '山东省烟台市莱山区方片新媒体' }
     }
     if (!input.interviewerIds?.length) throw new BadRequestException('请选择一位面试官')
     const directory = await this.listInterviewers()

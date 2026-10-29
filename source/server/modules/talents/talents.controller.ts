@@ -161,10 +161,12 @@ export class TalentsController {
   }
 
   @Get(':id')
-  async detail(@Param('id') id: string, @Headers() headers: Record<string, string | string[] | undefined>) {
+  async detail(@Param('id') id: string, @Query('referralId') referralId: string | undefined, @Headers() headers: Record<string, string | string[] | undefined>) {
     const requestAccess = await this.access.getRequestAccess(headers)
-    if (requestAccess) this.access.assertPage(requestAccess.profile, 'candidates')
-    return this.talents.detail(id, requestAccess?.profile)
+    if (requestAccess && !(referralId && this.access.hasAction(requestAccess.profile, 'review_candidate'))) {
+      this.access.assertPage(requestAccess.profile, 'candidates')
+    }
+    return this.talents.detail(id, requestAccess?.profile, referralId)
   }
 
   @Patch(':id/ownership')
@@ -195,7 +197,6 @@ export class TalentsController {
   async referralHrReview(@Param('id') id: string, @Headers() headers: Record<string, string | string[] | undefined>, @Body() body: { decision?: string; reason?: string; operator?: string; operatorUserId?: string }) {
     const requestAccess = await this.access.getRequestAccess(headers)
     if (requestAccess) {
-      this.access.assertPage(requestAccess.profile, 'candidates')
       this.access.assertAction(requestAccess.profile, 'review_candidate')
       body.operator = requestAccess.identity.userName || body.operator
       body.operatorUserId = requestAccess.identity.userId || body.operatorUserId

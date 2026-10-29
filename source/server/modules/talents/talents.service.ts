@@ -290,9 +290,8 @@ export class TalentsService implements OnModuleInit {
 
   private async notifyReferralHr(candidateId: string, applicationId: string, referral: TeableRecord, score: number) {
     const profile = await this.detail(candidateId)
-    const positionName = text(referral.fields['职位ID']) ? (profile.matches || []).find((item: any) => text(item.positionId) === text(referral.fields['职位ID']))?.positionName || profile.bestMatchRole : profile.bestMatchRole
-    const publicBase = text(process.env.APP_PUBLIC_URL).replace(/\/+$/, '')
-    const reviewUrl = publicBase ? `${publicBase}/?flow_action=referral_review&candidate_id=${encodeURIComponent(candidateId)}` : ''
+    const positionName = text(profile.referralPositionName) || (profile.matches || []).find((item: any) => text(item.positionId) === text(referral.fields['职位ID']))?.positionName || ''
+    const reviewUrl = appFlowUrl('referral_review', { candidate_id: candidateId, referral_id: text(referral.fields['内推记录ID']) || referral.id })
     await this.messages.notifyPositionHr({
       category: '内推HR审核', candidateId, applicationId, positionId: text(referral.fields['职位ID']), objectId: text(referral.fields['内推记录ID']) || referral.id,
       operator: '内推评分完成',
@@ -727,12 +726,12 @@ export class TalentsService implements OnModuleInit {
     return result
   }
 
-  async detail(candidateId: string, accessProfile?: RoleAccessProfile) {
-    const tables = [...Object.keys(TALENT_DIRECTORY_FIELDS), 'recruitment_stage_events', 'recruitment_communications', 'recruitment_candidate_reviews', 'recruitment_assessment_invites', 'recruitment_assessment_reviews', 'recruitment_interview_feedback', 'recruitment_offers', 'recruitment_background_checks', 'recruitment_onboarding_cases', 'recruitment_probation_reviews', 'recruitment_offboarding_cases', 'recruitment_followups', 'recruitment_talent_review_shares', 'recruitment_talent_review_responses']
+  async detail(candidateId: string, accessProfile?: RoleAccessProfile, referralId?: string) {
+    const tables = [...Object.keys(TALENT_DIRECTORY_FIELDS), 'recruitment_referrals', 'recruitment_stage_events', 'recruitment_communications', 'recruitment_candidate_reviews', 'recruitment_assessment_invites', 'recruitment_assessment_reviews', 'recruitment_interview_feedback', 'recruitment_offers', 'recruitment_background_checks', 'recruitment_onboarding_cases', 'recruitment_probation_reviews', 'recruitment_offboarding_cases', 'recruitment_followups', 'recruitment_talent_review_shares', 'recruitment_talent_review_responses']
     const data = await this.detailCache.get(candidateId, 30_000, tables.map(name => this.table(name)), () => this.loadAll(candidateId))
     const row = data.candidates.find((item) => text(item.fields['候选人ID']) === candidateId || item.id === candidateId)
     if (!row) throw new NotFoundException('人才档案不存在')
-    const result = this.profile(row, data, true)
+    const result = this.profile(row, data, true, referralId)
     if (accessProfile && this.access) {
       if (!this.access.hasPage(accessProfile, 'candidates')) throw new ForbiddenException('当前账号没有人才档案菜单权限')
       const unlockedFields = this.accessAdmin ? await this.accessAdmin.activeUnlockFields(accessProfile.userId, result.id) : []
@@ -2926,7 +2925,7 @@ export class TalentsService implements OnModuleInit {
     const candidatesPromise = candidateId
       ? teable.listByField(this.table('recruitment_candidates'), '候选人ID', candidateId, 2)
       : teable.listAllRecords(this.table('recruitment_candidates'))
-    const [candidates, resumes, applications, assessments, matches, tags, events, communications, reviews, assessmentInvites, assessmentReviews, positions, interviews, interviewFeedback, offers, backgroundChecks, onboardings, probationReviews, offboardings, followups, reviewShares, reviewResponses] = await Promise.all([
+    const [candidates, resumes, applications, assessments, matches, tags, events, communications, reviews, assessmentInvites, assessmentReviews, positions, interviews, interviewFeedback, offers, backgroundChecks, onboardings, probationReviews, offboardings, followups, reviewShares, reviewResponses, referrals] = await Promise.all([
       candidatesPromise,
       related('resume_extraction_records'), related('recruitment_applications'), related('recruitment_ai_assessments'),
       related('recruitment_job_matches'), related('recruitment_candidate_tags'), related('recruitment_stage_events'),
@@ -2935,6 +2934,7 @@ export class TalentsService implements OnModuleInit {
       related('recruitment_interviews'), related('recruitment_interview_feedback'), related('recruitment_offers'),
       related('recruitment_background_checks'), related('recruitment_onboarding_cases'), related('recruitment_probation_reviews'), related('recruitment_offboarding_cases'),
       related('recruitment_followups'), related('recruitment_talent_review_shares'), related('recruitment_talent_review_responses'),
+      candidateId ? teable.listByField(this.table('recruitment_referrals'), '候选人ID', candidateId, 100) : Promise.resolve([] as TeableRecord[]),
     ])
     if (candidateId) {
       const candidate = candidates.find((item) => text(item.fields['候选人ID']) === candidateId || item.id === candidateId)
@@ -2975,7 +2975,7 @@ export class TalentsService implements OnModuleInit {
         for (const row of linkedEvents) if (!events.some((item) => item.id === row.id)) events.push(row)
       }
     }
-    return { candidates, resumes, applications, assessments, matches, tags, events, communications, reviews, assessmentInvites, assessmentReviews, positions, interviews, interviewFeedback, offers, backgroundChecks, onboardings, probationReviews, offboardings, followups, reviewShares, reviewResponses }
+    return { candidates, resumes, applications, assessments, matches, tags, events, communications, reviews, assessmentInvites, assessmentReviews, positions, interviews, interviewFeedback, offers, backgroundChecks, onboardings, probationReviews, offboardings, followups, reviewShares, reviewResponses, referrals }
   }
 
   /** 列表目录只保留筛选、统计、权限范围与列表行需要的轻量数据。 */
@@ -3297,7 +3297,7 @@ export class TalentsService implements OnModuleInit {
     return result
   }
 
-  private profile(row: TeableRecord, data: Awaited<ReturnType<TalentsService['loadAll']>>, full = false) {
+  private profile(row: TeableRecord, data: Awaited<ReturnType<TalentsService['loadAll']>>, full = false, referralId = '') {
     const f = row.fields
     const candidateId = text(f['候选人ID']) || row.id
     const latestResumeId = text(f['最新简历记录ID'])
@@ -3337,7 +3337,16 @@ export class TalentsService implements OnModuleInit {
       if (!currentApplicationId) return text(item.fields['候选人ID']) === candidateId
       return text(item.fields['应聘记录ID']) === currentApplicationId
     }
-    const position = data.positions.find((item) => text(item.fields['职位ID']) === text(application?.fields['职位ID']))
+    const referrals = 'referrals' in data ? data.referrals : []
+    const candidateReferrals = referrals.filter((item) => text(item.fields['候选人ID']) === candidateId)
+    const referral = (referralId
+      ? candidateReferrals.find((item) => text(item.fields['内推记录ID']) === referralId || item.id === referralId)
+      : undefined)
+      || candidateReferrals.sort((left, right) => (text(right.fields['更新时间']) || text(right.fields['推荐时间'])).localeCompare(text(left.fields['更新时间']) || text(left.fields['推荐时间'])))[0]
+    const referralPositionId = text(referral?.fields['职位ID'])
+    const referralPosition = data.positions.find((item) => text(item.fields['职位ID']) === referralPositionId || item.id === referralPositionId)
+    const selectedPositionId = text(application?.fields['职位ID'])
+    const position = data.positions.find((item) => text(item.fields['职位ID']) === selectedPositionId || item.id === selectedPositionId)
     const demand = position
     const departmentIds = [...new Set([text(position?.fields['部门ID']), text(demand?.fields['部门ID'])].filter(Boolean))]
     const interviewerUserIds = [...new Set(data.interviews.filter((item) =>
@@ -3379,6 +3388,7 @@ export class TalentsService implements OnModuleInit {
       })(),
       tags: data.tags.filter((item) => text(item.fields['候选人ID']) === candidateId && !['历史', '人工移除'].includes(text(item.fields['标签状态']))).map((item) => ({ name: text(item.fields['标签名称']), category: text(item.fields['标签分类']), source: text(item.fields['标签来源']), confidence: num(item.fields['置信度']), evidence: text(item.fields['证据']), reviewStatus: text(item.fields['人工确认状态']), status: text(item.fields['标签状态']) || '当前' })),
       matches, bestMatchScore: matches[0]?.score || num(application?.fields['AI匹配分']), bestMatchRole: matches[0]?.positionName || text(f['期望职位']),
+      referralPositionId, referralPositionName: text(referralPosition?.fields['职位名称']),
       analysis: assessment && effectiveAnalysis ? { id: assessmentId, version: num(assessment.fields['版本号']) || 1, versionName: text(assessment.fields['分析版本']) || 'talent-v1', parentId: text(assessment.fields['父分析记录ID']), type: text(assessment.fields['分析类型']), rerunReason: text(assessment.fields['重跑原因']), promptVersion: text(assessment.fields['提示词版本']), modelVersion: text(assessment.fields['模型版本']), runStatus: text(assessment.fields['运行状态']), durationMs: num(assessment.fields['耗时毫秒']), runError: text(assessment.fields['运行错误']), createdAt: text(assessment.fields['创建时间']), ...effectiveAnalysis, aiOriginal: originalAnalysis, corrected: Boolean(analysisCorrection), correction: analysisCorrection ? { changedFields: analysisCorrection.changedFields || [], reason: text(assessment.fields['人工修正原因']) || analysisCorrection.reason, operator: text(assessment.fields['修正人']) || analysisCorrection.operator, correctedAt: text(assessment.fields['修正时间']) || analysisCorrection.correctedAt } : null, reviewStatus: text(assessment.fields['人工确认状态']) || '待人工确认', humanNote: text(assessment.fields['人工修正内容']) } : null,
       _access: { candidateId, ownerUserId: text(application?.fields['负责人用户ID']) || text(f['负责人用户ID']), departmentIds, businessUnitId: text(demand?.fields['事业部ID']), interviewerUserIds, stage: text(application?.fields['当前阶段']) || text(f['候选人状态']) } satisfies TalentAccessContext,
     }

@@ -22,7 +22,7 @@ export const TALENT_DIRECTORY_FIELDS: Record<string, string[]> = {
   recruitment_interviews: ['候选人ID', '面试官用户IDJSON'],
   recruitment_positions: ['职位ID', '部门ID'],
   recruitment_users: ['手机', '天玑人事状态'],
-  recruitment_referrals: ['候选人ID', '推荐人用户ID', '推荐人', '推荐人部门', '推荐时间', '创建时间'],
+  recruitment_referrals: ['候选人ID', '内推记录ID', '职位ID', '推荐人用户ID', '推荐人', '推荐人部门', '推荐时间', '更新时间', '创建时间'],
   resume_extraction_records: ['候选人ID', '工作经历', '源文件名', '源文件地址', '创建时间', '更新时间'],
 }
 
