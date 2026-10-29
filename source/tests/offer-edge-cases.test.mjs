@@ -152,7 +152,7 @@ test('sending-preview edits reuse one Offer and regenerate its PDF', async () =>
     assert.equal(row.fields['岗位名称'], '运营负责人')
     assert.equal(row.fields['当前版本'], 2)
     assert.equal(row.fields['发送状态'], '待人工发送')
-    assert.deepEqual(JSON.parse(row.fields['薪资结构JSON']), { 底薪: 13000, 绩效: 1500, 其他: 800 })
+    assert.deepEqual(JSON.parse(row.fields['薪资结构JSON']), { 底薪: 13000, 绩效: '1500', 其他: '800' })
     const version = memory.records.get('recruitment_offer_versions').find(item => item.fields['OfferID'] === 'offer_preview_edit')
     assert.equal(version.fields['变更类型'], '发送前修改')
     const audit = memory.records.get('recruitment_audit_logs').find(item => item.fields['操作类型'] === '发送前修改Offer')
@@ -198,8 +198,8 @@ test('Offer list exposes the stored fields needed to reopen an Offer for correct
     assert.equal(offer.reportingTo, '张总')
     assert.equal(offer.validFrom, '2026-10-20')
     assert.equal(offer.validTo, '2026-11-02')
-    assert.equal(offer.performanceSalary, 1500)
-    assert.equal(offer.commission, 800)
+    assert.equal(offer.performanceSalary, '1500')
+    assert.equal(offer.commission, '800')
   } finally {
     teable.listAllByAnyField = originalListAllByAnyField
     memory.restore()

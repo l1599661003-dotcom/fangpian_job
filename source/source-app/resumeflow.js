@@ -4324,6 +4324,11 @@
     return `<label><span>${escapeHtml(label)}</span><input id="${escapeHtml(id)}" type="number" min="0" inputmode="decimal" value="${escapeHtml(value)}" placeholder="${escapeHtml(placeholder)}"></label>`;
   }
 
+  function offerInternshipPayField(unit = 'day') {
+    const selected = unit === 'month' ? 'month' : 'day';
+    return `<label id="rf-offer-pay-unit-field" hidden><span>计薪方式</span><select id="rf-offer-pay-unit"><option value="day" ${selected === 'day' ? 'selected' : ''}>日薪</option><option value="month" ${selected === 'month' ? 'selected' : ''}>月薪</option></select></label>`;
+  }
+
   function offerOptionalSalaryField(id, label, included = false, amount = '') {
     const displayLabel = id === 'rf-offer-commission' ? '其他（元/月）' : label;
     return `<label class="rf-offer-optional-field"><span>${escapeHtml(displayLabel)}</span><span class="rf-offer-optional-toggle"><input id="${escapeHtml(id)}-included" type="checkbox" ${included ? 'checked' : ''}><span>包含</span></span><input id="${escapeHtml(id)}" type="text" value="${escapeHtml(included ? amount : '')}" placeholder="请输入金额" disabled></label>`;
@@ -4336,33 +4341,45 @@
     return Number.isFinite(value) && value >= 0 ? value : null;
   }
 
+  function offerSalaryNoteText(value) {
+    const note = String(value ?? '').trim();
+    return /^-?\d+(?:\.\d+)?$/.test(note.replace(/,/g, '')) ? `${note}元` : note;
+  }
+
+  function readOfferNote(id) {
+    const input = document.getElementById(id);
+    if (!input || input.closest('label')?.hidden) return '';
+    return input.value.trim();
+  }
+
   function collectOfferSalary(internship) {
     const baseSalary = readOfferAmount('rf-offer-base');
     const performanceIncluded = !internship && document.getElementById('rf-offer-performance-included')?.checked === true;
     const commissionIncluded = !internship && document.getElementById('rf-offer-commission-included')?.checked === true;
-    const performanceSalary = performanceIncluded ? readOfferAmount('rf-offer-performance') : undefined;
-    const commissionSalary = commissionIncluded ? readOfferAmount('rf-offer-commission') : undefined;
+    const performanceSalary = performanceIncluded ? readOfferNote('rf-offer-performance') : undefined;
+    const commissionSalary = commissionIncluded ? readOfferNote('rf-offer-commission') : undefined;
     return {
       baseSalary,
       performanceIncluded,
       commissionIncluded,
       performanceSalary,
       commissionSalary,
+      internshipPayUnit: internship && document.getElementById('rf-offer-pay-unit')?.value === 'month' ? 'month' : 'day',
       structure: internship
-        ? { 日薪: baseSalary ?? 0 }
+        ? (document.getElementById('rf-offer-pay-unit')?.value === 'month' ? { 月薪: baseSalary ?? 0 } : { 日薪: baseSalary ?? 0 })
         : {
             底薪: baseSalary ?? 0,
-            ...(performanceIncluded ? { 绩效: performanceSalary ?? 0 } : {}),
-            ...(commissionIncluded ? { 其他: commissionSalary ?? 0 } : {}),
+            ...(performanceIncluded && performanceSalary ? { 绩效: performanceSalary } : {}),
+            ...(commissionIncluded && commissionSalary ? { 其他: commissionSalary } : {}),
           },
     };
   }
 
   function offerSalaryError(salary) {
-    if (salary.baseSalary === null || salary.baseSalary === undefined) return '请填写底薪';
-    if (salary.baseSalary <= 0) return '底薪必须大于0';
-    if (salary.performanceIncluded && (salary.performanceSalary === null || salary.performanceSalary === undefined)) return '请填写绩效金额';
-    if (salary.commissionIncluded && (salary.commissionSalary === null || salary.commissionSalary === undefined)) return '请填写其他金额';
+    if (salary.baseSalary === null || salary.baseSalary === undefined) return document.getElementById('rf-offer-pay-unit-field')?.hidden ? '请填写底薪' : '请填写实习薪资';
+    if (salary.baseSalary <= 0) return document.getElementById('rf-offer-pay-unit-field')?.hidden ? '底薪必须大于0' : '实习薪资必须大于0';
+    if (salary.performanceIncluded && !salary.performanceSalary) return '请填写绩效说明';
+    if (salary.commissionIncluded && !salary.commissionSalary) return '请填写其他说明';
     return '';
   }
 
@@ -4393,7 +4410,7 @@
   function offerSubmitLabel(form) {
     if (form?.dataset.offerId) return '重新生成 PDF 并预览';
     const sendAfterCreate = Boolean(form?.querySelector('[data-offer-email-option]')?.checked);
-    return sendAfterCreate ? '创建并发送 Offer' : '创建 Offer';
+    return sendAfterCreate ? '生成并预览' : '生成 Offer';
   }
 
   async function openTalentOfferDialog(candidateId) {
@@ -4436,12 +4453,12 @@
             <label><span>入职日期 <b>*</b></span><input id="rf-offer-start" type="date" value="${localDateValue(Date.now() + 7 * 86400000)}" required></label>${offerReportingAndValidityFields()}
             <label><span>工作地点 <b>*</b></span><input id="rf-offer-location" value="${escapeHtml(selectedPosition?.location || '山东省烟台市')}"></label>
             <label><span>部门</span><input id="rf-offer-department" value="${escapeHtml(selectedPosition?.department || '')}" readonly></label>
-            ${offerSalaryField('rf-offer-base', '底薪（元/月）', '', '请输入固定底薪')}
+            ${offerInternshipPayField()}${offerSalaryField('rf-offer-base', '底薪（元/月）', '', '请输入固定底薪')}
             <label><span>试用期（月数与薪资比例）</span><input id="rf-offer-probation" type="text" value="3个月，试用期薪资100%" placeholder="例如：3个月，试用期薪资80%"></label>
             ${offerOptionalSalaryField('rf-offer-performance', '绩效（元/月）')}
             ${offerOptionalSalaryField('rf-offer-commission', '其他（元/月）')}
         </div>
-        <div class="rf-dialog-actions rf-offer-actions"><label class="rf-offer-email-toggle"><input type="checkbox" data-offer-email-option checked><span>发送候选人邮箱</span></label><div><button class="btn-soft" data-rf-talent-offer-cancel type="button">取消</button><button class="btn-primary" type="submit">创建并发送 Offer</button></div></div>
+        <div class="rf-dialog-actions rf-offer-actions"><label class="rf-offer-email-toggle"><input type="checkbox" data-offer-email-option checked><span>发送候选人邮箱</span></label><div><button class="btn-soft" data-rf-talent-offer-cancel type="button">取消</button><button class="btn-primary" type="submit">生成并预览</button></div></div>
         <p id="rf-offer-message" class="rf-dialog-message"></p>
       </form>`,'wide');
     document.getElementById('rf-offer-template')?.addEventListener('change', (event) => {
@@ -4464,6 +4481,7 @@
     });
     bindOfferEmailOption(document.getElementById('rf-talent-offer-form'));
     bindOfferSalaryToggles();
+    bindInternshipPayUnit(selectedTemplate.type);
     updateOfferTemplateFields(selectedTemplate.type, selectedTemplate);
   }
 
@@ -4488,6 +4506,7 @@
       department: position?.department || '',
       location: document.getElementById('rf-offer-location')?.value.trim(),
       baseSalary: salary.baseSalary ?? 0,
+      internshipPayUnit: internship ? salary.internshipPayUnit : undefined,
       performanceSalary: salary.performanceIncluded ? salary.performanceSalary : undefined,
       commission: salary.commissionIncluded ? salary.commissionSalary : undefined,
       bonusMonths: 0,
@@ -4545,7 +4564,7 @@
     const shared = [
       { key: 'location', label: '工作地点', inputType: 'text', placeholder: '例如：山东省烟台市' },
       { key: 'startDate', label: '入职日期', inputType: 'date', required: true, locked: true },
-      { key: 'baseSalary', label: type === '实习' ? '实习日薪（元/天）' : '底薪（元/月）', inputType: 'number', required: true, locked: true },
+      { key: 'baseSalary', label: type === '实习' ? '实习薪资' : '底薪（元/月）', inputType: 'number', required: true, locked: true },
       { key: 'probationMonths', label: '试用期（月数与薪资比例）', inputType: 'text', placeholder: '例如：3个月，试用期薪资80%' },
     ];
     if (type === '实习') return shared;
@@ -4571,10 +4590,11 @@
   }
   function sortOfferTemplates(templates){return [...(templates||[])].sort((a,b)=>(a.type||'社招').localeCompare(b.type||'社招')||(Date.parse(b.updatedAt||b.createdAt||'')||0)-(Date.parse(a.updatedAt||a.createdAt||'')||0)||(a.name||'').localeCompare(b.name||''))}
   function offerSalarySummary(item) {
+    if (item.internshipPayUnit === 'month' && item.baseSalary) return `月薪 ${Number(item.baseSalary || 0).toLocaleString('zh-CN')} 元/月`;
     if (item.dailySalary) return `日薪 ${Number(item.dailySalary || 0).toLocaleString('zh-CN')} 元/天`;
     const parts = [`底薪 ${Number(item.baseSalary || 0).toLocaleString('zh-CN')} 元/月`];
-    if (item.performanceIncluded) parts.push(`绩效 ${Number(item.performanceSalary || 0).toLocaleString('zh-CN')} 元/月`);
-    if (item.commissionIncluded) parts.push(`其他 ${Number(item.commission || 0).toLocaleString('zh-CN')} 元/月`);
+    if (item.performanceIncluded) parts.push(offerSalaryNoteText(item.performanceSalary));
+    if (item.commissionIncluded) parts.push(offerSalaryNoteText(item.commission));
     return parts.join(' + ');
   }
 
@@ -4743,7 +4763,7 @@
     const preferredRole = active?.bestMatchRole || active?.jobIntention || defaultCandidate.bestMatchRole || defaultCandidate.jobIntention || '';
     const selectedPosition = positions.find((item) => item.id === context.positionId) || positions.find((item) => item.id === active?.matches?.[0]?.positionId) || positions.find((item) => item.name === preferredRole) || positions[0];
     const selectedTemplate = templates.find((item) => item.type === '社招') || templates[0];
-    const root = renderOfferPage(`<header class="rf-offer-view-head"><div><button class="rf-dialog-back" data-rf-offer-back type="button">← 返回 Offer 管理</button><h2>新建 Offer</h2></div></header><form class="rf-offer-create-form" id="rf-offer-create-form"><div class="rf-offer-form-grid"><label><span>选择候选人 <b>*</b></span><select id="rf-offer-candidate">${candidates.map((item) => `<option value="${escapeHtml(item.id)}" ${item.id === defaultCandidate.id ? 'selected' : ''}>${escapeHtml(item.name || '未识别姓名')} · ${escapeHtml(item.phone || '未填写手机号')}</option>`).join('')}</select>${data.candidateLoadError ? `<small class="rf-form-warning">候选人数据暂不可用：${escapeHtml(data.candidateLoadError)}</small>` : ''}</label>${offerHonorificField(defaultCandidate.gender)}<label><span>模板 <b>*</b></span><select id="rf-offer-template">${templates.map((item) => `<option value="${escapeHtml(item.id)}" ${item.id === selectedTemplate.id ? 'selected' : ''}>${escapeHtml(item.name)} · ${escapeHtml(item.type)}</option>`).join('')}</select></label><label><span>岗位名称 <b>*</b></span><select id="rf-offer-role">${positions.map((item) => `<option value="${escapeHtml(item.id)}" ${item.id === selectedPosition?.id ? 'selected' : ''}>${escapeHtml(item.department || '未分配部门')} · ${escapeHtml(item.name)}</option>`).join('')}</select></label><label><span>部门</span><input id="rf-offer-department" value="${escapeHtml(selectedPosition?.department || '')}" readonly></label><label><span>工作地点</span><input id="rf-offer-location" value="${escapeHtml(selectedPosition?.location || '山东省烟台市')}"></label><label><span>入职日期 <b>*</b></span><input id="rf-offer-start" type="date" value="${localDateValue(Date.now() + 7 * 86400000)}"></label>${offerReportingAndValidityFields()}${offerSalaryField('rf-offer-base', '底薪（元/月）', '', '请输入固定底薪')}${offerOptionalSalaryField('rf-offer-performance', '绩效（元/月）')}${offerOptionalSalaryField('rf-offer-commission', '提成（元/月）')}<label><span>试用期（月数与薪资比例）</span><input id="rf-offer-probation" type="text" value="3个月，试用期薪资100%" placeholder="例如：3个月，试用期薪资80%"></label></div><div class="rf-offer-actions"><label class="rf-offer-email-toggle"><input type="checkbox" data-offer-email-option checked><span>发送候选人邮箱</span></label><div><button class="btn-soft" type="button" data-rf-offer-back>取消</button><button class="btn-primary" type="submit">生成 Offer 并预览</button></div></div><p id="rf-offer-message" class="rf-offer-form-message"></p></form>`);
+    const root = renderOfferPage(`<header class="rf-offer-view-head"><div><button class="rf-dialog-back" data-rf-offer-back type="button">← 返回 Offer 管理</button><h2>新建 Offer</h2></div></header><form class="rf-offer-create-form" id="rf-offer-create-form"><div class="rf-offer-form-grid"><label><span>选择候选人 <b>*</b></span><select id="rf-offer-candidate">${candidates.map((item) => `<option value="${escapeHtml(item.id)}" ${item.id === defaultCandidate.id ? 'selected' : ''}>${escapeHtml(item.name || '未识别姓名')} · ${escapeHtml(item.phone || '未填写手机号')}</option>`).join('')}</select>${data.candidateLoadError ? `<small class="rf-form-warning">候选人数据暂不可用：${escapeHtml(data.candidateLoadError)}</small>` : ''}</label>${offerHonorificField(defaultCandidate.gender)}<label><span>模板 <b>*</b></span><select id="rf-offer-template">${templates.map((item) => `<option value="${escapeHtml(item.id)}" ${item.id === selectedTemplate.id ? 'selected' : ''}>${escapeHtml(item.name)} · ${escapeHtml(item.type)}</option>`).join('')}</select></label><label><span>岗位名称 <b>*</b></span><select id="rf-offer-role">${positions.map((item) => `<option value="${escapeHtml(item.id)}" ${item.id === selectedPosition?.id ? 'selected' : ''}>${escapeHtml(item.department || '未分配部门')} · ${escapeHtml(item.name)}</option>`).join('')}</select></label><label><span>部门</span><input id="rf-offer-department" value="${escapeHtml(selectedPosition?.department || '')}" readonly></label><label><span>工作地点</span><input id="rf-offer-location" value="${escapeHtml(selectedPosition?.location || '山东省烟台市')}"></label><label><span>入职日期 <b>*</b></span><input id="rf-offer-start" type="date" value="${localDateValue(Date.now() + 7 * 86400000)}"></label>${offerReportingAndValidityFields()}${offerInternshipPayField()}${offerSalaryField('rf-offer-base', '底薪（元/月）', '', '请输入固定底薪')}${offerOptionalSalaryField('rf-offer-performance', '绩效（元/月）')}${offerOptionalSalaryField('rf-offer-commission', '提成（元/月）')}<label><span>试用期（月数与薪资比例）</span><input id="rf-offer-probation" type="text" value="3个月，试用期薪资100%" placeholder="例如：3个月，试用期薪资80%"></label></div><div class="rf-offer-actions"><label class="rf-offer-email-toggle"><input type="checkbox" data-offer-email-option checked><span>发送候选人邮箱</span></label><div><button class="btn-soft" type="button" data-rf-offer-back>取消</button><button class="btn-primary" type="submit">生成并预览</button></div></div><p id="rf-offer-message" class="rf-offer-form-message"></p></form>`);
 if (!root) return;
     root.querySelector('#rf-offer-create-form').dataset.applicationId = context.applicationId || '';
     root.querySelector('#rf-offer-create-form').dataset.interviewId = context.interviewId || '';
@@ -4762,16 +4782,42 @@ if (!root) return;
     root.querySelector('#rf-offer-create-form')?.addEventListener('submit', (event) => { event.preventDefault(); saveOffer(); });
     bindOfferEmailOption(root.querySelector('#rf-offer-create-form'));
     bindOfferSalaryToggles();
+    bindInternshipPayUnit(selectedTemplate.type);
     updateOfferTemplateFields(selectedTemplate.type, selectedTemplate);
   }
-  function updateOfferTemplateFields(type,template={}){const fields=normalizeOfferTemplateFields({...template,type}),fieldMap=new Map(fields.filter(field=>field.enabled!==false).map(field=>[field.key,field])),controls={location:'rf-offer-location',startDate:'rf-offer-start',baseSalary:'rf-offer-base',performanceSalary:'rf-offer-performance',commission:'rf-offer-commission',probationMonths:'rf-offer-probation'};Object.entries(controls).forEach(([key,id])=>{const input=document.getElementById(id),label=input?.closest('label'),field=fieldMap.get(key);if(!input||!label)return;label.hidden=!field;input.required=Boolean(field?.required);if(field){const title=label.querySelector(':scope > span');if(title)title.innerHTML=`${escapeHtml(field.label)}${field.required?' <b>*</b>':''}`}})}
+  function syncInternshipPayUnit(type) {
+    const field = document.getElementById('rf-offer-pay-unit-field');
+    const select = document.getElementById('rf-offer-pay-unit');
+    const amountLabel = document.querySelector('#rf-offer-base')?.closest('label')?.querySelector(':scope > span');
+    if (!field || !select) return;
+    const internship = type === '实习';
+    field.hidden = !internship;
+    if (!amountLabel) return;
+    if (!internship) {
+      amountLabel.innerHTML = '底薪（元/月） <b>*</b>';
+      return;
+    }
+    amountLabel.textContent = select.value === 'month' ? '实习月薪（元/月）' : '实习日薪（元/天）';
+  }
+  function bindInternshipPayUnit(type) {
+    const select = document.getElementById('rf-offer-pay-unit');
+    if (!select || select.dataset.bound === 'true') return syncInternshipPayUnit(type);
+    select.dataset.bound = 'true';
+    select.addEventListener('change', () => {
+      const templateId = document.getElementById('rf-offer-template')?.value || '';
+      const selectedType = (state.offerData?.templates || []).find((item) => item.id === templateId)?.type || type;
+      syncInternshipPayUnit(selectedType);
+    });
+    syncInternshipPayUnit(type);
+  }
+  function updateOfferTemplateFields(type,template={}){const fields=normalizeOfferTemplateFields({...template,type}),fieldMap=new Map(fields.filter(field=>field.enabled!==false).map(field=>[field.key,field])),controls={location:'rf-offer-location',startDate:'rf-offer-start',baseSalary:'rf-offer-base',performanceSalary:'rf-offer-performance',commission:'rf-offer-commission',probationMonths:'rf-offer-probation'};Object.entries(controls).forEach(([key,id])=>{const input=document.getElementById(id),label=input?.closest('label'),field=fieldMap.get(key);if(!input||!label)return;label.hidden=!field;input.required=Boolean(field?.required);if(field && key !== 'baseSalary'){const title=label.querySelector(':scope > span');if(title)title.innerHTML=`${escapeHtml(field.label)}${field.required?' <b>*</b>':''}`}});syncInternshipPayUnit(type)}
 
   function offerSalaryPreviewText(payload, internship) {
     const salaryParts = internship
-      ? [`日薪 ${Number(payload.baseSalary || 0)} 元`]
+      ? [`${payload.internshipPayUnit === 'month' ? '月薪' : '日薪'} ${Number(payload.baseSalary || 0)} 元`]
       : [`底薪 ${Number(payload.baseSalary || 0)} 元/月`];
-    if (!internship && payload.performanceSalary !== undefined) salaryParts.push(`绩效 ${Number(payload.performanceSalary || 0)} 元/月`);
-    if (!internship && payload.commission !== undefined) salaryParts.push(`其他 ${Number(payload.commission || 0)} 元/月`);
+    if (!internship && payload.performanceSalary !== undefined) salaryParts.push(offerSalaryNoteText(payload.performanceSalary));
+    if (!internship && payload.commission !== undefined) salaryParts.push(offerSalaryNoteText(payload.commission));
     return salaryParts.join(' + ');
   }
 
@@ -4858,6 +4904,7 @@ if (!root) return;
       department: position?.department || '',
       location: document.getElementById('rf-offer-location')?.value.trim(),
       baseSalary: salary.baseSalary ?? 0,
+      internshipPayUnit: internship ? salary.internshipPayUnit : undefined,
       performanceSalary: salary.performanceIncluded ? salary.performanceSalary : undefined,
       commission: salary.commissionIncluded ? salary.commissionSalary : undefined,
       bonusMonths: 0,
@@ -4973,7 +5020,7 @@ if (!root) return;
     const currentPosition = positionOptions.find(item => item.id === offer.positionId);
     state.offerData = { ...state.offerData, positions: positionOptions, candidates: [{ id: offer.candidateId, name: offer.candidateName, email: offer.candidateEmail }] };
     const selectedTemplate = templates.find(item => item.id === offer.templateId) || templates.find(item => item.type === offer.templateType) || templates[0];
-    const root = renderOfferPage(`<header class="rf-offer-view-head"><div><button class="rf-dialog-back" data-rf-offer-back type="button">← 返回 Offer 管理</button><h2>修改 Offer</h2><p>候选人已锁定。岗位可按需更换，部门随岗位自动带出；保存后会重新生成 PDF，确认无误再发送给候选人。</p></div></header><form class="rf-offer-create-form" id="rf-offer-create-form" data-offer-id="${escapeHtml(offer.id)}"><div class="rf-offer-form-grid"><label><span>候选人</span><select id="rf-offer-candidate" disabled><option value="${escapeHtml(offer.candidateId)}">${escapeHtml(offer.candidateName || '未识别姓名')}${offer.candidateEmail ? ` · ${escapeHtml(offer.candidateEmail)}` : ''}</option></select></label>${offerHonorificField('', offer.candidateHonorific)}<label><span>模板 <b>*</b></span><select id="rf-offer-template">${templates.map((item) => `<option value="${escapeHtml(item.id)}" ${item.id === selectedTemplate.id ? 'selected' : ''}>${escapeHtml(item.name)} · ${escapeHtml(item.type)}</option>`).join('')}</select></label><label><span>岗位名称 <b>*</b></span><select id="rf-offer-role" required>${currentPosition ? '' : '<option value="" selected disabled>请选择岗位</option>'}${positionOptions.map((item) => `<option value="${escapeHtml(item.id)}" ${item.id === offer.positionId ? 'selected' : ''}>${escapeHtml(item.department || '未分配部门')} · ${escapeHtml(item.name)}</option>`).join('')}</select></label><label><span>部门</span><input id="rf-offer-department" value="${escapeHtml(currentPosition?.department || '')}" readonly></label><label><span>工作地点</span><input id="rf-offer-location" value="${escapeHtml(offer.location)}"></label><label><span>入职日期 <b>*</b></span><input id="rf-offer-start" type="date" value="${escapeHtml(offer.startDate)}"></label>${offerReportingAndValidityFields({ reportingTo: offer.reportingTo, validFrom: offer.validFrom, validTo: offer.validTo })}${offerSalaryField('rf-offer-base', '底薪（元/月）', offer.dailySalary || offer.baseSalary || '', '请输入固定底薪')}${offerOptionalSalaryField('rf-offer-performance', '绩效（元/月）', offer.performanceIncluded, offer.performanceSalary)}${offerOptionalSalaryField('rf-offer-commission', '提成（元/月）', offer.commissionIncluded, offer.commission)}<label><span>试用期（月数与薪资比例）</span><input id="rf-offer-probation" type="text" value="${escapeHtml(offer.probationMonths)}" placeholder="例如：3个月，试用期薪资80%"></label></div><div class="rf-offer-actions"><label class="rf-offer-email-toggle"><input type="checkbox" data-offer-email-option checked><span>发送候选人邮箱</span></label><div><button class="btn-soft" type="button" data-rf-offer-back>取消</button><button class="btn-primary" type="submit">重新生成 PDF 并预览</button></div></div><p id="rf-offer-message" class="rf-offer-form-message"></p></form>`);
+    const root = renderOfferPage(`<header class="rf-offer-view-head"><div><button class="rf-dialog-back" data-rf-offer-back type="button">← 返回 Offer 管理</button><h2>修改 Offer</h2><p>候选人已锁定。岗位可按需更换，部门随岗位自动带出；保存后会重新生成 PDF，确认无误再发送给候选人。</p></div></header><form class="rf-offer-create-form" id="rf-offer-create-form" data-offer-id="${escapeHtml(offer.id)}"><div class="rf-offer-form-grid"><label><span>候选人</span><select id="rf-offer-candidate" disabled><option value="${escapeHtml(offer.candidateId)}">${escapeHtml(offer.candidateName || '未识别姓名')}${offer.candidateEmail ? ` · ${escapeHtml(offer.candidateEmail)}` : ''}</option></select></label>${offerHonorificField('', offer.candidateHonorific)}<label><span>模板 <b>*</b></span><select id="rf-offer-template">${templates.map((item) => `<option value="${escapeHtml(item.id)}" ${item.id === selectedTemplate.id ? 'selected' : ''}>${escapeHtml(item.name)} · ${escapeHtml(item.type)}</option>`).join('')}</select></label><label><span>岗位名称 <b>*</b></span><select id="rf-offer-role" required>${currentPosition ? '' : '<option value="" selected disabled>请选择岗位</option>'}${positionOptions.map((item) => `<option value="${escapeHtml(item.id)}" ${item.id === offer.positionId ? 'selected' : ''}>${escapeHtml(item.department || '未分配部门')} · ${escapeHtml(item.name)}</option>`).join('')}</select></label><label><span>部门</span><input id="rf-offer-department" value="${escapeHtml(currentPosition?.department || '')}" readonly></label><label><span>工作地点</span><input id="rf-offer-location" value="${escapeHtml(offer.location)}"></label><label><span>入职日期 <b>*</b></span><input id="rf-offer-start" type="date" value="${escapeHtml(offer.startDate)}"></label>${offerReportingAndValidityFields({ reportingTo: offer.reportingTo, validFrom: offer.validFrom, validTo: offer.validTo })}${offerInternshipPayField(offer.internshipPayUnit)}${offerSalaryField('rf-offer-base', '底薪（元/月）', offer.dailySalary || offer.baseSalary || '', '请输入固定底薪')}${offerOptionalSalaryField('rf-offer-performance', '绩效（元/月）', offer.performanceIncluded, offer.performanceSalary)}${offerOptionalSalaryField('rf-offer-commission', '提成（元/月）', offer.commissionIncluded, offer.commission)}<label><span>试用期（月数与薪资比例）</span><input id="rf-offer-probation" type="text" value="${escapeHtml(offer.probationMonths)}" placeholder="例如：3个月，试用期薪资80%"></label></div><div class="rf-offer-actions"><label class="rf-offer-email-toggle"><input type="checkbox" data-offer-email-option checked><span>发送候选人邮箱</span></label><div><button class="btn-soft" type="button" data-rf-offer-back>取消</button><button class="btn-primary" type="submit">重新生成 PDF 并预览</button></div></div><p id="rf-offer-message" class="rf-offer-form-message"></p></form>`);
     if (!root) return;
     root.querySelector('#rf-offer-template')?.addEventListener('change', (event) => { const template = templates.find((item) => item.id === event.currentTarget.value) || selectedTemplate; updateOfferTemplateFields(template.type, template); });
     root.querySelector('#rf-offer-role')?.addEventListener('change', (event) => {
@@ -4984,6 +5031,7 @@ if (!root) return;
     root.querySelectorAll('[data-rf-offer-back]').forEach((button) => button.addEventListener('click', openOfferManagement));
     root.querySelector('#rf-offer-create-form')?.addEventListener('submit', (event) => { event.preventDefault(); saveOffer(); });
     bindOfferSalaryToggles();
+    bindInternshipPayUnit(selectedTemplate.type);
     updateOfferTemplateFields(selectedTemplate.type, selectedTemplate);
   }
 
@@ -6589,6 +6637,7 @@ if (!root) return;
 
   function publicOfferSalaryText(item) {
     const salary = item.salary || {};
+    if (salary.internshipPayUnit === 'month' && salary.monthly) return { total: Number(salary.monthly), detail: `月薪 ${Number(salary.monthly)} 元` };
     if (salary.daily) return { total: Number(salary.daily), detail: `日薪 ${Number(salary.daily)} 元` };
     const parts = [`底薪 ${Number(salary.base || 0)} 元/月`];
     if (salary.performanceIncluded) parts.push(`绩效 ${Number(salary.performance || 0)} 元/月`);

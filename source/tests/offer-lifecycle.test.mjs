@@ -54,7 +54,7 @@ test('social Offer PDF uses a stable embedded TrueType font', async () => {
     const values = {
       candidateName: '顾承昀', candidateHonorific: '女士', offerNumber: 'FP-FONT-001', role: 'AI产品经理', department: '产品',
       location: '山东省烟台市', contractType: '劳动合同', startDate: '2026-10-22', reportingTo: '张总',
-      monthlySalary: '5000', totalSalary: '5000', dailySalary: '0', performanceSalary: '0',
+      monthlySalary: '5000', totalSalary: '5000', dailySalary: '0', internshipPayUnit: 'month', performanceSalary: '0',
       commissionSalary: '0', performanceIncluded: false, commissionIncluded: false,
       probationMonths: '3个月，试用期薪资100%', deadlineDate: '2026-11-02',
       validFrom: '2026-10-19', validTo: '2026-11-02',
@@ -195,8 +195,8 @@ test('approved Offer, secure acceptance, background check and onboarding form on
     const offerRow = memory.records.get('recruitment_offers')[0];
     const persistedSalary = JSON.parse(offerRow.fields['薪资结构JSON']);
     assert.equal(persistedSalary['底薪'], 26000);
-    assert.equal(persistedSalary['绩效'], 4000);
-    assert.equal(persistedSalary['其他'], 1500);
+    assert.equal(persistedSalary['绩效'], '4000');
+    assert.equal(persistedSalary['其他'], '1500');
     assert.equal(offerRow.fields['试用期月数'], '3个月，试用期薪资80%');
     assert.notEqual(offerRow.fields['答复Token哈希'], link.token);
     assert.equal(offerRow.fields['Token前缀'], link.token.slice(0, 8));

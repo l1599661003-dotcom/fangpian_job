@@ -15,23 +15,38 @@ import { appFlowUrl } from '../../platform/app-links'
 import { CandidateEmailDetail, candidateEmailCard } from '../../platform/candidate-email'
 import { DatabaseService } from '../database/database.service'
 import { MessagesService } from '../messages/messages.service'
-import { OfferApprovalInput, OfferInput, OfferNegotiationInput, OfferTemplateCreateInput, OfferTemplateFieldInput, OfferTemplateType, OfferTemplateUpdateInput } from './offer.types'
+import { InternshipPayUnit, OfferApprovalInput, OfferInput, OfferNegotiationInput, OfferTemplateCreateInput, OfferTemplateFieldInput, OfferTemplateType, OfferTemplateUpdateInput } from './offer.types'
 
 const execFileAsync = promisify(execFile)
 const now = () => new Date().toISOString()
 const id = (prefix: string) => `${prefix}_${randomUUID().replace(/-/g, '').slice(0, 20)}`
 const text = (value: unknown) => String(value ?? '').trim()
 const num = (value: unknown) => (Number.isFinite(Number(value)) ? Number(value) : 0)
+const offerNote = (value: unknown) => text(value)
+const offerNoteAmount = (value: unknown) => {
+  const note = offerNote(value).replace(/,/g, '')
+  return /^-?\d+(?:\.\d+)?$/.test(note) ? num(note) : 0
+}
+const offerNoteText = (value: unknown) => {
+  const note = offerNote(value)
+  return /^-?\d+(?:\.\d+)?$/.test(note.replace(/,/g, '')) ? `${note}元` : note
+}
+const internshipPayUnitOf = (input: OfferInput): InternshipPayUnit => input.internshipPayUnit === 'month' ? 'month' : 'day'
+type StoredSalary = { 日薪?: number; 月薪?: number; 底薪?: number; 绩效?: number | string; 其他?: number | string; 提成?: number | string }
+const internshipPayFromSalary = (salary: StoredSalary) => {
+  if (salary['月薪'] !== undefined) return { unit: 'month' as const, amount: num(salary['月薪']) }
+  return { unit: 'day' as const, amount: num(salary['日薪']) }
+}
 const json = <T>(value: unknown, fallback: T): T => {
   try { return value ? JSON.parse(String(value)) as T : fallback } catch { return fallback }
 }
 const hash = (value: string) => createHash('sha256').update(value).digest('hex')
-const offerCommissionValue = (salary: { 其他?: number; 提成?: number }) => salary['其他'] ?? salary['提成']
+const offerCommissionValue = (salary: { 其他?: number | string; 提成?: number | string }) => salary['其他'] ?? salary['提成']
 const OFFER_TEMPLATE_FIELDS: Record<OfferTemplateType, OfferTemplateFieldInput[]> = {
   实习: [
     { key: 'location', label: '工作地点', inputType: 'text', enabled: true, placeholder: '例如：山东省烟台市' },
     { key: 'startDate', label: '入职日期', inputType: 'date', required: true, enabled: true, locked: true },
-    { key: 'baseSalary', label: '实习日薪（元/天）', inputType: 'number', required: true, enabled: true, locked: true },
+    { key: 'baseSalary', label: '实习薪资', inputType: 'number', required: true, enabled: true, locked: true },
     { key: 'probationMonths', label: '试用期（月数与薪资比例）', inputType: 'text', enabled: true, placeholder: '例如：3个月，试用期薪资80%' },
   ],
   社招: [
@@ -95,6 +110,7 @@ interface OfferFileValues {
   monthlySalary: string
   totalSalary: string
   dailySalary: string
+  internshipPayUnit: 'day' | 'month'
   performanceSalary: string
   commissionSalary: string
   performanceIncluded: boolean
@@ -140,10 +156,11 @@ const offerEmailHtml = (candidateName: string, responseUrl: string, note: string
 const offerDocument = (values: OfferFileValues, templateType: OfferTemplateType) => {
   const internship = templateType === '实习'
   const salaryParts = [`底薪${underline(values.monthlySalary)}元`]
-  if (values.performanceIncluded) salaryParts.push(`绩效${underline(values.performanceSalary)}元`)
-  if (values.commissionIncluded) salaryParts.push(`其他${underline(values.commissionSalary)}元`)
+  if (values.performanceIncluded) salaryParts.push(underline(values.performanceSalary))
+  if (values.commissionIncluded) salaryParts.push(underline(values.commissionSalary))
+  const internshipUnit = values.internshipPayUnit === 'month' ? '月' : '天'
   const salaryText = internship
-    ? `薪酬${underline(values.dailySalary)}元/天，入职后缴纳意外险。`
+    ? `薪酬${underline(values.internshipPayUnit === 'month' ? values.monthlySalary : values.dailySalary)}元/${internshipUnit}，入职后缴纳意外险。`
     : `薪酬${underline(values.totalSalary)}元/月，包含${salaryParts.join('+')}，试用期${underline(values.probationMonths)}。`
   const materialItems = internship
     ? ['学生证原件及复印件1份', '身份证原件及复印件1份（正反面在一张上）', '招商银行卡复印件1份（用于薪酬发放）']
@@ -379,18 +396,21 @@ export class OffersService {
   async create(input: OfferInput) {
     if (!text(input.candidateId) || !text(input.role) || !text(input.startDate)) throw new BadRequestException('候选人、岗位和入职日期不能为空')
     const templateType = await this.resolveTemplateType(input.templateId)
-    if (templateType === '实习' && num(input.baseSalary) <= 0) throw new BadRequestException('实习日薪不能为空')
+    if (templateType === '实习' && num(input.baseSalary) <= 0) throw new BadRequestException('实习薪资不能为空')
     if (templateType === '社招' && num(input.baseSalary) <= 0) throw new BadRequestException('社招底薪不能为空')
     const startDate = text(input.startDate)
     const parsedStartDate = new Date(`${startDate}T00:00:00.000Z`)
     if (Number.isNaN(parsedStartDate.getTime()) || parsedStartDate.toISOString().slice(0, 10) !== startDate) throw new BadRequestException('入职日期格式无效')
     if (parsedStartDate.getTime() < Date.now() - 86_400_000) throw new BadRequestException('入职日期不能早于当前日期')
+    const internshipMonthly = templateType === '实习' && internshipPayUnitOf(input) === 'month'
     const performanceIncluded = templateType === '社招' && input.performanceSalary !== undefined
     const commissionIncluded = templateType === '社招' && input.commission !== undefined
     const baseSalary = num(input.baseSalary)
-    const performanceSalary = performanceIncluded ? num(input.performanceSalary) : 0
-    const commissionSalary = commissionIncluded ? num(input.commission) : 0
-    if (baseSalary < 0 || performanceSalary < 0 || commissionSalary < 0) throw new BadRequestException('薪资不能小于0')
+    const performanceNote = performanceIncluded ? offerNote(input.performanceSalary) : ''
+    const commissionNote = commissionIncluded ? offerNote(input.commission) : ''
+    if (baseSalary < 0) throw new BadRequestException('薪资不能小于0')
+    if (performanceIncluded && !performanceNote) throw new BadRequestException('已勾选绩效时请填写绩效说明')
+    if (commissionIncluded && !commissionNote) throw new BadRequestException('已勾选其他时请填写其他说明')
     const probationMonths = text(input.probationMonths) || '3个月，试用期薪资100%'
     const scheduleFields = this.offerScheduleInput(input)
     const honorific = this.offerHonorificInput(input)
@@ -457,16 +477,16 @@ export class OffersService {
       岗位名称: input.role,
       部门: text(input.department),
       工作地点: text(input.location),
-      基本月薪: templateType === '实习' ? 0 : baseSalary,
-      绩效月薪: performanceSalary,
+      基本月薪: templateType === '社招' || internshipMonthly ? baseSalary : 0,
+      绩效月薪: offerNoteAmount(performanceNote),
       补贴月额: 0,
       奖金月数: num(input.bonusMonths) || 0,
       薪资结构JSON: JSON.stringify(templateType === '实习'
-        ? { 日薪: baseSalary }
+        ? (internshipMonthly ? { 月薪: baseSalary } : { 日薪: baseSalary })
         : {
             底薪: baseSalary,
-            ...(performanceIncluded ? { 绩效: performanceSalary } : {}),
-            ...(commissionIncluded ? { 其他: commissionSalary } : {}),
+            ...(performanceIncluded ? { 绩效: performanceNote } : {}),
+            ...(commissionIncluded ? { 其他: commissionNote } : {}),
           }),
       入职日期: startDate,
       汇报上级: scheduleFields.reportingTo,
@@ -509,7 +529,7 @@ export class OffersService {
   async update(offerId: string, input: OfferInput) {
     if (!text(input.candidateId) || !text(input.role) || !text(input.startDate)) throw new BadRequestException('候选人、岗位和入职日期不能为空')
     const templateType = await this.resolveTemplateType(input.templateId)
-    if (templateType === '实习' && num(input.baseSalary) <= 0) throw new BadRequestException('实习日薪不能为空')
+    if (templateType === '实习' && num(input.baseSalary) <= 0) throw new BadRequestException('实习薪资不能为空')
     if (templateType === '社招' && num(input.baseSalary) <= 0) throw new BadRequestException('社招底薪不能为空')
     const startDate = text(input.startDate)
     const parsedStartDate = new Date(`${startDate}T00:00:00.000Z`)
@@ -525,12 +545,15 @@ export class OffersService {
       ? await this.applicationForPosition(text(row.fields['候选人ID']), text(input.positionId))
       : undefined
 
+    const internshipMonthly = templateType === '实习' && internshipPayUnitOf(input) === 'month'
     const performanceIncluded = templateType === '社招' && input.performanceSalary !== undefined
     const commissionIncluded = templateType === '社招' && input.commission !== undefined
     const baseSalary = num(input.baseSalary)
-    const performanceSalary = performanceIncluded ? num(input.performanceSalary) : 0
-    const commissionSalary = commissionIncluded ? num(input.commission) : 0
-    if (baseSalary < 0 || performanceSalary < 0 || commissionSalary < 0) throw new BadRequestException('薪资不能小于0')
+    const performanceNote = performanceIncluded ? offerNote(input.performanceSalary) : ''
+    const commissionNote = commissionIncluded ? offerNote(input.commission) : ''
+    if (baseSalary < 0) throw new BadRequestException('薪资不能小于0')
+    if (performanceIncluded && !performanceNote) throw new BadRequestException('已勾选绩效时请填写绩效说明')
+    if (commissionIncluded && !commissionNote) throw new BadRequestException('已勾选其他时请填写其他说明')
     const probationMonths = text(input.probationMonths) || '3个月，试用期薪资100%'
     const scheduleFields = this.offerScheduleInput(input)
     const honorific = this.offerHonorificInput(input)
@@ -541,16 +564,16 @@ export class OffersService {
       岗位名称: input.role,
       部门: text(input.department),
       工作地点: text(input.location),
-      基本月薪: templateType === '实习' ? 0 : baseSalary,
-      绩效月薪: performanceSalary,
+      基本月薪: templateType === '社招' || internshipMonthly ? baseSalary : 0,
+      绩效月薪: offerNoteAmount(performanceNote),
       补贴月额: 0,
       奖金月数: num(input.bonusMonths) || 0,
       薪资结构JSON: JSON.stringify(templateType === '实习'
-        ? { 日薪: baseSalary }
+        ? (internshipMonthly ? { 月薪: baseSalary } : { 日薪: baseSalary })
         : {
             底薪: baseSalary,
-            ...(performanceIncluded ? { 绩效: performanceSalary } : {}),
-            ...(commissionIncluded ? { 其他: commissionSalary } : {}),
+            ...(performanceIncluded ? { 绩效: performanceNote } : {}),
+            ...(commissionIncluded ? { 其他: commissionNote } : {}),
           }),
       入职日期: startDate,
       汇报上级: scheduleFields.reportingTo,
@@ -737,10 +760,13 @@ export class OffersService {
     const row = await this.resolve(token, { allowAnswered: true })
     const candidates = await teable.listAllRecords(this.table('recruitment_candidates'))
     const candidate = candidates.find((item) => text(item.fields['候选人ID']) === text(row.fields['候选人ID']))
-    const salary = json<{ 日薪?: number; 底薪?: number; 绩效?: number; 其他?: number; 提成?: number }>(row.fields['薪资结构JSON'], {}) || {}
+    const salary = json<StoredSalary>(row.fields['薪资结构JSON'], {}) || {}
+    const internshipPay = internshipPayFromSalary(salary)
     const performanceIncluded = salary['绩效'] !== undefined
     const commissionValue = offerCommissionValue(salary)
     const commissionIncluded = commissionValue !== undefined
+    const performanceAmount = performanceIncluded ? offerNoteAmount(salary['绩效']) : 0
+    const commissionAmount = commissionIncluded ? offerNoteAmount(commissionValue) : 0
     return {
       offerId: text(row.fields['OfferID']) || row.id,
       candidateName: text(candidate?.fields['姓名']),
@@ -750,13 +776,17 @@ export class OffersService {
       location: text(row.fields['工作地点']),
       salary: {
         base: num(salary['底薪'] ?? row.fields['基本月薪']),
-        performance: performanceIncluded ? num(salary['绩效']) : 0,
-        commission: commissionIncluded ? num(commissionValue) : 0,
+        performance: performanceAmount,
+        commission: commissionAmount,
+        performanceNote: performanceIncluded ? offerNote(salary['绩效']) : '',
+        commissionNote: commissionIncluded ? offerNote(commissionValue) : '',
         performanceIncluded,
         commissionIncluded,
-        total: num(salary['底薪'] ?? row.fields['基本月薪']) + (performanceIncluded ? num(salary['绩效']) : 0) + (commissionIncluded ? num(commissionValue) : 0),
+        total: num(salary['底薪'] ?? row.fields['基本月薪']) + performanceAmount + commissionAmount,
         bonusMonths: num(row.fields['奖金月数']),
-        daily: num(salary['日薪']),
+        daily: internshipPay.unit === 'day' ? internshipPay.amount : 0,
+        monthly: internshipPay.unit === 'month' ? internshipPay.amount : 0,
+        internshipPayUnit: salary['月薪'] !== undefined || salary['日薪'] !== undefined ? internshipPay.unit : '',
       },
       startDate: text(row.fields['入职日期']),
       probationMonths: text(row.fields['试用期月数']),
@@ -882,14 +912,15 @@ export class OffersService {
   }
 
   private fileValues(row: TeableRecord, candidate: TeableRecord | undefined, templateType: OfferTemplateType): OfferFileValues {
-    const salary = json<{ 日薪?: number; 底薪?: number; 绩效?: number; 其他?: number; 提成?: number }>(row.fields['薪资结构JSON'], {}) || {}
-    const baseSalaryValue = templateType === '实习' ? num(salary['日薪']) : num(salary['底薪'] ?? row.fields['基本月薪'])
+    const salary = json<StoredSalary>(row.fields['薪资结构JSON'], {}) || {}
+    const internshipPay = internshipPayFromSalary(salary)
+    const baseSalaryValue = templateType === '实习' ? internshipPay.amount : num(salary['底薪'] ?? row.fields['基本月薪'])
     const performanceIncluded = salary['绩效'] !== undefined
     const commissionValue = offerCommissionValue(salary)
     const commissionIncluded = commissionValue !== undefined
-    const performanceSalaryValue = performanceIncluded ? num(salary['绩效']) : 0
-    const commissionSalaryValue = commissionIncluded ? num(commissionValue) : 0
-    const totalSalaryValue = baseSalaryValue + performanceSalaryValue + commissionSalaryValue
+    const performanceNote = performanceIncluded ? offerNoteText(salary['绩效']) : ''
+    const commissionNote = commissionIncluded ? offerNoteText(commissionValue) : ''
+    const totalSalaryValue = baseSalaryValue + (performanceIncluded ? offerNoteAmount(salary['绩效']) : 0) + (commissionIncluded ? offerNoteAmount(commissionValue) : 0)
     const startDate = text(row.fields['入职日期'])
     const validFrom = text(row.fields['有效期开始']) || new Date().toISOString().slice(0, 10), validTo = text(row.fields['有效期结束']) || new Date(Date.now() + 14 * 86_400_000).toISOString().slice(0, 10)
     return {
@@ -903,9 +934,10 @@ export class OffersService {
       startDate,
       monthlySalary: String(baseSalaryValue),
       totalSalary: String(totalSalaryValue),
-      dailySalary: String(baseSalaryValue),
-      performanceSalary: String(performanceSalaryValue),
-      commissionSalary: String(commissionSalaryValue),
+      dailySalary: String(templateType === '实习' && internshipPay.unit === 'day' ? internshipPay.amount : baseSalaryValue),
+      internshipPayUnit: templateType === '实习' ? internshipPay.unit : 'month',
+      performanceSalary: performanceNote,
+      commissionSalary: commissionNote,
       performanceIncluded,
       commissionIncluded,
       probationMonths: /^\d+$/.test(text(row.fields['试用期月数'])) ? `${text(row.fields['试用期月数'])}个月` : text(row.fields['试用期月数']) || '3个月，试用期薪资100%',
@@ -992,8 +1024,8 @@ export class OffersService {
     put(first, startParts[1], 219, 463, 10.5)
     put(first, startParts[2], 254, 463, 10.5)
     const salaryExtras: string[] = []
-    if (values.performanceIncluded) salaryExtras.push(`绩效${values.performanceSalary}元`)
-    if (values.commissionIncluded) salaryExtras.push(`其他${values.commissionSalary}元`)
+    if (values.performanceIncluded) salaryExtras.push(values.performanceSalary)
+    if (values.commissionIncluded) salaryExtras.push(values.commissionSalary)
     const probationText = text(values.probationMonths)
     const salarySummary = `薪酬${values.totalSalary}元/月，包含底薪${values.monthlySalary}元${salaryExtras.length ? `+${salaryExtras.join('+')}` : ''}${probationText ? `，${probationText}` : ''}。`
     const salaryLines = wrapText(salarySummary, 386, bodySize).slice(0, 3)
@@ -1153,10 +1185,13 @@ export class OffersService {
   }
 
   private mapOffer(row: TeableRecord, candidate?: TeableRecord) {
-    const salary = json<{ 日薪?: number; 底薪?: number; 绩效?: number; 其他?: number; 提成?: number }>(row.fields['薪资结构JSON'], {}) || {}
+    const salary = json<StoredSalary>(row.fields['薪资结构JSON'], {}) || {}
+    const internshipPay = internshipPayFromSalary(salary)
     const performanceIncluded = salary['绩效'] !== undefined
     const commissionValue = offerCommissionValue(salary)
     const commissionIncluded = commissionValue !== undefined
+    const performanceNote = performanceIncluded ? offerNote(salary['绩效']) : ''
+    const commissionNote = commissionIncluded ? offerNote(commissionValue) : ''
     return {
       id: text(row.fields['OfferID']) || row.id,
       number: text(row.fields['Offer编号']),
@@ -1166,10 +1201,11 @@ export class OffersService {
       role: text(row.fields['岗位名称']),
       department: text(row.fields['部门']),
       templateType: text(row.fields['模板ID']) === '实习' ? '实习' : text(row.fields['模板ID']) === '社招' ? '社招' : '',
-      dailySalary: salary['日薪'] || 0,
-      baseSalary: num(salary['底薪'] ?? row.fields['基本月薪']),
-      performanceSalary: performanceIncluded ? num(salary['绩效']) : 0,
-      commission: commissionIncluded ? num(commissionValue) : 0,
+      dailySalary: internshipPay.unit === 'day' ? internshipPay.amount : 0,
+      internshipPayUnit: salary['月薪'] !== undefined ? 'month' : salary['日薪'] !== undefined ? 'day' : '',
+      baseSalary: salary['月薪'] !== undefined ? internshipPay.amount : num(salary['底薪'] ?? row.fields['基本月薪']),
+      performanceSalary: performanceNote,
+      commission: commissionNote,
       performanceIncluded,
       commissionIncluded,
       startDate: text(row.fields['入职日期']),

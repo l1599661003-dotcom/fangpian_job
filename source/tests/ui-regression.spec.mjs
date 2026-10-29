@@ -262,7 +262,7 @@ test('talent archive can create an Offer for a position without an existing appl
   await page.locator('#rf-offer-role').selectOption('pos_any');
   await page.locator('#rf-offer-base').fill('5000');
   await page.locator('#rf-offer-reporting-to').fill('张总');
-  await page.getByRole('button', { name: '创建并发送 Offer' }).click();
+  await page.getByRole('button', { name: '生成并预览' }).click();
 
   await expect(page.locator('.rf-offer-preview-summary')).toContainText('运营专员');
   await expect(page.locator('.rf-offer-preview-summary')).toContainText('林悦');
@@ -298,8 +298,8 @@ test('talent archive Offer with email unchecked skips the preview and waits for 
   await page.locator('#rf-offer-base').fill('5000');
   await page.locator('#rf-offer-reporting-to').fill('张总');
   await page.locator('#rf-talent-offer-form [data-offer-email-option]').uncheck();
-  await expect(page.getByRole('button', { name: '创建 Offer', exact: true })).toBeVisible();
-  await page.getByRole('button', { name: '创建 Offer', exact: true }).click();
+  await expect(page.getByRole('button', { name: '生成 Offer', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: '生成 Offer', exact: true }).click();
 
   await expect(page.locator('#offer-management-root')).toContainText('林悦');
   await expect(page.locator('#rf-talent-offer-form')).toHaveCount(0);
@@ -1475,7 +1475,7 @@ test('mobile HR Offer handoff locks the interview candidate and position and wai
   await page.locator('#rf-offer-create-form button[type="submit"]').click();
   await expect(page.locator('#rf-offer-preview-send-form')).toBeVisible();
   await expect(page.locator('.rf-offer-preview-document iframe')).toHaveAttribute('src','https://files.example.test/offer_saved.pdf');
-  await expect(page.locator('.rf-offer-preview-summary')).toContainText('底薪 12000 元/月 + 绩效 1500 元/月 + 其他 800 元/月');
+  await expect(page.locator('.rf-offer-preview-summary')).toContainText('底薪 12000 元/月 + 1500元 + 800元');
   expect(mailAttempts).toBe(0);
   expect(offerWrites).toBe(1);
   await page.screenshot({path:testInfo.outputPath('hr-offer-preview-mobile.png')});
@@ -1487,13 +1487,13 @@ test('mobile HR Offer handoff locks the interview candidate and position and wai
   await page.locator('#rf-offer-base').fill('13000');
   await page.locator('#rf-offer-create-form button[type="submit"]').click();
   await expect(page.locator('.rf-offer-preview-document iframe')).toHaveAttribute('src','https://files.example.test/offer_saved_v2.pdf');
-  await expect(page.locator('.rf-offer-preview-summary')).toContainText('底薪 13000 元/月 + 绩效 1500 元/月 + 其他 800 元/月');
+  await expect(page.locator('.rf-offer-preview-summary')).toContainText('底薪 13000 元/月 + 1500元 + 800元');
   expect(offerWrites).toBe(1);
   expect(patchWrites).toBe(1);
   expect(await page.evaluate(()=>document.documentElement.scrollWidth-window.innerWidth)).toBeLessThanOrEqual(1);
-  expect(offerPayload).toMatchObject({candidateId:'talent_a',interviewId:'interview_1',positionId:'pos_interview',applicationId:'application_1',baseSalary:12000,performanceSalary:1500,commission:800,candidateHonorific:'女士'});
-  expect(offerPayload.salaryStructure).toEqual({底薪:12000,绩效:1500,其他:800});
-  expect(patchPayload).toMatchObject({candidateId:'talent_a',positionId:'pos_interview',baseSalary:13000,performanceSalary:1500,commission:800});
+  expect(offerPayload).toMatchObject({candidateId:'talent_a',interviewId:'interview_1',positionId:'pos_interview',applicationId:'application_1',baseSalary:12000,performanceSalary:'1500',commission:'800',candidateHonorific:'女士'});
+  expect(offerPayload.salaryStructure).toEqual({底薪:12000,绩效:'1500',其他:'800'});
+  expect(patchPayload).toMatchObject({candidateId:'talent_a',positionId:'pos_interview',baseSalary:13000,performanceSalary:'1500',commission:'800'});
   await page.locator('#rf-offer-preview-ack').check();
   await page.getByRole('button',{name:'确认并发送 Offer',exact:true}).click();
   await expect(page.locator('#rf-offer-preview-message')).toContainText('邮件服务暂时不可用');
