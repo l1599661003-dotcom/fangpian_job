@@ -6101,11 +6101,24 @@ if (!root) return;
           button.disabled = true; message.classList.remove('error'); message.textContent = '正在提交审批…';
           const result = await request(`api/recruitment/approvals/${encodeURIComponent(type)}/${encodeURIComponent(id)}/decision`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ decision, opinion }), initiator: button });
           notifyUser(decision === '通过' ? (isPosition ? '岗位审批已通过' : result.positionAutoPublished ? '招聘需求审批已通过，岗位已自动发布' : '招聘需求审批已通过，岗位已处于招聘中') : '申请已驳回', decision === '通过' ? 'success' : 'error');
-          await openRecruitmentApproval(type, id);
+          await loadJobsPage();
+          const remaining = pendingRecruitmentApprovals();
+          const nextCards = remaining.length
+            ? remaining.map((next) => `<button type="button" data-rf-open-approval="${escapeHtml(next.type)}:${escapeHtml(next.id)}"><span>${next.type === 'position' ? '岗位' : '需求'}</span><strong>${escapeHtml(next.title)}</strong><small>${escapeHtml(next.department)} · ${escapeHtml(next.detail)}</small><em>继续审批</em></button>`).join('')
+            : '';
+          showTalentDialog(`<header class="rf-dialog-head"><div><span>APPROVAL DONE</span><h2>${decision === '通过' ? '已通过' : '已驳回'}</h2><p>${escapeHtml(item.title || (isPosition ? '岗位申请' : '招聘需求'))}已处理。${remaining.length ? `还有 ${remaining.length} 条待审批，点下面即可继续。` : '待审批已全部处理完。'}</p></div><b>${remaining.length}</b></header>${nextCards ? `<div class="rf-pending-approval-list">${nextCards}</div>` : '<div class="rf-dialog-empty"><strong>没有其他待审批</strong><p>新的岗位和招聘需求提交后，会再次出现在这里。</p></div>'}`, 'wide');
+          document.querySelectorAll('[data-rf-open-approval]').forEach((nextButton) => nextButton.addEventListener('click', () => {
+            const [nextType, nextId] = String(nextButton.dataset.rfOpenApproval || '').split(':');
+            if (nextType && nextId) openRecruitmentApproval(nextType, nextId);
+          }));
         } catch (error) { button.disabled = false; message.textContent = conciseError(error); message.classList.add('error'); }
       }));
     } catch (error) {
-      showTalentDialog(`<div class="rf-dialog-empty"><strong>无法打开招聘审批</strong><p>${escapeHtml(conciseError(error))}</p></div>`, 'wide');
+      const text = conciseError(error);
+      const restricted = /指定的招聘审批人|不是指定/.test(text);
+      showTalentDialog(restricted
+        ? `<div class="rf-dialog-error permission"><i>锁</i><strong>当前账号不能审批</strong><p>${escapeHtml(text)}</p><small>审批按钮只对指定审批人显示。请让审批人用自己的系统账号打开这条申请。</small></div>`
+        : `<div class="rf-dialog-empty"><strong>无法打开招聘审批</strong><p>${escapeHtml(text)}</p></div>`, 'wide');
     }
   }
 

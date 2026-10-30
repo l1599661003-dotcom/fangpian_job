@@ -1361,6 +1361,12 @@ html {
 .rf-dialog-error > strong { display: block; }
 .rf-dialog-error > p { max-width: 520px; margin: 8px auto 16px; }
 .rf-dialog-error > div { display: flex; justify-content: center; gap: 8px; }
+.rf-dialog-error.permission { padding: 72px 28px; }
+.rf-dialog-error.permission > i { width: 56px; height: 56px; font-size: 16px; font-style: normal; }
+.rf-dialog-error.permission > strong { margin-top: 4px; color: #3e321c; font-family: "Source Han Serif CN", serif; font-size: 24px; }
+.rf-dialog-error.permission > p { color: #6d6458; font-size: 14px; line-height: 1.7; }
+.rf-dialog-error.permission > small { display: block; max-width: 460px; margin: 0 auto; color: #8a8174; font-size: 13px; line-height: 1.7; }
+
 .rf-dialog button.is-busy,.rf-archive-tools button.is-busy { position: relative; cursor: wait; opacity: .68; }
 .rf-dialog button.is-busy::after,.rf-archive-tools button.is-busy::after { display: inline-block; width: 8px; height: 8px; margin-left: 6px; border: 1px solid currentColor; border-right-color: transparent; border-radius: 50%; content: ""; vertical-align: -1px; animation: rf-spin .7s linear infinite; }
 .rf-dialog-form .field-error { border-color: #c96a61 !important; box-shadow: 0 0 0 2px rgba(201,106,97,.1); }

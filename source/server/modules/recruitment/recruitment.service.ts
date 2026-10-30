@@ -21,7 +21,8 @@ const timestamp = () => new Date().toISOString()
 const businessId = (prefix: string) => `${prefix}_${randomUUID().replace(/-/g, '').slice(0, 20)}`
 const normalizeHiringPriority = (value: unknown) => ({ 高: '紧急', 中: '重要', 低: '储备', 一般: '储备' }[String(value ?? '').trim()] || String(value ?? '').trim() || '储备')
 const text = (value: unknown) => String(value ?? '').trim()
-const recruitmentApproverUserId = 'LiuJinHu'
+const recruitmentApproverUserId = 'wozR29DwAACxXU8MVtW44tVUZ4ZMF0qg'
+const recruitmentApproverWechatId = 'LiSiQi'
 const number = (value: unknown) => Number.isFinite(Number(value)) ? Number(value) : 0
 const currentShanghaiMonth = () => companyCalendar.monthForDate(Date.now())
 const DAY_MS = 24 * 60 * 60 * 1000
@@ -1362,16 +1363,12 @@ export class RecruitmentService implements OnApplicationBootstrap {
     const approverWecomUserId = this.recruitmentApproverWecomUserId()
     if (!approverWecomUserId) return ''
     const users = await teable.listAllRecords(this.table('recruitment_users'))
-    const approver = users.find((row) => text(row.fields['企业微信用户ID']) === approverWecomUserId)
-    const approverWechatId = text(approver?.fields['天玑微信ID'])
     const configuredRecipient = text(process.env.TIANJI_RECRUITMENT_APPROVER_WECHAT_ID)
-    if (!approver || approverWechatId !== recruitmentApproverUserId || configuredRecipient !== recruitmentApproverUserId) {
-      throw new ServiceUnavailableException(`招聘审批人仅允许 ${recruitmentApproverUserId}，企微与天玑账号配置不一致，已停止发送。`)
-    }
-    const configuredUser = users.find((row) => text(row.fields['天玑微信ID']) === configuredRecipient)
-    const approverId = text(approver.fields['用户ID']) || approver.id
-    const configuredUserId = text(configuredUser?.fields['用户ID']) || configuredUser?.id
-    if (!configuredUser || configuredUserId !== approverId) {
+    const approver = users.find((row) => text(row.fields['企业微信用户ID']) === approverWecomUserId)
+    const recipientOwners = users.filter((row) => text(row.fields['天玑微信ID']) === configuredRecipient)
+    const approverId = text(approver?.fields['用户ID']) || approver?.id || ''
+    const samePerson = recipientOwners.length === 1 && (text(recipientOwners[0].fields['用户ID']) || recipientOwners[0].id) === approverId
+    if (!approver || text(approver.fields['天玑微信ID']) !== recruitmentApproverWechatId || configuredRecipient !== recruitmentApproverWechatId || !samePerson) {
       throw new ServiceUnavailableException('招聘审批人配置不一致：企微审批 ID 与天玑私信 ID 指向不同员工，已停止发送。请统一配置后重试。')
     }
     return configuredRecipient

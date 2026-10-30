@@ -74,8 +74,9 @@ function localRead(path: string, options: TeableReadOptions = {}): TeableRecordP
   loadLocalTables()
   if (path.endsWith('/fields')) {
     const tableId = localTableId(path)
-    const sample = localTables.get(tableId)?.[0]
-    return Object.keys(sample?.fields || {}).map((name) => ({ id: `${tableId}:${name}`, name, type: 'singleLineText' }))
+    const names = new Set<string>()
+    for (const row of localTables.get(tableId) || []) Object.keys(row.fields || {}).forEach((name) => names.add(name))
+    return [...names].map((name) => ({ id: `${tableId}:${name}`, name, type: 'singleLineText' }))
   }
   const recordMatch = /^\/tables\/(local:[^/]+)\/records\/([^/?]+)$/.exec(path)
   if (recordMatch) return localTables.get(recordMatch[1])?.find((row) => row.id === decodeURIComponent(recordMatch[2]))

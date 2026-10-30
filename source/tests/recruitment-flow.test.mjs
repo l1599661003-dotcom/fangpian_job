@@ -4,6 +4,7 @@ import { teable } from '../dist/platform/teable.js';
 import { llm } from '../dist/platform/llm.js';
 import { RECRUITMENT_TABLES } from '../dist/modules/database/database.schema.js';
 import { RecruitmentService } from '../dist/modules/recruitment/recruitment.service.js';
+import companyCalendar from '../dist/company-calendar.js';
 
 test('arrival deadlines allow optional values, preserve omitted dates, clear explicitly and reject invalid ranges', () => {
   const service = new RecruitmentService({ requireTableId: name => name });
@@ -75,8 +76,8 @@ function memoryTeable() {
 test('position and demand require the configured WeCom approver before publishing', async () => {
   const memory = memoryTeable(), restore = memory.install(), previousApprover = process.env.WECOM_RECRUITMENT_APPROVER_USER_ID, previousMessageRecipient = process.env.TIANJI_RECRUITMENT_APPROVER_WECHAT_ID, previousPublicUrl = process.env.APP_PUBLIC_URL;
   try {
-    process.env.WECOM_RECRUITMENT_APPROVER_USER_ID = 'LiuJinHu';
-    process.env.TIANJI_RECRUITMENT_APPROVER_WECHAT_ID = 'LiuJinHu';
+    process.env.WECOM_RECRUITMENT_APPROVER_USER_ID = 'wozR29DwAACxXU8MVtW44tVUZ4ZMF0qg';
+    process.env.TIANJI_RECRUITMENT_APPROVER_WECHAT_ID = 'LiSiQi';
     process.env.APP_PUBLIC_URL = 'https://recruitment.example.test/';
     let messageSequence = 0;
     const approvalMessages = [];
@@ -84,7 +85,7 @@ test('position and demand require the configured WeCom approver before publishin
       preview: async (input) => { approvalMessages.push(input); return { messageId: `approval_message_${++messageSequence}` }; },
       send: async (messageId) => ({ messageId, status: '已发送' }),
     };
-    await teable.createRecord('recruitment_users', { 用户ID: 'approver_user', 姓名: '刘金虎', 企业微信用户ID: 'LiuJinHu', 天玑微信ID: 'LiuJinHu', 用户状态: '启用' });
+    await teable.createRecord('recruitment_users', { 用户ID: 'approver_user', 姓名: '刘金虎', 企业微信用户ID: 'wozR29DwAACxXU8MVtW44tVUZ4ZMF0qg', 天玑微信ID: 'LiSiQi', 用户状态: '启用' });
     await teable.createRecord('recruitment_users', { 用户ID: 'other_user', 姓名: '其他员工', 企业微信用户ID: 'wecom_other', 用户状态: '启用' });
     const service = new RecruitmentService({ requireTableId: (name) => name }, messages);
     const position = await service.createPosition({
@@ -98,7 +99,7 @@ test('position and demand require the configured WeCom approver before publishin
     assert.equal(position.headcount, 3);
     assert.equal(position.approvalStatus, '待审批');
     assert.equal(position.approvalNotification.status, '已发送');
-    assert.equal(approvalMessages[0].recipientAddress, 'LiuJinHu');
+    assert.equal(approvalMessages[0].recipientAddress, 'LiSiQi');
     assert.match(approvalMessages[0].content, /新增岗位审批/);
     assert.match(approvalMessages[0].content, /flow_action=recruitment_approval/);
     assert.match(approvalMessages[0].content, /\[点击打开审批页面 →\]\(https:\/\//);
@@ -307,10 +308,10 @@ test('historical pending demand approvals are not automatically sent after appro
     const demand = await service.saveMonthlyDemand({ month: '2026-09', positionId: 'pos_retry_demand', headcount: 2, demandType: '储备需求', priority: '一般', note: '为下一季度商务拓展提前储备候选人。', operator: '王HR' }, 'recruiter_user');
     assert.equal(demand.approvalNotification.status, '未配置');
 
-    process.env.WECOM_RECRUITMENT_APPROVER_USER_ID = 'LiuJinHu';
-    process.env.TIANJI_RECRUITMENT_APPROVER_WECHAT_ID = 'LiuJinHu';
+    process.env.WECOM_RECRUITMENT_APPROVER_USER_ID = 'wozR29DwAACxXU8MVtW44tVUZ4ZMF0qg';
+    process.env.TIANJI_RECRUITMENT_APPROVER_WECHAT_ID = 'LiSiQi';
     process.env.APP_PUBLIC_URL = 'https://recruitment.example.test/';
-    await teable.createRecord('recruitment_users', { 用户ID: 'approver_user', 姓名: '刘金虎', 企业微信用户ID: 'LiuJinHu', 天玑微信ID: 'LiuJinHu', 用户状态: '启用' });
+    await teable.createRecord('recruitment_users', { 用户ID: 'approver_user', 姓名: '刘金虎', 企业微信用户ID: 'wozR29DwAACxXU8MVtW44tVUZ4ZMF0qg', 天玑微信ID: 'LiSiQi', 用户状态: '启用' });
     const retry = await service.retryPendingRecruitmentApprovalNotifications();
     assert.deepEqual(retry, { scanned: 0, sent: 0, failed: 0 });
     assert.equal(approvalMessages.length, 0);
@@ -331,11 +332,11 @@ test('historical pending demand approvals are not automatically sent after appro
 test('recruitment approval notification stops when approver IDs resolve to different employees', async () => {
   const memory = memoryTeable(), restore = memory.install(), previousApprover = process.env.WECOM_RECRUITMENT_APPROVER_USER_ID, previousMessageRecipient = process.env.TIANJI_RECRUITMENT_APPROVER_WECHAT_ID, previousPublicUrl = process.env.APP_PUBLIC_URL;
   try {
-    process.env.WECOM_RECRUITMENT_APPROVER_USER_ID = 'LiuJinHu';
-    process.env.TIANJI_RECRUITMENT_APPROVER_WECHAT_ID = 'LiuJinHu';
+    process.env.WECOM_RECRUITMENT_APPROVER_USER_ID = 'wozR29DwAACxXU8MVtW44tVUZ4ZMF0qg';
+    process.env.TIANJI_RECRUITMENT_APPROVER_WECHAT_ID = 'LiSiQi';
     process.env.APP_PUBLIC_URL = 'https://recruitment.example.test/';
-    await teable.createRecord('recruitment_users', { 用户ID: 'li_user', 姓名: '李思奇', 企业微信用户ID: 'LiSiQi', 天玑微信ID: 'LiuJinHu', 用户状态: '启用' });
-    await teable.createRecord('recruitment_users', { 用户ID: 'liu_user', 姓名: '刘金虎', 企业微信用户ID: 'LiuJinHu', 天玑微信ID: 'LiuJinHu', 用户状态: '启用' });
+    await teable.createRecord('recruitment_users', { 用户ID: 'li_user', 姓名: '李思奇', 企业微信用户ID: 'wozR29DwAACxXU8MVtW44tVUZ4ZMF0qg', 天玑微信ID: 'LiSiQi', 用户状态: '启用' });
+    await teable.createRecord('recruitment_users', { 用户ID: 'other_user', 姓名: '其他员工', 企业微信用户ID: 'OtherUser', 天玑微信ID: 'LiSiQi', 用户状态: '启用' });
     await teable.createRecord('recruitment_positions', {
       职位ID: 'mismatch_position', 职位名称: '测试岗位', 部门: '测试部门', 招聘人数: 1,
       审批状态: '待审批', 审批提交时间: '2026-09-30T00:00:00.000Z', 审批通知状态: '待发送',
@@ -364,12 +365,12 @@ test('recruitment approval notification stops when approver IDs resolve to diffe
   }
 });
 
-test('recruitment approval retry sends nothing when configured approver is not LiuJinHu', async () => {
+test('recruitment approval retry sends nothing when configured approver is not the designated employee', async () => {
   const memory = memoryTeable(), restore = memory.install(), previousApprover = process.env.WECOM_RECRUITMENT_APPROVER_USER_ID, previousMessageRecipient = process.env.TIANJI_RECRUITMENT_APPROVER_WECHAT_ID;
   try {
-    process.env.WECOM_RECRUITMENT_APPROVER_USER_ID = 'LiSiQi';
-    process.env.TIANJI_RECRUITMENT_APPROVER_WECHAT_ID = 'LiSiQi';
-    await teable.createRecord('recruitment_users', { 用户ID: 'li_user', 姓名: '李思奇', 企业微信用户ID: 'LiSiQi', 天玑微信ID: 'LiSiQi', 用户状态: '启用' });
+    process.env.WECOM_RECRUITMENT_APPROVER_USER_ID = 'LiuJinHu';
+    process.env.TIANJI_RECRUITMENT_APPROVER_WECHAT_ID = 'LiuJinHu';
+    await teable.createRecord('recruitment_users', { 用户ID: 'liu_user', 姓名: '刘金虎', 企业微信用户ID: 'LiuJinHu', 天玑微信ID: 'LiuJinHu', 用户状态: '启用' });
     await teable.createRecord('recruitment_positions', {
       职位ID: 'wrong_approver_position', 职位名称: '测试岗位', 审批状态: '待审批',
       审批提交时间: '2026-09-30T00:00:00.000Z', 审批通知状态: '待发送',
@@ -397,7 +398,7 @@ test('recruitment approval retry sends nothing when configured approver is not L
 test('existing active demands publish waiting positions without reopening paused positions', async () => {
   const memory = memoryTeable(), restore = memory.install();
   try {
-    const month = new Date().toISOString().slice(0, 7);
+    const month = companyCalendar.monthForDate(Date.now());
     await teable.createRecord('recruitment_positions', { 职位ID: 'pos_waiting', 职位名称: '待发布岗位', 发布状态: '待发布', 招聘状态: '待启动' });
     await teable.createRecord('recruitment_positions', { 职位ID: 'pos_paused', 职位名称: '暂停岗位', 发布状态: '已下线', 招聘状态: '暂停招聘' });
     await teable.createRecord('recruitment_positions', { 职位ID: 'pos_pending', 职位名称: '待审批岗位', 发布状态: '待发布', 招聘状态: '待启动' });
