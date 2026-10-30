@@ -93,15 +93,16 @@ test('journey Offer response prevents repeat taps and preserves explanation on f
     await new Promise(resolve => setTimeout(resolve, 300));
     await route.fulfill({ status: attempts === 1 ? 503 : 200, contentType: 'application/json', body: JSON.stringify(attempts === 1 ? { message: '暂时无法提交' } : { response: '接受', targetStage: '待入职' }) });
   });
-  await page.getByLabel('答复说明（选填）').fill('可以按期入职');
+  await expect(page.getByText('Offer编号')).toHaveCount(0);
+  await expect(page.getByText('月度薪资')).toHaveCount(0);
+  await expect(page.getByText('答复说明')).toHaveCount(0);
   await page.getByRole('button', { name: '接受Offer', exact: true }).click();
   await expect(page.getByRole('button', { name: '拒绝Offer' })).toBeDisabled();
-  await expect(page.locator('#rf-public-offer-message')).toContainText('说明已保留');
-  await expect(page.locator('#rf-public-offer-note')).toHaveValue('可以按期入职');
+  await expect(page.locator('#rf-public-offer-message')).toContainText('请重试');
   expect(attempts).toBe(1);
   await page.getByRole('button', { name: '接受Offer', exact: true }).click();
   await expect(page.getByText('已提交：接受')).toBeVisible();
-  expect(submitted).toEqual({ response: 'accept', note: '可以按期入职' });
+  expect(submitted).toEqual({ response: 'accept', note: '' });
   expect(attempts).toBe(2);
 });
 

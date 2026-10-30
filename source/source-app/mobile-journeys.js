@@ -152,16 +152,6 @@
     document.querySelectorAll('[id^="rf-public-"][id$="message"], .rf-dialog-message').forEach(message => {
       if (!message.hasAttribute('aria-live')) message.setAttribute('aria-live', 'polite');
     });
-    const offerNote = document.getElementById('rf-public-offer-note');
-    const offerActions = document.querySelector('.rf-public-offer-actions');
-    if (mobile.matches && offerNote && offerActions && !offerNote.closest('label')) {
-      const label = document.createElement('label');
-      label.className = 'rf-mobile-offer-note';
-      const title = document.createElement('span');
-      title.textContent = '答复说明（选填）';
-      offerActions.before(label);
-      label.append(title, offerNote);
-    }
   }
 
   const schedule = () => {

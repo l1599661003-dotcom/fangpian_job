@@ -6640,16 +6640,21 @@ if (!root) return;
   async function pollReferralJob(jobId,message){const data=await waitForBackgroundJob(jobId,progress=>{if(message?.isConnected)message.textContent=progress;},{timeoutMessage:'简历仍在后台解析，请勿重复提交，可稍后查看内推进度。'});{const link=new URL(data.trackingPath,window.location.href).toString();document.querySelector('.rf-public-referral').innerHTML=`<div class="rf-public-ref-success"><i>✓</i><strong>内推简历已提交</strong><p>简历已经解析、入库并进入${escapeHtml(data.status)}。</p><small>查重状态：${escapeHtml(data.duplicateStatus)}</small><a class="btn-primary" href="${escapeHtml(link)}">查看内推进度</a><em>请妥善保存进度链接，有效期90天。</em></div>`;return}}
   async function renderReferralTracking(token){document.body.className='rf-public-assessment-body';document.body.innerHTML='<main class="rf-public-referral"><div class="rf-dialog-loading">正在读取内推进度…</div></main>';try{const item=await request(`api/public/referrals/track/${encodeURIComponent(token)}`);document.querySelector('.rf-public-referral').innerHTML=`<div class="rf-ref-track"><span>REFERRAL TRACKING</span><h1>${escapeHtml(item.candidateName||'候选人')} · ${escapeHtml(item.role||'内推岗位')}</h1><div><strong>${escapeHtml(item.progress)}</strong><small>${escapeHtml(item.status)} · ${escapeHtml(item.validity)}</small></div><p>查重状态：${escapeHtml(item.duplicateStatus||'待检查')}</p><small>推荐时间 ${escapeHtml(item.recommendedAt)} · 最近更新 ${escapeHtml(item.updatedAt)}</small><aside>${escapeHtml(item.privacy)}</aside></div>`}catch(error){document.querySelector('.rf-public-referral').innerHTML=`<div class="rf-public-failed"><strong>无法查看内推进度</strong><p>${escapeHtml(conciseError(error))}</p></div>`}}
 
-  function publicOfferSalaryText(item) {
-    const salary = item.salary || {};
-    if (salary.internshipPayUnit === 'month' && salary.monthly) return { total: Number(salary.monthly), detail: `月薪 ${Number(salary.monthly)} 元` };
-    if (salary.daily) return { total: Number(salary.daily), detail: `日薪 ${Number(salary.daily)} 元` };
-    const parts = [`底薪 ${Number(salary.base || 0)} 元/月`];
-    if (salary.performanceIncluded) parts.push(`绩效 ${Number(salary.performance || 0)} 元/月`);
-    if (salary.commissionIncluded) parts.push(`其他 ${Number(salary.commission || 0)} 元/月`);
-    return { total: Number(salary.total || 0), detail: parts.join(' + ') };
+  async function renderPublicOffer(token){
+    document.body.className='rf-public-assessment-body';
+    document.body.innerHTML='<main class="rf-public-offer"><div class="rf-dialog-loading">正在安全加载录用通知…</div></main>';
+    try {
+      const item=await request(`api/public/offers/${encodeURIComponent(token)}`);
+      const answered=Boolean(item.response);
+      document.querySelector('.rf-public-offer').innerHTML=`<header><span>FANGPIAN OFFER</span><h1>录用通知书</h1><p>${escapeHtml(item.candidateName)}，很高兴向你发出 ${escapeHtml(item.role)} 岗位的录用邀请。</p></header><div class="rf-public-offer-actions"><a class="btn-soft" href="${escapeHtml(item.fileUrl)}" target="_blank">查看完整Offer文件</a>${answered?'':'<button class="btn-primary" data-public-offer-accept>接受Offer</button><button class="btn-soft danger" data-public-offer-reject>拒绝Offer</button>'}</div>${answered?`<div class="rf-public-success"><i>✓</i><strong>已提交：${escapeHtml(item.response)}</strong><p>Offer文件可随时在上方查看。</p><small>本链接不能重复答复。</small></div>`:'<p id="rf-public-offer-message"></p>'}`;
+      if (!answered) {
+        document.querySelector('[data-public-offer-accept]').addEventListener('click',()=>respondPublicOffer(token,'accept'));
+        document.querySelector('[data-public-offer-reject]').addEventListener('click',()=>respondPublicOffer(token,'reject'));
+      }
+    } catch (error) {
+      document.querySelector('.rf-public-offer').innerHTML=`<div class="rf-public-failed"><strong>无法打开Offer</strong><p>${escapeHtml(conciseError(error))}</p></div>`;
+    }
   }
-  async function renderPublicOffer(token){document.body.className='rf-public-assessment-body';document.body.innerHTML='<main class="rf-public-offer"><div class="rf-dialog-loading">正在安全加载录用通知…</div></main>';try{const item=await request(`api/public/offers/${encodeURIComponent(token)}`);const salary=publicOfferSalaryText(item);const answered=Boolean(item.response);document.querySelector('.rf-public-offer').innerHTML=`<header><span>FANGPIAN OFFER</span><h1>录用通知书</h1><p>${escapeHtml(item.candidateName)}，很高兴向你发出 ${escapeHtml(item.role)} 岗位的录用邀请。</p></header><section class="rf-public-offer-grid"><div><span>Offer编号</span><strong>${escapeHtml(item.offerNumber)}</strong></div><div><span>部门 / 地点</span><strong>${escapeHtml(item.department)} · ${escapeHtml(item.location)}</strong></div><div><span>月度薪资</span><strong>${Number(salary.total)} 元</strong><small>${escapeHtml(salary.detail)}</small></div><div><span>入职日期</span><strong>${escapeHtml(item.startDate)}</strong><small>试用期 ${escapeHtml(item.probationMonths || '—')}</small></div></section><div class="rf-public-offer-actions"><a class="btn-soft" href="${escapeHtml(item.fileUrl)}" target="_blank">查看完整Offer文件</a>${answered?'':'<button class="btn-primary" data-public-offer-accept>接受Offer</button><button class="btn-soft danger" data-public-offer-reject>拒绝Offer</button>'}</div>${answered?`<div class="rf-public-success"><i>✓</i><strong>已提交：${escapeHtml(item.response)}</strong><p>Offer文件可随时在上方查看。</p><small>本链接不能重复答复。</small></div>`:'<textarea id="rf-public-offer-note" placeholder="可选：填写答复说明"></textarea><p id="rf-public-offer-message"></p>'}`;if(!answered){document.querySelector('[data-public-offer-accept]').addEventListener('click',()=>respondPublicOffer(token,'accept'));document.querySelector('[data-public-offer-reject]').addEventListener('click',()=>respondPublicOffer(token,'reject'))}}catch(error){document.querySelector('.rf-public-offer').innerHTML=`<div class="rf-public-failed"><strong>无法打开Offer</strong><p>${escapeHtml(conciseError(error))}</p></div>`}}
   async function respondPublicOffer(token, response) {
     const root = document.querySelector('.rf-public-offer');
     if (!root || root.dataset.responding === 'true') return;
@@ -6660,11 +6665,11 @@ if (!root) return;
     message.setAttribute('aria-live', 'polite');
     message.textContent = '正在提交答复，请不要关闭页面…';
     try {
-      const result = await request(`api/public/offers/${encodeURIComponent(token)}/respond`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ response, note: document.getElementById('rf-public-offer-note')?.value.trim() || '' }) });
+      const result = await request(`api/public/offers/${encodeURIComponent(token)}/respond`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ response, note: '' }) });
       root.innerHTML = `<div class="rf-public-success"><i>✓</i><strong>已提交：${escapeHtml(result.response)}</strong><p>招聘流程已进入 ${escapeHtml(result.targetStage)}，招聘负责人会继续与你联系。</p><small>本链接不能重复答复。</small></div>`;
       root.scrollIntoView({ block: 'start' });
     } catch (error) {
-      message.textContent = `${error.message || '答复失败'}。说明已保留，请重试。`;
+      message.textContent = `${error.message || '答复失败'}。请重试。`;
       message.scrollIntoView({ block: 'nearest' });
       buttons.forEach(button => { button.disabled = false; });
     } finally {
