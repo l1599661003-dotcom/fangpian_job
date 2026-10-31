@@ -6309,7 +6309,7 @@ if (!root) return;
           <small id="rf-demand-transcript-status">支持手机浏览器语音输入；如果浏览器不支持，可直接使用手机输入法的语音键。</small>
         </section>
         <label data-demand-field="rf-demand-month"><span>需求月份 <b>*</b></span><input id="rf-demand-month" type="month" value="${escapeHtml(month)}" required><small class="rf-demand-error" hidden></small></label>
-        <label data-demand-field="rf-demand-position"><span>岗位 <b>*</b></span><select id="rf-demand-position" required><option value="">请选择岗位</option>${jobs.map(item => `<option value="${escapeHtml(item.id)}">${escapeHtml(item.department || '未分配部门')} · ${escapeHtml(item.name || '未命名岗位')}</option>`).join('')}</select><small class="rf-demand-error" hidden></small></label>
+        <label data-demand-field="rf-demand-position"><span>岗位 <b>*</b></span><select id="rf-demand-position" required><option value="">请选择岗位</option>${jobs.map(item => `<option value="${escapeHtml(item.id)}" ${item.id === position?.id ? 'selected' : ''}>${escapeHtml(item.department || '未分配部门')} · ${escapeHtml(item.name || '未命名岗位')}</option>`).join('')}</select><small class="rf-demand-error" hidden></small></label>
         <label data-demand-field="rf-demand-headcount"><span>需求数量 <b>*</b></span><input id="rf-demand-headcount" type="number" min="1" step="1" value="" placeholder="请输入人数" required><small class="rf-demand-error" hidden></small></label>
         <label data-demand-field="rf-demand-type"><span>需求类型 <b>*</b></span><select id="rf-demand-type" required><option value="">请选择需求类型</option><option value="新增需求">新增需求</option><option value="储备需求">储备需求</option></select><small class="rf-demand-error" hidden></small></label>
         <label data-demand-field="rf-demand-priority"><span>优先级 <b>*</b></span><select id="rf-demand-priority" required><option value="">请选择优先级</option>${['紧急','重要','储备'].map(item => `<option value="${item}">${item}</option>`).join('')}</select><small class="rf-demand-error" hidden></small></label>
@@ -6322,8 +6322,11 @@ if (!root) return;
       <p class="rf-dialog-message" id="rf-demand-message"></p>
     `, 'wide');
     document.querySelector('#rf-talent-dialog .rf-dialog')?.classList.add('rf-demand-dialog');
-    const demandMatches = (item, monthValue, positionId, demandType) => item.month === monthValue && item.positionId === positionId && (!demandType || (item.demandType || '新增需求') === demandType);
-    const existingDemand = (context?.demands || state.monthlyDemands || []).find(item => demandMatches(item, month, document.getElementById('rf-demand-position').value, document.getElementById('rf-demand-type').value));
+    const demandForSelection = (monthValue, positionId, demandType) => {
+      const rows = (context?.demands || state.monthlyDemands || []).filter((item) => item.month === monthValue && item.positionId === positionId);
+      return rows.find((item) => demandType && (item.demandType || '新增需求') === demandType) || (demandType ? null : rows[0]) || null;
+    };
+    const existingDemand = demandForSelection(month, document.getElementById('rf-demand-position').value, '');
     if (existingDemand) {
       document.getElementById('rf-demand-headcount').value = Number(existingDemand.headcount || 1);
       document.getElementById('rf-demand-type').value = existingDemand.demandType || '新增需求';
@@ -6335,7 +6338,7 @@ if (!root) return;
     }
     const fillSelectedDemand = () => {
       const selected = jobs.find(item => item.id === document.getElementById('rf-demand-position').value);
-      const demand = (context?.demands || state.monthlyDemands || []).find(item => demandMatches(item, document.getElementById('rf-demand-month').value, selected?.id, document.getElementById('rf-demand-type').value));
+      const demand = demandForSelection(document.getElementById('rf-demand-month').value, selected?.id, document.getElementById('rf-demand-type').value);
       document.getElementById('rf-demand-headcount').value = demand?.headcount ?? '';
       if (demand?.demandType) document.getElementById('rf-demand-type').value = demand.demandType;
       document.getElementById('rf-demand-priority').value = ({ 一般: '储备', 高: '紧急', 中: '重要', 低: '储备' })[demand?.priority] || demand?.priority || '';
