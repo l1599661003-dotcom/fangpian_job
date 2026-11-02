@@ -4792,8 +4792,10 @@ if (!root) return;
     const internship = type === '实习';
     if (internship && !field && grid && base) {
       base.closest('label')?.insertAdjacentHTML('beforebegin', offerInternshipPayField());
+      field = document.getElementById('rf-offer-pay-unit-field');
       bindInternshipPayUnit(type);
     }
+    if (field) field.hidden = !internship;
     if (!internship && field) field.remove();
     const select = document.getElementById('rf-offer-pay-unit');
     const amountLabel = base?.closest('label')?.querySelector(':scope > span');
@@ -5919,10 +5921,13 @@ if (!root) return;
       <div><strong>已选 ${selectedCount} 个岗位</strong><button class="btn-soft" data-rf-job-batch="publish" type="button" ${selectedCount ? '' : 'disabled'}>批量开放</button><button class="btn-soft danger" data-rf-job-batch="offline" type="button" ${selectedCount ? '' : 'disabled'}>批量暂停</button><button class="text-btn" data-rf-job-selection-clear type="button" ${selectedCount ? '' : 'disabled'}>清空选择</button></div>
     </div><div class="rf-job-card-grid">
       ${rows.map((item) => {
-        const demands = activeDemandsFor(item);
-        const demand = demands.slice().sort((left, right) => demandPriorityRank(left.priority) - demandPriorityRank(right.priority))[0];
+        const demands = activeDemandsFor(item).slice().sort((left, right) => demandPriorityRank(left.priority) - demandPriorityRank(right.priority) || String(left.demandType || '').localeCompare(String(right.demandType || ''), 'zh-CN'));
+        const demand = demands[0];
         const approvalStatus = item.approvalStatus || '待审批';
-        const demandStatus = demands.map((item) => `${item.demandType || '新增需求'} ${item.approvalStatus || item.status || '已确认'}`).join(' / ');
+        const priorityLabel = (value) => ({ 一般: '储备', 低: '储备', 高: '紧急', 中: '重要' })[value] || value || '储备';
+        const demandBlocks = demands.length
+          ? demands.map((entry) => `<section class="rf-job-demand ${priorityLabel(entry.priority) === '紧急' ? 'priority-urgent' : priorityLabel(entry.priority) === '重要' ? 'priority-important' : 'priority-normal'}"><div><span>${escapeHtml(entry.demandType || '新增需求')}</span><b>${escapeHtml(priorityLabel(entry.priority))} · ${escapeHtml(entry.approvalStatus || entry.status || '已确认')}</b></div><strong>${Number(entry.headcount || 0)}<small>人</small></strong>${entry.demandRequirement ? `<p class="rf-job-demand-requirement"><b>需求要求</b>${escapeHtml(entry.demandRequirement)}</p>` : ''}</section>`).join('')
+          : `<section class="rf-job-demand empty"><div><span>${escapeHtml(monthLabel)}需求</span><b>未配置</b></div><strong>—<small></small></strong><em>可点击下方按钮补充需求</em></section>`;
         const isRecruiting = item.status === '招聘中';
         const isSelected = state.jobSelectedIds.has(item.id);
         const priority = ({ 高: '紧急', 中: '重要', 低: '储备', 一般: '储备' }[demand?.priority] || demand?.priority || '');
@@ -5939,11 +5944,7 @@ if (!root) return;
             <p>${escapeHtml(item.salaryText || (item.minSalary || item.maxSalary ? `${item.minSalary || 0}-${item.maxSalary || 0}` : '薪资面议'))}</p>
           </header>
           <div class="rf-job-card-body">
-            <section class="rf-job-demand ${demand ? '' : 'empty'}">
-              <div><span>${escapeHtml(monthLabel)}需求</span>${demand ? `<b>${escapeHtml(({ 一般: '储备', 低: '储备', 高: '紧急', 中: '重要' })[demand.priority] || demand.priority || '储备')} · ${escapeHtml(demandStatus || '已确认')}</b>` : '<b>未配置</b>'}</div>
-              ${demands.length ? `<strong>${demands.reduce((total, item) => total + Number(item.headcount || 0), 0)}<small>人</small></strong><em>${demands.map((item) => `${escapeHtml(item.demandType || '新增需求')} ${Number(item.headcount || 0)}人`).join(' · ')}</em>` : '<strong>—</strong><em>可点击下方按钮补充需求</em>'}
-              ${demands.some((item) => item.demandRequirement) ? `<p class="rf-job-demand-requirement"><b>需求要求</b>${escapeHtml(demands.map((item) => item.demandRequirement).filter(Boolean).join('；'))}</p>` : ''}
-            </section>
+            <div class="rf-job-demand-list">${demandBlocks}</div>
             <section class="rf-job-owners">
               <div><span>业务负责人</span><strong>${escapeHtml(item.owner || '待补充')}</strong></div>
               <div><span>招聘HR</span><strong class="${item.recruiter ? '' : 'missing'}">${escapeHtml(item.recruiter || '待绑定')}</strong>${item.backupRecruiter ? `<small>备用：${escapeHtml(item.backupRecruiter)}</small>` : ''}</div>

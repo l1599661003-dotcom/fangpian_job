@@ -9576,27 +9576,27 @@ body.rf-public-communication-body .rf-public-communication-scroll::-webkit-scrol
   padding: 14px 18px 15px 20px;
 }
 
-#page-jobs .rf-job-demand {
-  min-width: 0;
+#page-jobs .rf-job-demand-list { display: grid; gap: 8px; }
+#page-jobs .rf-job-demand {  min-width: 0;
   padding: 11px 12px;
   border: 1px solid #e5ebe2;
   border-radius: 10px;
   background: #f5f9f3;
 }
-#page-jobs .rf-job-card.priority-urgent .rf-job-demand { border-color: #e7aaa2; background: #fbe9e6; }
-#page-jobs .rf-job-card.priority-important .rf-job-demand { border-color: #e8bd81; background: #fff0dc; }
-#page-jobs .rf-job-card.priority-normal .rf-job-demand { border-color: #dfc858; background: #fff4c9; }
+#page-jobs .rf-job-demand.priority-urgent { border-color: #e7aaa2; background: #fbe9e6; }
+#page-jobs .rf-job-demand.priority-important { border-color: #e8bd81; background: #fff0dc; }
+#page-jobs .rf-job-demand.priority-normal { border-color: #dfc858; background: #fff4c9; }
 #page-jobs .rf-job-demand.empty { border-color: #ebe6dc; background: #faf8f3; }
 #page-jobs .rf-job-demand > div { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 #page-jobs .rf-job-demand > div span { color: #6c7667; font-size: 9px; font-weight: 750; }
 #page-jobs .rf-job-demand > div b { color: #8a8479; font-size: 8px; font-weight: 700; }
 #page-jobs .rf-job-demand > strong { display: block; margin-top: 5px; color: #355a3c; font-size: 25px; line-height: 1; }
-#page-jobs .rf-job-card.priority-urgent .rf-job-demand > strong { color: #a83229; }
-#page-jobs .rf-job-card.priority-important .rf-job-demand > strong { color: #a8520e; }
-#page-jobs .rf-job-card.priority-normal .rf-job-demand > strong { color: #806400; }
-#page-jobs .rf-job-card.priority-urgent .rf-job-demand > div b { color: #96342d; }
-#page-jobs .rf-job-card.priority-important .rf-job-demand > div b { color: #94500f; }
-#page-jobs .rf-job-card.priority-normal .rf-job-demand > div b { color: #705a06; }
+#page-jobs .rf-job-demand.priority-urgent > strong { color: #a83229; }
+#page-jobs .rf-job-demand.priority-important > strong { color: #a8520e; }
+#page-jobs .rf-job-demand.priority-normal > strong { color: #806400; }
+#page-jobs .rf-job-demand.priority-urgent > div b { color: #96342d; }
+#page-jobs .rf-job-demand.priority-important > div b { color: #94500f; }
+#page-jobs .rf-job-demand.priority-normal > div b { color: #705a06; }
 #page-jobs .rf-job-demand.empty > strong { color: #aaa398; }
 #page-jobs .rf-job-demand > strong small { margin-left: 3px; font-size: 9px; }
 #page-jobs .rf-job-demand > em { display: block; margin-top: 6px; color: #a29c92; font-size: 8px; font-style: normal; }
