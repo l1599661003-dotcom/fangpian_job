@@ -161,7 +161,7 @@ const offerDocument = (values: OfferFileValues, templateType: OfferTemplateType)
   const socialSalaryText = `${salaryParts.join('+')}${text(values.probationMonths) ? `，${underline(values.probationMonths)}` : ''}。`
   const internshipUnit = values.internshipPayUnit === 'month' ? '月' : '天'
   const salaryText = internship
-    ? `薪酬${underline(values.internshipPayUnit === 'month' ? values.monthlySalary : values.dailySalary)}元/${internshipUnit}，入职后缴纳意外险。`
+    ? `薪酬${underline(values.internshipPayUnit === 'month' ? values.monthlySalary : values.dailySalary)}元/${internshipUnit}${text(values.probationMonths) ? `，${underline(values.probationMonths)}` : ''}。`
     : socialSalaryText
   const materialItems = internship
     ? ['学生证原件及复印件1份', '身份证原件及复印件1份（正反面在一张上）', '招商银行卡复印件1份（用于薪酬发放）']
