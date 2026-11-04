@@ -194,7 +194,7 @@ export class TalentsController {
   review(@Param('id') id: string, @Body() body: TalentReviewInput) { return this.talents.reviewTalent(id, body) }
 
   @Post(':id/referral-hr-review')
-  async referralHrReview(@Param('id') id: string, @Headers() headers: Record<string, string | string[] | undefined>, @Body() body: { decision?: string; reason?: string; operator?: string; operatorUserId?: string }) {
+  async referralHrReview(@Param('id') id: string, @Headers() headers: Record<string, string | string[] | undefined>, @Body() body: { decision?: string; reason?: string; positionId?: string; operator?: string; operatorUserId?: string }) {
     const requestAccess = await this.access.getRequestAccess(headers)
     if (requestAccess) {
       this.access.assertAction(requestAccess.profile, 'review_candidate')

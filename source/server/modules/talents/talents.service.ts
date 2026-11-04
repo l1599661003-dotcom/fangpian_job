@@ -10,7 +10,7 @@ import { RecruitmentService } from '../recruitment/recruitment.service'
 import { RoleAccessProfile, RoleAccessService, TalentAccessContext } from '../database/role-access.service'
 import { AccessAdminService } from '../database/access-admin.service'
 import { TALENT_DIRECTORY_FIELDS, TALENT_DIRECTORY_FILTER_FIELDS } from './talent-directory-fields'
-import { ReadCache } from '../../platform/read-cache'
+import { ReadCache, invalidateReadTables } from '../../platform/read-cache'
 
 const now = () => new Date().toISOString()
 const id = (prefix: string) => `${prefix}_${randomUUID().replace(/-/g, '').slice(0, 20)}`
@@ -1639,7 +1639,7 @@ export class TalentsService implements OnModuleInit {
     }
   }
 
-  async reviewReferralByHr(candidateId: string, input: { decision?: string; reason?: string; operator?: string; operatorUserId?: string }) {
+  async reviewReferralByHr(candidateId: string, input: { decision?: string; reason?: string; positionId?: string; operator?: string; operatorUserId?: string }) {
     const decision = text(input.decision)
     if (!['通过', '不通过'].includes(decision)) throw new BadRequestException('HR审核结论必须是通过或不通过')
     const reason = text(input.reason)
@@ -1655,24 +1655,42 @@ export class TalentsService implements OnModuleInit {
     const timestamp = now()
     const operator = text(input.operator) || '岗位HR'
     const nextStage = decision === '通过' ? '待业务群评审' : 'HR审核未通过'
+    // HR 可在审核时调整内推岗位：通过后按调整后的岗位推送业务群
+    const requestedPositionId = text(input.positionId)
+    let effectivePositionId = text(application.fields['职位ID'])
+    let effectiveDemandId = text(application.fields['需求ID'])
+    let positionChangedFrom = ''
+    if (decision === '通过' && requestedPositionId && requestedPositionId !== effectivePositionId) {
+      let position = await teable.findOneByField(this.table('recruitment_positions'), '职位ID', requestedPositionId)
+      if (!position) { try { position = await teable.getRecord(this.table('recruitment_positions'), requestedPositionId) } catch { position = undefined } }
+      if (!position) throw new BadRequestException('调整后的岗位不存在或已下架，请刷新后重新选择')
+      positionChangedFrom = effectivePositionId
+      effectivePositionId = text(position.fields['职位ID']) || requestedPositionId
+      effectiveDemandId = text(position.fields['需求ID'])
+    }
     await teable.updateRecord(this.table('recruitment_applications'), application.id, {
+      ...(positionChangedFrom ? { 职位ID: effectivePositionId, 需求ID: effectiveDemandId } : {}),
       当前阶段: nextStage, 当前状态: decision === '通过' ? '进行中' : '已结束', 人工复核结果: decision,
       最近处理时间: timestamp, ...(decision === '不通过' ? { 流程结束时间: timestamp, 淘汰原因: reason } : {}), 更新时间: timestamp,
     })
     await teable.updateRecord(this.table('recruitment_candidates'), candidate.id, { 候选人状态: nextStage, 更新时间: timestamp })
     await teable.updateRecord(this.table('recruitment_referrals'), referral.id, {
+      ...(positionChangedFrom ? { 职位ID: effectivePositionId, 需求ID: effectiveDemandId } : {}),
       内推状态: decision === '通过' ? '待业务群评审' : 'HR审核未通过', 当前进度: nextStage,
       有效性结论: decision === '通过' ? '有效' : text(referral.fields['有效性结论']), ...(decision === '不通过' ? { 无效原因: reason } : {}), 更新时间: timestamp,
     })
     await teable.createRecord(this.table('recruitment_stage_events'), {
-      事件ID: id('evt'), 应聘记录ID: applicationId, 候选人ID: candidateId, 职位ID: text(application.fields['职位ID']),
+      事件ID: id('evt'), 应聘记录ID: applicationId, 候选人ID: candidateId, 职位ID: effectivePositionId,
       原阶段: '待HR审核', 新阶段: nextStage, 操作: '内推HR审核', 结果: decision, 原因: reason,
       操作人用户ID: text(input.operatorUserId), 操作人: operator, 发生时间: timestamp, 来源类型: '人工操作',
+      ...(positionChangedFrom ? { 扩展信息JSON: JSON.stringify({ 岗位调整: { 原职位ID: positionChangedFrom, 新职位ID: effectivePositionId } }) } : {}),
     })
     const delivery = decision === '通过' ? await this.pushAutomaticReview(candidateId, { ignoreScoreThreshold: true }) : { status: '未推送', reason: 'HR审核未通过' }
     const pushed = decision === '通过' && ['已发送', '已跳过'].includes(text((delivery as any)?.status))
     const referrerNotice = await this.notifyReferrer(referral, decision, reason, this.candidateName(candidate), pushed)
-    return { candidateId, decision, stage: nextStage, groupPush: delivery, referrerNotice }
+    // 审核改了库，立刻失效相关读缓存，避免列表和详情继续显示旧的「待HR审核」
+    invalidateReadTables(this.table('recruitment_referrals'), this.table('recruitment_applications'), this.table('recruitment_candidates'))
+    return { candidateId, decision, stage: nextStage, positionId: effectivePositionId, positionChanged: Boolean(positionChangedFrom), groupPush: delivery, referrerNotice }
   }
 
   private async notifyReferrer(referral: TeableRecord, decision: string, reason: string, candidateName: string, pushed = false) {

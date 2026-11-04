@@ -6523,9 +6523,17 @@ if (!root) return;
       const pending = detail.status === '待HR审核';
       const referralRole = referral?.role || intendedRole || (referralId ? detail.referralPositionName : '') || '';
       const aiMatch = [...(detail.matches || [])].sort((left, right) => Number(right?.score || 0) - Number(left?.score || 0))[0];
+      let positionField = '';
+      if (pending) {
+        const positions = await loadPositionOptions().catch(() => []);
+        const currentId = detail.referralPositionId || '';
+        const options = [...positions];
+        if (currentId && !options.some((item) => item.id === currentId)) options.unshift({ id: currentId, name: referralRole || '当前岗位', department: '' });
+        positionField = `<label><span>内推岗位 <b>*</b></span><select id="rf-referral-review-position">${options.length ? options.map((item) => `<option value="${escapeHtml(item.id)}" ${item.id === currentId ? 'selected' : ''}>${escapeHtml(item.name)}${item.department ? ` · ${escapeHtml(item.department)}` : ''}</option>`).join('') : '<option value="">暂无可选岗位</option>'}</select></label>`;
+      }
       const facts = [
         ['候选人', detail.name || '未识别姓名'],
-        ['内推岗位', referralRole || '岗位待关联'],
+        ...(pending ? [] : [['内推岗位', referralRole || '岗位待关联']]),
         ['AI推荐岗位', aiMatch?.positionName ? `${aiMatch.positionName}（${Math.round(Number(aiMatch.score || 0))}分）` : '暂无AI推荐'],
         ['推荐人', detail.referrer || '未记录'],
         ['当前阶段', detail.status || '待确认'],
@@ -6541,6 +6549,7 @@ if (!root) return;
           <form class="rf-referral-decision" id="rf-referral-review-form">
             <header><div><span>审核结论</span><strong>${pending ? '等待岗位 HR 审核' : escapeHtml(detail.status || '已处理')}</strong></div></header>
             <dl class="rf-referral-facts">${facts.map(([label, value]) => `<div><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd></div>`).join('')}</dl>
+            ${positionField}
             <label><span>审核说明 <b>*</b></span><textarea id="rf-referral-review-reason" ${pending ? '' : 'disabled'} placeholder="说明通过或不通过的原因"></textarea><small class="rf-schedule-error" hidden></small></label>
             <div class="rf-referral-actions"><button class="btn-soft" type="button" data-rf-referral-reject ${pending ? '' : 'disabled'}>不通过</button><button class="btn-primary" type="button" data-rf-referral-pass ${pending ? '' : 'disabled'}>通过并推送业务群</button></div>
             <p class="rf-dialog-message" id="rf-referral-review-message">${pending ? '' : '这份简历当前不在待 HR 审核阶段，只能查看，不能重复审核。'}</p>
@@ -6559,12 +6568,15 @@ if (!root) return;
     const message = document.getElementById('rf-referral-review-message');
     markScheduleField(reasonNode, reason ? '' : '请填写审核说明');
     if (!reason) { reasonNode?.focus(); return; }
+    const positionId = String(document.getElementById('rf-referral-review-position')?.value || '').trim();
     try {
       if (message) { message.textContent = decision === '通过' ? '正在保存审核并通过到业务群…' : '正在保存审核结论…'; message.classList.remove('error'); }
       document.querySelectorAll('[data-rf-referral-pass], [data-rf-referral-reject]').forEach((button) => { button.disabled = true; });
-      await request(`api/talents/${encodeURIComponent(candidateId)}/referral-hr-review`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ decision, reason, operator: '当前用户' }) });
+      await request(`api/talents/${encodeURIComponent(candidateId)}/referral-hr-review`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ decision, reason, operator: '当前用户', ...(decision === '通过' && positionId ? { positionId } : {}) }) });
       notifyUser(decision === '通过' ? '内推简历已通过，并进入业务群评审。' : '内推简历已标记为不通过。', 'success');
       closeTalentDialog();
+      // 审核结果立即回写列表，避免内推总览继续显示「待HR审核」
+      if (typeof window.refreshReferralOverview === 'function') await window.refreshReferralOverview().catch(() => undefined);
     } catch (error) {
       document.querySelectorAll('[data-rf-referral-pass], [data-rf-referral-reject]').forEach((button) => { button.disabled = false; });
       if (message) { message.textContent = error.message || '审核提交失败'; message.classList.add('error'); }
