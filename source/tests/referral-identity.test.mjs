@@ -70,6 +70,7 @@ test('referral resume enters the talent archive and keeps its position applicati
   try {
     const resumes = {
       validateFile() {},
+      talents: { enqueueAiAnalysis() {} },
       async processFile(file, progress, source) {
         assert.equal(source, '内推');
         progress('简历已入库');
@@ -112,6 +113,43 @@ test('referral resume enters the talent archive and keeps its position applicati
     assert.equal(listed.referrals[0].role, '运营经理');
     const tracked = await service.track(result.trackingToken);
     assert.equal(tracked.role, '运营经理');
+  } finally {
+    memory.restore();
+  }
+});
+
+test('re-referred candidate merged into the same archive is still flagged as duplicate', async () => {
+  const memory = installMemory();
+  try {
+    // 简历入库会把同一人归并到同一候选人档案：两次提交返回相同 candidateId
+    const resumes = {
+      validateFile() {},
+      async processFile(file, progress, source) {
+        assert.equal(source, '内推');
+        progress('简历已入库');
+        await teable.createRecord('resume_extraction_records', { 解析记录ID: `resume_${memory.records.get('resume_extraction_records').length + 1}`, 候选人ID: 'candidate_referral', 应聘记录ID: 'application_referral', 姓名: '内推候选人', 电话: '13900139000', 源文件名: file.originalname, 来源类型: '内推', 解析状态: '已完成', 创建时间: '2026-09-24T02:00:00.000Z' });
+        return { id: `resume_${memory.records.get('resume_extraction_records').length}`, candidateId: 'candidate_referral', applicationId: 'application_referral', name: '内推候选人', phone: '13900139000', sourceFileUrl: 'https://files.example.test/again.pdf', duplicate: false };
+      },
+    };
+    const service = new ReferralsService({ requireTableId: (name) => name }, resumes);
+    await teable.createRecord('recruitment_positions', { 职位ID: 'position_product', 职位名称: '产品经理', 部门: '产品部', 发布状态: '招聘中', 招聘状态: '招聘中' });
+    // 历史内推：同一个人、有效、还在流程里
+    await teable.createRecord('recruitment_referrals', { 内推记录ID: 'referral_first', 候选人ID: 'candidate_referral', 职位ID: 'position_product', 推荐人: '高子云', 推荐人手机号: '13800138000', 候选人姓名快照: '内推候选人', 候选人电话快照: '13900139000', 有效性结论: '有效', 内推状态: '待HR审核', 当前进度: 'HR审核', 推荐时间: '2026-09-24T02:00:00.000Z' });
+    const campaign = await service.createCampaign({
+      name: '产品经理个人内推-王五', positionId: 'position_product', role: '产品经理', department: '产品部',
+      publicBaseUrl: 'https://example.test/referral',
+      referrerName: '王五', referrerMobile: '13700137000', referrerDepartment: '产品部', referrerUserId: 'user_wang', operator: '王五', operatorUserId: 'user_wang',
+    });
+    const result = await service.processSubmission(campaign.token, { originalname: '内推候选人-再次推荐.pdf' }, { candidateName: '内推候选人', candidatePhone: '13900139000', intendedPositionId: 'position_product' }, () => {});
+    // 归并到同一档案后仍然要命中查重，进入待有效性复核，而不是静默通过
+    assert.equal(result.candidateId, 'candidate_referral');
+    assert.equal(result.duplicateStatus, '疑似重复');
+    assert.equal(result.status, '待有效性复核');
+    const second = memory.records.get('recruitment_referrals').find((row) => row.fields['内推记录ID'] !== 'referral_first');
+    assert.ok(second, '第二次内推应生成新记录');
+    assert.equal(second.fields['内推状态'], '待有效性复核');
+    assert.equal(second.fields['当前进度'], '有效性复核');
+    assert.match(String(second.fields['查重状态'] || ''), /手机号重复/);
   } finally {
     memory.restore();
   }
