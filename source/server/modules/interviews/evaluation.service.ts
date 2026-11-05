@@ -68,7 +68,6 @@ export class EvaluationService{
   const recommendation=recommendationMap[text(input.recommendation)]||''
   if(!recommendation)throw new BadRequestException('请选择通过、不通过、二面或加面')
   const nextSlots=[...new Set((input.nextSlots||[]).map(text).filter(Boolean))]
-  if(['二面','加面'].includes(recommendation)&&!nextSlots.length)throw new BadRequestException(`${recommendation}前请至少填写 1 个可安排的面试时间`)
   if(!interviewerEvaluation||!text(input.recommendation))throw new BadRequestException('面试官评价和面试结论不能为空')
   if(!['S','a','b','c','z'].includes(candidateRating))throw new BadRequestException('请选择有效的候选人评级（S、a、b、c、z）')
   const evaluationLength=Array.from(interviewerEvaluation.replace(/\s/g,'')).length
@@ -440,7 +439,6 @@ export class EvaluationService{
   const decision=decisionMap[text(input.decision)]||''
   if(!decision)throw new BadRequestException('请选择通过、不通过、二面或加面')
   const nextSlots=[...new Set((input.nextSlots||[]).map(text).filter(Boolean))]
-  if(['二面','加面'].includes(decision)&&!nextSlots.length)throw new BadRequestException(`${decision}前请至少填写 1 个可安排的面试时间`)
   const decisionReason=[text(input.reason),nextSlots.length?`下一场可面试时间：${nextSlots.join('、')}`:''].filter(Boolean).join('；')
   await teable.createRecord(this.table('recruitment_interview_decisions'),{决策ID:decisionId,面试ID:interviewId,应聘记录ID:text(interview.fields['应聘记录ID']),候选人ID:text(interview.fields['候选人ID']),评价IDJSON:JSON.stringify(feedback.map(r=>text(r.fields['评价ID']))),汇总评分JSON:JSON.stringify(aggregate),意见分歧JSON:JSON.stringify((aggregate as any).disagreements||{}),招聘决策:decision,决策原因:decisionReason,决策人用户ID:text(input.operatorUserId),决策人:operator,决策时间:timestamp,创建时间:timestamp})
   const stage=({通过:'待Offer决策',不通过:'已淘汰',二面:'约面',加面:'约面'} as Record<string,string>)[decision]

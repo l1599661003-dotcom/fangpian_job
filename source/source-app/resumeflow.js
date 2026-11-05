@@ -4144,7 +4144,7 @@
           <small id="rf-feedback-transcript-status">请粘贴会议总结并点击按钮生成AI面试总结，再填写面试官评价。</small>
         </section>
         <label data-feedback-field="recommendation"><span>面试结论 <b>*</b></span><select id="rf-feedback-recommendation" required><option value="">请选择面试结论</option><option>通过</option><option>不通过</option><option>二面</option><option>加面</option></select><small class="rf-schedule-error" hidden></small></label>
-        <label class="wide" id="rf-feedback-next-slots" hidden data-feedback-field="nextSlots"><span>下一场可安排时间 <b>*</b></span><input id="rf-feedback-next-slot" maxlength="40" placeholder="例如 10月29日 14:00"><small class="rf-schedule-error" hidden></small></label>
+        <label class="wide" id="rf-feedback-next-slots" hidden data-feedback-field="nextSlots"><span>下一场可安排时间</span><input id="rf-feedback-next-slot" maxlength="40" placeholder="选填，例如 10月29日 14:00"><small class="rf-schedule-error" hidden></small></label>
         <label data-feedback-field="rating"><span>候选人评级 <b>*</b></span><select id="rf-feedback-candidate-rating" required><option value="">请选择评级</option><option value="S">S</option><option value="a">a</option><option value="b">b</option><option value="c">c</option><option value="z">z</option></select><small class="rf-schedule-error" hidden></small></label>
         <label class="wide" data-feedback-field="summary"><span>AI面试总结 <b>*</b></span><textarea id="rf-feedback-ai-summary" rows="5" required placeholder="请先点击“会议总结转评价”生成，再核对或修改"></textarea><small class="rf-schedule-error" hidden></small></label>
         <label class="wide" data-feedback-field="evaluation"><span>面试官评价 <b>*</b></span><textarea id="rf-feedback-interviewer-evaluation" rows="7" required placeholder="至少填写50字，结合候选人实际回答、岗位匹配度、优势与风险给出独立评价；AI不会生成或覆盖此项。"></textarea><small id="rf-feedback-interviewer-count" aria-live="polite"></small><small class="rf-schedule-error" hidden></small></label>
@@ -4223,9 +4223,8 @@
     const evaluationLength = countInterviewEvaluationCharacters(payload.interviewerEvaluation);
     const summaryReady = Boolean(payload.notes && transcriptField?.dataset.convertedTranscript === payload.notes && payload.aiSummary);
     const nextSlotNode = document.getElementById('rf-feedback-next-slot');
-    const needsNextSlot = ['二面', '加面'].includes(payload.recommendation);
     markScheduleField(recommendationNode, payload.recommendation ? '' : '请选择面试结论');
-    markScheduleField(nextSlotNode, !needsNextSlot || payload.nextSlots.length ? '' : '请填写下一场可安排时间');
+    markScheduleField(nextSlotNode, '');
     markScheduleField(ratingNode, payload.candidateRating ? '' : '请选择候选人评级');
     markScheduleField(summaryNode, summaryReady ? '' : '请先生成并核对AI面试总结');
     transcriptField?.closest('.rf-feedback-ai-panel')?.classList.toggle('is-invalid', !summaryReady);
@@ -4234,7 +4233,6 @@
     const firstInvalid = [
       [summaryReady, transcriptField],
       [payload.recommendation, recommendationNode],
-      [!needsNextSlot || payload.nextSlots.length, nextSlotNode],
       [payload.candidateRating, ratingNode],
       [evaluationLength >= 50, evaluationNode],
     ].find(([ok]) => !ok)?.[1];
@@ -4295,8 +4293,8 @@
       }
     }
   }
-  async function openEvaluationAggregate(interviewId){const token=talentDialogToken;try{const aggregate=await request(`api/interview-evaluations/interviews/${encodeURIComponent(interviewId)}/aggregate`);if(!isTalentDialogCurrent(token))return;showTalentDialog(`<header class="rf-dialog-head"><div><button class="rf-dialog-back" data-rf-evaluation-back>← 返回评价工作台</button><span>HIRING DECISION</span><h2>多人评价汇总与决策</h2><p>${Number(aggregate.count||0)}位面试官已提交；有分歧时必须在决策原因中说明如何处理。</p></div></header><div class="rf-assessment-score-summary"><article><span>综合均分</span><strong>${Number(aggregate.scores?.overall||0)}</strong><small>${Object.entries(aggregate.recommendations||{}).map(([k,v])=>`${k}${v}票`).join(' · ')}</small></article><article><span>意见分歧</span><strong>${Object.keys(aggregate.disagreements||{}).length?'有':'无'}</strong><small>${Object.entries(aggregate.disagreements||{}).map(([k,v])=>`${k}${v}票`).join(' · ')||'当前意见一致'}</small></article></div><div class="rf-review-evidence"><section><strong>共同优势</strong><ul>${(aggregate.strengths||[]).map(x=>`<li>${escapeHtml(x)}</li>`).join('')}</ul></section><section class="risk"><strong>风险与待核实项</strong><ul>${(aggregate.risks||[]).map(x=>`<li>${escapeHtml(x)}</li>`).join('')}</ul></section></div><div class="rf-dialog-form"><label><span>最终决策</span><select id="rf-final-decision"><option>通过</option><option>不通过</option><option>二面</option><option>加面</option></select></label><label class="wide" id="rf-final-next-slots" hidden><span>下一场可安排时间</span><input id="rf-final-next-slot" maxlength="40" placeholder="二面或加面时必填，例如 10月29日 14:00"></label><label class="wide"><span>决策原因</span><textarea id="rf-final-decision-reason" placeholder="结合面试证据、测评结果和意见分歧说明决策依据"></textarea></label></div><div class="rf-dialog-actions"><button class="btn-primary" data-rf-submit-decision>确认招聘决策</button></div><p id="rf-decision-message" class="rf-dialog-message"></p>`,'wide');document.querySelector('[data-rf-evaluation-back]')?.addEventListener('click',renderEvaluationWorkbench);document.getElementById('rf-final-decision')?.addEventListener('change',event=>{const slots=document.getElementById('rf-final-next-slots');if(slots)slots.hidden=!['二面','加面'].includes(event.currentTarget.value)});document.querySelector('[data-rf-submit-decision]')?.addEventListener('click',()=>submitInterviewDecision(interviewId))}catch(error){if(isTalentDialogCurrent(token))showTalentDialog(`<div class="rf-dialog-error"><strong>评价汇总失败</strong><p>${escapeHtml(conciseError(error))}</p></div>`)}}
-  async function submitInterviewDecision(interviewId){const decision=document.getElementById('rf-final-decision')?.value;const nextSlot=document.getElementById('rf-final-next-slot')?.value.trim();const payload={decision,nextSlots:['二面','加面'].includes(decision)&&nextSlot?[nextSlot]:[],reason:document.getElementById('rf-final-decision-reason')?.value.trim(),operator:'当前用户'};const message=document.getElementById('rf-decision-message');if(['二面','加面'].includes(decision)&&!nextSlot){if(message){message.textContent='二面或加面请先填写下一场可安排时间';message.classList.add('error')}return}try{await request(`api/interview-evaluations/interviews/${encodeURIComponent(interviewId)}/decision`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});await openEvaluationWorkbench()}catch(error){if(message){message.textContent=error.message||'决策保存失败';message.classList.add('error')}}}
+  async function openEvaluationAggregate(interviewId){const token=talentDialogToken;try{const aggregate=await request(`api/interview-evaluations/interviews/${encodeURIComponent(interviewId)}/aggregate`);if(!isTalentDialogCurrent(token))return;showTalentDialog(`<header class="rf-dialog-head"><div><button class="rf-dialog-back" data-rf-evaluation-back>← 返回评价工作台</button><span>HIRING DECISION</span><h2>多人评价汇总与决策</h2><p>${Number(aggregate.count||0)}位面试官已提交；有分歧时必须在决策原因中说明如何处理。</p></div></header><div class="rf-assessment-score-summary"><article><span>综合均分</span><strong>${Number(aggregate.scores?.overall||0)}</strong><small>${Object.entries(aggregate.recommendations||{}).map(([k,v])=>`${k}${v}票`).join(' · ')}</small></article><article><span>意见分歧</span><strong>${Object.keys(aggregate.disagreements||{}).length?'有':'无'}</strong><small>${Object.entries(aggregate.disagreements||{}).map(([k,v])=>`${k}${v}票`).join(' · ')||'当前意见一致'}</small></article></div><div class="rf-review-evidence"><section><strong>共同优势</strong><ul>${(aggregate.strengths||[]).map(x=>`<li>${escapeHtml(x)}</li>`).join('')}</ul></section><section class="risk"><strong>风险与待核实项</strong><ul>${(aggregate.risks||[]).map(x=>`<li>${escapeHtml(x)}</li>`).join('')}</ul></section></div><div class="rf-dialog-form"><label><span>最终决策</span><select id="rf-final-decision"><option>通过</option><option>不通过</option><option>二面</option><option>加面</option></select></label><label class="wide" id="rf-final-next-slots" hidden><span>下一场可安排时间</span><input id="rf-final-next-slot" maxlength="40" placeholder="选填，例如 10月29日 14:00"></label><label class="wide"><span>决策原因</span><textarea id="rf-final-decision-reason" placeholder="结合面试证据、测评结果和意见分歧说明决策依据"></textarea></label></div><div class="rf-dialog-actions"><button class="btn-primary" data-rf-submit-decision>确认招聘决策</button></div><p id="rf-decision-message" class="rf-dialog-message"></p>`,'wide');document.querySelector('[data-rf-evaluation-back]')?.addEventListener('click',renderEvaluationWorkbench);document.getElementById('rf-final-decision')?.addEventListener('change',event=>{const slots=document.getElementById('rf-final-next-slots');if(slots)slots.hidden=!['二面','加面'].includes(event.currentTarget.value)});document.querySelector('[data-rf-submit-decision]')?.addEventListener('click',()=>submitInterviewDecision(interviewId))}catch(error){if(isTalentDialogCurrent(token))showTalentDialog(`<div class="rf-dialog-error"><strong>评价汇总失败</strong><p>${escapeHtml(conciseError(error))}</p></div>`)}}
+  async function submitInterviewDecision(interviewId){const decision=document.getElementById('rf-final-decision')?.value;const nextSlot=document.getElementById('rf-final-next-slot')?.value.trim();const payload={decision,nextSlots:['二面','加面'].includes(decision)&&nextSlot?[nextSlot]:[],reason:document.getElementById('rf-final-decision-reason')?.value.trim(),operator:'当前用户'};const message=document.getElementById('rf-decision-message');try{await request(`api/interview-evaluations/interviews/${encodeURIComponent(interviewId)}/decision`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});await openEvaluationWorkbench()}catch(error){if(message){message.textContent=error.message||'决策保存失败';message.classList.add('error')}}}
 
   function offerHonorificFromGender(gender) {
     const value = safeGender(gender);
@@ -5694,12 +5692,12 @@ if (!root) return;
     body.innerHTML = `
       <header>
         <div><span>INTERVIEW EVALUATION</span><h2>${escapeHtml(appointment.candidateName || '候选人')} · ${escapeHtml(appointment.round || '面试')}</h2><p>${escapeHtml(formatScheduleTimeRange(appointment.startAt, appointment.endAt))} · ${escapeHtml(appointment.role || '岗位待确认')} · ${escapeHtml(interviewers)}</p></div>
-        <button class="btn-soft" type="button" data-interview-evaluation-detail>查看日程</button>
+        <div class="interview-evaluation-tools">${!['已取消', '已完成'].includes(appointment.status || appointment.confirmationStatus || '') ? '<button class="btn-primary" type="button" data-interview-evaluation-edit>修改时间 / 面试官</button>' : ''}<button class="btn-soft" type="button" data-interview-evaluation-detail>查看日程</button></div>
       </header>
       <div class="interview-evaluation-layout">
         <form class="interview-evaluation-form" data-interview-evaluation-form>
           <label><span>面试结论 <b>*</b></span><select name="recommendation" required><option value="">请选择面试结论</option>${['通过', '不通过', '二面', '加面'].map((item) => `<option>${item}</option>`).join('')}</select></label>
-          <label class="wide" data-interview-next-slots hidden><span>下一场可安排时间 <b>*</b></span><input name="nextSlot" maxlength="40" placeholder="二面或加面时必填，例如 10月29日 14:00"></label>
+          <label class="wide" data-interview-next-slots hidden><span>下一场可安排时间</span><input name="nextSlot" maxlength="40" placeholder="选填，例如 10月29日 14:00"></label>
           <label><span>候选人评级 <b>*</b></span><select name="candidateRating" required><option value="">请选择评级</option>${['S', 'a', 'b', 'c', 'z'].map((item) => `<option value="${item}">${item}</option>`).join('')}</select></label>
           <label class="wide"><span>会议总结</span><textarea name="notes" rows="4" maxlength="20000" placeholder="粘贴会议总结后，可生成 AI 面试总结"></textarea><button class="btn-soft" type="button" data-interview-evaluation-extract>会议总结转评价</button><small data-interview-evaluation-extract-status>AI 只整理会议事实，不会覆盖面试官评价。</small></label>
           <label class="wide"><span>AI面试总结 <b>*</b></span><textarea name="aiSummary" rows="4" required placeholder="先生成并核对 AI 面试总结"></textarea></label>
@@ -5709,6 +5707,7 @@ if (!root) return;
         <aside><div class="interview-evaluation-history-head"><strong>本场评价记录</strong><span>${history.length} 条</span></div><div class="interview-evaluation-history">${historyError ? `<p class="is-error">${escapeHtml(historyError)}</p>` : history.length ? history.map((record) => `<article><strong>${escapeHtml(record.finalDecision || record.recommendation || '已提交')} · ${escapeHtml(record.candidateRating || '未评级')}</strong><p>${escapeHtml(record.interviewerEvaluation || record.aiSummary || '暂无评价内容')}</p><small>${escapeHtml(record.interviewer || '未记录面试官')} · ${escapeHtml(formatShanghaiDateTime(record.submittedAt) || '')}</small></article>`).join('') : '<p>暂无评价记录。</p>'}</div></aside>
       </div>`;
     body.querySelector('[data-interview-evaluation-detail]')?.addEventListener('click', () => openInterviewScheduleDetail(appointment));
+    body.querySelector('[data-interview-evaluation-edit]')?.addEventListener('click', () => openInterviewScheduleEditor(appointment));
     const form = body.querySelector('[data-interview-evaluation-form]');
     bindInterviewEvaluationCounter(form?.interviewerEvaluation, form?.querySelector('[data-interview-evaluation-count]'));
     form?.recommendation?.addEventListener('change', () => {
@@ -5778,8 +5777,8 @@ if (!root) return;
       if (message) message.textContent = '无法识别当前面试官身份，请重新登录后再提交。';
       return;
     }
-    if (!payload.recommendation || !payload.candidateRating || !summaryReady || evaluationLength < 50 || (['二面', '加面'].includes(payload.recommendation) && !payload.nextSlots.length)) {
-      if (message) message.textContent = !summaryReady ? '请先用会议总结生成并核对 AI 面试总结。' : evaluationLength < 50 ? `面试官评价至少 50 字，当前 ${evaluationLength} 字。` : ['二面', '加面'].includes(payload.recommendation) && !payload.nextSlots.length ? '二面或加面请先填写下一场可安排时间。' : '请完整填写面试结论和候选人评级。';
+    if (!payload.recommendation || !payload.candidateRating || !summaryReady || evaluationLength < 50) {
+      if (message) message.textContent = !summaryReady ? '请先用会议总结生成并核对 AI 面试总结。' : evaluationLength < 50 ? `面试官评价至少 50 字，当前 ${evaluationLength} 字。` : '请完整填写面试结论和候选人评级。';
       return;
     }
     try {
@@ -7075,7 +7074,7 @@ if (!root) return;
             <p data-public-record-status role="status" aria-live="polite">尚未修改，可随时保存过程记录。</p>
           </section>
           <section><div class="rf-public-form-title"><b>01</b><div><strong>面试结论</strong><small>AI会从记录中提取，可人工确认或修改。</small></div></div>
-            <div class="rf-public-preparation-grid"><label><span>面试结论 *</span><select name="recommendation" required><option value="">请选择</option><option>通过</option><option>不通过</option><option>二面</option><option>加面</option></select></label><label><span>候选人评级 *</span><select name="candidateRating" required><option value="">请选择评级</option><option value="S">S</option><option value="a">a</option><option value="b">b</option><option value="c">c</option><option value="z">z</option></select></label><label data-public-next-slots hidden><span>下一场可安排时间 *</span><input name="nextSlot" maxlength="40" placeholder="二面或加面时必填"></label></div>
+            <div class="rf-public-preparation-grid"><label><span>面试结论 *</span><select name="recommendation" required><option value="">请选择</option><option>通过</option><option>不通过</option><option>二面</option><option>加面</option></select></label><label><span>候选人评级 *</span><select name="candidateRating" required><option value="">请选择评级</option><option value="S">S</option><option value="a">a</option><option value="b">b</option><option value="c">c</option><option value="z">z</option></select></label><label data-public-next-slots hidden><span>下一场可安排时间</span><input name="nextSlot" maxlength="40" placeholder="选填，例如 10月29日 14:00"></label></div>
           </section>
           <section><div class="rf-public-form-title"><b>02</b><div><strong>AI面试总结 *</strong><small>需先使用会议总结转换生成，可人工调整；不会代替面试官评价。</small></div></div>
             <label class="rf-public-textarea"><textarea name="aiSummary" rows="5" placeholder="请先点击“会议总结转评价”生成，再核对或修改"></textarea></label>
@@ -7168,11 +7167,6 @@ if (!root) return;
           return;
         }
         const evaluationLength = countInterviewEvaluationCharacters(body.interviewerEvaluation);
-        if (['二面', '加面'].includes(body.recommendation) && !body.nextSlots.length) {
-          message.textContent = '二面或加面请先填写下一场可安排时间。';
-          form.elements.nextSlot?.focus();
-          return;
-        }
         if (evaluationLength < 50) {
           message.textContent = `面试官评价至少填写50字（不含空白），当前${evaluationLength}字。`;
           interviewerEvaluationField.focus();
