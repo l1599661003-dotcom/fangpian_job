@@ -75,6 +75,22 @@ test('social Offer PDF uses a stable embedded TrueType font', async () => {
   }
 });
 
+test('internship Offer file uses the entered probation period', async () => {
+  const offers = new OffersService({ requireTableId: (name) => name }, new MessagesService({ requireTableId: (name) => name }));
+  const row = { id: 'rec_internship_probation', fields: {
+    'OfferID': 'offer_internship_probation', 'Offer编号': 'FP-INTERN-001', '岗位名称': '实习岗位', '部门': '内容部', '工作地点': '山东省烟台市',
+    '入职日期': '2026-11-12', '有效期开始': '2026-11-05', '有效期结束': '2026-11-19', '汇报上级': '张总', '称谓': '女士',
+    '试用期月数': '试用期6个月，试用期薪资100%', '基本月薪': 0, '薪资结构JSON': JSON.stringify({ 日薪: 150 }),
+  } };
+  const candidate = { id: 'cand_internship_probation', fields: { '姓名': '实习候选人', '性别': '女' } };
+  const values = offers.fileValues(row, candidate, '实习');
+  assert.equal(values.probationMonths, '试用期6个月，试用期薪资100%');
+  const { offerDocument } = await import('../dist/modules/offers/offers.service.js');
+  const document = offerDocument(values, '实习');
+  assert.match(document, /薪酬<text:span text:style-name="T_Underline">150<\/text:span>元\/天，<text:span text:style-name="T_Underline">试用期6个月，试用期薪资100%<\/text:span>。/);
+  assert.doesNotMatch(document, /试用期3个月/);
+});
+
 test('Offer signing deadline follows the validity end date in both templates', async () => {
   const execute = promisify(execFile);
   const directory = await mkdtemp(join(tmpdir(), 'offer-deadline-'));

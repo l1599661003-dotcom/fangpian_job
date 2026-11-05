@@ -153,7 +153,7 @@ const offerEmailHtml = (candidateName: string, responseUrl: string, note: string
   footer: '期待与你一起开始下一段旅程。\n方片新媒体招聘团队',
 })
 
-const offerDocument = (values: OfferFileValues, templateType: OfferTemplateType) => {
+export const offerDocument = (values: OfferFileValues, templateType: OfferTemplateType) => {
   const internship = templateType === '实习'
   const salaryParts = [`底薪${underline(values.monthlySalary)}元`]
   if (values.performanceIncluded) salaryParts.push(underline(values.performanceSalary))
