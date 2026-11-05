@@ -394,7 +394,7 @@ export class InterviewsService {
   }
   async createGroupAppointments(input: GroupInterviewInput, progress: (message: string) => void = () => {}) {
     const candidateIds = [...new Set((input.candidateIds || []).map(text).filter(Boolean))]
-    if (candidateIds.length < 2) throw new BadRequestException('群面至少选择两位候选人')
+    if (candidateIds.length < 1) throw new BadRequestException('群面至少选择一位候选人')
     if (candidateIds.length > 30) throw new BadRequestException('一次群面最多选择 30 位候选人')
     const groupId = id('group')
     const created: Array<{ candidateId: string; interviewId: string }> = []
