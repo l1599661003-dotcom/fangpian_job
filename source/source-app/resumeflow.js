@@ -5799,13 +5799,14 @@ if (!root) return;
 
   function openInterviewScheduleDetail(appointment) {
     const status = appointment.status || appointment.confirmationStatus || '待确认';
-    const cancellable = !['已取消', '已完成'].includes(status);
+    const editable = !['已取消', '已完成'].includes(status);
+    const cancellable = editable;
     const interviewers = (appointment.interviewers || []).map((item) => item.name || item).filter(Boolean).join('、') || '待分配';
     const room = appointment.room?.name || appointment.location || (appointment.mode === '线上面试' ? '线上面试' : '地点待确认');
     const meetingLink = /^https?:\/\//i.test(String(appointment.meetingUrl || ''))
       ? `<a href="${escapeHtml(appointment.meetingUrl)}" target="_blank" rel="noopener">打开会议链接 ↗</a>`
       : '';
-    showTalentDialog(`<header class="rf-dialog-head rf-schedule-detail-head"><div><span>INTERVIEW SCHEDULE</span><h2>${escapeHtml(appointment.candidateName || '候选人')} · ${escapeHtml(appointment.round || '面试')}</h2><p>${escapeHtml(formatScheduleTimeRange(appointment.startAt, appointment.endAt))} · ${escapeHtml(status)}</p></div><b class="rf-schedule-status ${status === '已取消' ? 'cancelled' : status === '已完成' ? 'done' : ''}">${escapeHtml(status)}</b></header><section class="rf-schedule-detail-grid"><article><span>面试方式</span><strong>${escapeHtml(appointment.mode || '待确认')}</strong></article><article><span>面试官</span><strong>${escapeHtml(interviewers)}</strong></article><article><span>地点 / 会议室</span><strong>${escapeHtml(room)}</strong>${meetingLink}</article><article><span>候选人确认</span><strong>${escapeHtml(appointment.confirmationStatus || '待确认')}</strong></article></section>${appointment.syncStatus === '无需同步' ? '<p class="rf-dialog-message">历史补录，未创建企微日程。</p>' : ''}${appointment.note ? `<section class="rf-schedule-detail-note"><span>备注</span><p>${escapeHtml(appointment.note)}</p></section>` : ''}${appointment.syncStatus === '同步失败' ? `<p class="rf-dialog-message error" role="alert">${escapeHtml(appointment.syncError || '企微日程同步失败')}</p><button class="btn-primary" type="button" data-interview-recover="retry-sync">重试${status === '已取消' ? '取消会议' : '日程同步'}</button>` : ''}${appointment.syncStatus === '已同步' && ['待确认', '待重新确认'].includes(appointment.confirmationStatus) && status !== '已取消' ? '<button class="btn-soft" type="button" data-interview-recover="retry-invitation">重新发送邀请邮件</button>' : ''}<p id="rf-interview-recovery-message" role="status"></p><div class="rf-dialog-actions"><button class="btn-soft" type="button" data-interview-schedule-close>返回日程</button>${cancellable ? `<button class="danger" type="button" data-interview-schedule-cancel="${escapeHtml(appointment.id)}">取消面试</button>` : ''}</div>`, 'wide', false);
+    showTalentDialog(`<header class="rf-dialog-head rf-schedule-detail-head"><div><span>INTERVIEW SCHEDULE</span><h2>${escapeHtml(appointment.candidateName || '候选人')} · ${escapeHtml(appointment.round || '面试')}</h2><p>${escapeHtml(formatScheduleTimeRange(appointment.startAt, appointment.endAt))} · ${escapeHtml(status)}</p></div><b class="rf-schedule-status ${status === '已取消' ? 'cancelled' : status === '已完成' ? 'done' : ''}">${escapeHtml(status)}</b></header><section class="rf-schedule-detail-grid"><article><span>面试方式</span><strong>${escapeHtml(appointment.mode || '待确认')}</strong></article><article><span>面试官</span><strong>${escapeHtml(interviewers)}</strong></article><article><span>地点 / 会议室</span><strong>${escapeHtml(room)}</strong>${meetingLink}</article><article><span>候选人确认</span><strong>${escapeHtml(appointment.confirmationStatus || '待确认')}</strong></article></section>${appointment.syncStatus === '无需同步' ? '<p class="rf-dialog-message">历史补录，未创建企微日程。</p>' : ''}${appointment.note ? `<section class="rf-schedule-detail-note"><span>备注</span><p>${escapeHtml(appointment.note)}</p></section>` : ''}${appointment.syncStatus === '同步失败' ? `<p class="rf-dialog-message error" role="alert">${escapeHtml(appointment.syncError || '企微日程同步失败')}</p><button class="btn-primary" type="button" data-interview-recover="retry-sync">重试${status === '已取消' ? '取消会议' : '日程同步'}</button>` : ''}${appointment.syncStatus === '已同步' && ['待确认', '待重新确认'].includes(appointment.confirmationStatus) && status !== '已取消' ? '<button class="btn-soft" type="button" data-interview-recover="retry-invitation">重新发送邀请邮件</button>' : ''}<p id="rf-interview-recovery-message" role="status"></p><div class="rf-dialog-actions"><button class="btn-soft" type="button" data-interview-schedule-close>返回日程</button>${editable ? `<button class="btn-primary" type="button" data-interview-schedule-edit="${escapeHtml(appointment.id)}">修改</button>` : ''}${cancellable ? `<button class="danger" type="button" data-interview-schedule-cancel="${escapeHtml(appointment.id)}">取消面试</button>` : ''}</div>`, 'wide', false);
     document.querySelectorAll('[data-interview-recover]').forEach((button) => button.addEventListener('click', async () => {
       const message = document.getElementById('rf-interview-recovery-message');
       button.disabled = true;
@@ -5819,7 +5820,82 @@ if (!root) return;
       } catch (error) { message.textContent = conciseError(error); button.disabled = false; }
     }));
     document.querySelector('[data-interview-schedule-close]')?.addEventListener('click', () => closeTalentDialog());
+    document.querySelector('[data-interview-schedule-edit]')?.addEventListener('click', () => openInterviewScheduleEditor(appointment));
     document.querySelector('[data-interview-schedule-cancel]')?.addEventListener('click', () => openInterviewScheduleCancellation(appointment));
+  }
+
+  async function openInterviewScheduleEditor(appointment) {
+    const token = showTalentDialog('<div class="rf-dialog-loading">正在读取面试官和会议室…</div>', 'wide');
+    try {
+      const interviewers = await request('api/interviews/interviewers');
+      if (token !== talentDialogToken) return;
+      const startParts = shanghaiDateTimeParts(appointment.startAt);
+      const durationMinutes = Math.max(15, Math.round((shanghaiDateTimeMs(appointment.endAt) - shanghaiDateTimeMs(appointment.startAt)) / 60000) || 60);
+      const selectedInterviewerIds = new Set((appointment.interviewerIds || []).map((id) => String(id)));
+      const roomId = appointment.room?.id || '';
+      showTalentDialog(`<header class="rf-dialog-head rf-schedule-head"><div><span>修改面试</span><h2>修改${escapeHtml(appointment.candidateName || '候选人')}的面试</h2><p>可调整面试时间、时长和面试官。保存后更新本场安排，并同步企微日程。</p></div></header><div class="rf-dialog-form rf-schedule-main"><label><span>面试轮次 <b>*</b></span><select id="rf-interview-round"><option>一面</option><option>二面</option><option>加面</option></select></label><label data-schedule-field="mode"><span>面试方式 <b>*</b></span><select id="rf-interview-mode" required data-placeholder="请选择面试方式"><option value="">请选择</option><option>线下面试</option><option>线上面试</option></select><small class="rf-schedule-error" hidden></small></label><section class="wide rf-schedule-time"><label data-schedule-field="date"><span>面试日期 <b>*</b></span><input id="rf-interview-date" type="date" value="${escapeHtml(startParts.date)}" required><small class="rf-schedule-error" hidden></small></label><label data-schedule-field="time"><span>开始时间（北京时间） <b>*</b></span><select id="rf-interview-time" required data-placeholder="请选择开始时间">${interviewStartOptions(startParts.time)}</select><small class="rf-schedule-error" hidden></small></label><label data-schedule-field="duration"><span>面试时长 <b>*</b></span><select id="rf-interview-duration" required data-placeholder="请选择面试时长">${interviewDurationOptions(durationMinutes)}</select><small class="rf-schedule-error" hidden></small></label><input id="rf-interview-start" type="hidden"><input id="rf-interview-end" type="hidden"></section><label class="rf-interview-room-field"><span>会议室</span><span class="rf-room-query"><select id="rf-interview-room" data-placeholder="输入会议室名称搜索">${roomId ? `<option value="${escapeHtml(roomId)}" selected>${escapeHtml(appointment.room?.name || '当前会议室')}</option>` : '<option value="__no_room__">不使用会议室</option>'}</select><button class="btn-soft rf-query-rooms" data-rf-refresh-room-availability type="button">查询</button></span><small id="rf-room-availability-note">当前会议室已保留。改时间后请重新查询空闲会议室。</small><small class="rf-schedule-error" hidden></small></label><label class="wide rf-interviewer-field"><span>面试官 <b>*</b></span><select id="rf-interviewer-select" multiple required data-placeholder="输入姓名或角色搜索并添加面试官">${(interviewers.interviewers || []).map((item) => `<option value="${escapeHtml(item.id)}" data-wecom-id="${escapeHtml(item.wecomUserId || '')}" ${selectedInterviewerIds.has(String(item.id)) || selectedInterviewerIds.has(String(item.userId || '')) ? 'selected' : ''}>${escapeHtml(item.name)}</option>`).join('')}</select><small id="rf-interviewer-selected" class="rf-interviewer-selected" aria-live="polite"></small><small class="rf-schedule-error" hidden></small></label><label class="wide"><span>给候选人的备注（可选）</span><textarea id="rf-interview-note">${escapeHtml(appointment.note || '')}</textarea></label><div class="rf-dialog-actions rf-schedule-actions"><button class="btn-soft" data-rf-cancel-schedule type="button">返回</button><button class="btn-primary" data-rf-save-interview-edit type="button">保存修改</button></div><p class="rf-dialog-message rf-schedule-message" id="rf-edit-interview-message" role="status"></p></div>`, 'wide', false);
+      const roundSelect = document.getElementById('rf-interview-round');
+      if (roundSelect && [...roundSelect.options].some((option) => option.value === appointment.round)) roundSelect.value = appointment.round;
+      const modeSelect = document.getElementById('rf-interview-mode');
+      if (modeSelect) modeSelect.value = appointment.mode || '';
+      const roomSelect = document.getElementById('rf-interview-room');
+      if (roomSelect) roomSelect.dataset.source = 'wecom';
+      const interviewerSelect = document.getElementById('rf-interviewer-select');
+      const selectedNames = document.getElementById('rf-interviewer-selected');
+      const renderSelectedNames = () => {
+        const names = [...(interviewerSelect?.selectedOptions || [])].map((option) => option.textContent.trim());
+        if (selectedNames) {
+          selectedNames.textContent = names.length ? `已选面试官：${names.join('、')}（${names.length} 人）` : '尚未选择面试官';
+          selectedNames.classList.toggle('is-filled', names.length > 0);
+        }
+      };
+      interviewerSelect?.addEventListener('change', renderSelectedNames);
+      renderSelectedNames();
+      document.querySelector('.rf-dialog-form.rf-schedule-main')?.addEventListener('input', (event) => clearScheduleFieldError(event.target));
+      document.querySelector('.rf-dialog-form.rf-schedule-main')?.addEventListener('change', (event) => clearScheduleFieldError(event.target));
+      document.getElementById('rf-interview-date')?.addEventListener('change', refreshInterviewStartOptions);
+      ['rf-interview-date', 'rf-interview-time', 'rf-interview-duration'].forEach((id) => document.getElementById(id)?.addEventListener('change', () => { syncInterviewTimeFields(); }));
+      document.querySelector('[data-rf-refresh-room-availability]')?.addEventListener('click', () => refreshMeetingRoomAvailability().catch(() => {}));
+      document.querySelector('[data-rf-cancel-schedule]')?.addEventListener('click', () => openInterviewScheduleDetail(appointment));
+      document.querySelector('[data-rf-save-interview-edit]')?.addEventListener('click', () => saveInterviewScheduleEdit(appointment));
+      syncInterviewTimeFields();
+    } catch (error) {
+      if (token === talentDialogToken) showTalentDialog(`<div class="rf-dialog-error"><strong>修改面试打开失败</strong><p>${escapeHtml(conciseError(error))}</p></div>`);
+    }
+  }
+
+  async function saveInterviewScheduleEdit(appointment) {
+    const message = document.getElementById('rf-edit-interview-message');
+    const button = document.querySelector('[data-rf-save-interview-edit]');
+    if (!validateScheduleForm(false)) return;
+    const roomSelect = document.getElementById('rf-interview-room');
+    const roomId = interviewRoomIdFrom(roomSelect?.value || '');
+    const interviewerSelect = document.getElementById('rf-interviewer-select');
+    const interviewerOptions = [...(interviewerSelect?.selectedOptions || [])];
+    const payload = {
+      round: document.getElementById('rf-interview-round')?.value,
+      mode: document.getElementById('rf-interview-mode')?.value || '',
+      startAt: shanghaiDateTimeIso(document.getElementById('rf-interview-start')?.value),
+      endAt: shanghaiDateTimeIso(document.getElementById('rf-interview-end')?.value),
+      timezone: 'Asia/Shanghai',
+      meetingRoomId: roomId,
+      interviewerIds: interviewerOptions.map((option) => option.value).filter(Boolean),
+      ...(roomSelect?.dataset.selectionId ? { meetingRoomSelectionId: roomSelect.dataset.selectionId } : {}),
+      note: document.getElementById('rf-interview-note')?.value.trim(),
+      operator: window.recruitmentCurrentUser?.name || '当前用户',
+    };
+    try {
+      if (message) { message.textContent = '正在保存修改，并同步企微日程…'; message.classList.remove('error'); }
+      if (button) button.disabled = true;
+      const result = await request(`api/interviews/appointments/${encodeURIComponent(appointment.id)}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      closeTalentDialog();
+      await loadInterviewSchedulePage();
+      if (result.sync?.status === '同步失败') notifyUser(`面试已修改，但企微日程未同步：${result.sync.message || '请稍后重试同步。'}`, 'error');
+      else notifyUser('面试已修改，日程已更新。', 'success');
+    } catch (error) {
+      if (message) { message.textContent = conciseError(error); message.classList.add('error'); }
+      if (button) button.disabled = false;
+    }
   }
 
   function openInterviewScheduleCancellation(appointment) {

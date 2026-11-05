@@ -527,10 +527,14 @@ export class InterviewsService {
     const previousMeetingUrl = this.onlineMeetingUrl(row)
     const startAt = text(input.startAt) || text(row.fields['开始时间']); const endAt = text(input.endAt) || text(row.fields['结束时间']); const { start, end } = this.scheduledInterviewRange(startAt, endAt)
     const reservation = this.meetingRoomReservationRange(start, end)
-    const interviewerIds = input.interviewerIds || json<string[]>(row.fields['面试官用户IDJSON'], []); const roomId = input.meetingRoomId ?? text(row.fields['会议室ID'])
+    const interviewerIds = input.interviewerIds || json<string[]>(row.fields['面试官用户IDJSON'], []); let roomId = input.meetingRoomId ?? text(row.fields['会议室ID'])
+    const directRoom = input.meetingRoomSelectionId
+      ? await this.resolveRoomSelection(input.meetingRoomSelectionId, text(input.meetingRoomId), reservation.start, reservation.end)
+      : undefined
+    if (directRoom) roomId = directRoom.roomId
     await this.assertNoConflict(start, end, reservation.start, reservation.end, interviewerIds, roomId, text(row.fields['面试ID']) || interviewId)
     await teable.updateRecord(this.table('recruitment_interviews'), row.id, { 开始时间: start.toISOString(), 结束时间: end.toISOString(), 面试轮次: text(input.round) || text(row.fields['面试轮次']), 面试方式: normalizeInterviewMode(text(input.mode) || text(row.fields['面试方式'])), 面试地点: input.location ?? text(row.fields['面试地点']), 会议地址: input.meetingUrl ?? text(row.fields['会议地址']), 会议室ID: roomId, 面试官用户IDJSON: JSON.stringify(interviewerIds), 候选人确认状态: '已确认', 面试状态: '已确认', 同步状态: '待同步', 更新时间: now() })
-    const sync=await this.syncAppointment(interviewId, '修改预约', text(input.operator) || '当前用户');await this.audit('修改面试预约','面试',interviewId,row.fields,input,text(input.operator)||'当前用户')
+    const sync=await this.syncAppointment(interviewId, '修改预约', text(input.operator) || '当前用户', directRoom ? { roomExternalId: directRoom.externalResourceId } : undefined);await this.audit('修改面试预约','面试',interviewId,row.fields,input,text(input.operator)||'当前用户')
     const meetingUrl=this.onlineMeetingUrl(await this.findInterview(interviewId))
     const email=options.resendInvitation!==false&&sync.status==='已同步'&&meetingUrl&&meetingUrl!==previousMeetingUrl?await this.retryInvitation(interviewId,text(input.operator)||'当前用户'):null
     return { interviewId, sync, email }
