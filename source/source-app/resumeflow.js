@@ -6001,7 +6001,7 @@ if (!root) return;
         const approvalStatus = item.approvalStatus || '待审批';
         const priorityLabel = (value) => ({ 一般: '储备', 低: '储备', 高: '紧急', 中: '重要' })[value] || value || '储备';
         const demandBlocks = demands.length
-          ? demands.map((entry) => `<section class="rf-job-demand ${priorityLabel(entry.priority) === '紧急' ? 'priority-urgent' : priorityLabel(entry.priority) === '重要' ? 'priority-important' : 'priority-normal'}"><div><span>${escapeHtml(entry.demandType || '新增需求')}</span><b>${escapeHtml(priorityLabel(entry.priority))} · ${escapeHtml(entry.approvalStatus || entry.status || '已确认')}</b></div><strong>${Number(entry.headcount || 0)}<small>人</small></strong>${entry.demandRequirement ? `<p class="rf-job-demand-requirement"><b>需求要求</b>${escapeHtml(entry.demandRequirement)}</p>` : ''}</section>`).join('')
+          ? demands.map((entry) => `<section class="rf-job-demand ${priorityLabel(entry.priority) === '紧急' ? 'priority-urgent' : priorityLabel(entry.priority) === '重要' ? 'priority-important' : 'priority-normal'}"><div><span>${escapeHtml(entry.demandType || '新增需求')}</span><b>${escapeHtml(priorityLabel(entry.priority))} · ${escapeHtml(entry.approvalStatus || entry.status || '已确认')}</b></div><strong>${Number(entry.headcount || 0)}<small>人</small></strong>${entry.carriedFromMonth ? `<p class="rf-job-demand-requirement"><b>上月延续</b>${escapeHtml(entry.carriedFromMonth)} 未完成 ${Number(entry.carriedHeadcount || entry.headcount || 0)} 人</p>` : ''}${entry.demandRequirement ? `<p class="rf-job-demand-requirement"><b>需求要求</b>${escapeHtml(entry.demandRequirement)}</p>` : ''}</section>`).join('')
           : `<section class="rf-job-demand empty"><div><span>${escapeHtml(monthLabel)}需求</span><b>未配置</b></div><strong>—<small></small></strong><em>可点击下方按钮补充需求</em></section>`;
         const isRecruiting = item.status === '招聘中';
         const isSelected = state.jobSelectedIds.has(item.id);
@@ -6344,7 +6344,7 @@ if (!root) return;
     const selected = (state.jobs || []).find((item) => item.id === positionId);
     const department = selected?.department || '当前部门';
     const jobs = (state.jobs || []).filter((item) => !selected?.department || item.department === selected.department);
-    const demandsFor = (positionId) => (state.monthlyDemands || []).filter((item) => item.month === month && item.positionId === positionId);
+    const demandsFor = (positionId) => (state.monthlyDemands || []).filter((item) => item.month === month && item.positionId === positionId && item.demandType !== '延续需求');
     const activeCount = jobs.filter((item) => item.status === '招聘中').length;
     const totalDemand = jobs.reduce((sum, item) => sum + demandsFor(item.id).reduce((total, demand) => total + Number(demand.headcount || 0), 0), 0);
     showTalentDialog(`
@@ -6399,7 +6399,7 @@ if (!root) return;
     `, 'wide');
     document.querySelector('#rf-talent-dialog .rf-dialog')?.classList.add('rf-demand-dialog');
     const demandForSelection = (monthValue, positionId, demandType) => {
-      const rows = (context?.demands || state.monthlyDemands || []).filter((item) => item.month === monthValue && item.positionId === positionId);
+      const rows = (context?.demands || state.monthlyDemands || []).filter((item) => item.month === monthValue && item.positionId === positionId && item.demandType !== '延续需求');
       return rows.find((item) => demandType && (item.demandType || '新增需求') === demandType) || (demandType ? null : rows[0]) || null;
     };
     const existingDemand = demandForSelection(month, document.getElementById('rf-demand-position').value, '');

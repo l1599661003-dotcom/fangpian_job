@@ -25,6 +25,15 @@ const recruitmentApproverUserId = 'wozR29DwAACxXU8MVtW44tVUZ4ZMF0qg'
 const recruitmentApproverWechatId = 'LiSiQi'
 const number = (value: unknown) => Number.isFinite(Number(value)) ? Number(value) : 0
 const currentShanghaiMonth = () => companyCalendar.monthForDate(Date.now())
+const previousDemandMonth = (month: string) => {
+  const match = /^(\d{4})-(0[1-9]|1[0-2])$/.exec(month)
+  if (!match) return ''
+  const year = Number(match[1]), monthNumber = Number(match[2])
+  return monthNumber === 1 ? `${year - 1}-12` : `${year}-${String(monthNumber - 1).padStart(2, '0')}`
+}
+const isCountableDemand = (row: TeableRecord) => number(row.fields['需求数量']) > 0
+  && text(row.fields['审批状态']) !== '已驳回'
+  && !['审批驳回', '已停用'].includes(text(row.fields['需求状态']))
 const DAY_MS = 24 * 60 * 60 * 1000
 const shanghaiMonthRange = (month: string) => {
   const range = companyCalendar.monthRange(month)
@@ -455,8 +464,9 @@ export class RecruitmentService implements OnApplicationBootstrap {
     const onboardingFilter = period === 'day'
       ? `{实际到岗日期} = "${activityStartDate}"`
       : prefixFilter('实际到岗日期', onboardingPrefixes)
+    const previousMonth = previousDemandMonth(month)
     const [demandRows, positions, applications, interviews, offers, candidates, resumes, resumeVersions, todayOnboardings, users, organizations] = await Promise.all([
-      teable.listAllRecords(this.table('recruitment_monthly_demands'), { filterByTql: `{需求月份} = "${month}"` }),
+      teable.listAllRecords(this.table('recruitment_monthly_demands'), { filterByTql: previousMonth ? `{需求月份} = "${month}" OR {需求月份} = "${previousMonth}"` : `{需求月份} = "${month}"` }),
       teable.listAllRecords(this.table('recruitment_positions')),
       teable.listAllRecords(this.table('recruitment_applications'), { fields: ['候选人ID', '职位ID', '简历记录ID', '当前阶段', '更新时间', '创建时间'] }),
       teable.listAllRecords(this.table('recruitment_interviews'), { fields: ['面试ID', '候选人ID', '职位ID', '面试轮次', '面试方式', '开始时间', '面试地点', '会议地址', '面试官姓名JSON', '面试状态'] }),
@@ -506,14 +516,8 @@ export class RecruitmentService implements OnApplicationBootstrap {
     const positionId = (row: TeableRecord) => text(row.fields['职位ID'])
     const positionsById = new Map(scopedPositions.map((row) => [positionId(row) || row.id, row]))
     const isOpenPosition = (id: string) => text(positionsById.get(id)?.fields['发布状态']) === '招聘中' && text(positionsById.get(id)?.fields['招聘状态']) !== '暂停招聘'
-    const monthDemands = demandRows.filter((row) => {
-      if (text(row.fields['需求月份']) !== month || text(row.fields['需求状态']) === '已停用') return false
-      const approvalStatus = text(row.fields['审批状态'])
-      return number(row.fields['需求数量']) > 0
-        && approvalStatus !== '已驳回'
-        && text(row.fields['需求状态']) !== '审批驳回'
-        && isOpenPosition(text(row.fields['职位ID']))
-    })
+    const monthDemands = demandRows.filter((row) => text(row.fields['需求月份']) === month && isCountableDemand(row) && isOpenPosition(text(row.fields['职位ID'])))
+    const previousDemands = demandRows.filter((row) => text(row.fields['需求月份']) === previousMonth && isCountableDemand(row) && isOpenPosition(text(row.fields['职位ID'])))
     const inMonth = (value: unknown) => {
       const time = Date.parse(text(value))
       return Number.isFinite(time) && time >= range.from && time < range.to
@@ -537,15 +541,21 @@ export class RecruitmentService implements OnApplicationBootstrap {
       })[0]
       return application ? [{ candidateId, positionId: positionId(application), candidate }] : []
     })
-    const monthOfferCandidatesByPosition = new Map<string, Set<string>>()
-    for (const offer of monthOffers) {
-      const candidateId = text(offer.fields['候选人ID'])
-      const offerPositionId = positionId(offer)
-      if (!candidateId || !offerPositionId || !activeCandidateIds.has(candidateId)) continue
-      const candidates = monthOfferCandidatesByPosition.get(offerPositionId) || new Set<string>()
-      candidates.add(candidateId)
-      monthOfferCandidatesByPosition.set(offerPositionId, candidates)
+    const sentOfferCandidatesByPosition = (rows: TeableRecord[], targetMonth: string) => {
+      const candidatesByPosition = new Map<string, Set<string>>()
+      for (const offer of rows) {
+        const candidateId = text(offer.fields['候选人ID'])
+        const offerPositionId = positionId(offer)
+        if (!candidateId || !offerPositionId || !activeCandidateIds.has(candidateId)) continue
+        if (companyCalendar.monthForDate(text(offer.fields['发送时间'])) !== targetMonth) continue
+        const candidates = candidatesByPosition.get(offerPositionId) || new Set<string>()
+        candidates.add(candidateId)
+        candidatesByPosition.set(offerPositionId, candidates)
+      }
+      return candidatesByPosition
     }
+    const monthOfferCandidatesByPosition = sentOfferCandidatesByPosition(scopedOffers, month)
+    const previousOfferCandidatesByPosition = sentOfferCandidatesByPosition(scopedOffers, previousMonth)
 
     const priorityAliases: Record<string, string> = { 高: '紧急', 中: '重要', 低: '储备', 一般: '储备' }
     const normalizePriority = (value: unknown) => priorityAliases[text(value)] || text(value) || '储备'
@@ -571,6 +581,18 @@ export class RecruitmentService implements OnApplicationBootstrap {
       }
       const demandPriority = normalizePriority(row.fields['优先级'])
       if (priorityRank(demandPriority) < priorityRank(target.priority)) target.priority = demandPriority
+    }
+    const previousDemandByPosition = new Map<string, number>()
+    for (const row of previousDemands) {
+      const demandPositionId = text(row.fields['职位ID'])
+      previousDemandByPosition.set(demandPositionId, (previousDemandByPosition.get(demandPositionId) || 0) + Math.max(0, Math.round(number(row.fields['需求数量']))))
+    }
+    for (const [demandPositionId, previousDemand] of previousDemandByPosition) {
+      const carried = Math.max(0, previousDemand - (previousOfferCandidatesByPosition.get(demandPositionId)?.size || 0))
+      if (!carried) continue
+      const position = positionsById.get(demandPositionId)
+      const target = rowFor(demandPositionId, text(position?.fields['部门']), text(position?.fields['职位名称']))
+      target.demand += carried
     }
     for (const [offerPositionId, candidateIds] of monthOfferCandidatesByPosition) {
       const position = positionsById.get(offerPositionId)
@@ -752,15 +774,61 @@ export class RecruitmentService implements OnApplicationBootstrap {
 
   async listMonthlyDemands(month = '', positionId = '', profile?: RoleAccessProfile, scopeMode: 'employee' | 'role' = 'employee') {
     if (month && !/^\d{4}-(0[1-9]|1[0-2])$/.test(month)) throw new BadRequestException('需求月份格式无效')
-    const [rows, positions] = await Promise.all([
-      teable.listAllRecords(this.table('recruitment_monthly_demands'), month ? { filterByTql: `{需求月份} = '${month}'` } : {}),
+    const previousMonth = month ? previousDemandMonth(month) : ''
+    const [rows, positions, offers, candidates] = await Promise.all([
+      teable.listAllRecords(this.table('recruitment_monthly_demands'), month ? { filterByTql: previousMonth ? `{需求月份} = '${month}' OR {需求月份} = '${previousMonth}'` : `{需求月份} = '${month}'` } : {}),
       teable.listAllRecords(this.table('recruitment_positions')),
+      month ? teable.listAllRecords(this.table('recruitment_offers'), { fields: ['候选人ID', '职位ID', '发送时间', '发送状态'] }) : Promise.resolve([]),
+      month ? teable.listAllRecords(this.table('recruitment_candidates'), { fields: ['候选人ID', '候选人状态'] }) : Promise.resolve([]),
     ])
     const visiblePositions = await this.filterPositionRows(positions, profile, scopeMode)
     const visiblePositionIds = new Set(visiblePositions.map((row) => text(row.fields['职位ID']) || row.id))
+    const openPositionIds = new Set(visiblePositions.filter((row) => text(row.fields['发布状态']) === '招聘中' && text(row.fields['招聘状态']) !== '暂停招聘').map((row) => text(row.fields['职位ID']) || row.id))
+    const activeCandidateIds = new Set(candidates.filter((row) => text(row.fields['候选人状态']) !== '已删除').map((row) => text(row.fields['候选人ID']) || row.id))
+    const unsentOfferStatuses = new Set(['', '待人工发送', '生成中', '生成失败', '发送失败'])
+    const previousCompletedByPosition = new Map<string, Set<string>>()
+    for (const offer of offers) {
+      const candidateId = text(offer.fields['候选人ID']), offerPositionId = text(offer.fields['职位ID'])
+      if (!candidateId || !offerPositionId || !activeCandidateIds.has(candidateId) || unsentOfferStatuses.has(text(offer.fields['发送状态']))) continue
+      if (companyCalendar.monthForDate(text(offer.fields['发送时间'])) !== previousMonth) continue
+      const completed = previousCompletedByPosition.get(offerPositionId) || new Set<string>()
+      completed.add(candidateId)
+      previousCompletedByPosition.set(offerPositionId, completed)
+    }
+    const carriedByPosition = new Map<string, number>()
+    if (previousMonth) {
+      const previousDemandByPosition = new Map<string, number>()
+      for (const row of rows) {
+        if (text(row.fields['需求月份']) !== previousMonth || !openPositionIds.has(text(row.fields['职位ID'])) || !isCountableDemand(row)) continue
+        const demandPositionId = text(row.fields['职位ID'])
+        previousDemandByPosition.set(demandPositionId, (previousDemandByPosition.get(demandPositionId) || 0) + Math.max(0, Math.round(number(row.fields['需求数量']))))
+      }
+      for (const [demandPositionId, previousDemand] of previousDemandByPosition) {
+        const carried = Math.max(0, previousDemand - (previousCompletedByPosition.get(demandPositionId)?.size || 0))
+        if (carried) carriedByPosition.set(demandPositionId, carried)
+      }
+    }
+    const currentRows = rows
+      .filter((row) => visiblePositionIds.has(text(row.fields['职位ID'])) && (!month || text(row.fields['需求月份']) === month) && (!positionId || text(row.fields['职位ID']) === positionId))
+    const carriedRows = [...carriedByPosition.entries()]
+      .filter(([demandPositionId, carried]) => carried > 0 && (!positionId || demandPositionId === positionId))
+      .map(([demandPositionId, carried]) => {
+        const position = positions.find((row) => (text(row.fields['职位ID']) || row.id) === demandPositionId)
+        const source = rows.find((row) => text(row.fields['职位ID']) === demandPositionId && text(row.fields['需求月份']) === previousMonth && isCountableDemand(row))
+        return {
+          id: `carried_${previousMonth}_${demandPositionId}`, month, positionId: demandPositionId,
+          positionName: text(position?.fields['职位名称']) || text(source?.fields['职位名称']), department: text(position?.fields['部门']) || text(source?.fields['部门']), owner: text(source?.fields['负责人']),
+          headcount: carried, demandType: '延续需求', status: '延续未完成', priority: normalizeHiringPriority(source?.fields['优先级']),
+          expectedArrivalDate: '', latestArrivalDate: '', note: `${previousMonth} 未完成 ${carried} 人`, demandRequirement: '', changeReason: '上月未完成自动延续',
+          approvalStatus: '已通过', approvalTargetStatus: '', approvalSubmittedAt: '',
+          approver: '', approvalOpinion: '', approvedAt: '',
+          approvalNotificationStatus: '', approvalNotificationError: '',
+          createdBy: '系统', createdAt: '', updatedAt: '',
+          carriedFromMonth: previousMonth, carriedHeadcount: carried,
+        }
+      })
     return {
-      demands: rows
-        .filter((row) => visiblePositionIds.has(text(row.fields['职位ID'])) && (!month || text(row.fields['需求月份']) === month) && (!positionId || text(row.fields['职位ID']) === positionId))
+      demands: [...currentRows
         .map((row) => ({
           id: text(row.fields['月度需求ID']) || row.id, month: text(row.fields['需求月份']), positionId: text(row.fields['职位ID']),
           positionName: text(row.fields['职位名称']), department: text(row.fields['部门']), owner: text(row.fields['负责人']),
@@ -770,7 +838,7 @@ export class RecruitmentService implements OnApplicationBootstrap {
           approver: text(row.fields['审批人']), approvalOpinion: text(row.fields['审批意见']), approvedAt: text(row.fields['审批时间']),
           approvalNotificationStatus: text(row.fields['审批通知状态']), approvalNotificationError: text(row.fields['审批通知错误']),
           createdBy: text(row.fields['创建人']), createdAt: text(row.fields['创建时间']), updatedAt: text(row.fields['更新时间']),
-        }))
+        })), ...carriedRows]
         .sort((left, right) => right.month.localeCompare(left.month) || right.updatedAt.localeCompare(left.updatedAt)),
     }
   }

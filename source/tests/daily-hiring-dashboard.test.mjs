@@ -78,6 +78,24 @@ test('daily hiring dashboard counts offers by company month across Gregorian mon
   assert.deepEqual(data.rows[0].completedNames, ['区间开始', '区间结束']);
 });
 
+test('daily hiring dashboard carries unfinished previous-month demand into the current month', () => {
+  const data = buildHiringDashboardData({
+    month: '2026-10',
+    generatedDate: '2026-09-29',
+    positions: [row('position_sales', { 职位ID: 'pos_sales', 职位名称: '商务开发', 部门: '商务部', 发布状态: '招聘中', 招聘状态: '招聘中' })],
+    demands: [
+      row('demand_previous', { 需求月份: '2026-09', 职位ID: 'pos_sales', 职位名称: '商务开发', 部门: '商务部', 需求数量: 3, 需求状态: '已确认', 审批状态: '已通过' }),
+      row('demand_current', { 需求月份: '2026-10', 职位ID: 'pos_sales', 职位名称: '商务开发', 部门: '商务部', 需求数量: 2, 需求状态: '已确认', 审批状态: '已通过' }),
+    ],
+    candidates: [row('candidate_previous', { 候选人ID: 'talent_previous', 姓名: '上月已发' })],
+    offers: [row('offer_previous', { OfferID: 'offer_previous', 候选人ID: 'talent_previous', 职位ID: 'pos_sales', 发送时间: '2026-09-10T02:00:00.000Z', 发送状态: '已发送' })],
+  });
+
+  assert.equal(data.summary.demand, 4);
+  assert.equal(data.rows[0].demand, 4);
+  assert.equal(data.rows[0].remaining, 4);
+});
+
 test('daily hiring dashboard reads position HR bindings and normalizes legacy reserve priorities', () => {
   const data = buildHiringDashboardData({ month: '2026-09', generatedDate: '2026-09-28',
     positions: ['一般', '低', '储备'].map((priority, index) => row(`position_${index}`, { 职位ID: `pos_${index}`, 职位名称: '储备岗位', 部门: '技术', 发布状态: '招聘中', ...(index ? {} : { 招聘HR: '张杰', 备用招聘HR: '张晓霞' }) })),

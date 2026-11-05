@@ -11,6 +11,12 @@ const companyCalendar = require('../company-calendar.js') as {
 const text = (value: unknown) => String(value ?? '').trim()
 const number = (value: unknown) => Number.isFinite(Number(value)) ? Number(value) : 0
 const chinaDate = () => new Date(Date.now() + 8 * 60 * 60 * 1000).toISOString().slice(0, 10)
+const previousDemandMonth = (month: string) => {
+  const match = /^(\d{4})-(0[1-9]|1[0-2])$/.exec(month)
+  if (!match) return ''
+  const year = Number(match[1]), monthNumber = Number(match[2])
+  return monthNumber === 1 ? `${year - 1}-12` : `${year}-${String(monthNumber - 1).padStart(2, '0')}`
+}
 const escapeXml = (value: unknown) => text(value).replace(/[<>&"']/g, (character) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;', "'": '&apos;' })[character] || character)
 const shorten = (value: unknown, length: number) => { const normalized = text(value); return normalized.length > length ? `${normalized.slice(0, Math.max(1, length - 1))}…` : normalized }
 
@@ -50,11 +56,13 @@ export function buildHiringDashboardData(input: {
   const priorityRank = (value: unknown) => ({ 紧急: 0, 重要: 1, 储备: 2 }[normalizePriority(value)] ?? 3)
   const positionsById = new Map(input.positions.map((row) => [text(row.fields['职位ID']) || row.id, row]))
   const publishedPositionIds = new Set(input.positions.filter((row) => text(row.fields['发布状态']) === '招聘中' && text(row.fields['招聘状态']) !== '暂停招聘').map((row) => text(row.fields['职位ID']) || row.id))
-  const monthDemands = input.demands.filter((row) => text(row.fields['需求月份']) === input.month
-    && number(row.fields['需求数量']) > 0
+  const previousMonth = previousDemandMonth(input.month)
+  const countableDemand = (row: TeableRecord) => number(row.fields['需求数量']) > 0
     && text(row.fields['审批状态']) !== '已驳回'
     && !['审批驳回', '已停用'].includes(text(row.fields['需求状态']))
-    && publishedPositionIds.has(text(row.fields['职位ID'])))
+    && publishedPositionIds.has(text(row.fields['职位ID']))
+  const monthDemands = input.demands.filter((row) => text(row.fields['需求月份']) === input.month && countableDemand(row))
+  const previousDemands = input.demands.filter((row) => previousMonth && text(row.fields['需求月份']) === previousMonth && countableDemand(row))
   const rows = new Map<string, HiringDashboardRow>()
   for (const demand of monthDemands) {
     const positionId = text(demand.fields['职位ID']), position = positionsById.get(positionId)
@@ -77,20 +85,51 @@ export function buildHiringDashboardData(input: {
     if (priorityRank(priority) < priorityRank(current.priority)) current.priority = priority
     rows.set(positionId, current)
   }
-  const demandPositionIds = new Set(rows.keys())
+  const previousDemandByPosition = new Map<string, number>()
+  for (const demand of previousDemands) {
+    const positionId = text(demand.fields['职位ID'])
+    previousDemandByPosition.set(positionId, (previousDemandByPosition.get(positionId) || 0) + Math.max(0, Math.round(number(demand.fields['需求数量']))))
+  }
+  const demandPositionIds = new Set([...rows.keys(), ...previousDemandByPosition.keys()])
   const activeCandidates = new Map(input.candidates.filter((candidate) => text(candidate.fields['候选人状态']) !== '已删除' && text(candidate.fields['合并状态']) !== '已合并')
     .map((candidate) => [text(candidate.fields['候选人ID']) || candidate.id, candidate]))
   const unsentOfferStatuses = new Set(['', '待人工发送', '生成中', '生成失败', '发送失败'])
-  const offerCandidatesByPosition = new Map<string, Set<string>>()
-  for (const offer of input.offers || []) {
-    const candidateId = text(offer.fields['候选人ID'])
-    const positionId = text(offer.fields['职位ID'])
-    if (!candidateId || !positionId || !demandPositionIds.has(positionId) || !activeCandidates.has(candidateId)) continue
-    if (companyCalendar.monthForDate(text(offer.fields['发送时间'])) !== input.month) continue
-    if (unsentOfferStatuses.has(text(offer.fields['发送状态']))) continue
-    const candidates = offerCandidatesByPosition.get(positionId) || new Set<string>()
-    candidates.add(candidateId)
-    offerCandidatesByPosition.set(positionId, candidates)
+  const offerCandidatesByMonth = (targetMonth: string) => {
+    const candidatesByPosition = new Map<string, Set<string>>()
+    for (const offer of input.offers || []) {
+      const candidateId = text(offer.fields['候选人ID'])
+      const positionId = text(offer.fields['职位ID'])
+      if (!candidateId || !positionId || !demandPositionIds.has(positionId) || !activeCandidates.has(candidateId)) continue
+      if (companyCalendar.monthForDate(text(offer.fields['发送时间'])) !== targetMonth) continue
+      if (unsentOfferStatuses.has(text(offer.fields['发送状态']))) continue
+      const candidates = candidatesByPosition.get(positionId) || new Set<string>()
+      candidates.add(candidateId)
+      candidatesByPosition.set(positionId, candidates)
+    }
+    return candidatesByPosition
+  }
+  const offerCandidatesByPosition = offerCandidatesByMonth(input.month)
+  const previousOfferCandidatesByPosition = offerCandidatesByMonth(previousMonth)
+  for (const [positionId, previousDemand] of previousDemandByPosition) {
+    const carried = Math.max(0, previousDemand - (previousOfferCandidatesByPosition.get(positionId)?.size || 0))
+    if (!carried) continue
+    const position = positionsById.get(positionId)
+    const current = rows.get(positionId) || {
+      positionId,
+      department: text(position?.fields['部门']) || '未分配部门',
+      role: text(position?.fields['职位名称']) || '未命名岗位',
+      recruiter: text(position?.fields['招聘HR']),
+      backupRecruiter: text(position?.fields['备用招聘HR']),
+      priority: '储备',
+      demand: 0,
+      completed: 0,
+      remaining: 0,
+      completionRate: 0,
+      completedAll: false,
+      completedNames: [],
+    }
+    current.demand += carried
+    rows.set(positionId, current)
   }
   for (const [positionId, candidateIds] of offerCandidatesByPosition) {
     const row = rows.get(positionId)
@@ -141,7 +180,7 @@ export function buildHiringDashboardSvg(input: HiringDashboardData) {
     const names = row.completedNames.length ? shorten(row.completedNames.slice(0, 3).join('、'), 18) : '暂无 Offer 人员'
     return `<g transform="translate(42 ${y})"><rect width="1116" height="72" rx="13" fill="${row.completedAll ? '#F0F5EA' : '#FFFDF8'}"/><rect x="0" width="6" height="72" rx="3" fill="${style.foreground}"/><rect x="20" y="13" width="58" height="26" rx="13" fill="${style.background}"/><text x="49" y="31" text-anchor="middle" class="priority" fill="${style.foreground}">${escapeXml(row.priority)}</text><text x="96" y="22" class="department">${escapeXml(shorten(row.department, 10))}</text><text x="96" y="41" class="role">${escapeXml(shorten(row.role, 18))}</text><text x="96" y="61" class="names">${escapeXml(`招聘HR：${row.recruiter || '待分配'}${row.backupRecruiter ? ` · 备用HR：${row.backupRecruiter}` : ''}`)}</text><text x="405" y="22" class="small">需求 / 实际 Offer / 剩余</text><text x="405" y="42" class="numbers">${row.demand} / ${row.completed} / ${row.remaining}</text><rect x="590" y="20" width="245" height="10" rx="5" fill="#EDE8DD"/><rect x="590" y="20" width="${progress}" height="10" rx="5" fill="${row.completedAll ? '#6E925D' : style.foreground}"/><text x="850" y="31" class="rate">${row.completionRate}%</text><text x="930" y="31" class="names">${escapeXml(names)}</text></g>`
   }).join('')
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="${canvasHeight}" viewBox="0 0 1200 ${canvasHeight}"><defs><linearGradient id="header" x1="0" x2="1"><stop stop-color="#2C2118"/><stop offset="1" stop-color="#5C4328"/></linearGradient></defs><style>text{font-family:'Source Han Sans CN','Noto Sans CJK SC',sans-serif}.brand{font-size:18px;font-weight:700;letter-spacing:2px;fill:#EFDDBA}.title{font-size:38px;font-weight:800;fill:#FFFDF7}.subtitle{font-size:16px;fill:#D8C9B5}.date{font-size:16px;font-weight:700;fill:#FFF3D8}.metric-label{font-size:15px;font-weight:700;fill:#756959}.metric-value{font-size:34px;font-weight:800;fill:#2C2118}.metric-note{font-size:13px;fill:#9B8F7F}.priority{font-size:13px;font-weight:800}.department{font-size:11px;fill:#948777}.role{font-size:16px;font-weight:750;fill:#2C2118}.small{font-size:10px;fill:#A29788}.numbers{font-size:16px;font-weight:800;fill:#4A3A2A}.rate{font-size:15px;font-weight:800;fill:#4A3A2A}.names{font-size:12px;fill:#6F6457}.footer{font-size:12px;fill:#8D8172}</style><rect width="1200" height="${canvasHeight}" fill="#F6F1E8"/><rect width="1200" height="96" fill="url(#header)"/><text x="42" y="34" class="brand">FANGPIAN RECRUITMENT</text><text x="42" y="76" class="title">部门岗位达成日报</text><text x="1158" y="38" text-anchor="end" class="date">${escapeXml(data.month)}</text><text x="1158" y="70" text-anchor="end" class="subtitle">${escapeXml(data.generatedDate)} 21:00 · 人才群</text>${metric(42, '本月招聘需求', data.summary.demand, '人', '#B83B32')}${metric(328, '实际 Offer', data.summary.arrived, '人', '#6E925D')}${metric(614, '仍需招聘', data.summary.remaining, '人', '#B66518')}${metric(900, '已达成岗位', data.summary.completedPositions, '个', '#6A5A8A')}<text x="42" y="244" class="subtitle" fill="#4A3A2A">共 ${data.rows.length} 个招聘中岗位，按未完成、优先级和达成数排序</text>${rows}<text x="42" y="${footerY}" class="footer">口径：仅统计招聘中岗位；实际 Offer 按本月已发送 Offer 去重计人</text></svg>`
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="${canvasHeight}" viewBox="0 0 1200 ${canvasHeight}"><defs><linearGradient id="header" x1="0" x2="1"><stop stop-color="#2C2118"/><stop offset="1" stop-color="#5C4328"/></linearGradient></defs><style>text{font-family:'Source Han Sans CN','Noto Sans CJK SC',sans-serif}.brand{font-size:18px;font-weight:700;letter-spacing:2px;fill:#EFDDBA}.title{font-size:38px;font-weight:800;fill:#FFFDF7}.subtitle{font-size:16px;fill:#D8C9B5}.date{font-size:16px;font-weight:700;fill:#FFF3D8}.metric-label{font-size:15px;font-weight:700;fill:#756959}.metric-value{font-size:34px;font-weight:800;fill:#2C2118}.metric-note{font-size:13px;fill:#9B8F7F}.priority{font-size:13px;font-weight:800}.department{font-size:11px;fill:#948777}.role{font-size:16px;font-weight:750;fill:#2C2118}.small{font-size:10px;fill:#A29788}.numbers{font-size:16px;font-weight:800;fill:#4A3A2A}.rate{font-size:15px;font-weight:800;fill:#4A3A2A}.names{font-size:12px;fill:#6F6457}.footer{font-size:12px;fill:#8D8172}</style><rect width="1200" height="${canvasHeight}" fill="#F6F1E8"/><rect width="1200" height="96" fill="url(#header)"/><text x="42" y="34" class="brand">FANGPIAN RECRUITMENT</text><text x="42" y="76" class="title">部门岗位达成日报</text><text x="1158" y="38" text-anchor="end" class="date">${escapeXml(data.month)}</text><text x="1158" y="70" text-anchor="end" class="subtitle">${escapeXml(data.generatedDate)} 21:00 · 人才群</text>${metric(42, '本月招聘需求', data.summary.demand, '人', '#B83B32')}${metric(328, '实际 Offer', data.summary.arrived, '人', '#6E925D')}${metric(614, '仍需招聘', data.summary.remaining, '人', '#B66518')}${metric(900, '已达成岗位', data.summary.completedPositions, '个', '#6A5A8A')}<text x="42" y="244" class="subtitle" fill="#4A3A2A">共 ${data.rows.length} 个招聘中岗位，按未完成、优先级和达成数排序</text>${rows}<text x="42" y="${footerY}" class="footer">口径：仅统计招聘中岗位；需求含上月未完成缺口；实际 Offer 按本月已发送 Offer 去重计人</text></svg>`
 }
 
 export function resolveHiringDashboardFont(fileExists: (path: string) => boolean = existsSync) {

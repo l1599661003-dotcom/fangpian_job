@@ -48,14 +48,14 @@ test('monthly demand reads are parallel, month-filtered and department-scoped wi
       return ['one', 'two'].map(positionId => ({ id: positionId, fields: { 职位ID: positionId, 需求月份: '2026-09', 需求数量: 3 } }));
     }
     if (table === 'recruitment_positions') return ['one', 'two'].map(positionId => ({ id: positionId, fields: { 职位ID: positionId, 部门ID: `dept_${positionId}` } }));
-    if (table === 'recruitment_organization_units') return [];
+    if (table === 'recruitment_organization_units' || table === 'recruitment_offers' || table === 'recruitment_candidates') return [];
     throw new Error(`Unexpected table: ${table}`);
   };
   try {
     const service = new RecruitmentService({ requireTableId: name => name });
     const data = await service.listMonthlyDemands('2026-09', '', { roleCodes: ['employee'], dataScopes: [{ type: 'department', departmentIds: ['dept_one'] }] });
     assert.deepEqual(data.demands.map(row => row.positionId), ['one']);
-    assert.equal(calls[0].options.filterByTql, "{需求月份} = '2026-09'");
+    assert.equal(calls.find(call => call.table === 'recruitment_monthly_demands').options.filterByTql, "{需求月份} = '2026-09' OR {需求月份} = '2026-08'");
     await assert.rejects(() => service.listMonthlyDemands("2026-09' OR 1=1"), /月份格式无效/);
   } finally { teable.listAllRecords = original; }
 });
