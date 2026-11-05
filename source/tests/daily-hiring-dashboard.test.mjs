@@ -19,7 +19,7 @@ test('daily hiring dashboard explicitly loads CJK fonts and rejects missing font
   assert.throws(() => resolveHiringDashboardFont(path => path.endsWith('Regular.otf')), /缺少中文字体/);
 });
 
-test('daily hiring dashboard only counts published demands and Tianji create-time arrivals', () => {
+test('daily hiring dashboard only counts published demands and sent offers', () => {
   const data = buildHiringDashboardData({
     month: '2026-09',
     generatedDate: '2026-09-23',
@@ -32,38 +32,46 @@ test('daily hiring dashboard only counts published demands and Tianji create-tim
       row('demand_product', { 需求月份: '2026-09', 职位ID: 'pos_product', 职位名称: '产品经理', 部门: '产品部', 需求数量: 2, 需求状态: '已确认', 审批状态: '已通过', 优先级: '重要' }),
     ],
     candidates: [
-      row('candidate_a', { 候选人ID: 'talent_a', 姓名: '候选人甲', 天玑入职日期: '2026-09-22' }),
-      row('candidate_b', { 候选人ID: 'talent_b', 姓名: '候选人乙', 天玑入职日期: '2026-08-31' }),
-      row('candidate_c', { 候选人ID: 'talent_c', 姓名: '候选人丙', 天玑入职日期: '2026-09-15' }),
+      row('candidate_a', { 候选人ID: 'talent_a', 姓名: '候选人甲' }),
+      row('candidate_b', { 候选人ID: 'talent_b', 姓名: '候选人乙' }),
+      row('candidate_c', { 候选人ID: 'talent_c', 姓名: '候选人丙' }),
     ],
-    applications: [
-      row('application_a', { 候选人ID: 'talent_a', 职位ID: 'pos_sales', 当前阶段: '已入职', 更新时间: '2026-09-22T10:00:00.000Z' }),
-      row('application_b', { 候选人ID: 'talent_b', 职位ID: 'pos_sales', 当前阶段: '已入职', 更新时间: '2026-08-31T10:00:00.000Z' }),
-      row('application_c', { 候选人ID: 'talent_c', 职位ID: 'pos_product', 当前阶段: '已入职', 更新时间: '2026-09-15T10:00:00.000Z' }),
+    offers: [
+      row('offer_a', { OfferID: 'offer_a', 候选人ID: 'talent_a', 职位ID: 'pos_sales', 发送时间: '2026-09-22T10:00:00.000Z', 发送状态: '已发送' }),
+      row('offer_a_duplicate', { OfferID: 'offer_a_duplicate', 候选人ID: 'talent_a', 职位ID: 'pos_sales', 发送时间: '2026-09-23T10:00:00.000Z', 发送状态: '发送成功' }),
+      row('offer_b', { OfferID: 'offer_b', 候选人ID: 'talent_b', 职位ID: 'pos_sales', 发送时间: '2026-08-22T10:00:00.000Z', 发送状态: '已发送' }),
+      row('offer_c', { OfferID: 'offer_c', 候选人ID: 'talent_c', 职位ID: 'pos_product', 发送时间: '2026-09-15T10:00:00.000Z', 发送状态: '已发送' }),
+      row('offer_draft', { OfferID: 'offer_draft', 候选人ID: 'talent_b', 职位ID: 'pos_sales', 发送时间: '2026-09-20T10:00:00.000Z', 发送状态: '待人工发送' }),
     ],
   });
 
   assert.equal(data.summary.demand, 3);
-  assert.equal(data.summary.arrived, 2);
-  assert.equal(data.summary.remaining, 1);
+  assert.equal(data.summary.arrived, 1);
+  assert.equal(data.summary.remaining, 2);
   assert.equal(data.rows.length, 1);
   assert.equal(data.rows[0].role, '商务开发');
-  assert.deepEqual(data.rows[0].completedNames, ['候选人甲', '候选人乙']);
+  assert.equal(data.rows[0].completed, 1);
+  assert.deepEqual(data.rows[0].completedNames, ['候选人甲']);
 });
 
-test('daily hiring dashboard counts arrivals by company month across Gregorian month boundaries', () => {
+test('daily hiring dashboard counts offers by company month across Gregorian month boundaries', () => {
   const data = buildHiringDashboardData({
     month: '2026-10',
     generatedDate: '2026-09-29',
     positions: [row('position_sales', { 职位ID: 'pos_sales', 职位名称: '商务开发', 部门: '商务部', 发布状态: '招聘中', 招聘状态: '招聘中' })],
     demands: [row('demand_sales', { 需求月份: '2026-10', 职位ID: 'pos_sales', 职位名称: '商务开发', 部门: '商务部', 需求数量: 4, 需求状态: '已确认', 审批状态: '已通过' })],
     candidates: [
-      row('candidate_before', { 候选人ID: 'talent_before', 姓名: '边界前', 天玑入职日期: '2026-09-26' }),
-      row('candidate_start', { 候选人ID: 'talent_start', 姓名: '区间开始', 天玑入职日期: '2026-09-27' }),
-      row('candidate_end', { 候选人ID: 'talent_end', 姓名: '区间结束', 天玑入职日期: '2026-10-24' }),
-      row('candidate_after', { 候选人ID: 'talent_after', 姓名: '边界后', 天玑入职日期: '2026-10-25' }),
+      row('candidate_before', { 候选人ID: 'talent_before', 姓名: '边界前' }),
+      row('candidate_start', { 候选人ID: 'talent_start', 姓名: '区间开始' }),
+      row('candidate_end', { 候选人ID: 'talent_end', 姓名: '区间结束' }),
+      row('candidate_after', { 候选人ID: 'talent_after', 姓名: '边界后' }),
     ],
-    applications: ['talent_before', 'talent_start', 'talent_end', 'talent_after'].map((candidateId, index) => row(`application_${index}`, { 候选人ID: candidateId, 职位ID: 'pos_sales', 当前阶段: '已入职' })),
+    offers: [
+      ['talent_before', '2026-09-26T02:00:00.000Z'],
+      ['talent_start', '2026-09-27T02:00:00.000Z'],
+      ['talent_end', '2026-10-24T02:00:00.000Z'],
+      ['talent_after', '2026-10-25T02:00:00.000Z'],
+    ].map(([candidateId, sentAt], index) => row(`offer_${index}`, { OfferID: `offer_${index}`, 候选人ID: candidateId, 职位ID: 'pos_sales', 发送时间: sentAt, 发送状态: '已发送' })),
   });
 
   assert.equal(data.summary.arrived, 2);
@@ -95,7 +103,10 @@ test('daily hiring dashboard renders a valid PNG card', () => {
   const svg = buildHiringDashboardSvg(data);
   assert.match(svg, /部门岗位达成日报/);
   assert.match(svg, /2026-09 · 8\/23–9\/26/);
-  assert.match(svg, /create_time/);
+  assert.match(svg, /实际 Offer/);
+  assert.match(svg, /已发送 Offer/);
+  assert.doesNotMatch(svg, /实际入职/);
+  assert.doesNotMatch(svg, /create_time/);
   const png = renderHiringDashboardPng(data);
   assert.deepEqual([...png.subarray(0, 8)], [137, 80, 78, 71, 13, 10, 26, 10]);
   assert.ok(png.length > 10_000);
