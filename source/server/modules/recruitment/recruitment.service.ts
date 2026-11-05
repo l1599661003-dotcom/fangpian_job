@@ -582,17 +582,22 @@ export class RecruitmentService implements OnApplicationBootstrap {
       const demandPriority = normalizePriority(row.fields['优先级'])
       if (priorityRank(demandPriority) < priorityRank(target.priority)) target.priority = demandPriority
     }
-    const previousDemandByPosition = new Map<string, number>()
+    const previousDemandByPosition = new Map<string, { headcount: number; priority: string }>()
     for (const row of previousDemands) {
       const demandPositionId = text(row.fields['职位ID'])
-      previousDemandByPosition.set(demandPositionId, (previousDemandByPosition.get(demandPositionId) || 0) + Math.max(0, Math.round(number(row.fields['需求数量']))))
+      const current = previousDemandByPosition.get(demandPositionId) || { headcount: 0, priority: '储备' }
+      const demandPriority = normalizePriority(row.fields['优先级'])
+      current.headcount += Math.max(0, Math.round(number(row.fields['需求数量'])))
+      if (priorityRank(demandPriority) < priorityRank(current.priority)) current.priority = demandPriority
+      previousDemandByPosition.set(demandPositionId, current)
     }
     for (const [demandPositionId, previousDemand] of previousDemandByPosition) {
-      const carried = Math.max(0, previousDemand - (previousOfferCandidatesByPosition.get(demandPositionId)?.size || 0))
+      const carried = Math.max(0, previousDemand.headcount - (previousOfferCandidatesByPosition.get(demandPositionId)?.size || 0))
       if (!carried) continue
       const position = positionsById.get(demandPositionId)
       const target = rowFor(demandPositionId, text(position?.fields['部门']), text(position?.fields['职位名称']))
       target.demand += carried
+      if (priorityRank(previousDemand.priority) < priorityRank(target.priority)) target.priority = previousDemand.priority
     }
     for (const [offerPositionId, candidateIds] of monthOfferCandidatesByPosition) {
       const position = positionsById.get(offerPositionId)

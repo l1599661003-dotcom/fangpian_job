@@ -85,10 +85,14 @@ export function buildHiringDashboardData(input: {
     if (priorityRank(priority) < priorityRank(current.priority)) current.priority = priority
     rows.set(positionId, current)
   }
-  const previousDemandByPosition = new Map<string, number>()
+  const previousDemandByPosition = new Map<string, { headcount: number; priority: string }>()
   for (const demand of previousDemands) {
     const positionId = text(demand.fields['职位ID'])
-    previousDemandByPosition.set(positionId, (previousDemandByPosition.get(positionId) || 0) + Math.max(0, Math.round(number(demand.fields['需求数量']))))
+    const current = previousDemandByPosition.get(positionId) || { headcount: 0, priority: '储备' }
+    const priority = normalizePriority(demand.fields['优先级'])
+    current.headcount += Math.max(0, Math.round(number(demand.fields['需求数量'])))
+    if (priorityRank(priority) < priorityRank(current.priority)) current.priority = priority
+    previousDemandByPosition.set(positionId, current)
   }
   const demandPositionIds = new Set([...rows.keys(), ...previousDemandByPosition.keys()])
   const activeCandidates = new Map(input.candidates.filter((candidate) => text(candidate.fields['候选人状态']) !== '已删除' && text(candidate.fields['合并状态']) !== '已合并')
@@ -111,7 +115,7 @@ export function buildHiringDashboardData(input: {
   const offerCandidatesByPosition = offerCandidatesByMonth(input.month)
   const previousOfferCandidatesByPosition = offerCandidatesByMonth(previousMonth)
   for (const [positionId, previousDemand] of previousDemandByPosition) {
-    const carried = Math.max(0, previousDemand - (previousOfferCandidatesByPosition.get(positionId)?.size || 0))
+    const carried = Math.max(0, previousDemand.headcount - (previousOfferCandidatesByPosition.get(positionId)?.size || 0))
     if (!carried) continue
     const position = positionsById.get(positionId)
     const current = rows.get(positionId) || {
@@ -129,6 +133,7 @@ export function buildHiringDashboardData(input: {
       completedNames: [],
     }
     current.demand += carried
+    if (priorityRank(previousDemand.priority) < priorityRank(current.priority)) current.priority = previousDemand.priority
     rows.set(positionId, current)
   }
   for (const [positionId, candidateIds] of offerCandidatesByPosition) {
