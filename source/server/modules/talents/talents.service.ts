@@ -3045,16 +3045,18 @@ export class TalentsService implements OnModuleInit {
           fields: TALENT_DIRECTORY_FILTER_FIELDS.recruitment_candidate_tags,
         })
       : []
-    const [candidates, applications, assessments, matches, positions] = await Promise.all([
+    const [candidates, applications, assessments, matches, positions, referrals] = await Promise.all([
       teable.listAllRecords(this.table('recruitment_candidates'), { fields: TALENT_DIRECTORY_FIELDS.recruitment_candidates, filterByTql: serverFilter }),
       teable.listAllRecords(this.table('recruitment_applications'), { fields: TALENT_DIRECTORY_FILTER_FIELDS.recruitment_applications }),
       teable.listAllRecords(this.table('recruitment_ai_assessments'), { fields: TALENT_DIRECTORY_FILTER_FIELDS.recruitment_ai_assessments }),
       teable.listAllRecords(this.table('recruitment_job_matches'), { fields: TALENT_DIRECTORY_FILTER_FIELDS.recruitment_job_matches }),
       teable.listAllRecords(this.table('recruitment_positions'), { fields: TALENT_DIRECTORY_FILTER_FIELDS.recruitment_positions }),
+      // 复杂筛选也要带 referrals，否则岗位/标签/年龄/地区/评分筛选下卡片上的内推人显示为空。
+      teable.listAllRecords(this.table('recruitment_referrals'), { fields: TALENT_DIRECTORY_FILTER_FIELDS.recruitment_referrals }),
     ])
     return {
       candidates, applications, assessments, matches,
-      tags: tagRows, positions, interviews: [], resumes: [], referrals: [] as TeableRecord[],
+      tags: tagRows, positions, interviews: [], resumes: [], referrals,
       total: candidates.length,
     }
   }

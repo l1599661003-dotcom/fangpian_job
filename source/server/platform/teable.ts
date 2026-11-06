@@ -39,35 +39,46 @@ function localTableName(tableId: string) {
   return tableId.startsWith('local:') ? tableId.slice('local:'.length) : ''
 }
 
-function filterLocalRecords(records: TeableRecord[], filterByTql?: string) {
+type LocalFilterCondition =
+  | { field: string; kind: 'like'; leading: boolean; trailing: boolean; value: string }
+  | { field: string; kind: 'compare'; operator: string; value: string }
+
+export function filterLocalRecords(records: TeableRecord[], filterByTql?: string) {
   if (!filterByTql) return records
-  const comparisons = [...filterByTql.matchAll(/\{([^{}]+)\}\s*(=|!=|>=|<=|>|<)\s*"((?:\\.|[^"])*)"/g)].map((match) => ({
-    field: match[1],
-    operator: match[2],
-    value: match[3].replace(/\\"/g, '"').replace(/\\\\/g, '\\'),
+  const unescape = (value: string) => value.replace(/\\"/g, '"').replace(/\\\\/g, '\\')
+  // 逐组解析 OR 分支里的条件，LIKE 值按 Teable 语义还原 % 通配符：
+  // "%x%" 包含、"%x" 后缀、"x%" 前缀、不带 % 精确。此前正则把 "%x%" 的前导 % 吞进捕获值，
+  // 导致导入人/内推人/姓名这类包含式筛选永远匹配不到任何记录。
+  const conditionPattern = /\{([^{}]+)\}\s*(=|!=|>=|<=|>|<|LIKE)\s*"((?:\\.|[^"])*)"/gi
+  const parsedGroups: LocalFilterCondition[][] = filterByTql.split(/\s+OR\s+/i).map((group) => [...group.matchAll(conditionPattern)].map((match): LocalFilterCondition => {
+    const field = match[1]
+    const operator = match[2].toUpperCase()
+    const raw = unescape(match[3])
+    if (operator === 'LIKE') {
+      const leading = raw.startsWith('%')
+      const trailing = raw.endsWith('%')
+      return { field, kind: 'like', leading, trailing, value: raw.replace(/^%+/, '').replace(/%+$/, '') }
+    }
+    return { field, kind: 'compare', operator, value: raw }
   }))
-  const prefixes = [...filterByTql.matchAll(/\{([^{}]+)\}\s*(?:=|LIKE)\s*"((?:\\.|[^"])*)%?"/g)].map((match) => ({
-    field: match[1],
-    value: match[2].replace(/\\"/g, '"').replace(/\\\\/g, '\\'),
-  }))
-  if (!comparisons.length && !prefixes.length) return records
-  const orGroups = filterByTql.split(/\s+OR\s+/i)
-  return records.filter((record) => orGroups.some((group) => {
-    const groupComparisons = comparisons.filter((item) => group.includes(`{${item.field}}`) && group.includes(`"${item.value}"`))
-    const groupPrefixes = prefixes.filter((item) => group.includes(`{${item.field}}`) && group.includes(`"${item.value}`))
-    return [...groupComparisons, ...groupPrefixes].every((item) => {
-      const actual = String(record.fields[item.field] ?? '')
-      if ('operator' in item) {
-        if (item.operator === '!=') return actual !== item.value
-        if (item.operator === '>') return actual > item.value
-        if (item.operator === '>=') return actual >= item.value
-        if (item.operator === '<') return actual < item.value
-        if (item.operator === '<=') return actual <= item.value
-        return actual === item.value
-      }
-      return actual.startsWith(item.value)
-    })
-  }))
+  if (!parsedGroups.some((group) => group.length)) return records
+  const matchesCondition = (record: TeableRecord, item: LocalFilterCondition) => {
+    const actual = String(record.fields[item.field] ?? '')
+    if (item.kind === 'like') {
+      if (!item.value) return true
+      if (item.leading && item.trailing) return actual.includes(item.value)
+      if (item.leading) return actual.endsWith(item.value)
+      if (item.trailing) return actual.startsWith(item.value)
+      return actual === item.value
+    }
+    if (item.operator === '!=') return actual !== item.value
+    if (item.operator === '>') return actual > item.value
+    if (item.operator === '>=') return actual >= item.value
+    if (item.operator === '<') return actual < item.value
+    if (item.operator === '<=') return actual <= item.value
+    return actual === item.value
+  }
+  return records.filter((record) => parsedGroups.some((group) => group.length && group.every((item) => matchesCondition(record, item))))
 }
 
 function localRead(path: string, options: TeableReadOptions = {}): TeableRecordPage | TeableField[] | TeableRecord | undefined {
