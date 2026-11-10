@@ -1880,7 +1880,7 @@ export class TalentsService implements OnModuleInit {
       const pad = (input: number) => String(input).padStart(2, '0')
       return `${parsed.getFullYear()}-${pad(parsed.getMonth() + 1)}-${pad(parsed.getDate())}T${pad(parsed.getHours())}:${pad(parsed.getMinutes())}`
     }
-    const prompt = `你是招聘沟通记录结构化助手。只从给定文本中提取明确提到的事实；没有提到的一律留空字符串，不要推断、不要编造、不要补默认值。\n返回纯JSON，字段如下：\nchannel只能是“电话”“微信”“邮件”“短信”“当面”“其他”或空；answerStatus只能是“已接通”“未接听”“拒接”“关机”“空号”或空；interestLevel只能是“高”“中”“低”“拒绝”或空；jobStatus只能是“已离职”“在职已提离职”“在职未提离职”“应届生”或空；entryTime只能是“随时”“一周内”“两周内”“一个月内”“不确定”或空；leaveReason只能是“薪资”“发展”“管理”“家庭”“通勤”“公司变动”“其他”或空；interviewType只能是“线上”“线下”或空；result只能是“推进面试”“放入人才库”“淘汰”“二次沟通”或空；rejectionReason只能是“薪资不匹配”“地点不匹配”“已入职”“无兴趣”“经验不足”“其他”或空。\n其他字段为字符串：leaveReasonDetail、maritalStatus（尽量用“已婚”“未婚”“其他”）、homeAddress、workContent、currentSalaryInfo、candidateConcerns、overtimeIntensity、overtimeAttitude、interviewTime（尽量转换为YYYY-MM-DDTHH:mm）、notes（一句话摘要）。\n\n沟通文本：\n${transcript.slice(0, 18000)}`
+    const prompt = `你是招聘沟通记录结构化助手。只从给定文本中提取明确提到的事实；没有提到的一律留空字符串，不要推断、不要编造、不要补默认值。\n返回纯JSON，字段如下：\nchannel只能是“电话”“微信”“邮件”“短信”“当面”“其他”或空；answerStatus只能是“已接通”“未接听”“拒接”“关机”“空号”或空；interestLevel只能是“高”“中”“低”“拒绝”或空；jobStatus只能是“已离职”“在职已提离职”“在职未提离职”“应届生”或空；entryTime只能是“随时”“一周内”“两周内”“一个月内”“不确定”或空；leaveReason只能是“薪资”“发展”“管理”“家庭”“通勤”“公司变动”“其他”或空；interviewType只能是“待定”“暂定”“线上”“线下”或空；result只能是“推进面试”“放入人才库”“淘汰”“二次沟通”或空；rejectionReason只能是“薪资不匹配”“地点不匹配”“已入职”“无兴趣”“经验不足”“其他”或空。\n其他字段为字符串：leaveReasonDetail、maritalStatus（尽量用“已婚”“未婚”“其他”）、homeAddress、workContent、currentSalaryInfo、candidateConcerns、overtimeIntensity、overtimeAttitude、interviewTime（尽量转换为YYYY-MM-DDTHH:mm）、notes（一句话摘要）。\n\n沟通文本：\n${transcript.slice(0, 18000)}`
     const answer = await withTimeout(llm.chat([{ role: 'user', content: prompt }], { timeoutMs }), timeoutMs, 'AI解析耗时过长，请稍后重试，或根据原文手动填写')
     const value = JSON.parse(answer.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim()) as CommunicationTranscriptExtraction
     const extraction: CommunicationTranscriptExtraction = {
@@ -1898,7 +1898,7 @@ export class TalentsService implements OnModuleInit {
       candidateConcerns: text(value?.candidateConcerns),
       overtimeIntensity: text(value?.overtimeIntensity),
       overtimeAttitude: text(value?.overtimeAttitude),
-      interviewType: allowed(value?.interviewType, ['线上', '线下'] as const),
+      interviewType: allowed(value?.interviewType, ['待定', '暂定', '线上', '线下'] as const),
       interviewTime: normalizeDateTime(value?.interviewTime),
       result: allowed(value?.result, ['推进面试', '放入人才库', '淘汰', '二次沟通'] as const),
       rejectionReason: allowed(value?.rejectionReason, ['薪资不匹配', '地点不匹配', '已入职', '无兴趣', '经验不足', '其他'] as const),

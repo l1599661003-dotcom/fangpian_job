@@ -811,7 +811,20 @@ export class InterviewsService {
     const candidates = await teable.listAllRecords(this.table('recruitment_candidates'))
     const candidate = candidates.find((row) => text(row.fields['候选人ID']) === text(link.fields['候选人ID']))
     if (!candidate) throw new NotFoundException('候选人不存在')
-    return { candidateId: text(candidate.fields['候选人ID']), candidateName: text(candidate.fields['姓名']) || '候选人', role: text(candidate.fields['期望职位']) || '招聘岗位', expiresAt: text(link.fields['过期时间']) }
+    const communications = await teable.listAllRecords(this.table('recruitment_communications'))
+    const previous = communications
+      .filter((row) => text(row.fields['候选人ID']) === text(candidate.fields['候选人ID']))
+      .sort((left, right) => text(right.fields['发生时间']).localeCompare(text(left.fields['发生时间'])))[0]
+    return {
+      candidateId: text(candidate.fields['候选人ID']), candidateName: text(candidate.fields['姓名']) || '候选人', role: text(candidate.fields['期望职位']) || '招聘岗位', expiresAt: text(link.fields['过期时间']),
+      previous: previous ? {
+        occurredAt: text(previous.fields['发生时间']), channel: text(previous.fields['沟通渠道']), interestLevel: text(previous.fields['兴趣度']),
+        jobStatus: text(previous.fields['在职状态']), entryTime: text(previous.fields['到岗时间']), leaveReason: text(previous.fields['离职原因']),
+        leaveReasonDetail: text(previous.fields['离职原因详情']), maritalStatus: text(previous.fields['婚姻状况']), homeAddress: text(previous.fields['居住区域']),
+        workContent: text(previous.fields['主要职责']), currentSalaryInfo: text(previous.fields['当前薪酬整体情况']), candidateConcerns: text(previous.fields['候选人关注点']),
+        overtimeIntensity: text(previous.fields['当前加班强度']), overtimeAttitude: text(previous.fields['加班接受度']),
+      } : null,
+    }
   }
 
   async submitPublicCommunicationByToken(token: string, body: Record<string, unknown>) {

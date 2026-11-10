@@ -2649,14 +2649,40 @@
     return `<dl class="rf-comm-history-detail">${fields.map(([label, value]) => `<div><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value || '未记录')}</dd></div>`).join('')}</dl>`;
   }
 
+  function communicationPrefill(history) {
+    const latest = (history || []).find((record) => record?.type !== '候选人自填') || history?.[0] || {};
+    const value = (field) => String(latest[field] || '').trim();
+    return {
+      sourceAt: latest.occurredAt || '',
+      operatorUserId: value('operatorUserId'),
+      channel: value('channel'),
+      interestLevel: value('interestLevel'),
+      jobStatus: value('jobStatus'),
+      entryTime: value('entryTime'),
+      leaveReason: value('leaveReason'),
+      leaveReasonDetail: value('leaveReasonDetail'),
+      maritalStatus: value('maritalStatus'),
+      homeAddress: value('homeAddress'),
+      workContent: value('workContent'),
+      currentSalaryInfo: value('currentSalaryInfo'),
+      candidateConcerns: value('candidateConcerns'),
+      overtimeIntensity: value('overtimeIntensity'),
+      overtimeAttitude: value('overtimeAttitude'),
+      wechat: value('wechat'),
+    };
+  }
+
   function renderCommunicationDialog(talent, history) {
+    const previous = communicationPrefill(history);
     const defaultHr = state.communicationDefaultHr || {};
     const hrOptions = [...(state.communicationHrOptions || [])];
+    const rememberedHrId = previous.operatorUserId || defaultHr.id;
+    if (rememberedHrId && !hrOptions.some((item) => item.id === rememberedHrId)) hrOptions.unshift({ id: rememberedHrId, name: defaultHr.name || rememberedHrId, department: '上次沟通HR' });
     if (defaultHr.id && !hrOptions.some((item) => item.id === defaultHr.id)) hrOptions.unshift({ id: defaultHr.id, name: defaultHr.name || defaultHr.id, department: '岗位负责HR' });
-    const selectedHr = hrOptions.find((item) => item.id === defaultHr.id);
+    const selectedHr = hrOptions.find((item) => item.id === rememberedHrId);
     state.communicationHrOptions = hrOptions;
     showTalentDialog(`
-      <header class="rf-dialog-head"><div><span>INTENT COMMUNICATION</span><h2>记录与 ${escapeHtml(talent.name || '候选人')} 的沟通</h2><p>保存事实摘要、沟通结果和下一步时间。可粘贴电话或沟通文字，AI解析后仍需人工确认。</p></div></header>
+      <header class="rf-dialog-head"><div><span>INTENT COMMUNICATION</span><h2>记录与 ${escapeHtml(talent.name || '候选人')} 的沟通</h2><p>${previous.sourceAt ? `已带回 ${escapeHtml(previous.sourceAt.slice(0, 16).replace('T', ' '))} 的基本信息，可直接修改后再保存。沟通时间、接通状态和本次结果需要重新填写。` : '保存事实摘要、沟通结果和下一步时间。可粘贴电话或沟通文字，AI解析后仍需人工确认。'}</p></div></header>
       <section class="rf-comm-transcript">
         <label for="rf-comm-transcript-text"><span>AI解析沟通原文</span></label>
         <textarea id="rf-comm-transcript-text" rows="4" placeholder="例如：候选人已提离职，对岗位感兴趣，希望12月后到岗，目前薪资14k..."></textarea>
@@ -2665,25 +2691,25 @@
       <div class="rf-communication-layout"><section><div class="rf-dialog-form">
 <label><span>沟通时间 <b>*</b></span><input id="rf-comm-time" type="datetime-local" value="${new Date().toISOString().slice(0,16)}"></label>
 	<div class="rf-comm-hr-picker"><label for="rf-comm-hr"><span>沟通HR <b>*</b></span></label><select id="rf-comm-hr"><option value="">请选择沟通HR</option>${hrOptions.map((item) => `<option value="${escapeHtml(item.id)}" ${item.id === selectedHr?.id ? 'selected' : ''}>${escapeHtml(item.name)}${item.department ? ` · ${escapeHtml(item.department)}` : ''}</option>`).join('')}</select></div>
-<label><span>沟通方式 <b>*</b></span><select id="rf-comm-channel"><option value="">请选择</option><option>电话</option><option>微信</option><option>邮件</option><option>短信</option><option>当面</option><option>其他</option></select></label>
+<label><span>沟通方式 <b>*</b></span><select id="rf-comm-channel"><option value="">请选择</option>${['电话', '微信', '邮件', '短信', '当面', '其他'].map((option) => `<option ${option === previous.channel ? 'selected' : ''}>${option}</option>`).join('')}</select></label>
 <label><span>接通状态 <b>*</b></span><select id="rf-comm-answer-status"><option value="">请选择</option><option>已接通</option><option>未接听</option><option>拒接</option><option>关机</option><option>空号</option><option>微信回复</option></select></label>
-<label><span>兴趣度 <b>*</b></span><select id="rf-comm-interest"><option value="">请选择</option><option>高</option><option>中</option><option>低</option><option>拒绝</option></select></label>
-<label><span>在职状态 <b>*</b></span><select id="rf-comm-job-status"><option value="">请选择</option><option>已离职</option><option>在职已提离职</option><option>在职未提离职</option><option>应届生</option></select></label>
-<label><span>到岗时间 <b>*</b></span><select id="rf-comm-entry-time"><option value="">请选择</option><option>随时</option><option>一周内</option><option>两周内</option><option>一个月内</option><option>不确定</option></select></label>
-<label><span>离职原因 <b>*</b></span><select id="rf-comm-leave-reason"><option value="">请选择</option><option>薪资</option><option>发展</option><option>管理</option><option>家庭</option><option>通勤</option><option>公司变动</option><option>其他</option></select></label>
-<label class="wide"><span>离职原因详情 <b>*</b></span><textarea id="rf-comm-leave-detail" rows="2" placeholder="打字记录具体离职背景和细节"></textarea></label>
-<label><span>婚姻状况 <b>*</b></span><select id="rf-comm-marital"><option value="">请选择</option><option>已婚</option><option>未婚</option><option>其他</option></select></label>
-<label class="wide"><span>居住区域 <b>*</b></span><textarea id="rf-comm-home" rows="2" placeholder="打字记录大致区域，用于判断通勤"></textarea></label>
-<label class="wide"><span>主要职责 <b>*</b></span><textarea id="rf-comm-work" rows="3" placeholder="记录主要职责、是否带团队、项目成果"></textarea></label>
-<label class="wide"><span>当前薪酬整体情况 <b>*</b></span><textarea id="rf-comm-salary" rows="3" placeholder="请填写底薪、提成/绩效、奖金、年终奖等完整薪酬总包信息"></textarea></label>
-<label class="wide"><span>候选人关注点/顾虑 <b>*</b></span><textarea id="rf-comm-concerns" rows="3" placeholder="最关心的2-3个问题、犹豫点、底线条件"></textarea></label>
-<label class="wide"><span>当前公司加班强度 <b>*</b></span><textarea id="rf-comm-overtime-intensity" rows="2" placeholder="上下班时间、加班频率、调休情况"></textarea></label>
-<label class="wide"><span>对加班的看法/接受度 <b>*</b></span><textarea id="rf-comm-overtime-attitude" rows="2" placeholder="能接受什么强度、底线、期望补偿方式"></textarea></label>
-<label><span>约面形式 <b>*</b></span><select id="rf-comm-interview-type"><option>待定</option><option>线上</option><option>线下</option></select></label>
+<label><span>兴趣度 <b>*</b></span><select id="rf-comm-interest"><option value="">请选择</option>${['高', '中', '低', '拒绝'].map((option) => `<option ${option === previous.interestLevel ? 'selected' : ''}>${option}</option>`).join('')}</select></label>
+<label><span>在职状态 <b>*</b></span><select id="rf-comm-job-status"><option value="">请选择</option>${['已离职', '在职已提离职', '在职未提离职', '应届生'].map((option) => `<option ${option === previous.jobStatus ? 'selected' : ''}>${option}</option>`).join('')}</select></label>
+<label><span>到岗时间 <b>*</b></span><select id="rf-comm-entry-time"><option value="">请选择</option>${['随时', '一周内', '两周内', '一个月内', '不确定'].map((option) => `<option ${option === previous.entryTime ? 'selected' : ''}>${option}</option>`).join('')}</select></label>
+<label><span>离职原因 <b>*</b></span><select id="rf-comm-leave-reason"><option value="">请选择</option>${['薪资', '发展', '管理', '家庭', '通勤', '公司变动', '其他'].map((option) => `<option ${option === previous.leaveReason ? 'selected' : ''}>${option}</option>`).join('')}</select></label>
+<label class="wide"><span>离职原因详情 <b>*</b></span><textarea id="rf-comm-leave-detail" rows="2" placeholder="打字记录具体离职背景和细节">${escapeHtml(previous.leaveReasonDetail)}</textarea></label>
+<label><span>婚姻状况 <b>*</b></span><select id="rf-comm-marital"><option value="">请选择</option>${['已婚', '未婚', '其他'].map((option) => `<option ${option === previous.maritalStatus ? 'selected' : ''}>${option}</option>`).join('')}</select></label>
+<label class="wide"><span>居住区域 <b>*</b></span><textarea id="rf-comm-home" rows="2" placeholder="打字记录大致区域，用于判断通勤">${escapeHtml(previous.homeAddress)}</textarea></label>
+<label class="wide"><span>主要职责 <b>*</b></span><textarea id="rf-comm-work" rows="3" placeholder="记录主要职责、是否带团队、项目成果">${escapeHtml(previous.workContent)}</textarea></label>
+<label class="wide"><span>当前薪酬整体情况 <b>*</b></span><textarea id="rf-comm-salary" rows="3" placeholder="请填写底薪、提成/绩效、奖金、年终奖等完整薪酬总包信息">${escapeHtml(previous.currentSalaryInfo)}</textarea></label>
+<label class="wide"><span>候选人关注点/顾虑 <b>*</b></span><textarea id="rf-comm-concerns" rows="3" placeholder="最关心的2-3个问题、犹豫点、底线条件">${escapeHtml(previous.candidateConcerns)}</textarea></label>
+<label class="wide"><span>当前公司加班强度 <b>*</b></span><textarea id="rf-comm-overtime-intensity" rows="2" placeholder="上下班时间、加班频率、调休情况">${escapeHtml(previous.overtimeIntensity)}</textarea></label>
+<label class="wide"><span>对加班的看法/接受度 <b>*</b></span><textarea id="rf-comm-overtime-attitude" rows="2" placeholder="能接受什么强度、底线、期望补偿方式">${escapeHtml(previous.overtimeAttitude)}</textarea></label>
+<label><span>约面形式 <b>*</b></span><select id="rf-comm-interview-type"><option>待定</option><option>暂定</option><option>线上</option><option>线下</option></select></label>
 <label><span>约面时间 <b>*</b></span><input id="rf-comm-interview-time" type="datetime-local"></label>
 <label><span>沟通结果 <b>*</b></span><select id="rf-comm-result"><option value="">请选择</option><option>推进面试</option><option>放入人才库</option><option>淘汰</option><option>二次沟通</option></select></label>
 <label class="wide"><span>淘汰原因 <b data-rf-comm-reject-star hidden>*</b></span><select id="rf-comm-reject-reason"><option value="">请选择</option><option>薪资不匹配</option><option>地点不匹配</option><option>已入职</option><option>无兴趣</option><option>经验不足</option><option>其他</option></select></label>
-<label class="wide"><span>微信号（选填）</span><input id="rf-comm-wechat" value="${escapeHtml(talent.wechat || '')}" placeholder="录入后自动检查是否与其他人才重复"><small id="rf-wechat-check"></small></label>
+<label class="wide"><span>微信号（选填）</span><input id="rf-comm-wechat" value="${escapeHtml(previous.wechat || talent.wechat || '')}" placeholder="录入后自动检查是否与其他人才重复"><small id="rf-wechat-check"></small></label>
 <label class="wide"><span>沟通备注</span><textarea id="rf-comm-notes" rows="2" placeholder="一句话总结关键信息，便于快速回顾"></textarea></label>
 </div><div class="rf-dialog-actions"><button class="btn-primary" data-rf-save-communication type="button">保存沟通记录</button></div><p class="rf-dialog-message" id="rf-comm-message"></p></section><aside><div class="rf-review-title"><strong>历史沟通</strong><small>${history.length}条</small></div><div class="rf-communication-log">${history.length ? history.map((record) => `<details class="rf-comm-history"><summary><strong>${escapeHtml(record.result || record.type)} · ${escapeHtml(record.channel)}</strong><p>${escapeHtml(record.summary)}</p><small>${escapeHtml(record.occurredAt || '')} · ${escapeHtml(record.operator || '未记录')}</small><span class="rf-comm-history-open">查看完整记录</span></summary>${communicationHistoryDetail(record)}</details>`).join('') : '<div class="rf-dialog-empty"><p>暂无历史沟通记录。</p></div>'}</div></aside></div>`, 'wide');
     document.querySelectorAll('#rf-comm-time, #rf-comm-hr, #rf-comm-channel, #rf-comm-answer-status, #rf-comm-interest, #rf-comm-job-status, #rf-comm-entry-time, #rf-comm-leave-reason, #rf-comm-leave-detail, #rf-comm-marital, #rf-comm-home, #rf-comm-work, #rf-comm-salary, #rf-comm-concerns, #rf-comm-overtime-intensity, #rf-comm-overtime-attitude, #rf-comm-interview-type, #rf-comm-interview-time, #rf-comm-result, #rf-comm-reject-reason').forEach((node) => {
@@ -2761,11 +2787,11 @@
       const extraction = result.extraction || {};
       const setSelect = (id, value) => {
         const node = document.getElementById(id);
-        if (node && value) node.value = value;
+        if (node && value && !String(node.value || '').trim()) node.value = value;
       };
       const setText = (id, value) => {
         const node = document.getElementById(id);
-        if (node && value) node.value = value;
+        if (node && value && !String(node.value || '').trim()) node.value = value;
       };
       setSelect('rf-comm-channel', extraction.channel);
       setSelect('rf-comm-answer-status', extraction.answerStatus);
@@ -6038,7 +6064,7 @@ if (!root) return;
         const approvalStatus = item.approvalStatus || '待审批';
         const priorityLabel = (value) => ({ 一般: '储备', 低: '储备', 高: '紧急', 中: '重要' })[value] || value || '储备';
         const demandBlocks = demands.length
-          ? demands.map((entry) => `<section class="rf-job-demand ${priorityLabel(entry.priority) === '紧急' ? 'priority-urgent' : priorityLabel(entry.priority) === '重要' ? 'priority-important' : 'priority-normal'}${entry.carriedFromMonth ? ' is-carried' : ''}"><div><span>${escapeHtml(demandMonthLabel(entry))}${escapeHtml(entry.demandType || '新增需求')}</span><b>${escapeHtml(priorityLabel(entry.priority))} · ${escapeHtml(entry.approvalStatus || entry.status || '已确认')}</b></div><strong>${Number(entry.headcount || 0)}<small>人</small></strong>${entry.carriedFromMonth ? `<p class="rf-job-demand-requirement"><b>上月延续</b>${escapeHtml(entry.carriedFromMonth)} 未完成 ${Number(entry.carriedHeadcount || entry.headcount || 0)} 人</p>` : ''}${entry.demandRequirement ? `<p class="rf-job-demand-requirement"><b>需求要求</b>${escapeHtml(entry.demandRequirement)}</p>` : ''}</section>`).join('')
+          ? demands.map((entry) => `<section class="rf-job-demand ${priorityLabel(entry.priority) === '紧急' ? 'priority-urgent' : priorityLabel(entry.priority) === '重要' ? 'priority-important' : 'priority-normal'}${entry.carriedFromMonth ? ' is-carried' : ''}"><div><span>${escapeHtml(demandMonthLabel(entry))}${escapeHtml(entry.demandType || '新增需求')}</span><b>${escapeHtml(priorityLabel(entry.priority))} · ${escapeHtml(entry.approvalStatus || entry.status || '已确认')}</b></div><strong>${Number(entry.headcount || 0)}<small>人</small></strong>${entry.carriedFromMonth ? `<p class="rf-job-demand-requirement"><b>上月延续</b>${escapeHtml(entry.carriedFromMonth)} 未完成 ${Number(entry.carriedHeadcount || entry.headcount || 0)} 人</p><button type="button" data-rf-demand-edit="${escapeHtml(item.id)}" data-rf-demand-month="${escapeHtml(entry.carriedFromMonth)}">修改${escapeHtml(entry.carriedFromMonth)}需求</button>` : ''}${entry.demandRequirement ? `<p class="rf-job-demand-requirement"><b>需求要求</b>${escapeHtml(entry.demandRequirement)}</p>` : ''}</section>`).join('')
           : `<section class="rf-job-demand empty"><div><span>${escapeHtml(monthLabel)}需求</span><b>未配置</b></div><strong>—<small></small></strong><em>可点击下方按钮补充需求</em></section>`;
         const rejectedBlocks = rejectedDemands.map((entry) => `<section class="rf-job-demand is-rejected"><div><span>${escapeHtml(demandMonthLabel(entry))}${escapeHtml(entry.demandType || '新增需求')}</span><b>已驳回</b></div><strong>${Number(entry.headcount || 0)}<small>人</small></strong><p class="rf-job-demand-requirement"><b>驳回原因</b>${escapeHtml(entry.approvalOpinion || '未填写')}${entry.approver ? ` · ${escapeHtml(entry.approver)}` : ''}</p></section>`).join('');
         const positionRejectedNote = approvalStatus === '已驳回' && !rejectedDemands.length
@@ -6093,7 +6119,7 @@ if (!root) return;
     }));
     document.querySelectorAll('[data-rf-demand-edit]').forEach((button) => button.addEventListener('click', () => {
       const position = state.jobs.find((item) => item.id === button.dataset.rfDemandEdit);
-      if (position) openMonthlyDemandDialog(position);
+      if (position) openMonthlyDemandDialog(position, button.dataset.rfDemandMonth ? { month: button.dataset.rfDemandMonth } : null);
     }));
     document.querySelectorAll('[data-rf-job-edit]').forEach((button) => button.addEventListener('click', () => {
       const position = state.jobs.find((item) => item.id === button.dataset.rfJobEdit);
@@ -6435,7 +6461,7 @@ if (!root) return;
     if (!jobs.length) return notifyUser(allJobs.length ? '当前部门的岗位都还没审批通过，审批通过后才能新建招聘需求。' : '当前部门暂无可选择的岗位，请联系管理员确认岗位归属。', 'info');
     const month = context?.month || document.getElementById('job-month-filter')?.value || document.getElementById('overview-month-filter')?.value || currentMonthValue();
     showTalentDialog(`
-      <header class="rf-dialog-head"><div><span>MONTHLY DEMAND</span><h2>${position ? '新建/调整需求' : '新建需求'}</h2><p>可以直接口述或粘贴业务需求，AI只填充明确提到的字段，再由你确认保存。</p></div></header>
+      <header class="rf-dialog-head"><div><span>MONTHLY DEMAND</span><h2>${position ? '编辑需求' : '新建需求'}</h2><p>${context?.month && !context?.endpoint ? `正在修改 ${escapeHtml(context.month)} 的需求。卡片上的上月延续来自这个月份，改完保存即可，不用再去页面顶部切换月份。` : '要改哪个月，直接选下面的需求月份。卡片上看到的上月延续，也可以点卡片里的修改按钮直接进来。'}</p></div></header>
       <div class="rf-dialog-form rf-demand-dialog-form">
         <section class="wide rf-demand-ai-panel">
           <div class="rf-demand-ai-head"><i>AI</i><div><strong>口述需求，自动填表</strong><p>例如：下个月商务开发要3个人，比较紧急，希望10月15日前到岗，因为新业务线要启动。</p></div></div>
@@ -6448,7 +6474,7 @@ if (!root) return;
           <small id="rf-demand-transcript-file-status"></small>
           <small id="rf-demand-transcript-status">支持手机浏览器语音输入；如果浏览器不支持，可直接使用手机输入法的语音键。</small>
         </section>
-        <label data-demand-field="rf-demand-month"><span>需求月份 <b>*</b></span><input id="rf-demand-month" type="month" value="${escapeHtml(month)}" required><small class="rf-demand-error" hidden></small></label>
+        <label data-demand-field="rf-demand-month"><span>需求月份 <b>*</b></span><input id="rf-demand-month" type="month" value="${escapeHtml(month)}" required><small>改本月选当前月，改上个月选上一个月。保存后对应月份的人数会更新。</small><small class="rf-demand-error" hidden></small></label>
         <label data-demand-field="rf-demand-position"><span>岗位 <b>*</b></span><select id="rf-demand-position" required><option value="">请选择岗位</option>${jobs.map(item => `<option value="${escapeHtml(item.id)}" ${item.id === position?.id ? 'selected' : ''}>${escapeHtml(item.department || '未分配部门')} · ${escapeHtml(item.name || '未命名岗位')}</option>`).join('')}</select><small class="rf-demand-error" hidden></small><small id="rf-demand-existing" class="rf-demand-existing" hidden></small></label>
         <label data-demand-field="rf-demand-headcount"><span>需求数量 <b>*</b></span><input id="rf-demand-headcount" type="number" min="1" step="1" value="" placeholder="请输入人数" required><small class="rf-demand-error" hidden></small></label>
         <label data-demand-field="rf-demand-type"><span>需求类型 <b>*</b></span><select id="rf-demand-type" required><option value="">请选择需求类型</option><option value="新增需求">新增需求</option><option value="储备需求">储备需求</option></select><small class="rf-demand-error" hidden></small></label>
@@ -7035,7 +7061,7 @@ if (!root) return;
           fields: [
             ['overtimeIntensity','当前公司加班强度','textarea'],
             ['overtimeAttitude','对加班的看法/接受度','textarea'],
-            ['interviewType','约面形式','select',['待定','线上','线下']],
+            ['interviewType','约面形式','select',['待定','暂定','线上','线下']],
             ['interviewTime','方便面试时间','text'],
             ['notes','沟通备注','textarea'],
           ],
@@ -7054,12 +7080,15 @@ if (!root) return;
         notes: '补充本次沟通的重点、语气或后续事项',
       };
       const requiredFields = new Set(['channel', 'answerStatus', 'interestLevel', 'jobStatus', 'result']);
+      const previous = item.previous || {};
+      const previousValue = (key) => String(previous[key] || '');
       const control = ([key,label,type,options]) => {
         const required = requiredFields.has(key);
         const title = `${label}${required ? ' <b>*</b>' : ''}`;
-        if (type === 'select') return `<label><span>${title}</span><select name="${key}" ${required ? 'required' : ''}><option value="">请选择</option>${(options||[]).map(x=>`<option value="${x}">${x}</option>`).join('')}</select></label>`;
-        if (type === 'textarea') return `<label class="rf-public-textarea"><span>${title}</span><textarea name="${key}" ${required ? 'required' : ''} placeholder="${escapeHtml(placeholders[key] || '请记录沟通中提到的内容')}"></textarea></label>`;
-        return `<label><span>${title}</span><input name="${key}" type="text" ${required ? 'required' : ''} placeholder="${escapeHtml(placeholders[key] || '')}"></label>`;
+        const current = ['answerStatus', 'result', 'interviewType', 'interviewTime', 'notes'].includes(key) ? '' : previousValue(key);
+        if (type === 'select') return `<label><span>${title}</span><select name="${key}" ${required ? 'required' : ''}><option value="">请选择</option>${(options||[]).map(x=>`<option value="${x}" ${x === current ? 'selected' : ''}>${x}</option>`).join('')}</select></label>`;
+        if (type === 'textarea') return `<label class="rf-public-textarea"><span>${title}</span><textarea name="${key}" ${required ? 'required' : ''} placeholder="${escapeHtml(placeholders[key] || '请记录沟通中提到的内容')}">${escapeHtml(current)}</textarea></label>`;
+        return `<label><span>${title}</span><input name="${key}" type="text" value="${escapeHtml(current)}" ${required ? 'required' : ''} placeholder="${escapeHtml(placeholders[key] || '')}"></label>`;
       };
       const expiryDate = new Date(item.expiresAt);
       const expiryText = Number.isNaN(expiryDate.getTime()) ? item.expiresAt : expiryDate.toLocaleString('zh-CN', { hour12: false });
@@ -7068,7 +7097,7 @@ if (!root) return;
           <div>
             <span class="rf-public-communication-eyebrow"><i></i> RECRUITMENT WORKFLOW</span>
             <h1>意向沟通记录</h1>
-            <p>把通话或其他沟通方式中确认到的信息快速沉淀下来，为后续约面提供依据。</p>
+            <p>${previous.occurredAt ? `已带回上次沟通的基本信息，可直接修改。接通状态、沟通结果和约面安排需要按本次重新填写。` : '把通话或其他沟通方式中确认到的信息快速沉淀下来，为后续约面提供依据。'}</p>
           </div>
           <aside class="rf-public-communication-candidate">
             <small>当前候选人</small>
@@ -7127,7 +7156,7 @@ if (!root) return;
           const fill = (name, value) => {
             if (!value) return;
             const field = form.elements.namedItem(name);
-            if (!field) return;
+            if (!field || String(field.value || '').trim()) return;
             if (field.tagName === 'SELECT' && ![...field.options].some((option) => option.value === value)) return;
             field.value = value;
             field.closest('label')?.classList.add('is-ai-filled');

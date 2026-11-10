@@ -59,6 +59,20 @@ function validityClass(value) {
   return 'pending';
 }
 
+const REVIEW_FILTERS = [
+  { value: '全部', label: '全部审核' },
+  { value: '待审核', label: '待审核' },
+  { value: '已通过', label: '已通过' },
+  { value: '未通过', label: '未通过' },
+];
+
+function reviewBucket(item) {
+  const stage = [item.status, item.progress].map(text).join(' ');
+  if (/未通过|不通过|已淘汰|淘汰|解析失败/.test(stage)) return '未通过';
+  if (/待HR审核|待有效性复核|待审核|解析中|HR审核$|有效性复核/.test(stage) || !stage.trim()) return '待审核';
+  return '已通过';
+}
+
 const ReferralOverviewPage = {
   setup() {
     const referrals = ref([]);
@@ -67,6 +81,7 @@ const ReferralOverviewPage = {
     const error = ref('');
     const keyword = ref('');
     const validity = ref('全部');
+    const review = ref('全部');
     const page = ref(1);
     const pageSize = 8;
     let requestController = null;
@@ -84,9 +99,10 @@ const ReferralOverviewPage = {
       const query = keyword.value.trim().toLowerCase();
       return referrals.value.filter((item) => {
         const validityPass = validity.value === '全部' || text(item.validity || '待确认') === validity.value;
+        const reviewPass = review.value === '全部' || reviewBucket(item) === review.value;
         const haystack = [item.candidateName, item.role, item.referrer, item.department, item.status, item.progress]
           .map((value) => text(value).toLowerCase()).join(' ');
-        return validityPass && (!query || haystack.includes(query));
+        return validityPass && reviewPass && (!query || haystack.includes(query));
       });
     });
 
@@ -133,7 +149,7 @@ const ReferralOverviewPage = {
 
     activeLoad = load;
 
-    watch([keyword, validity], () => { page.value = 1; });
+    watch([keyword, validity, review], () => { page.value = 1; });
 
     onMounted(() => { load(false); });
     onBeforeUnmount(() => {
@@ -201,10 +217,19 @@ const ReferralOverviewPage = {
               </label>
             </header>
 
-            <div class="rf-ref-filters" role="group" aria-label="有效性筛选">
-              {['全部', '待确认', '有效', '无效'].map((item) => (
-                <button class={validity.value === item ? 'active' : ''} type="button" onClick={() => { validity.value = item; }}>{item}</button>
-              ))}
+            <div class="rf-ref-filter-rows">
+              <div class="rf-ref-filters" role="group" aria-label="审核结果筛选">
+                <span>审核</span>
+                {REVIEW_FILTERS.map((item) => (
+                  <button class={review.value === item.value ? 'active' : ''} type="button" aria-pressed={review.value === item.value} onClick={() => { review.value = item.value; }}>{item.label}</button>
+                ))}
+              </div>
+              <div class="rf-ref-filters" role="group" aria-label="有效性筛选">
+                <span>有效性</span>
+                {['全部', '待确认', '有效', '无效'].map((item) => (
+                  <button class={validity.value === item ? 'active' : ''} type="button" aria-pressed={validity.value === item} onClick={() => { validity.value = item; }}>{item}</button>
+                ))}
+              </div>
             </div>
 
             {visibleReferrals.value.length ? (
@@ -248,7 +273,7 @@ const ReferralOverviewPage = {
             ) : (
               <div class="rf-ref-empty">
                 <strong>{referrals.value.length ? '没有符合筛选条件的记录' : '暂无内推记录'}</strong>
-                <p>{referrals.value.length ? '调整搜索关键词或有效性条件后再试。' : '候选人扫码上传或员工直接上传后，记录会自动出现在这里。'}</p>
+                <p>{referrals.value.length ? '调整搜索关键词、审核结果或有效性条件后再试。' : '候选人扫码上传或员工直接上传后，记录会自动出现在这里。'}</p>
               </div>
             )}
 

@@ -9596,6 +9596,22 @@ body.rf-public-communication-body .rf-public-communication-scroll::-webkit-scrol
 #page-jobs .rf-job-demand.priority-normal { border-color: #dfc858; background: #fff4c9; }
 #page-jobs .rf-job-demand.empty { border-color: #ebe6dc; background: #faf8f3; }
 #page-jobs .rf-job-demand.is-carried { border-style: dashed; }
+#page-jobs .rf-job-demand.is-carried button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 28px;
+  margin-top: 8px;
+  padding: 0 10px;
+  border: 1px solid #c9a15a;
+  border-radius: 999px;
+  color: #7a5310;
+  background: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+}
+#page-jobs .rf-job-demand.is-carried button:hover { background: #fff8ea; }
 #page-jobs .rf-job-demand.is-rejected { border-color: #e3b3ad; background: #fdf3f1; }
 #page-jobs .rf-job-demand.is-rejected > div b { color: #a83229; }
 #page-jobs .rf-job-demand.is-rejected > strong { color: #a83229; }
