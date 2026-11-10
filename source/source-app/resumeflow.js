@@ -3552,7 +3552,7 @@
       if (scheduleHeader?.querySelector('p')) scheduleHeader.querySelector('p').textContent = '未来面试会创建企微日程并发送邀请；已过去的时间只补录记录，不发邮件、不建日程。';
       const scheduleForm = document.querySelector('.rf-dialog-form.rf-schedule-main');
       scheduleForm?.closest('.rf-dialog')?.classList.add('rf-invitation-editor');
-      const historyItems = await request(`api/interviews/appointments?candidateId=${encodeURIComponent(selectedCandidateId)}`).then((result) => result.appointments || []).catch(() => []);
+      const historyItems = preset?.group || !selectedCandidateId ? [] : await request(`api/interviews/appointments?candidateId=${encodeURIComponent(selectedCandidateId)}`).then((result) => result.appointments || []).catch(() => []);
       const historyAside = document.createElement('aside');
       historyAside.className = 'rf-schedule-history';
       historyAside.innerHTML = `<header><b>历史约面</b><span>${historyItems.length} 条</span></header>${historyItems.length ? `<div>${[...historyItems].sort((left, right) => String(right.startAt || '').localeCompare(String(left.startAt || ''))).map((item) => {

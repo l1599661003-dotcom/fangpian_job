@@ -107,7 +107,8 @@ export class AccessGuard implements CanActivate {
       || /^\/api\/interview-evaluations\/(workbench|analytics|interviews|feedback-sla|before-interviews)(\/|$)/.test(request.path)) {
       const scope = await this.access.interviewScope(resolved.identity, resolved.profile)
       ;(request as any).interviewAccessScope = scope
-      const interviewId = /^\/api\/interviews\/appointments\/([^/]+)/.exec(request.path)?.[1]
+      const appointmentMatch = /^\/api\/interviews\/appointments\/([^/]+)/.exec(request.path)
+      const interviewId = (appointmentMatch && appointmentMatch[1] !== 'group' ? appointmentMatch[1] : '')
         || /^\/api\/interview-evaluations\/interviews\/([^/]+)/.exec(request.path)?.[1]
         || (request.path === '/api/interviews/scheduling-candidate' ? request.body?.interviewId : '')
       if (interviewId) await this.access.assertInterviewAccess(String(interviewId), scope)

@@ -310,6 +310,18 @@ test('referrer-only authorization denies every other module and reward administr
   } finally { memory.restore(); }
 });
 
+test('group interview creation is not checked as an existing interview record', async () => {
+  const memory = await seedAccessData(installMemory());
+  try {
+    await teable.createRecord('recruitment_users', { 用户ID: 'recruiter_a', 用户姓名: 'A部门招聘专员', 用户状态: '启用' });
+    const database = { getTableId: name => name, requireTableId: name => name };
+    const access = new RoleAccessService(database), guard = new AccessGuard(access);
+    const check = (method, path, body = {}) => guard.canActivate({ getType: () => 'http', switchToHttp: () => ({ getRequest: () => ({ method, path, body, headers: { 'x-studio-user-id': 'recruiter_a' } }) }) });
+    assert.equal(await check('POST', '/api/interviews/appointments/group', { candidateIds: ['talent_a'] }), true);
+    await assert.rejects(() => check('GET', '/api/interviews/appointments/interview_a'), /只能查看或操作本人参与、组织的面试记录/);
+  } finally { memory.restore(); }
+});
+
 test('job results require their initiating identity and current original permissions', async () => {
   const profile = { pages: ['candidates'], actions: ['edit_candidate'], dataScopes: [] };
   let userId = 'owner';
