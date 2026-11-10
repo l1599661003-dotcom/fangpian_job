@@ -91,6 +91,9 @@ const OverviewPage = {
           demand,
           completed,
           priority: normalizePriority(row.priority),
+          currentMonthDemand: Number(row.currentMonthDemand || 0),
+          carriedDemand: Number(row.carriedDemand || 0),
+          carriedFromMonth: row.carriedFromMonth || '',
           completedNames: Array.isArray(row.completedNames) ? row.completedNames : [],
           remaining: Number.isFinite(Number(row.remaining)) ? Number(row.remaining) : Math.max(0, demand - completed),
           completionRate: Number.isFinite(Number(row.completionRate)) ? Number(row.completionRate) : (demand > 0 ? Math.min(100, Math.round((completed / demand) * 100)) : 0),
@@ -282,7 +285,7 @@ const OverviewPage = {
             </div>
           </div>
           <div class="overview-hiring-numbers">
-            <span><small>需求</small><b>{row.demand}</b></span>
+            <span><small>需求</small><b>{row.demand}</b><em class={`overview-demand-split${row.carriedDemand > 0 ? ' has-carried' : ''}`}>{row.carriedDemand > 0 ? `本月 ${row.currentMonthDemand} · ${row.carriedFromMonth} 延续 ${row.carriedDemand}` : '本月需求'}</em></span>
             <span><small>实际 Offer</small><b>{row.completed}</b></span>
           </div>
           <div class="overview-hiring-progress">

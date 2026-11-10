@@ -188,6 +188,11 @@
           if (option.disabled) return;
           if (select.multiple) option.selected = !option.selected;
           else select.value = option.value;
+          // 多选在部分浏览器里只改 option.selected 不会进入 selectedOptions，提交校验会误判没选。
+          if (select.multiple) {
+            const selectedValues = [...select.options].filter((item) => item.selected).map((item) => item.value);
+            [...select.options].forEach((item) => { item.selected = selectedValues.includes(item.value); });
+          }
           dispatchSelectChange(select);
           syncDisplay();
           if (!select.multiple) {

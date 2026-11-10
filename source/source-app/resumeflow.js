@@ -3662,7 +3662,7 @@
     let firstInvalid = null;
     checks.forEach(([id, error]) => {
       const node = document.getElementById(id);
-      const minimum = node?.id === 'rf-group-candidates' ? 2 : 1;
+      const minimum = 1;
       const roomInvalid = past && node?.id === 'rf-interview-room' && node.value !== '__no_room__';
       const invalid = roomInvalid || (node?.multiple ? node.selectedOptions.length < minimum : !String(node?.value || '').trim());
       markScheduleField(node, invalid ? error : '');
@@ -4304,6 +4304,30 @@
     const selected = honorific || offerHonorificFromGender(gender);
     return `<label><span>称谓 <b>*</b></span><select id="rf-offer-honorific" required><option value="">请选择</option>${['先生', '女士'].map((item) => `<option value="${item}" ${item === selected ? 'selected' : ''}>${item}</option>`).join('')}</select></label>`;
   }
+  function offerStartDateField(value = '') {
+    const pending = value === '待定';
+    const dateValue = pending ? '' : (value || localDateValue(Date.now() + 7 * 86400000));
+    return `<label data-offer-start-field><span>入职日期 <b>*</b></span><span class="rf-offer-start-row"><input id="rf-offer-start" type="date" value="${escapeHtml(dateValue)}" ${pending ? 'disabled' : 'required'}><label class="rf-offer-start-pending"><input id="rf-offer-start-pending" type="checkbox" ${pending ? 'checked' : ''}><span>待定</span></label></span><small>日期未确定时勾选待定，Offer 中显示“待定”，确定后再修改。</small></label>`;
+  }
+
+  function readOfferStartDate() {
+    return document.getElementById('rf-offer-start-pending')?.checked ? '待定' : (document.getElementById('rf-offer-start')?.value || '');
+  }
+
+  function bindOfferStartDate() {
+    const checkbox = document.getElementById('rf-offer-start-pending');
+    const input = document.getElementById('rf-offer-start');
+    if (!checkbox || !input || checkbox.dataset.bound === 'true') return;
+    checkbox.dataset.bound = 'true';
+    const sync = () => {
+      input.disabled = checkbox.checked;
+      input.required = !checkbox.checked;
+      if (checkbox.checked) input.value = '';
+    };
+    checkbox.addEventListener('change', sync);
+    sync();
+  }
+
   function offerReportingAndValidityFields(values = {}) {
     return `<label><span>汇报上级 *</span><input id="rf-offer-reporting-to" value="${escapeHtml(values.reportingTo || '')}" placeholder="例如：张三（部门负责人）" required></label><label><span>有效期开始 *</span><input id="rf-offer-valid-from" type="date" value="${escapeHtml(values.validFrom || localDateValue(Date.now()))}" required></label><label><span>有效期结束 *</span><input id="rf-offer-valid-to" type="date" value="${escapeHtml(values.validTo || localDateValue(Date.now() + 14 * 86400000))}" required></label>`;
   }
@@ -4448,7 +4472,7 @@
         <div class="rf-offer-form-grid">
             <label class="wide"><span>选择模板 <b>*</b></span><select id="rf-offer-template" required>${templates.map((item) => `<option value="${escapeHtml(item.id)}" ${item.id === selectedTemplate.id ? 'selected' : ''}>${escapeHtml(item.name)} · ${escapeHtml(item.type)}</option>`).join('')}</select><small id="rf-offer-template-note">${escapeHtml(selectedTemplate.description || '已选择模板，将按模板字段自动调整。')}</small></label>
             ${offerHonorificField(active.gender || candidate.gender)}<label><span>岗位名称 <b>*</b></span><select id="rf-offer-role" required>${positions.map((item) => `<option value="${escapeHtml(item.id)}" ${item.id === selectedPosition?.id ? 'selected' : ''}>${escapeHtml(item.department || '未分配部门')} · ${escapeHtml(item.name)}</option>`).join('')}</select></label>
-            <label><span>入职日期 <b>*</b></span><input id="rf-offer-start" type="date" value="${localDateValue(Date.now() + 7 * 86400000)}" required></label>${offerReportingAndValidityFields()}
+            ${offerStartDateField()}${offerReportingAndValidityFields()}
             <label><span>工作地点 <b>*</b></span><input id="rf-offer-location" value="${escapeHtml(selectedPosition?.location || '山东省烟台市')}"></label>
             <label><span>部门</span><input id="rf-offer-department" value="${escapeHtml(selectedPosition?.department || '')}" readonly></label>
             ${selectedTemplate.type === '实习' ? offerInternshipPayField() : ''}${offerSalaryField('rf-offer-base', '底薪（元/月）', '', '请输入固定底薪')}
@@ -4477,6 +4501,7 @@
       event.preventDefault();
       saveTalentOffer(candidateId);
     });
+    bindOfferStartDate();
     bindOfferEmailOption(document.getElementById('rf-talent-offer-form'));
     bindOfferSalaryToggles();
     bindInternshipPayUnit(selectedTemplate.type);
@@ -4508,7 +4533,7 @@
       performanceSalary: salary.performanceIncluded ? salary.performanceSalary : undefined,
       commission: salary.commissionIncluded ? salary.commissionSalary : undefined,
       bonusMonths: 0,
-      startDate: document.getElementById('rf-offer-start')?.value,
+      startDate: readOfferStartDate(),
       ...readOfferReportingAndValidity(),
       probationMonths: document.getElementById('rf-offer-probation')?.value.trim(),
       salaryStructure: salary.structure,
@@ -4521,7 +4546,7 @@
     const sourceForm = document.getElementById('rf-talent-offer-form');
     const sendEmailAfterCreate = Boolean(sourceForm?.querySelector('[data-offer-email-option]')?.checked);
     try {
-      if (!payload.role || !payload.startDate) throw new Error('请填写岗位名称和入职日期');
+      if (!payload.role || !payload.startDate) throw new Error('请填写岗位名称，并选择入职日期或勾选待定');
       if (!payload.candidateHonorific) throw new Error('请选择候选人称谓（先生或女士）');
       const scheduleError = offerReportingAndValidityError(payload);
       if (scheduleError) throw new Error(scheduleError);
@@ -4761,7 +4786,7 @@
     const preferredRole = active?.bestMatchRole || active?.jobIntention || defaultCandidate.bestMatchRole || defaultCandidate.jobIntention || '';
     const selectedPosition = positions.find((item) => item.id === context.positionId) || positions.find((item) => item.id === active?.matches?.[0]?.positionId) || positions.find((item) => item.name === preferredRole) || positions[0];
     const selectedTemplate = templates.find((item) => item.type === '社招') || templates[0];
-    const root = renderOfferPage(`<header class="rf-offer-view-head"><div><button class="rf-dialog-back" data-rf-offer-back type="button">← 返回 Offer 管理</button><h2>新建 Offer</h2></div></header><form class="rf-offer-create-form" id="rf-offer-create-form"><div class="rf-offer-form-grid"><label><span>选择候选人 <b>*</b></span><select id="rf-offer-candidate">${candidates.map((item) => `<option value="${escapeHtml(item.id)}" ${item.id === defaultCandidate.id ? 'selected' : ''}>${escapeHtml(item.name || '未识别姓名')} · ${escapeHtml(item.phone || '未填写手机号')}</option>`).join('')}</select>${data.candidateLoadError ? `<small class="rf-form-warning">候选人数据暂不可用：${escapeHtml(data.candidateLoadError)}</small>` : ''}</label>${offerHonorificField(defaultCandidate.gender)}<label><span>模板 <b>*</b></span><select id="rf-offer-template">${templates.map((item) => `<option value="${escapeHtml(item.id)}" ${item.id === selectedTemplate.id ? 'selected' : ''}>${escapeHtml(item.name)} · ${escapeHtml(item.type)}</option>`).join('')}</select></label><label><span>岗位名称 <b>*</b></span><select id="rf-offer-role">${positions.map((item) => `<option value="${escapeHtml(item.id)}" ${item.id === selectedPosition?.id ? 'selected' : ''}>${escapeHtml(item.department || '未分配部门')} · ${escapeHtml(item.name)}</option>`).join('')}</select></label><label><span>部门</span><input id="rf-offer-department" value="${escapeHtml(selectedPosition?.department || '')}" readonly></label><label><span>工作地点</span><input id="rf-offer-location" value="${escapeHtml(selectedPosition?.location || '山东省烟台市')}"></label><label><span>入职日期 <b>*</b></span><input id="rf-offer-start" type="date" value="${localDateValue(Date.now() + 7 * 86400000)}"></label>${offerReportingAndValidityFields()}${selectedTemplate.type === '实习' ? offerInternshipPayField() : ''}${offerSalaryField('rf-offer-base', '底薪（元/月）', '', '请输入固定底薪')}${offerOptionalSalaryField('rf-offer-performance', '绩效（元/月）')}${offerOptionalSalaryField('rf-offer-commission', '提成（元/月）')}<label><span>试用期（月数与薪资比例）</span><input id="rf-offer-probation" type="text" value="试用期3个月，试用期薪资100%" placeholder="例如：3个月，试用期薪资80%"></label></div><div class="rf-offer-actions"><label class="rf-offer-email-toggle"><input type="checkbox" data-offer-email-option checked><span>发送候选人邮箱</span></label><div><button class="btn-soft" type="button" data-rf-offer-back>取消</button><button class="btn-primary" type="submit">生成并预览</button></div></div><p id="rf-offer-message" class="rf-offer-form-message"></p></form>`);
+    const root = renderOfferPage(`<header class="rf-offer-view-head"><div><button class="rf-dialog-back" data-rf-offer-back type="button">← 返回 Offer 管理</button><h2>新建 Offer</h2></div></header><form class="rf-offer-create-form" id="rf-offer-create-form"><div class="rf-offer-form-grid"><label><span>选择候选人 <b>*</b></span><select id="rf-offer-candidate">${candidates.map((item) => `<option value="${escapeHtml(item.id)}" ${item.id === defaultCandidate.id ? 'selected' : ''}>${escapeHtml(item.name || '未识别姓名')} · ${escapeHtml(item.phone || '未填写手机号')}</option>`).join('')}</select>${data.candidateLoadError ? `<small class="rf-form-warning">候选人数据暂不可用：${escapeHtml(data.candidateLoadError)}</small>` : ''}</label>${offerHonorificField(defaultCandidate.gender)}<label><span>模板 <b>*</b></span><select id="rf-offer-template">${templates.map((item) => `<option value="${escapeHtml(item.id)}" ${item.id === selectedTemplate.id ? 'selected' : ''}>${escapeHtml(item.name)} · ${escapeHtml(item.type)}</option>`).join('')}</select></label><label><span>岗位名称 <b>*</b></span><select id="rf-offer-role">${positions.map((item) => `<option value="${escapeHtml(item.id)}" ${item.id === selectedPosition?.id ? 'selected' : ''}>${escapeHtml(item.department || '未分配部门')} · ${escapeHtml(item.name)}</option>`).join('')}</select></label><label><span>部门</span><input id="rf-offer-department" value="${escapeHtml(selectedPosition?.department || '')}" readonly></label><label><span>工作地点</span><input id="rf-offer-location" value="${escapeHtml(selectedPosition?.location || '山东省烟台市')}"></label>${offerStartDateField()}${offerReportingAndValidityFields()}${selectedTemplate.type === '实习' ? offerInternshipPayField() : ''}${offerSalaryField('rf-offer-base', '底薪（元/月）', '', '请输入固定底薪')}${offerOptionalSalaryField('rf-offer-performance', '绩效（元/月）')}${offerOptionalSalaryField('rf-offer-commission', '提成（元/月）')}<label><span>试用期（月数与薪资比例）</span><input id="rf-offer-probation" type="text" value="试用期3个月，试用期薪资100%" placeholder="例如：3个月，试用期薪资80%"></label></div><div class="rf-offer-actions"><label class="rf-offer-email-toggle"><input type="checkbox" data-offer-email-option checked><span>发送候选人邮箱</span></label><div><button class="btn-soft" type="button" data-rf-offer-back>取消</button><button class="btn-primary" type="submit">生成并预览</button></div></div><p id="rf-offer-message" class="rf-offer-form-message"></p></form>`);
 if (!root) return;
     root.querySelector('#rf-offer-create-form').dataset.applicationId = context.applicationId || '';
     root.querySelector('#rf-offer-create-form').dataset.interviewId = context.interviewId || '';
@@ -4778,6 +4803,7 @@ if (!root) return;
     });
     root.querySelectorAll('[data-rf-offer-back]').forEach((button) => button.addEventListener('click', renderOfferManagement));
     root.querySelector('#rf-offer-create-form')?.addEventListener('submit', (event) => { event.preventDefault(); saveOffer(); });
+    bindOfferStartDate();
     bindOfferEmailOption(root.querySelector('#rf-offer-create-form'));
     bindOfferSalaryToggles();
     bindInternshipPayUnit(selectedTemplate.type);
@@ -4913,7 +4939,7 @@ if (!root) return;
       performanceSalary: salary.performanceIncluded ? salary.performanceSalary : undefined,
       commission: salary.commissionIncluded ? salary.commissionSalary : undefined,
       bonusMonths: 0,
-      startDate: document.getElementById('rf-offer-start')?.value,
+      startDate: readOfferStartDate(),
       ...readOfferReportingAndValidity(),
       probationMonths: document.getElementById('rf-offer-probation')?.value.trim(),
       salaryStructure: salary.structure,
@@ -5025,7 +5051,7 @@ if (!root) return;
     const currentPosition = positionOptions.find(item => item.id === offer.positionId);
     state.offerData = { ...state.offerData, positions: positionOptions, candidates: [{ id: offer.candidateId, name: offer.candidateName, email: offer.candidateEmail }] };
     const selectedTemplate = templates.find(item => item.id === offer.templateId) || templates.find(item => item.type === offer.templateType) || templates[0];
-    const root = renderOfferPage(`<header class="rf-offer-view-head"><div><button class="rf-dialog-back" data-rf-offer-back type="button">← 返回 Offer 管理</button><h2>修改 Offer</h2><p>候选人已锁定。岗位可按需更换，部门随岗位自动带出；保存后会重新生成 PDF，确认无误再发送给候选人。</p></div></header><form class="rf-offer-create-form" id="rf-offer-create-form" data-offer-id="${escapeHtml(offer.id)}"><div class="rf-offer-form-grid"><label><span>候选人</span><select id="rf-offer-candidate" disabled><option value="${escapeHtml(offer.candidateId)}">${escapeHtml(offer.candidateName || '未识别姓名')}${offer.candidateEmail ? ` · ${escapeHtml(offer.candidateEmail)}` : ''}</option></select></label>${offerHonorificField('', offer.candidateHonorific)}<label><span>模板 <b>*</b></span><select id="rf-offer-template">${templates.map((item) => `<option value="${escapeHtml(item.id)}" ${item.id === selectedTemplate.id ? 'selected' : ''}>${escapeHtml(item.name)} · ${escapeHtml(item.type)}</option>`).join('')}</select></label><label><span>岗位名称 <b>*</b></span><select id="rf-offer-role" required>${currentPosition ? '' : '<option value="" selected disabled>请选择岗位</option>'}${positionOptions.map((item) => `<option value="${escapeHtml(item.id)}" ${item.id === offer.positionId ? 'selected' : ''}>${escapeHtml(item.department || '未分配部门')} · ${escapeHtml(item.name)}</option>`).join('')}</select></label><label><span>部门</span><input id="rf-offer-department" value="${escapeHtml(currentPosition?.department || '')}" readonly></label><label><span>工作地点</span><input id="rf-offer-location" value="${escapeHtml(offer.location)}"></label><label><span>入职日期 <b>*</b></span><input id="rf-offer-start" type="date" value="${escapeHtml(offer.startDate)}"></label>${offerReportingAndValidityFields({ reportingTo: offer.reportingTo, validFrom: offer.validFrom, validTo: offer.validTo })}${selectedTemplate.type === '实习' ? offerInternshipPayField(offer.internshipPayUnit) : ''}${offerSalaryField('rf-offer-base', '底薪（元/月）', offer.dailySalary || offer.baseSalary || '', '请输入固定底薪')}${offerOptionalSalaryField('rf-offer-performance', '绩效（元/月）', offer.performanceIncluded, offer.performanceSalary)}${offerOptionalSalaryField('rf-offer-commission', '提成（元/月）', offer.commissionIncluded, offer.commission)}<label><span>试用期（月数与薪资比例）</span><input id="rf-offer-probation" type="text" value="${escapeHtml(offer.probationMonths)}" placeholder="例如：3个月，试用期薪资80%"></label></div><div class="rf-offer-actions"><label class="rf-offer-email-toggle"><input type="checkbox" data-offer-email-option checked><span>发送候选人邮箱</span></label><div><button class="btn-soft" type="button" data-rf-offer-back>取消</button><button class="btn-primary" type="submit">重新生成 PDF 并预览</button></div></div><p id="rf-offer-message" class="rf-offer-form-message"></p></form>`);
+    const root = renderOfferPage(`<header class="rf-offer-view-head"><div><button class="rf-dialog-back" data-rf-offer-back type="button">← 返回 Offer 管理</button><h2>修改 Offer</h2><p>候选人已锁定。岗位可按需更换，部门随岗位自动带出；保存后会重新生成 PDF，确认无误再发送给候选人。</p></div></header><form class="rf-offer-create-form" id="rf-offer-create-form" data-offer-id="${escapeHtml(offer.id)}"><div class="rf-offer-form-grid"><label><span>候选人</span><select id="rf-offer-candidate" disabled><option value="${escapeHtml(offer.candidateId)}">${escapeHtml(offer.candidateName || '未识别姓名')}${offer.candidateEmail ? ` · ${escapeHtml(offer.candidateEmail)}` : ''}</option></select></label>${offerHonorificField('', offer.candidateHonorific)}<label><span>模板 <b>*</b></span><select id="rf-offer-template">${templates.map((item) => `<option value="${escapeHtml(item.id)}" ${item.id === selectedTemplate.id ? 'selected' : ''}>${escapeHtml(item.name)} · ${escapeHtml(item.type)}</option>`).join('')}</select></label><label><span>岗位名称 <b>*</b></span><select id="rf-offer-role" required>${currentPosition ? '' : '<option value="" selected disabled>请选择岗位</option>'}${positionOptions.map((item) => `<option value="${escapeHtml(item.id)}" ${item.id === offer.positionId ? 'selected' : ''}>${escapeHtml(item.department || '未分配部门')} · ${escapeHtml(item.name)}</option>`).join('')}</select></label><label><span>部门</span><input id="rf-offer-department" value="${escapeHtml(currentPosition?.department || '')}" readonly></label><label><span>工作地点</span><input id="rf-offer-location" value="${escapeHtml(offer.location)}"></label>${offerStartDateField(offer.startDate)}${offerReportingAndValidityFields({ reportingTo: offer.reportingTo, validFrom: offer.validFrom, validTo: offer.validTo })}${selectedTemplate.type === '实习' ? offerInternshipPayField(offer.internshipPayUnit) : ''}${offerSalaryField('rf-offer-base', '底薪（元/月）', offer.dailySalary || offer.baseSalary || '', '请输入固定底薪')}${offerOptionalSalaryField('rf-offer-performance', '绩效（元/月）', offer.performanceIncluded, offer.performanceSalary)}${offerOptionalSalaryField('rf-offer-commission', '提成（元/月）', offer.commissionIncluded, offer.commission)}<label><span>试用期（月数与薪资比例）</span><input id="rf-offer-probation" type="text" value="${escapeHtml(offer.probationMonths)}" placeholder="例如：3个月，试用期薪资80%"></label></div><div class="rf-offer-actions"><label class="rf-offer-email-toggle"><input type="checkbox" data-offer-email-option checked><span>发送候选人邮箱</span></label><div><button class="btn-soft" type="button" data-rf-offer-back>取消</button><button class="btn-primary" type="submit">重新生成 PDF 并预览</button></div></div><p id="rf-offer-message" class="rf-offer-form-message"></p></form>`);
     if (!root) return;
     root.querySelector('#rf-offer-template')?.addEventListener('change', (event) => { const template = templates.find((item) => item.id === event.currentTarget.value) || selectedTemplate; updateOfferTemplateFields(template.type, template); });
     root.querySelector('#rf-offer-role')?.addEventListener('change', (event) => {
@@ -5035,6 +5061,7 @@ if (!root) return;
     });
     root.querySelectorAll('[data-rf-offer-back]').forEach((button) => button.addEventListener('click', openOfferManagement));
     root.querySelector('#rf-offer-create-form')?.addEventListener('submit', (event) => { event.preventDefault(); saveOffer(); });
+    bindOfferStartDate();
     bindOfferSalaryToggles();
     bindInternshipPayUnit(selectedTemplate.type);
     updateOfferTemplateFields(selectedTemplate.type, selectedTemplate);
@@ -5462,13 +5489,16 @@ if (!root) return;
     if (!wrap) return;
     wrap.innerHTML = '<div class="rf-dialog-loading">正在读取公司岗位库…</div>';
     try {
-      const [data, demands] = await Promise.all([
+      const selectedMonth = document.getElementById('job-month-filter')?.value || '';
+      const [data, demands, allDemands] = await Promise.all([
         request('api/recruitment?view=positions'),
-        request(`api/recruitment/monthly-demands${document.getElementById('job-month-filter')?.value ? `?month=${encodeURIComponent(document.getElementById('job-month-filter').value)}` : ''}`),
+        request(`api/recruitment/monthly-demands${selectedMonth ? `?month=${encodeURIComponent(selectedMonth)}` : ''}`),
+        request('api/recruitment/monthly-demands?month=all'),
       ]);
       state.jobs = data.positions || [];
       state.positionOptions = state.jobs;
       state.monthlyDemands = demands.demands || [];
+      state.allMonthlyDemands = allDemands.demands || [];
       const validIds = new Set(state.jobs.map((item) => item.id));
       state.jobSelectedIds = new Set([...state.jobSelectedIds].filter((id) => validIds.has(id)));
       state.jobCatalogLoaded = true;
@@ -5957,7 +5987,8 @@ if (!root) return;
     const keyword = (document.getElementById('job-keyword-filter')?.value || '').trim().toLowerCase();
     const selectedMonth = document.getElementById('job-month-filter')?.value || '';
     const demandsFor = (positionId) => (state.monthlyDemands || []).filter((item) => item.positionId === positionId && (!selectedMonth || item.month === selectedMonth));
-    const activeDemandsFor = (item) => demandsFor(item.id).filter((demand) => Number(demand.headcount || 0) > 0 && !['已停用', '审批驳回'].includes(demand.status) && demand.approvalStatus !== '已驳回');
+    const isRejectedDemand = (demand) => demand.status === '审批驳回' || demand.approvalStatus === '已驳回';
+    const activeDemandsFor = (item) => demandsFor(item.id).filter((demand) => Number(demand.headcount || 0) > 0 && demand.status !== '已停用' && !isRejectedDemand(demand));
     const demandPriorityRank = (priority) => ({ 紧急: 0, 高: 0, 重要: 1, 中: 1, 储备: 2, 一般: 2, 低: 2 }[priority] ?? 3);
     const demandPriority = (item) => {
       const demands = activeDemandsFor(item);
@@ -5966,7 +5997,8 @@ if (!root) return;
     };
     const statusPriority = (item) => item.status === '招聘中' ? 0 : item.status === '待发布' ? 1 : 2;
     const approvedJobs = (state.jobs || []).filter((item) => (item.approvalStatus || '已通过') === '已通过');
-    const rows = approvedJobs.slice().sort((left, right) => demandPriority(left) - demandPriority(right) || statusPriority(left) - statusPriority(right) || (left.department || '').localeCompare(right.department || '', 'zh-CN') || (left.name || '').localeCompare(right.name || '', 'zh-CN')).filter((item) => {
+    const rejectedJobs = (state.jobs || []).filter((item) => item.approvalStatus === '已驳回');
+    const rows = [...approvedJobs, ...rejectedJobs].slice().sort((left, right) => demandPriority(left) - demandPriority(right) || statusPriority(left) - statusPriority(right) || (left.department || '').localeCompare(right.department || '', 'zh-CN') || (left.name || '').localeCompare(right.name || '', 'zh-CN')).filter((item) => {
       if (!keyword) return true;
       const demandNames = demandsFor(item.id).map((demand) => demand.positionName);
       const haystack = [item.name, item.code, item.department, item.owner, item.recruiter, item.backupRecruiter, item.responsibilities, item.requirements, (item.tags || []).join(' '), ...demandNames].join('|').toLowerCase();
@@ -5975,7 +6007,7 @@ if (!root) return;
     const totalPositions = approvedJobs.length;
     const recruitingPositions = approvedJobs.filter((item) => item.status === '招聘中').length;
     const pendingApprovals = pendingRecruitmentApprovals().length;
-    const demandHeadcount = (state.monthlyDemands || []).filter((item) => !selectedMonth || item.month === selectedMonth).reduce((total, item) => total + Number(item.headcount || 0), 0);
+    const demandHeadcount = (state.monthlyDemands || []).filter((item) => (!selectedMonth || item.month === selectedMonth) && !isRejectedDemand(item) && item.status !== '待审批' && item.approvalStatus !== '待审批' && item.status !== '已停用').reduce((total, item) => total + Number(item.headcount || 0), 0);
     const selectedRange = selectedMonth ? window.companyCalendar?.monthRange(selectedMonth) : null;
     const monthLabel = selectedMonth ? `${selectedMonth.slice(0, 4)}年${Number(selectedMonth.slice(5, 7))}月${selectedRange ? `（${selectedRange.label}）` : ''}` : '当前月份';
     if (summary) summary.innerHTML = `
@@ -5997,12 +6029,21 @@ if (!root) return;
     </div><div class="rf-job-card-grid">
       ${rows.map((item) => {
         const demands = activeDemandsFor(item).slice().sort((left, right) => demandPriorityRank(left.priority) - demandPriorityRank(right.priority) || String(left.demandType || '').localeCompare(String(right.demandType || ''), 'zh-CN'));
+        const rejectedDemands = demandsFor(item.id).filter((demand) => isRejectedDemand(demand) && demand.demandType !== '延续需求');
+        const demandMonthLabel = (entry) => {
+          const monthText = entry.carriedFromMonth ? `${entry.carriedFromMonth} 延续` : (entry.month || '');
+          return monthText ? `${monthText} · ` : '';
+        };
         const demand = demands[0];
         const approvalStatus = item.approvalStatus || '待审批';
         const priorityLabel = (value) => ({ 一般: '储备', 低: '储备', 高: '紧急', 中: '重要' })[value] || value || '储备';
         const demandBlocks = demands.length
-          ? demands.map((entry) => `<section class="rf-job-demand ${priorityLabel(entry.priority) === '紧急' ? 'priority-urgent' : priorityLabel(entry.priority) === '重要' ? 'priority-important' : 'priority-normal'}"><div><span>${escapeHtml(entry.demandType || '新增需求')}</span><b>${escapeHtml(priorityLabel(entry.priority))} · ${escapeHtml(entry.approvalStatus || entry.status || '已确认')}</b></div><strong>${Number(entry.headcount || 0)}<small>人</small></strong>${entry.carriedFromMonth ? `<p class="rf-job-demand-requirement"><b>上月延续</b>${escapeHtml(entry.carriedFromMonth)} 未完成 ${Number(entry.carriedHeadcount || entry.headcount || 0)} 人</p>` : ''}${entry.demandRequirement ? `<p class="rf-job-demand-requirement"><b>需求要求</b>${escapeHtml(entry.demandRequirement)}</p>` : ''}</section>`).join('')
+          ? demands.map((entry) => `<section class="rf-job-demand ${priorityLabel(entry.priority) === '紧急' ? 'priority-urgent' : priorityLabel(entry.priority) === '重要' ? 'priority-important' : 'priority-normal'}${entry.carriedFromMonth ? ' is-carried' : ''}"><div><span>${escapeHtml(demandMonthLabel(entry))}${escapeHtml(entry.demandType || '新增需求')}</span><b>${escapeHtml(priorityLabel(entry.priority))} · ${escapeHtml(entry.approvalStatus || entry.status || '已确认')}</b></div><strong>${Number(entry.headcount || 0)}<small>人</small></strong>${entry.carriedFromMonth ? `<p class="rf-job-demand-requirement"><b>上月延续</b>${escapeHtml(entry.carriedFromMonth)} 未完成 ${Number(entry.carriedHeadcount || entry.headcount || 0)} 人</p>` : ''}${entry.demandRequirement ? `<p class="rf-job-demand-requirement"><b>需求要求</b>${escapeHtml(entry.demandRequirement)}</p>` : ''}</section>`).join('')
           : `<section class="rf-job-demand empty"><div><span>${escapeHtml(monthLabel)}需求</span><b>未配置</b></div><strong>—<small></small></strong><em>可点击下方按钮补充需求</em></section>`;
+        const rejectedBlocks = rejectedDemands.map((entry) => `<section class="rf-job-demand is-rejected"><div><span>${escapeHtml(demandMonthLabel(entry))}${escapeHtml(entry.demandType || '新增需求')}</span><b>已驳回</b></div><strong>${Number(entry.headcount || 0)}<small>人</small></strong><p class="rf-job-demand-requirement"><b>驳回原因</b>${escapeHtml(entry.approvalOpinion || '未填写')}${entry.approver ? ` · ${escapeHtml(entry.approver)}` : ''}</p></section>`).join('');
+        const positionRejectedNote = approvalStatus === '已驳回' && !rejectedDemands.length
+          ? `<section class="rf-job-demand is-rejected"><div><span>岗位审批</span><b>已驳回</b></div><p class="rf-job-demand-requirement"><b>驳回原因</b>${escapeHtml(item.approvalOpinion || '未填写')}${item.approver ? ` · ${escapeHtml(item.approver)}` : ''}</p></section>`
+          : '';
         const isRecruiting = item.status === '招聘中';
         const isSelected = state.jobSelectedIds.has(item.id);
         const priority = ({ 高: '紧急', 中: '重要', 低: '储备', 一般: '储备' }[demand?.priority] || demand?.priority || '');
@@ -6019,7 +6060,7 @@ if (!root) return;
             <p>${escapeHtml(item.salaryText || (item.minSalary || item.maxSalary ? `${item.minSalary || 0}-${item.maxSalary || 0}` : '薪资面议'))}</p>
           </header>
           <div class="rf-job-card-body">
-            <div class="rf-job-demand-list">${demandBlocks}</div>
+            <div class="rf-job-demand-list">${positionRejectedNote}${demandBlocks}${rejectedBlocks}</div>
             <section class="rf-job-owners">
               <div><span>业务负责人</span><strong>${escapeHtml(item.owner || '待补充')}</strong></div>
               <div><span>招聘HR</span><strong class="${item.recruiter ? '' : 'missing'}">${escapeHtml(item.recruiter || '待绑定')}</strong>${item.backupRecruiter ? `<small>备用：${escapeHtml(item.backupRecruiter)}</small>` : ''}</div>
@@ -6122,9 +6163,9 @@ if (!root) return;
     }
   }
 
-  function pendingRecruitmentApprovals() {
+  function recruitmentApprovalItems(status) {
     const positions = (state.jobs || [])
-      .filter((item) => (item.approvalStatus || '已通过') === '待审批')
+      .filter((item) => (item.approvalStatus || '已通过') === status)
       .map((item) => ({
         type: 'position',
         id: item.id,
@@ -6132,20 +6173,29 @@ if (!root) return;
         department: item.department || '未分配部门',
         applicant: item.approvalApplicant || item.owner || '当前用户',
         submittedAt: item.approvalSubmittedAt || item.createdAt || '',
+        decidedAt: item.approvedAt || item.updatedAt || '',
+        opinion: item.approvalOpinion || '',
         detail: `${item.category || '社招'} · ${Number(item.headcount || 0)}人`,
       }));
-    const demands = (state.monthlyDemands || [])
-      .filter((item) => (item.approvalStatus || item.status) === '待审批')
+    const demands = (state.allMonthlyDemands || state.monthlyDemands || [])
+      .filter((item) => item.demandType !== '延续需求' && ((item.approvalStatus || item.status) === status))
       .map((item) => ({
         type: 'demand',
         id: item.id,
-        title: `${item.month || ''} ${item.positionName || '招聘需求'}`.trim(),
+        title: item.positionName || '招聘需求',
         department: item.department || '未分配部门',
         applicant: item.createdBy || item.owner || '当前用户',
         submittedAt: item.approvalSubmittedAt || item.createdAt || '',
-        detail: `${Number(item.headcount || 0)}人 · ${item.demandType || '新增需求'}`,
+        decidedAt: item.approvedAt || item.updatedAt || '',
+        opinion: item.approvalOpinion || '',
+        detail: `${item.month ? `${item.month} · ` : ''}${Number(item.headcount || 0)}人 · ${item.demandType || '新增需求'}`,
       }));
-    return [...positions, ...demands].sort((left, right) => String(right.submittedAt).localeCompare(String(left.submittedAt)));
+    const timeOf = (item) => String(status === '已驳回' ? item.decidedAt || item.submittedAt : item.submittedAt);
+    return [...positions, ...demands].sort((left, right) => timeOf(right).localeCompare(timeOf(left)));
+  }
+
+  function pendingRecruitmentApprovals() {
+    return recruitmentApprovalItems('待审批');
   }
 
   function approvalCard(item, actionText) {
@@ -6164,13 +6214,17 @@ if (!root) return;
 
   function showPendingApprovals(doneTitle = '') {
     const items = pendingRecruitmentApprovals();
+    const rejected = recruitmentApprovalItems('已驳回');
     const summary = doneTitle
       ? `${escapeHtml(doneTitle)}已处理。${items.length ? `还有 ${items.length} 条待审批，点开即可继续。` : '待审批已全部处理完。'}`
       : '点开一条查看信息，确认后再通过或驳回。';
     const cards = items.length
       ? items.map((item) => approvalCard(item, `${item.applicant} · ${formatShanghaiDateTime(item.submittedAt) || '刚刚提交'}`)).join('')
-      : '<div class="rf-dialog-empty"><strong>没有其他待审批</strong><p>新的岗位和招聘需求提交后，会再次出现在这里。</p></div>';
-    showTalentDialog(`<section class="rf-approval-workbench"><header class="rf-approval-head"><div><span>${doneTitle ? '已处理' : '待审批'}</span><h2>${doneTitle ? '继续处理' : '待审批'}</h2><p>${summary}</p></div><b>${items.length}</b></header><div class="rf-pending-approval-list">${cards}</div></section>`, 'wide');
+      : '<div class="rf-dialog-empty"><strong>没有待审批</strong><p>新的岗位和招聘需求提交后，会再次出现在这里。</p></div>';
+    const rejectedCards = rejected.length
+      ? `<section class="rf-rejected-approvals"><header><span>已驳回</span><b>${rejected.length}</b></header><div class="rf-pending-approval-list">${rejected.map((item) => approvalCard(item, `驳回原因：${item.opinion || '未填写'} · ${item.applicant}${formatShanghaiDateTime(item.decidedAt) ? ` · ${formatShanghaiDateTime(item.decidedAt)}` : ''}`)).join('')}</div></section>`
+      : '';
+    showTalentDialog(`<section class="rf-approval-workbench"><header class="rf-approval-head"><div><span>${doneTitle ? '已处理' : '待审批'}</span><h2>${doneTitle ? '继续处理' : '待审批'}</h2><p>${summary}</p></div><b>${items.length}</b></header><div class="rf-pending-approval-list">${cards}</div>${rejectedCards}</section>`, 'wide');
     bindApprovalCards();
   }
 
@@ -6366,9 +6420,19 @@ if (!root) return;
     });
   }
 
+  function demandSelectableJob(item) {
+    const status = item?.approvalStatus || (item?.approvalSubmittedAt ? '待审批' : '已通过');
+    return status === '已通过' || status === '';
+  }
+
   function openMonthlyDemandDialog(position = null, context = null) {
-    const jobs = context?.jobs || state.jobs || [];
-    if (!jobs.length) return notifyUser('当前部门暂无可选择的岗位，请联系管理员确认岗位归属。', 'info');
+    const allJobs = context?.jobs || state.jobs || [];
+    const jobs = allJobs.filter(demandSelectableJob);
+    if (position && !demandSelectableJob(position)) {
+      const status = position.approvalStatus || '待审批';
+      return notifyUser(status === '已驳回' ? `岗位“${position.name || '未命名岗位'}”审批已驳回，不能新建招聘需求。` : `岗位“${position.name || '未命名岗位'}”还在审批中，审批通过后才能新建招聘需求。`, 'error');
+    }
+    if (!jobs.length) return notifyUser(allJobs.length ? '当前部门的岗位都还没审批通过，审批通过后才能新建招聘需求。' : '当前部门暂无可选择的岗位，请联系管理员确认岗位归属。', 'info');
     const month = context?.month || document.getElementById('job-month-filter')?.value || document.getElementById('overview-month-filter')?.value || currentMonthValue();
     showTalentDialog(`
       <header class="rf-dialog-head"><div><span>MONTHLY DEMAND</span><h2>${position ? '新建/调整需求' : '新建需求'}</h2><p>可以直接口述或粘贴业务需求，AI只填充明确提到的字段，再由你确认保存。</p></div></header>
@@ -6385,7 +6449,7 @@ if (!root) return;
           <small id="rf-demand-transcript-status">支持手机浏览器语音输入；如果浏览器不支持，可直接使用手机输入法的语音键。</small>
         </section>
         <label data-demand-field="rf-demand-month"><span>需求月份 <b>*</b></span><input id="rf-demand-month" type="month" value="${escapeHtml(month)}" required><small class="rf-demand-error" hidden></small></label>
-        <label data-demand-field="rf-demand-position"><span>岗位 <b>*</b></span><select id="rf-demand-position" required><option value="">请选择岗位</option>${jobs.map(item => `<option value="${escapeHtml(item.id)}" ${item.id === position?.id ? 'selected' : ''}>${escapeHtml(item.department || '未分配部门')} · ${escapeHtml(item.name || '未命名岗位')}</option>`).join('')}</select><small class="rf-demand-error" hidden></small></label>
+        <label data-demand-field="rf-demand-position"><span>岗位 <b>*</b></span><select id="rf-demand-position" required><option value="">请选择岗位</option>${jobs.map(item => `<option value="${escapeHtml(item.id)}" ${item.id === position?.id ? 'selected' : ''}>${escapeHtml(item.department || '未分配部门')} · ${escapeHtml(item.name || '未命名岗位')}</option>`).join('')}</select><small class="rf-demand-error" hidden></small><small id="rf-demand-existing" class="rf-demand-existing" hidden></small></label>
         <label data-demand-field="rf-demand-headcount"><span>需求数量 <b>*</b></span><input id="rf-demand-headcount" type="number" min="1" step="1" value="" placeholder="请输入人数" required><small class="rf-demand-error" hidden></small></label>
         <label data-demand-field="rf-demand-type"><span>需求类型 <b>*</b></span><select id="rf-demand-type" required><option value="">请选择需求类型</option><option value="新增需求">新增需求</option><option value="储备需求">储备需求</option></select><small class="rf-demand-error" hidden></small></label>
         <label data-demand-field="rf-demand-priority"><span>优先级 <b>*</b></span><select id="rf-demand-priority" required><option value="">请选择优先级</option>${['紧急','重要','储备'].map(item => `<option value="${item}">${item}</option>`).join('')}</select><small class="rf-demand-error" hidden></small></label>
@@ -6399,8 +6463,39 @@ if (!root) return;
     `, 'wide');
     document.querySelector('#rf-talent-dialog .rf-dialog')?.classList.add('rf-demand-dialog');
     const demandForSelection = (monthValue, positionId, demandType) => {
-      const rows = (context?.demands || state.monthlyDemands || []).filter((item) => item.month === monthValue && item.positionId === positionId && item.demandType !== '延续需求');
+      const rows = (context?.demands || state.allMonthlyDemands || state.monthlyDemands || []).filter((item) => item.month === monthValue && item.positionId === positionId && item.demandType !== '延续需求');
       return rows.find((item) => demandType && (item.demandType || '新增需求') === demandType) || (demandType ? null : rows[0]) || null;
+    };
+    const demandConflictText = (demand) => {
+      if (!demand) return '';
+      const applicant = demand.approvalApplicant || demand.createdBy || '其他同事';
+      const approvalStatus = demand.approvalStatus || '待审批';
+      const demandType = demand.demandType || '新增需求';
+      const currentUserId = window.recruitmentCurrentUser?.id || '';
+      const mine = Boolean(currentUserId && demand.approvalApplicantUserId && demand.approvalApplicantUserId === currentUserId)
+        || Boolean(!demand.approvalApplicantUserId && applicant && window.recruitmentCurrentUser?.name && applicant === window.recruitmentCurrentUser.name);
+      if (approvalStatus === '待审批' || demand.status === '待审批') {
+        return mine
+          ? `你已提交${demand.month}的${demandType}，目前还在审批中。继续保存会更新原申请并重新送审。`
+          : `${demand.month}的${demandType}已由${applicant}提交，当前还在审批中，请勿重复提交。`;
+      }
+      if (approvalStatus === '已通过' && !['审批驳回', '已停用'].includes(demand.status)) {
+        return mine
+          ? `你已提交的${demand.month}${demandType}已通过。继续保存会按新人数重新送审。`
+          : `${demand.month}的${demandType}已由${applicant}提交并通过审批。如需调整人数，请联系原申请人或管理员，不要重复新建。`;
+      }
+      if (approvalStatus === '已驳回') return `${demand.month}的${demandType}上次由${applicant}提交后被驳回${demand.approvalOpinion ? `：${demand.approvalOpinion}` : ''}。可以修改后重新提交。`;
+      return '';
+    };
+    const refreshDemandConflict = () => {
+      const hint = document.getElementById('rf-demand-existing');
+      const demand = demandForSelection(document.getElementById('rf-demand-month')?.value, document.getElementById('rf-demand-position')?.value, document.getElementById('rf-demand-type')?.value);
+      const text = demandConflictText(demand);
+      if (!hint) return text;
+      hint.hidden = !text;
+      hint.textContent = text;
+      hint.classList.toggle('is-blocked', Boolean(text) && !text.startsWith('你已提交') && !text.includes('可以修改后重新提交'));
+      return text;
     };
     const existingDemand = demandForSelection(month, document.getElementById('rf-demand-position').value, '');
     if (existingDemand) {
@@ -6422,10 +6517,12 @@ if (!root) return;
       document.getElementById('rf-demand-latest-arrival').value = demand?.latestArrivalDate || '';
       document.getElementById('rf-demand-requirement').value = demand?.demandRequirement || '';
       document.getElementById('rf-demand-note').value = demand?.note || '';
+      refreshDemandConflict();
     };
     document.getElementById('rf-demand-position').addEventListener('change', fillSelectedDemand);
     document.getElementById('rf-demand-month').addEventListener('change', fillSelectedDemand);
     document.getElementById('rf-demand-type').addEventListener('change', fillSelectedDemand);
+    refreshDemandConflict();
     document.getElementById('rf-demand-transcript-file')?.addEventListener('change', importDemandTranscriptFile);
     document.querySelector('[data-rf-demand-voice]')?.addEventListener('click', startDemandVoiceInput);
     document.querySelector('[data-rf-demand-transcript-extract]')?.addEventListener('click', () => extractDemandTranscript(context ? `${context.endpoint}/transcript-extract` : undefined));
@@ -6474,6 +6571,8 @@ if (!root) return;
           ['rf-demand-note', note, '请填写审批用的需求说明'],
         ].filter(([, value]) => !value).map(([id, , text]) => [id, text]);
         if (latestArrivalDate && expectedArrivalDate && latestArrivalDate < expectedArrivalDate) issues.push(['rf-demand-latest-arrival', '不能早于期望到岗日期']);
+        const conflictText = refreshDemandConflict();
+        if (conflictText && !conflictText.startsWith('你已提交') && !conflictText.includes('可以修改后重新提交')) issues.push(['rf-demand-position', conflictText]);
         if (issues.length) { showDemandValidation(issues); if (message) message.textContent = ''; return; }
         button.disabled = true; button.textContent = '正在保存…';
         const result = await request(context?.endpoint || 'api/recruitment/monthly-demands', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({

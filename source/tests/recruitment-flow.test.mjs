@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { teable } from '../dist/platform/teable.js';
+import { teable, filterLocalRecords } from '../dist/platform/teable.js';
 import { llm } from '../dist/platform/llm.js';
 import { RECRUITMENT_TABLES } from '../dist/modules/database/database.schema.js';
 import { RecruitmentService } from '../dist/modules/recruitment/recruitment.service.js';
@@ -33,11 +33,12 @@ test('monthly demands persist both arrival dates and expose the earliest dates i
     assert.equal(updated.latestArrivalDate, '2026-10-20');
     await assert.rejects(service.saveMonthlyDemand({ ...input, latestArrivalDate: '2026-10-01' }), /不能早于/);
     assert.equal(memory.records.get('recruitment_monthly_demands').length, 1);
-    await teable.createRecord('recruitment_monthly_demands', { 月度需求ID: 'arrival_earlier', 需求月份: '2026-10', 职位ID: 'arrival_position', 职位名称: '测试岗位', 部门: '技术部', 需求数量: 1, 需求状态: '已确认', 期望到岗日期: '2026-10-03', 最晚到岗日期: '2026-10-18' });
+    await teable.createRecord('recruitment_monthly_demands', { 月度需求ID: 'arrival_earlier', 需求月份: '2026-10', 职位ID: 'arrival_position', 职位名称: '测试岗位', 部门: '技术部', 需求数量: 1, 需求状态: '已确认', 审批状态: '已通过', 期望到岗日期: '2026-10-03', 最晚到岗日期: '2026-10-18' });
     const dashboard = await service.monthlyHiring('2026-10');
     assert.equal(dashboard.departments[0].expectedArrivalDate, '2026-10-03');
     assert.equal(dashboard.departments[0].latestArrivalDate, '2026-10-18');
-    assert.equal(dashboard.summary.demand, 3);
+    // 第一条需求还在待审批，首页只统计已确认的需求
+    assert.equal(dashboard.summary.demand, 1);
   } finally { restore(); }
 });
 
@@ -51,8 +52,8 @@ function memoryTeable() {
       const originals = {};
       for (const method of ['listFields', 'listRecords', 'listAllRecords', 'createRecord', 'updateRecord', 'deleteRecord']) originals[method] = teable[method];
       teable.listFields = async (tableId) => (definitions.get(tableId)?.fields || []).map((field, index) => ({ id: `${tableId}_field_${index}`, ...field }));
-      teable.listRecords = async (tableId) => [...(records.get(tableId) || [])];
-      teable.listAllRecords = async (tableId) => [...(records.get(tableId) || [])];
+      teable.listRecords = async (tableId, options = {}) => filterLocalRecords([...(records.get(tableId) || [])], options.filterByTql);
+      teable.listAllRecords = async (tableId, options = {}) => filterLocalRecords([...(records.get(tableId) || [])], options.filterByTql);
       teable.createRecord = async (tableId, fields) => {
         const row = { id: `${tableId}_record_${++sequence}`, fields: { ...fields }, createdTime: new Date().toISOString() };
         records.get(tableId).push(row);
@@ -81,9 +82,11 @@ test('position and demand require the configured WeCom approver before publishin
     process.env.APP_PUBLIC_URL = 'https://recruitment.example.test/';
     let messageSequence = 0;
     const approvalMessages = [];
+    const applicantNotifications = [];
     const messages = {
       preview: async (input) => { approvalMessages.push(input); return { messageId: `approval_message_${++messageSequence}` }; },
       send: async (messageId) => ({ messageId, status: '已发送' }),
+      notifyDirectUsers: async (input) => { applicantNotifications.push(input); return { status: '已发送', sent: 1 }; },
     };
     await teable.createRecord('recruitment_users', { 用户ID: 'approver_user', 姓名: '刘金虎', 企业微信用户ID: 'wozR29DwAACxXU8MVtW44tVUZ4ZMF0qg', 天玑微信ID: 'LiSiQi', 用户状态: '启用' });
     await teable.createRecord('recruitment_users', { 用户ID: 'other_user', 姓名: '其他员工', 企业微信用户ID: 'wecom_other', 用户状态: '启用' });
@@ -111,6 +114,9 @@ test('position and demand require the configured WeCom approver before publishin
     await assert.rejects(() => service.getRecruitmentApproval('position', position.id, { userId: 'other_user', userName: '其他员工' }), /当前登录账号不是指定的招聘审批人/);
     const approvedPosition = await service.decideRecruitmentApproval('position', position.id, { decision: '通过', opinion: '编制和预算已确认' }, { userId: 'approver_user', userName: '招聘审批人' });
     assert.equal(approvedPosition.approvalStatus, '已通过');
+    assert.equal(approvedPosition.applicantNotification.status, '已发送');
+    assert.deepEqual(applicantNotifications[0].userIds, ['recruiter_user']);
+    assert.match(applicantNotifications[0].markdown, /岗位审批通过/);
 
     const published = await service.publishPosition(position.id, {
       platforms: ['Boss直聘', '猎聘'], targetCount: 80, filters: { city: '杭州', experienceYears: 5 },
@@ -135,6 +141,10 @@ test('position and demand require the configured WeCom approver before publishin
     assert.equal(demand.approvalNotification.status, '发送中');
     await new Promise((resolve) => setImmediate(resolve));
     assert.match(approvalMessages[1].content, /需求要求：重点承接招聘系统后端重构，优先NestJS和AI应用经验/);
+    await assert.rejects(
+      () => service.saveMonthlyDemand({ month: '2026-10', positionId: position.id, headcount: 6, demandType: '新增需求', priority: '紧急', note: '另一个人重复提交。', operator: '其他员工' }, 'other_user'),
+      /已由王HR提交，当前还在审批中/,
+    );
     demand = await service.saveMonthlyDemand({ month: '2026-10', positionId: position.id, headcount: 5, demandType: '新增需求', priority: '紧急', demandRequirement: '重点承接招聘系统后端重构和数据治理', note: '调整为本月新增5名高级后端研发编制。', operator: '王HR' }, 'recruiter_user');
     assert.equal(demand.updated, true);
     assert.equal(demand.headcount, 5);
@@ -146,11 +156,31 @@ test('position and demand require the configured WeCom approver before publishin
     assert.equal(pendingHiring.summary.demand, 0);
     const approvedDemand = await service.decideRecruitmentApproval('demand', demand.id, { decision: '通过', opinion: '需求合理' }, { userId: 'approver_user', userName: '招聘审批人' });
     assert.equal(approvedDemand.approvalStatus, '已通过');
+    assert.match(applicantNotifications.at(-1).markdown, /招聘需求审批通过/);
+    assert.match(applicantNotifications.at(-1).markdown, /需求月份：2026-10/);
+    const rejectedDemand = await service.saveMonthlyDemand({ month: '2026-11', positionId: position.id, headcount: 1, demandType: '储备需求', priority: '储备', note: '储备一名后端。', operator: '王HR' }, 'recruiter_user');
+    const rejected = await service.decideRecruitmentApproval('demand', rejectedDemand.id, { decision: '驳回', opinion: '编制未确认' }, { userId: 'approver_user', userName: '招聘审批人' });
+    assert.equal(rejected.approvalStatus, '已驳回');
+    assert.equal(rejected.applicantNotification.status, '已发送');
+    assert.match(applicantNotifications.at(-1).markdown, /招聘需求审批驳回/);
+    assert.match(applicantNotifications.at(-1).markdown, /驳回原因：编制未确认/);
+    assert.deepEqual(applicantNotifications.at(-1).userIds, ['recruiter_user']);
+    await assert.rejects(
+      () => service.saveMonthlyDemand({ month: '2026-10', positionId: position.id, headcount: 6, demandType: '新增需求', priority: '紧急', note: '已通过后再重复新建。', operator: '其他员工' }, 'other_user'),
+      /并通过审批/,
+    );
+    const adjustedByApplicant = await service.saveMonthlyDemand({ month: '2026-10', positionId: position.id, headcount: 6, demandType: '新增需求', priority: '紧急', note: '原申请人调整已通过需求。', operator: '王HR' }, 'recruiter_user');
+    assert.equal(adjustedByApplicant.updated, true);
+    assert.equal(adjustedByApplicant.headcount, 6);
+    assert.equal(adjustedByApplicant.approvalStatus, '待审批');
+    const resubmitted = await service.saveMonthlyDemand({ month: '2026-11', positionId: position.id, headcount: 2, demandType: '储备需求', priority: '储备', note: '驳回后调整人数重新提交。', operator: '王HR' }, 'recruiter_user');
+    assert.equal(resubmitted.updated, true);
+    assert.equal(resubmitted.approvalStatus, '待审批');
     assert.equal(approvedDemand.demandStatus, '已确认');
     assert.equal(approvedDemand.positionAutoPublished, true);
     assert.equal((await service.getPosition(position.id)).status, '招聘中');
     const activeHiring = await service.monthlyHiring('2026-10');
-    assert.equal(activeHiring.summary.demand, 5);
+    assert.equal(activeHiring.summary.demand, 0);
     await service.changePositionStatus(position.id, '已下线', '本轮招聘暂停', '王HR');
     const pausedHiring = await service.monthlyHiring('2026-10');
     assert.equal(pausedHiring.summary.demand, 0);
@@ -303,6 +333,7 @@ test('historical pending demand approvals are not automatically sent after appro
     const messages = {
       preview: async (input) => { approvalMessages.push(input); return { messageId: 'approval_retry_message' }; },
       send: async (messageId) => ({ messageId, status: '已发送' }),
+      notifyDirectUsers: async () => ({ status: '已发送', sent: 1 }),
     };
     const service = new RecruitmentService({ requireTableId: (name) => name }, messages);
     const demand = await service.saveMonthlyDemand({ month: '2026-09', positionId: 'pos_retry_demand', headcount: 2, demandType: '储备需求', priority: '一般', note: '为下一季度商务拓展提前储备候选人。', operator: '王HR' }, 'recruiter_user');
@@ -470,6 +501,11 @@ test('position selectors are limited to the current department while system admi
       () => service.saveMonthlyDemand({ month: '2026-10', positionId: 'pos_product', headcount: 1, demandType: '新增需求', priority: '重要', note: '跨部门需求测试' }, 'user_sales', salesProfile),
       /只能选择或操作所属部门的岗位/,
     );
+    await teable.createRecord('recruitment_positions', { 职位ID: 'pos_sales_pending', 职位名称: '商务待审岗', 部门ID: 'org_sales', 部门: '商务', 发布状态: '待发布', 审批状态: '待审批', 审批提交时间: '2026-10-01T00:00:00.000Z' });
+    await assert.rejects(
+      () => service.saveMonthlyDemand({ month: '2026-10', positionId: 'pos_sales_pending', headcount: 1, demandType: '新增需求', priority: '重要', note: '未审批岗位不能提需求' }, 'user_sales', salesProfile),
+      /还在审批中/,
+    );
     const organizationCount = memory.records.get('recruitment_organization_units').length;
     await assert.rejects(
       () => service.createPosition({ name: '越权岗位', department: '新建部门' }, '商务员工', 'user_sales', salesProfile),
@@ -478,6 +514,6 @@ test('position selectors are limited to the current department while system admi
     assert.equal(memory.records.get('recruitment_organization_units').length, organizationCount);
 
     const adminOptions = await service.positionOptions(adminProfile);
-    assert.deepEqual(adminOptions.positions.map((item) => item.id).sort(), ['pos_product', 'pos_sales', 'pos_sales_legacy', 'pos_sales_platform']);
+    assert.deepEqual(adminOptions.positions.map((item) => item.id).sort(), ['pos_product', 'pos_sales', 'pos_sales_legacy', 'pos_sales_pending', 'pos_sales_platform']);
   } finally { restore(); }
 });

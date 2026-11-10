@@ -31,9 +31,11 @@ const previousDemandMonth = (month: string) => {
   const year = Number(match[1]), monthNumber = Number(match[2])
   return monthNumber === 1 ? `${year - 1}-12` : `${year}-${String(monthNumber - 1).padStart(2, '0')}`
 }
+// 首页/延续只统计已生效的需求：审批状态为空是上线审批前的历史数据，视为已确认；
+// 待审批、已驳回、审批驳回、已停用都不计入，避免未通过的需求出现在首页。
 const isCountableDemand = (row: TeableRecord) => number(row.fields['需求数量']) > 0
-  && text(row.fields['审批状态']) !== '已驳回'
-  && !['审批驳回', '已停用'].includes(text(row.fields['需求状态']))
+  && ['', '已通过'].includes(text(row.fields['审批状态']))
+  && !['审批驳回', '已停用', '待审批'].includes(text(row.fields['需求状态']))
 const DAY_MS = 24 * 60 * 60 * 1000
 const shanghaiMonthRange = (month: string) => {
   const range = companyCalendar.monthRange(month)
@@ -560,10 +562,10 @@ export class RecruitmentService implements OnApplicationBootstrap {
     const priorityAliases: Record<string, string> = { 高: '紧急', 中: '重要', 低: '储备', 一般: '储备' }
     const normalizePriority = (value: unknown) => priorityAliases[text(value)] || text(value) || '储备'
     const priorityRank = (value: unknown) => ({ 紧急: 0, 重要: 1, 储备: 2 }[normalizePriority(value)] ?? 3)
-    const rows = new Map<string, { positionId: string; department: string; role: string; demand: number; completed: number; completedNames: Set<string>; status: string; priority: string; expectedArrivalDate: string; latestArrivalDate: string }>()
+    const rows = new Map<string, { positionId: string; department: string; role: string; demand: number; currentMonthDemand: number; carriedDemand: number; carriedFromMonth: string; completed: number; completedNames: Set<string>; status: string; priority: string; expectedArrivalDate: string; latestArrivalDate: string }>()
     const rowFor = (positionIdValue: string, department: string, role: string) => {
       const key = `${department}|${role}`
-      if (!rows.has(key)) rows.set(key, { positionId: positionIdValue, department: department || '未分配部门', role: role || '未命名岗位', demand: 0, completed: 0, completedNames: new Set(), status: '进行中', priority: '储备', expectedArrivalDate: '', latestArrivalDate: '' })
+      if (!rows.has(key)) rows.set(key, { positionId: positionIdValue, department: department || '未分配部门', role: role || '未命名岗位', demand: 0, currentMonthDemand: 0, carriedDemand: 0, carriedFromMonth: '', completed: 0, completedNames: new Set(), status: '进行中', priority: '储备', expectedArrivalDate: '', latestArrivalDate: '' })
       return rows.get(key)!
     }
     for (const row of monthDemands) {
@@ -573,7 +575,9 @@ export class RecruitmentService implements OnApplicationBootstrap {
         text(position?.fields['部门']) || text(row.fields['部门']),
         text(position?.fields['职位名称']) || text(row.fields['职位名称']),
       )
-      target.demand += Math.max(0, Math.round(Number(row.fields['需求数量']) || 0))
+      const demandHeadcount = Math.max(0, Math.round(Number(row.fields['需求数量']) || 0))
+      target.demand += demandHeadcount
+      target.currentMonthDemand += demandHeadcount
       target.status = text(row.fields['需求状态']) || target.status
       for (const [key, field] of [['expectedArrivalDate', '期望到岗日期'], ['latestArrivalDate', '最晚到岗日期']] as const) {
         const date = text(row.fields[field])
@@ -597,6 +601,8 @@ export class RecruitmentService implements OnApplicationBootstrap {
       const position = positionsById.get(demandPositionId)
       const target = rowFor(demandPositionId, text(position?.fields['部门']), text(position?.fields['职位名称']))
       target.demand += carried
+      target.carriedDemand += carried
+      target.carriedFromMonth = previousMonth
       if (priorityRank(previousDemand.priority) < priorityRank(target.priority)) target.priority = previousDemand.priority
     }
     for (const [offerPositionId, candidateIds] of monthOfferCandidatesByPosition) {
@@ -641,13 +647,13 @@ export class RecruitmentService implements OnApplicationBootstrap {
     return value
   }
 
-  /** 新增或更新某个月份的岗位招聘需求；同一岗位同一月份只保留一条需求记录。 */
+  /** 新增或调整某个月份的岗位招聘需求。同一岗位同一月份同一类型只允许一条，待审批时不能被其他人覆盖。 */
   async extractMonthlyDemandTranscript(transcriptValue: string, profile?: RoleAccessProfile, timeoutMs = 30_000): Promise<{ extraction: MonthlyDemandTranscriptExtraction; source: 'ai'; availablePositions: number }> {
     const transcript = text(transcriptValue)
     if (!transcript) throw new BadRequestException('请先口述、粘贴或导入招聘需求内容')
     if (transcript.length > 20000) throw new BadRequestException('需求描述最多20000字')
     const rows = await this.filterPositionRows(await this.cachedTable('recruitment_positions', 30_000, () => teable.listAllRecords(this.table('recruitment_positions'))), profile, 'role')
-    const positions = rows.map((row) => ({
+    const positions = rows.filter((row) => this.isDemandSelectablePosition(row)).map((row) => ({
       id: text(row.fields['职位ID']) || row.id,
       name: text(row.fields['职位名称']),
       department: text(row.fields['部门']),
@@ -714,6 +720,7 @@ export class RecruitmentService implements OnApplicationBootstrap {
     if (headcount <= 0) throw new BadRequestException('需求人数必须大于0')
     const tableId = await this.verify('recruitment_monthly_demands', ['月度需求ID', '需求月份', '职位ID', '需求数量', '期望到岗日期', '最晚到岗日期', '需求要求', '创建时间', '更新时间'])
     const { row: positionRow } = await this.assertPositionAccess(input.positionId, profile)
+    this.assertDemandSelectablePosition(positionRow)
     const position = {
       id: text(positionRow.fields['职位ID']) || positionRow.id,
       name: text(positionRow.fields['职位名称']), department: text(positionRow.fields['部门']), owner: text(positionRow.fields['负责人']),
@@ -724,6 +731,7 @@ export class RecruitmentService implements OnApplicationBootstrap {
     const demandType = text(input.demandType) || '新增需求'
     if (!['新增需求', '储备需求'].includes(demandType)) throw new BadRequestException('需求类型只能是新增需求或储备需求')
     const existing = rows.find((row) => text(row.fields['需求月份']) === text(input.month) && text(row.fields['职位ID']) === position.id && (text(row.fields['需求类型']) || '新增需求') === demandType)
+    if (existing) this.assertDemandResubmittable(existing, operatorUserId)
     const dates = this.arrivalDates(input, existing?.fields || { 期望到岗日期: position.expectedArrivalDate, 最晚到岗日期: position.latestArrivalDate })
     const priorityAliases: Record<string, string> = { 高: '紧急', 中: '重要', 低: '储备', 一般: '储备' }
     const priority = priorityAliases[text(input.priority)] || text(input.priority) || '储备'
@@ -778,6 +786,7 @@ export class RecruitmentService implements OnApplicationBootstrap {
   }
 
   async listMonthlyDemands(month = '', positionId = '', profile?: RoleAccessProfile, scopeMode: 'employee' | 'role' = 'employee') {
+    if (month === 'all') month = ''
     if (month && !/^\d{4}-(0[1-9]|1[0-2])$/.test(month)) throw new BadRequestException('需求月份格式无效')
     const previousMonth = month ? previousDemandMonth(month) : ''
     const [rows, positions, offers, candidates] = await Promise.all([
@@ -840,6 +849,8 @@ export class RecruitmentService implements OnApplicationBootstrap {
           headcount: number(row.fields['需求数量']), demandType: text(row.fields['需求类型']) || '新增需求', status: text(row.fields['需求状态']), priority: normalizeHiringPriority(row.fields['优先级']),
           expectedArrivalDate: text(row.fields['期望到岗日期']), latestArrivalDate: text(row.fields['最晚到岗日期']), note: text(row.fields['需求说明']), demandRequirement: text(row.fields['需求要求']), changeReason: text(row.fields['变更原因']),
           approvalStatus: text(row.fields['审批状态']), approvalTargetStatus: text(row.fields['审批通过后状态']), approvalSubmittedAt: text(row.fields['审批提交时间']),
+          approvalApplicantUserId: text(row.fields['审批申请人用户ID']) || text(row.fields['创建人用户ID']),
+          approvalApplicant: text(row.fields['审批申请人']) || text(row.fields['创建人']),
           approver: text(row.fields['审批人']), approvalOpinion: text(row.fields['审批意见']), approvedAt: text(row.fields['审批时间']),
           approvalNotificationStatus: text(row.fields['审批通知状态']), approvalNotificationError: text(row.fields['审批通知错误']),
           createdBy: text(row.fields['创建人']), createdAt: text(row.fields['创建时间']), updatedAt: text(row.fields['更新时间']),
@@ -885,7 +896,8 @@ export class RecruitmentService implements OnApplicationBootstrap {
     if (type === 'position') this.invalidateTables(['recruitment_positions'])
     else { this.monthlyDemandCache = undefined; this.monthlyHiringCache.clear(); this.invalidateTables(['recruitment_monthly_demands']) }
     await this.audit(`${type === 'position' ? '岗位' : '招聘需求'}审批${decision}`, type === 'position' ? '岗位' : '月度需求', id, row.fields, fields, actor.userName || actor.userId, opinion)
-    return { ...this.mapRecruitmentApproval(type, { ...row, fields: { ...row.fields, ...fields } }), positionAutoPublished }
+    const applicantNotification = await this.notifyRecruitmentApprovalResult(type, id, { ...row, fields: { ...row.fields, ...fields } }, decision, opinion, actor)
+    return { ...this.mapRecruitmentApproval(type, { ...row, fields: { ...row.fields, ...fields } }), positionAutoPublished, applicantNotification }
   }
 
   async createPosition(input: PositionInput, operator = '当前用户', operatorUserId = '', profile?: RoleAccessProfile) {
@@ -1488,7 +1500,7 @@ export class RecruitmentService implements OnApplicationBootstrap {
       publishStatus: text(fields['发布状态']) || '待发布',
     }
     return {
-      ...common, title: `${text(fields['需求月份'])} ${text(fields['职位名称']) || '招聘需求'}`, month: text(fields['需求月份']),
+      ...common, title: text(fields['职位名称']) || '招聘需求', month: text(fields['需求月份']),
       positionName: text(fields['职位名称']), department: text(fields['部门']), owner: text(fields['负责人']), headcount: number(fields['需求数量']),
       demandType: text(fields['需求类型']) || '新增需求', priority: normalizeHiringPriority(fields['优先级']), expectedArrivalDate: text(fields['期望到岗日期']), latestArrivalDate: text(fields['最晚到岗日期']), note: text(fields['需求说明']), demandRequirement: text(fields['需求要求']),
       targetStatus: text(fields['审批通过后状态']) || '已确认', demandStatus: text(fields['需求状态']) || '待审批',
@@ -1532,6 +1544,31 @@ export class RecruitmentService implements OnApplicationBootstrap {
     return {
       requirement: requirement || parsedRequirement || '未填写',
       note: parsedNote || '未填写',
+    }
+  }
+
+  // 审批通过或驳回后回执给提出人，让提出人不用反复刷新页面才知道结果。
+  // 发送失败只记日志，不影响审批结果本身生效。
+  private async notifyRecruitmentApprovalResult(type: 'position' | 'demand', id: string, row: TeableRecord, decision: string, opinion: string, actor: { userId: string; userName: string }) {
+    const applicantUserId = text(row.fields['审批申请人用户ID'])
+    if (!applicantUserId || !this.messages) return { status: '未发送', reason: applicantUserId ? '消息服务不可用' : '未记录申请人' }
+    const approval: any = this.mapRecruitmentApproval(type, row)
+    const subject = type === 'position' ? '岗位' : '招聘需求'
+    const title = approval.positionName || approval.title || (type === 'position' ? '未命名岗位' : '招聘需求')
+    const lines = [
+      `【${subject}审批${decision}】${title}`,
+      `审批人：${actor.userName || actor.userId || '审批人'}`,
+    ]
+    if (type === 'demand') lines.push(`需求月份：${approval.month || '未填写'}`, `需求人数：${approval.headcount || 0}`)
+    lines.push(decision === '驳回' ? `驳回原因：${opinion || '未填写'}` : '申请已通过，可以继续后续招聘。')
+    try {
+      return await this.messages.notifyDirectUsers({
+        category: `${subject}审批${decision}`, objectType: type === 'position' ? '岗位' : '月度需求', objectId: id,
+        userIds: [applicantUserId], markdown: lines.join('\n'), operator: actor.userName || actor.userId, operatorUserId: actor.userId,
+      })
+    } catch (error) {
+      this.logger.error(`${subject}审批结果通知提出人失败：${error instanceof Error ? error.message : String(error)}`)
+      return { status: '发送失败', reason: error instanceof Error ? error.message : String(error) }
     }
   }
 
@@ -1579,6 +1616,41 @@ export class RecruitmentService implements OnApplicationBootstrap {
     if (!text(row.fields['审批提交时间'])) return
     const status = text(row.fields['审批状态']) || '待审批'
     if (status !== '已通过') throw new BadRequestException(`岗位审批状态为“${status}”，指定审批人通过后才能发布`)
+  }
+
+  /** 历史岗位没有审批提交时间，视为已可用；新岗位必须审批通过后才能挂需求。 */
+  private isDemandSelectablePosition(row: TeableRecord) {
+    if (!text(row.fields['审批提交时间'])) return true
+    return text(row.fields['审批状态']) === '已通过'
+  }
+
+  private assertDemandSelectablePosition(row: TeableRecord) {
+    if (this.isDemandSelectablePosition(row)) return
+    const status = text(row.fields['审批状态']) || '待审批'
+    const name = text(row.fields['职位名称']) || '该岗位'
+    throw new BadRequestException(status === '已驳回'
+      ? `岗位“${name}”审批已驳回，不能新建招聘需求`
+      : `岗位“${name}”还在审批中，审批通过后才能新建招聘需求`)
+  }
+
+  /** 同一岗位同一月份同一类型只保留一条。待审批和已通过都不能被其他人覆盖；原申请人可以调整后重新送审。 */
+  private assertDemandResubmittable(row: TeableRecord, operatorUserId: string) {
+    const approvalStatus = text(row.fields['审批状态']) || '待审批'
+    const demandStatus = text(row.fields['需求状态'])
+    const applicantId = text(row.fields['审批申请人用户ID']) || text(row.fields['创建人用户ID'])
+    const applicant = text(row.fields['审批申请人']) || text(row.fields['创建人']) || '其他同事'
+    const demandType = text(row.fields['需求类型']) || '新增需求'
+    const month = text(row.fields['需求月份'])
+    const positionName = text(row.fields['职位名称']) || '该岗位'
+    const sameApplicant = !applicantId || Boolean(operatorUserId && applicantId === operatorUserId)
+    if (approvalStatus === '待审批' || demandStatus === '待审批') {
+      if (sameApplicant) return
+      throw new BadRequestException(`${month}「${positionName}」的${demandType}已由${applicant}提交，当前还在审批中，请勿重复提交`)
+    }
+    if (approvalStatus === '已通过' && !['审批驳回', '已停用'].includes(demandStatus)) {
+      if (sameApplicant) return
+      throw new BadRequestException(`${month}「${positionName}」的${demandType}已由${applicant}提交并通过审批。如需调整人数，请联系原申请人或管理员处理，不要重复新建`)
+    }
   }
 
   private async find(tableId: string, field: string, id: string, message: string) {

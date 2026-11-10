@@ -399,10 +399,7 @@ export class OffersService {
     const templateType = await this.resolveTemplateType(input.templateId)
     if (templateType === '实习' && num(input.baseSalary) <= 0) throw new BadRequestException('实习薪资不能为空')
     if (templateType === '社招' && num(input.baseSalary) <= 0) throw new BadRequestException('社招底薪不能为空')
-    const startDate = text(input.startDate)
-    const parsedStartDate = new Date(`${startDate}T00:00:00.000Z`)
-    if (Number.isNaN(parsedStartDate.getTime()) || parsedStartDate.toISOString().slice(0, 10) !== startDate) throw new BadRequestException('入职日期格式无效')
-    if (parsedStartDate.getTime() < Date.now() - 86_400_000) throw new BadRequestException('入职日期不能早于当前日期')
+    const startDate = this.offerStartDateInput(input.startDate)
     const internshipMonthly = templateType === '实习' && internshipPayUnitOf(input) === 'month'
     const performanceIncluded = templateType === '社招' && input.performanceSalary !== undefined
     const commissionIncluded = templateType === '社招' && input.commission !== undefined
@@ -532,10 +529,7 @@ export class OffersService {
     const templateType = await this.resolveTemplateType(input.templateId)
     if (templateType === '实习' && num(input.baseSalary) <= 0) throw new BadRequestException('实习薪资不能为空')
     if (templateType === '社招' && num(input.baseSalary) <= 0) throw new BadRequestException('社招底薪不能为空')
-    const startDate = text(input.startDate)
-    const parsedStartDate = new Date(`${startDate}T00:00:00.000Z`)
-    if (Number.isNaN(parsedStartDate.getTime()) || parsedStartDate.toISOString().slice(0, 10) !== startDate) throw new BadRequestException('入职日期格式无效')
-    if (parsedStartDate.getTime() < Date.now() - 86_400_000) throw new BadRequestException('入职日期不能早于当前日期')
+    const startDate = this.offerStartDateInput(input.startDate)
 
     const row = await this.find(offerId)
     this.assertOfferNotAnswered(row)
@@ -899,6 +893,15 @@ export class OffersService {
     }
   }
 
+  private offerStartDateInput(value: unknown) {
+    const startDate = text(value)
+    if (startDate === '待定') return startDate
+    const parsedStartDate = new Date(`${startDate}T00:00:00.000Z`)
+    if (!startDate || Number.isNaN(parsedStartDate.getTime()) || parsedStartDate.toISOString().slice(0, 10) !== startDate) throw new BadRequestException('入职日期格式无效，请选择日期或勾选待定')
+    if (parsedStartDate.getTime() < Date.now() - 86_400_000) throw new BadRequestException('入职日期不能早于当前日期')
+    return startDate
+  }
+
   private offerHonorificInput(input: OfferInput) {
     const honorific = text(input.candidateHonorific)
     if (honorific && !['先生', '女士'].includes(honorific)) throw new BadRequestException('候选人称谓只能选择先生或女士')
@@ -972,7 +975,7 @@ export class OffersService {
     const templatePath = await this.socialTemplatePath()
     const document = await PDFDocument.load(await readFile(templatePath))
     document.registerFontkit(fontkit)
-    const requiredText = [...Object.values(values), '方片新媒体录用通知书薪酬包含底薪绩效其他试用期'].join(' ')
+    const requiredText = [...Object.values(values), '方片新媒体录用通知书薪酬包含底薪绩效其他试用期待定'].join(' ')
     const font = await document.embedFont(await this.offerPdfFontBytes(requiredText), { subset: true })
     const textColor = rgb(0.12, 0.12, 0.12)
     const pages = document.getPages()
@@ -1020,14 +1023,19 @@ export class OffersService {
       cover(first, 176, 503, 170, 18); put(first, values.location, 180, 513)
     }
     put(first, values.reportingTo, 190, 537, bodySize)
-    const startParts = dateParts(values.startDate)
     const centerInSlot = (page: any, value: string, left: number, right: number, y: number, size = 10.5) => {
       const width = font.widthOfTextAtSize(value, size)
       put(page, value, left + Math.max(0, (right - left - width) / 2), y, size)
     }
-    put(first, startParts[0], 184, 463, 10.5)
-    centerInSlot(first, startParts[1], 214, 236, 463)
-    centerInSlot(first, startParts[2], 246, 270, 463)
+    if (values.startDate === '待定') {
+      cover(first, 168, 456, 130, 20)
+      put(first, '待定', 184, 463, 10.5)
+    } else {
+      const startParts = dateParts(values.startDate)
+      put(first, startParts[0], 184, 463, 10.5)
+      centerInSlot(first, startParts[1], 214, 236, 463)
+      centerInSlot(first, startParts[2], 246, 270, 463)
+    }
     const salaryExtras: string[] = []
     if (values.performanceIncluded) salaryExtras.push(values.performanceSalary)
     if (values.commissionIncluded) salaryExtras.push(values.commissionSalary)

@@ -84,7 +84,7 @@ export class EmployeeLifecycleService{
       if (['已发送', '已跳过'].includes(result.status)) notified++
       else errors.push(`${text(onboarding.fields['入职单ID'])}: ${text(result.reason) || '到岗确认提醒发送失败'}`)
     }
-    for (const offer of offers.filter(row => text(row.fields['发送状态']) === '已发送' && text(row.fields['候选人答复']) === '接受' && Date.parse(text(row.fields['入职日期'])) <= Date.now())) {
+    for (const offer of offers.filter(row => text(row.fields['发送状态']) === '已发送' && text(row.fields['候选人答复']) === '接受' && text(row.fields['入职日期']) !== '待定' && Date.parse(text(row.fields['入职日期'])) <= Date.now())) {
       const candidateId = text(offer.fields['候选人ID'])
       const offerId = text(offer.fields['OfferID']) || offer.id
       const applicationId = text(offer.fields['应聘记录ID'])

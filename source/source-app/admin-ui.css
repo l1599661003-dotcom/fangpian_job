@@ -3917,6 +3917,10 @@ body.auth-ready #talent-app { visibility: visible; }
 #page-offers .rf-offer-form-grid label.rf-offer-optional-field > .rf-offer-optional-toggle input, #rf-talent-offer-form .rf-offer-optional-toggle input { width: 15px; height: 15px; min-height: 15px; padding: 0; margin: 0; accent-color: #34473b; }
 #page-offers .rf-offer-optional-field input[type="number"], #rf-talent-offer-form .rf-offer-optional-field input[type="number"] { margin-top: 2px; }
 #page-offers .rf-form-block { grid-column: 1 / -1; }
+:is(#page-offers, .rf-dialog) .rf-offer-start-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: center; }
+:is(#page-offers, .rf-dialog) .rf-offer-start-pending { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 10px; border: 1px solid #e5dac4; border-radius: 8px; background: #fff; color: #645943; font-size: 12px; font-weight: 700; white-space: nowrap; }
+:is(#page-offers, .rf-dialog) .rf-offer-start-pending input { width: 16px; height: 16px; min-height: 16px; margin: 0; accent-color: #34473b; }
+:is(#page-offers, .rf-dialog) [data-offer-start-field] > small { color: #8d816e; font-size: 11px; line-height: 1.45; }
 #page-offers .rf-offer-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 9px; margin-top: 16px; padding-top: 15px; border-top: 1px solid #eee4d2; }
 :is(#page-offers, .rf-dialog) .rf-offer-email-toggle { display: inline-flex; align-items: center; gap: 8px; margin-right: auto; color: #554a38; font-size: 13px; font-weight: 650; }
 :is(#page-offers, .rf-dialog) .rf-offer-email-toggle input { width: 18px; height: 18px; min-height: 18px; margin: 0; accent-color: #34473b; }
@@ -6148,6 +6152,8 @@ body{color:var(--fd-ink);background:radial-gradient(circle at 90% -10%,rgba(189,
 #page-overview .overview-hiring-numbers>span{padding:7px 8px;border:1px solid rgba(255,255,255,.85);border-radius:9px;background:rgba(255,255,255,.58);text-align:center;}
 #page-overview .overview-hiring-numbers small{display:block;color:#91877a;font-size:7px;}
 #page-overview .overview-hiring-numbers b{display:block;margin-top:2px;color:#30281e;font-size:15px;}
+#page-overview .overview-demand-split{display:block;margin-top:3px;color:#9a9084;font-size:7px;font-style:normal;font-weight:700;line-height:1.35;}
+#page-overview .overview-demand-split.has-carried{color:#8a5a16;}
 #page-overview .overview-hiring-progress{min-width:0;color:#5f5548;}
 #page-overview .overview-hiring-progress>div:first-child{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px;font-size:8px;}
 #page-overview .overview-hiring-progress strong{color:#3f3529;font-size:10px;}
@@ -9589,6 +9595,16 @@ body.rf-public-communication-body .rf-public-communication-scroll::-webkit-scrol
 #page-jobs .rf-job-demand.priority-important { border-color: #e8bd81; background: #fff0dc; }
 #page-jobs .rf-job-demand.priority-normal { border-color: #dfc858; background: #fff4c9; }
 #page-jobs .rf-job-demand.empty { border-color: #ebe6dc; background: #faf8f3; }
+#page-jobs .rf-job-demand.is-carried { border-style: dashed; }
+#page-jobs .rf-job-demand.is-rejected { border-color: #e3b3ad; background: #fdf3f1; }
+#page-jobs .rf-job-demand.is-rejected > div b { color: #a83229; }
+#page-jobs .rf-job-demand.is-rejected > strong { color: #a83229; }
+.rf-rejected-approvals { margin-top: 18px; padding-top: 14px; border-top: 1px dashed #e4d7bf; }
+.rf-rejected-approvals > header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; color: #a83229; font-size: 13px; font-weight: 800; }
+.rf-rejected-approvals > header b { min-width: 22px; padding: 1px 7px; border-radius: 99px; background: #fbe9e6; text-align: center; }
+.rf-rejected-approvals .rf-pending-approval-list button { border-color: #efd2cd; background: #fffaf9; }
+.rf-rejected-approvals .rf-pending-approval-list span { color: #a83229; }
+.rf-rejected-approvals .rf-pending-approval-list em { white-space: normal; }
 #page-jobs .rf-job-demand > div { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 #page-jobs .rf-job-demand > div span { color: #6c7667; font-size: 9px; font-weight: 750; }
 #page-jobs .rf-job-demand > div b { color: #8a8479; font-size: 8px; font-weight: 700; }
@@ -9655,6 +9671,13 @@ body .rf-demand-dialog-form {
   scrollbar-width: thin;
 }
 body .rf-dialog.rf-demand-dialog { overflow-x: hidden; }
+body .rf-demand-existing {
+  display: block;
+  margin-top: 6px;
+  color: #8a5a12;
+  line-height: 1.45;
+}
+body .rf-demand-existing.is-blocked { color: #b42318; }
 
 body .rf-feedback-dialog-form {
   max-height: min(64vh, 650px);

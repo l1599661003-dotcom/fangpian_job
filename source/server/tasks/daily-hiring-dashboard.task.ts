@@ -58,8 +58,8 @@ export function buildHiringDashboardData(input: {
   const publishedPositionIds = new Set(input.positions.filter((row) => text(row.fields['发布状态']) === '招聘中' && text(row.fields['招聘状态']) !== '暂停招聘').map((row) => text(row.fields['职位ID']) || row.id))
   const previousMonth = previousDemandMonth(input.month)
   const countableDemand = (row: TeableRecord) => number(row.fields['需求数量']) > 0
-    && text(row.fields['审批状态']) !== '已驳回'
-    && !['审批驳回', '已停用'].includes(text(row.fields['需求状态']))
+    && ['', '已通过'].includes(text(row.fields['审批状态']))
+    && !['审批驳回', '已停用', '待审批'].includes(text(row.fields['需求状态']))
     && publishedPositionIds.has(text(row.fields['职位ID']))
   const monthDemands = input.demands.filter((row) => text(row.fields['需求月份']) === input.month && countableDemand(row))
   const previousDemands = input.demands.filter((row) => previousMonth && text(row.fields['需求月份']) === previousMonth && countableDemand(row))
