@@ -6906,13 +6906,22 @@ if (!root) return;
   async function pollReferralJob(jobId,message){const data=await waitForBackgroundJob(jobId,progress=>{if(message?.isConnected)message.textContent=progress;},{timeoutMessage:'简历仍在后台解析，请勿重复提交，可稍后查看内推进度。'});{const link=new URL(data.trackingPath,window.location.href).toString();document.querySelector('.rf-public-referral').innerHTML=`<div class="rf-public-ref-success"><i>✓</i><strong>内推简历已提交</strong><p>简历已经解析、入库并进入${escapeHtml(data.status)}。</p><small>查重状态：${escapeHtml(data.duplicateStatus)}</small><a class="btn-primary" href="${escapeHtml(link)}">查看内推进度</a><em>请妥善保存进度链接，有效期90天。</em></div>`;return}}
   async function renderReferralTracking(token){document.body.className='rf-public-assessment-body';document.body.innerHTML='<main class="rf-public-referral"><div class="rf-dialog-loading">正在读取内推进度…</div></main>';try{const item=await request(`api/public/referrals/track/${encodeURIComponent(token)}`);document.querySelector('.rf-public-referral').innerHTML=`<div class="rf-ref-track"><span>REFERRAL TRACKING</span><h1>${escapeHtml(item.candidateName||'候选人')} · ${escapeHtml(item.role||'内推岗位')}</h1><div><strong>${escapeHtml(item.progress)}</strong><small>${escapeHtml(item.status)} · ${escapeHtml(item.validity)}</small></div><p>查重状态：${escapeHtml(item.duplicateStatus||'待检查')}</p><small>推荐时间 ${escapeHtml(item.recommendedAt)} · 最近更新 ${escapeHtml(item.updatedAt)}</small><aside>${escapeHtml(item.privacy)}</aside></div>`}catch(error){document.querySelector('.rf-public-referral').innerHTML=`<div class="rf-public-failed"><strong>无法查看内推进度</strong><p>${escapeHtml(conciseError(error))}</p></div>`}}
 
+  function publicOfferResultHtml(response, targetStage = '') {
+    const accepted = /接受/.test(String(response || '')) && !/拒绝/.test(String(response || ''));
+    const receipt = accepted ? `<aside class="rf-offer-receipt"><b>请发送签署回执</b><p>请打印录用通知书，完成签署后将扫描件发送至</p><a href="mailto:fangpianhr@fangpian999.com?subject=${encodeURIComponent('录用通知书签署回执')}">fangpianhr@fangpian999.com</a><small>邮件标题建议写“姓名 + 录用通知书签署回执”，方便 HR 核对和存档。</small></aside>` : '';
+    const title = accepted ? '已接收' : `已提交：${escapeHtml(response || '拒绝')}`;
+    const detail = accepted
+      ? `你已接受本次录用邀请。${targetStage ? `招聘流程已进入 ${escapeHtml(targetStage)}，招聘负责人会继续与你联系。` : 'Offer文件可随时在上方查看。'}`
+      : `${targetStage ? `招聘流程已进入 ${escapeHtml(targetStage)}。` : 'Offer文件可随时在上方查看。'}`;
+    return `<div class="rf-public-success"><i>✓</i><strong>${title}</strong><p>${detail}</p>${receipt}<small>本链接不能重复答复。</small></div>`;
+  }
   async function renderPublicOffer(token){
     document.body.className='rf-public-assessment-body';
     document.body.innerHTML='<main class="rf-public-offer"><div class="rf-dialog-loading">正在安全加载录用通知…</div></main>';
     try {
       const item=await request(`api/public/offers/${encodeURIComponent(token)}`);
       const answered=Boolean(item.response);
-      document.querySelector('.rf-public-offer').innerHTML=`<header><span>FANGPIAN OFFER</span><h1>录用通知书</h1><p>${escapeHtml(item.candidateName)}，很高兴向你发出 ${escapeHtml(item.role)} 岗位的录用邀请。</p></header><div class="rf-public-offer-actions"><a class="btn-soft" href="${escapeHtml(item.fileUrl)}" target="_blank">查看完整Offer文件</a>${answered?'':'<button class="btn-primary" data-public-offer-accept>接受Offer</button><button class="btn-soft danger" data-public-offer-reject>拒绝Offer</button>'}</div>${answered?`<div class="rf-public-success"><i>✓</i><strong>已提交：${escapeHtml(item.response)}</strong><p>Offer文件可随时在上方查看。</p><small>本链接不能重复答复。</small></div>`:'<p id="rf-public-offer-message"></p>'}`;
+      document.querySelector('.rf-public-offer').innerHTML=`<header><span>FANGPIAN OFFER</span><h1>录用通知书</h1><p>${escapeHtml(item.candidateName)}，很高兴向你发出 ${escapeHtml(item.role)} 岗位的录用邀请。</p></header><div class="rf-public-offer-actions"><a class="btn-soft" href="${escapeHtml(item.fileUrl)}" target="_blank">查看完整Offer文件</a>${answered?'':'<button class="btn-primary" data-public-offer-accept>接受Offer</button><button class="btn-soft danger" data-public-offer-reject>拒绝Offer</button>'}</div>${answered?publicOfferResultHtml(item.response):'<p id="rf-public-offer-message"></p>'}`;
       if (!answered) {
         document.querySelector('[data-public-offer-accept]').addEventListener('click',()=>respondPublicOffer(token,'accept'));
         document.querySelector('[data-public-offer-reject]').addEventListener('click',()=>respondPublicOffer(token,'reject'));
@@ -6932,7 +6941,7 @@ if (!root) return;
     message.textContent = '正在提交答复，请不要关闭页面…';
     try {
       const result = await request(`api/public/offers/${encodeURIComponent(token)}/respond`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ response, note: '' }) });
-      root.innerHTML = `<div class="rf-public-success"><i>✓</i><strong>已提交：${escapeHtml(result.response)}</strong><p>招聘流程已进入 ${escapeHtml(result.targetStage)}，招聘负责人会继续与你联系。</p><small>本链接不能重复答复。</small></div>`;
+      root.innerHTML = publicOfferResultHtml(result.response, result.targetStage);
       root.scrollIntoView({ block: 'start' });
     } catch (error) {
       message.textContent = `${error.message || '答复失败'}。请重试。`;

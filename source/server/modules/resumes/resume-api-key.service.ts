@@ -54,6 +54,8 @@ export class ResumeApiKeyService {
       statusEndpoint: '/api/public/resumes/jobs/{jobId}',
       formatsEndpoint: '/api/public/resumes/formats',
       monthlyHiringEndpoint: '/api/public/recruitment/monthly-hiring',
+      referralPositionsEndpoint: '/api/public/referral-api/positions',
+      referralCampaignEndpoint: '/api/public/referral-api/campaigns',
       headerName: 'X-API-Key',
       maxFileSizeMB: MAX_FILE_SIZE / 1024 / 1024,
       supportedExtensions: [...SUPPORTED_EXTENSIONS],
