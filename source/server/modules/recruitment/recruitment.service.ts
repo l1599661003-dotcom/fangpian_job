@@ -22,7 +22,10 @@ const businessId = (prefix: string) => `${prefix}_${randomUUID().replace(/-/g, '
 const normalizeHiringPriority = (value: unknown) => ({ 高: '紧急', 中: '重要', 低: '储备', 一般: '储备' }[String(value ?? '').trim()] || String(value ?? '').trim() || '储备')
 const text = (value: unknown) => String(value ?? '').trim()
 const recruitmentApproverUserId = 'wozR29DwAACxXU8MVtW44tVUZ4ZMF0qg'
-const recruitmentApproverWechatId = 'LiSiQi'
+const recruitmentApproverWechatId = 'LiuJinHu'
+const positionApprovalFlowCode = 'position_approval'
+type ApprovalFlowPerson = { userId: string; name: string; wecomUserId: string; wechatId: string }
+type ApprovalFlowStep = { order: number; role: '审批人' | '抄送人'; userId: string; name: string; wecomUserId: string; status: string; opinion: string; actedAt: string }
 const number = (value: unknown) => Number.isFinite(Number(value)) ? Number(value) : 0
 const currentShanghaiMonth = () => companyCalendar.monthForDate(Date.now())
 const previousDemandMonth = (month: string) => {
@@ -738,14 +741,13 @@ export class RecruitmentService implements OnApplicationBootstrap {
     if (!['紧急', '重要', '储备'].includes(priority)) throw new BadRequestException('优先级只能是紧急、重要或储备')
     const note = text(input.note)
     if (!note) throw new BadRequestException('请填写审批用的需求说明')
-    const approverUserId = this.recruitmentApproverWecomUserId()
+    const approvalStart = await this.approvalSubmissionFields()
     const fields = {
       需求月份: text(input.month), 职位ID: position.id, 职位名称: position.name, 部门: position.department || '未分配部门',
       负责人: position.owner, 需求数量: headcount, 需求类型: demandType, 需求状态: '待审批', 优先级: priority,
       期望到岗日期: dates.expectedArrivalDate, 最晚到岗日期: dates.latestArrivalDate, 需求说明: note, 需求要求: text(input.demandRequirement),
       变更原因: existing ? '调整需求' : '新建月度需求', 审批状态: '待审批', 审批通过后状态: '已确认',
-      审批提交时间: timestampNow, 审批申请人用户ID: operatorUserId, 审批申请人: text(input.operator) || '当前用户', 审批人企微ID: approverUserId,
-      审批人用户ID: '', 审批人: '', 审批意见: '', 审批时间: '', 审批通知状态: '待发送', 审批通知错误: '',
+      审批提交时间: timestampNow, 审批申请人用户ID: operatorUserId, 审批申请人: text(input.operator) || '当前用户', ...approvalStart,
       创建人用户ID: operatorUserId, 创建人: text(input.operator) || '当前用户',
       更新时间: timestampNow,
     }
@@ -757,7 +759,7 @@ export class RecruitmentService implements OnApplicationBootstrap {
     this.auditAsync(existing ? '调整月度招聘需求' : '新建月度招聘需求', '月度需求', text(result.fields?.['月度需求ID']) || result.id, existing?.fields || {}, fields, text(input.operator) || '当前用户', fields.变更原因)
     const approvalId = text(result.fields?.['月度需求ID']) || result.id
     const approvalRow = { ...result, fields: { ...result.fields, ...fields } }
-    const canSendInBackground = Boolean(this.recruitmentApproverWecomUserId() && this.messages)
+    const canSendInBackground = Boolean(this.messages && (approvalStart.当前审批人用户ID || this.recruitmentApproverWecomUserId()))
     const notification = canSendInBackground ? { status: '发送中', error: '' } : await this.sendRecruitmentApprovalRequest('demand', approvalId, approvalRow, text(input.operator) || '当前用户')
     if (canSendInBackground) {
       void this.sendRecruitmentApprovalRequest('demand', approvalId, approvalRow, text(input.operator) || '当前用户')
@@ -861,14 +863,13 @@ export class RecruitmentService implements OnApplicationBootstrap {
 
   async getRecruitmentApproval(typeInput: string, id: string, actor: { userId: string; userName: string }) {
     const type = this.recruitmentApprovalType(typeInput)
-    await this.assertRecruitmentApprover(actor.userId)
     const { row } = await this.recruitmentApprovalRow(type, id)
+    await this.assertCurrentApprovalActor(row, actor.userId)
     return this.mapRecruitmentApproval(type, row)
   }
 
   async decideRecruitmentApproval(typeInput: string, id: string, input: { decision?: string; opinion?: string }, actor: { userId: string; userName: string }) {
     const type = this.recruitmentApprovalType(typeInput)
-    const approverWecomUserId = await this.assertRecruitmentApprover(actor.userId)
     const decision = text(input.decision)
     if (!['通过', '驳回'].includes(decision)) throw new BadRequestException('审批结果只能是通过或驳回')
     const opinion = text(input.opinion)
@@ -876,28 +877,51 @@ export class RecruitmentService implements OnApplicationBootstrap {
     const { tableId, row } = await this.recruitmentApprovalRow(type, id)
     const current = text(row.fields['审批状态']) || '待审批'
     if (current !== '待审批') throw new ConflictException(`该${type === 'position' ? '岗位' : '需求'}已经${current}，不能重复审批`)
+    const actorWecomUserId = await this.assertCurrentApprovalActor(row, actor.userId)
     const now = timestamp()
+    const progress = this.approvalProgress(row)
+    const currentOrder = this.currentApprovalOrder(row, progress)
+    const currentStep = progress.find((step) => step.role === '审批人' && step.order === currentOrder)
+    if (currentStep) {
+      currentStep.status = decision === '通过' ? '已通过' : '已驳回'
+      currentStep.opinion = opinion
+      currentStep.actedAt = now
+    }
+    const nextApprover = decision === '通过' ? progress.find((step) => step.role === '审批人' && step.order > currentOrder && step.status !== '已通过') : undefined
+    const finished = decision !== '通过' || !nextApprover
     const common = {
-      审批状态: decision === '通过' ? '已通过' : '已驳回', 审批人企微ID: approverWecomUserId,
-      审批人用户ID: actor.userId, 审批人: actor.userName || actor.userId, 审批意见: opinion, 审批时间: now, 更新时间: now,
+      审批状态: finished ? (decision === '通过' ? '已通过' : '已驳回') : '待审批',
+      当前审批步骤: finished ? currentOrder : nextApprover.order,
+      当前审批人用户ID: finished ? '' : nextApprover.userId,
+      审批人企微ID: actorWecomUserId,
+      审批人用户ID: actor.userId, 审批人: actor.userName || actor.userId, 审批意见: opinion, 审批时间: now,
+      审批进度JSON: JSON.stringify(progress),
+      审批通知状态: finished ? text(row.fields['审批通知状态']) : '待发送',
+      审批通知错误: finished ? text(row.fields['审批通知错误']) : '',
+      更新时间: now,
     }
     const fields = type === 'position'
       ? common
-      : { ...common, 需求状态: decision === '通过' ? text(row.fields['审批通过后状态']) || '已确认' : '审批驳回' }
+      : { ...common, 需求状态: finished ? (decision === '通过' ? text(row.fields['审批通过后状态']) || '已确认' : '审批驳回') : '待审批' }
     await teable.updateRecord(tableId, row.id, fields)
+    const updatedRow = { ...row, fields: { ...row.fields, ...fields } }
     let positionAutoPublished = false
-    if (type === 'demand' && decision === '通过') {
+    if (finished && type === 'demand' && decision === '通过') {
       positionAutoPublished = await this.publishPositionFromDemand(text(row.fields['职位ID']), actor.userName || actor.userId, '招聘需求审批通过')
         .catch((error) => {
           this.logger.error(`需求审批通过后自动发布岗位失败：${error instanceof Error ? error.message : String(error)}`)
           return false
         })
     }
+    if (!finished) await this.sendRecruitmentApprovalRequest(type, id, updatedRow, actor.userName || actor.userId)
     if (type === 'position') this.invalidateTables(['recruitment_positions'])
     else { this.monthlyDemandCache = undefined; this.monthlyHiringCache.clear(); this.invalidateTables(['recruitment_monthly_demands']) }
     await this.audit(`${type === 'position' ? '岗位' : '招聘需求'}审批${decision}`, type === 'position' ? '岗位' : '月度需求', id, row.fields, fields, actor.userName || actor.userId, opinion)
-    const applicantNotification = await this.notifyRecruitmentApprovalResult(type, id, { ...row, fields: { ...row.fields, ...fields } }, decision, opinion, actor)
-    return { ...this.mapRecruitmentApproval(type, { ...row, fields: { ...row.fields, ...fields } }), positionAutoPublished, applicantNotification }
+    const applicantNotification = finished
+      ? await this.notifyRecruitmentApprovalResult(type, id, updatedRow, decision, opinion, actor)
+      : { status: '未发送', reason: '后续审批人尚未完成' }
+    if (finished && decision === '通过') await this.notifyApprovalCc(type, id, updatedRow, progress, actor)
+    return { ...this.mapRecruitmentApproval(type, updatedRow), positionAutoPublished, applicantNotification }
   }
 
   async createPosition(input: PositionInput, operator = '当前用户', operatorUserId = '', profile?: RoleAccessProfile) {
@@ -909,7 +933,7 @@ export class RecruitmentService implements OnApplicationBootstrap {
     const tableId = await this.verify('recruitment_positions', ['职位ID', '职位名称', '部门', '发布状态', '最晚到岗日期', '创建时间', '更新时间'])
     const id = businessId('pos')
     const now = timestamp()
-    const approverUserId = this.recruitmentApproverWecomUserId()
+    const approvalStart = await this.approvalSubmissionFields()
     const fields = compact({
       职位ID: id, 需求ID: '', 职位名称: input.name, 职位编码: input.code || this.positionCode(),
       部门ID: department.id, 部门: department.name, 负责人用户ID: text(input.ownerUserId), 负责人: input.owner || operator,
@@ -923,7 +947,7 @@ export class RecruitmentService implements OnApplicationBootstrap {
       标签JSON: JSON.stringify(input.tags || []), 发布状态: '待发布', 招聘状态: input.recruitmentStatus || '待启动',
       需求类型: input.demandType || '新增需求', 优先级: input.priority || '中', 期望到岗日期: dates.expectedArrivalDate, 最晚到岗日期: dates.latestArrivalDate,
       审批状态: '待审批', 审批提交时间: now, 审批申请人用户ID: operatorUserId, 审批申请人: operator,
-      审批人企微ID: approverUserId, 审批人用户ID: '', 审批人: '', 审批意见: '', 审批时间: '', 审批通知状态: '待发送', 审批通知错误: '',
+      ...approvalStart,
       应聘人数缓存: 0,
       JD版本: 1, 重匹配状态: '无需重匹配', 待重匹配人数: 0,
       创建时间: now, 更新时间: now, 来源类型: input.sourceType || '系统录入', 来源ID: input.sourceId || '',
@@ -1432,6 +1456,133 @@ export class RecruitmentService implements OnApplicationBootstrap {
     }
   }
 
+  async getPositionApprovalFlow() {
+    const flow = await this.positionApprovalFlow()
+    return {
+      code: positionApprovalFlowCode,
+      name: '岗位审批',
+      enabled: flow.enabled,
+      approvers: flow.approvers,
+      ccUsers: flow.ccUsers,
+    }
+  }
+
+  async savePositionApprovalFlow(input: { approverUserIds?: string[]; ccUserIds?: string[] }, operator = '当前用户') {
+    const approverUserIds = [...new Set((input.approverUserIds || []).map(text).filter(Boolean))]
+    const ccUserIds = [...new Set((input.ccUserIds || []).map(text).filter(Boolean))]
+    if (!approverUserIds.length) throw new BadRequestException('请至少选择一位审批人')
+    if (approverUserIds.length > 5) throw new BadRequestException('审批人最多5位')
+    if (ccUserIds.length > 10) throw new BadRequestException('抄送人最多10位')
+    const users = await teable.listAllRecords(this.table('recruitment_users'))
+    const resolve = (userId: string, label: string) => {
+      const user = users.find((row) => (text(row.fields['用户ID']) || row.id) === userId)
+      if (!user || text(user.fields['用户状态']) === '停用') throw new BadRequestException(`${label}不是有效员工`)
+      const person = {
+        userId: text(user.fields['用户ID']) || user.id,
+        name: text(user.fields['姓名']) || userId,
+        wecomUserId: text(user.fields['企业微信用户ID']),
+        wechatId: text(user.fields['天玑微信ID']) || text(user.fields['企业微信用户ID']),
+      }
+      if (!person.wechatId) throw new BadRequestException(`${label}“${person.name}”尚未同步企微成员ID`)
+      return person
+    }
+    const approvers = approverUserIds.map((userId) => resolve(userId, '审批人'))
+    const ccUsers = ccUserIds.map((userId) => resolve(userId, '抄送人'))
+    const tableId = await this.verify('recruitment_approval_flows', ['流程ID', '流程编码', '流程名称', '流程状态', '步骤JSON', '创建时间', '更新时间'])
+    const rows = await teable.listAllRecords(tableId)
+    const existing = rows.find((row) => text(row.fields['流程编码']) === positionApprovalFlowCode)
+    const now = timestamp()
+    const fields = {
+      流程编码: positionApprovalFlowCode, 流程名称: '岗位审批', 流程状态: '启用',
+      步骤JSON: JSON.stringify({ approvers, ccUsers }), 更新人: operator, 更新时间: now,
+    }
+    if (existing) await teable.updateRecord(tableId, existing.id, fields)
+    else await teable.createRecord(tableId, { 流程ID: businessId('flow'), ...fields, 创建人: operator, 创建时间: now })
+    await this.audit(existing ? '修改岗位审批流程' : '创建岗位审批流程', '审批流程', positionApprovalFlowCode, existing?.fields || {}, fields, operator)
+    return this.getPositionApprovalFlow()
+  }
+
+  private async positionApprovalFlow() {
+    const empty = { enabled: false, approvers: [] as ApprovalFlowPerson[], ccUsers: [] as ApprovalFlowPerson[] }
+    try {
+      const tableId = this.table('recruitment_approval_flows')
+      if (!tableId) return empty
+      const rows = await teable.listAllRecords(tableId)
+      const row = rows.find((item) => text(item.fields['流程编码']) === positionApprovalFlowCode && text(item.fields['流程状态']) !== '停用')
+      const saved = json<{ approvers?: ApprovalFlowPerson[]; ccUsers?: ApprovalFlowPerson[] }>(row?.fields['步骤JSON'], {})
+      const approvers = (saved.approvers || []).filter((item) => text(item.userId))
+      return { enabled: approvers.length > 0, approvers, ccUsers: (saved.ccUsers || []).filter((item) => text(item.userId)) }
+    } catch {
+      return empty
+    }
+  }
+
+  private async approvalSubmissionFields() {
+    const flow = await this.positionApprovalFlow()
+    const first = flow.approvers[0]
+    const progress: ApprovalFlowStep[] = [
+      ...flow.approvers.map((person, index) => ({ order: index + 1, role: '审批人' as const, userId: person.userId, name: person.name, wecomUserId: person.wecomUserId, status: '待审批', opinion: '', actedAt: '' })),
+      ...flow.ccUsers.map((person, index) => ({ order: flow.approvers.length + index + 1, role: '抄送人' as const, userId: person.userId, name: person.name, wecomUserId: person.wecomUserId, status: '待抄送', opinion: '', actedAt: '' })),
+    ]
+    return {
+      审批人企微ID: first?.wecomUserId || this.recruitmentApproverWecomUserId(),
+      当前审批步骤: first ? 1 : 0,
+      当前审批人用户ID: first?.userId || '',
+      审批人用户ID: '', 审批人: '', 审批意见: '', 审批时间: '', 审批进度JSON: JSON.stringify(progress),
+      审批通知状态: '待发送', 审批通知错误: '',
+    }
+  }
+
+  private approvalProgress(row: TeableRecord) {
+    return json<ApprovalFlowStep[]>(row.fields['审批进度JSON'], []).filter((step) => text(step.userId) && (step.role === '审批人' || step.role === '抄送人'))
+  }
+
+  private currentApprovalOrder(row: TeableRecord, progress = this.approvalProgress(row)) {
+    const saved = Math.round(number(row.fields['当前审批步骤']))
+    if (saved > 0) return saved
+    return progress.find((step) => step.role === '审批人' && step.status !== '已通过')?.order || 1
+  }
+
+  private async assertCurrentApprovalActor(row: TeableRecord, actorUserId: string) {
+    const progress = this.approvalProgress(row)
+    const current = progress.find((step) => step.role === '审批人' && step.order === this.currentApprovalOrder(row, progress))
+    if (current) {
+      if (actorUserId !== current.userId) {
+        const users = await teable.listAllRecords(this.table('recruitment_users'))
+        const actor = users.find((item) => (text(item.fields['用户ID']) || item.id) === actorUserId)
+        const actorWecomUserId = text(actor?.fields['企业微信用户ID'])
+        if (!actor || actorWecomUserId !== current.wecomUserId) throw new ForbiddenException(`当前审批人是${current.name || '下一位审批人'}，请使用对应账号处理`)
+      }
+      return current.wecomUserId
+    }
+    return this.assertRecruitmentApprover(actorUserId)
+  }
+
+  private async notifyApprovalCc(type: 'position' | 'demand', id: string, row: TeableRecord, progress: ApprovalFlowStep[], actor: { userId: string; userName: string }) {
+    const recipients = progress.filter((step) => step.role === '抄送人')
+    if (!recipients.length || !this.messages) return { status: '未发送', reason: recipients.length ? '消息服务不可用' : '未配置抄送人' }
+    const approval: any = this.mapRecruitmentApproval(type, row)
+    const subject = type === 'position' ? '岗位' : '招聘需求'
+    const title = approval.positionName || approval.title || subject
+    const lines = [`【${subject}审批已通过】${title}`, `最终审批人：${actor.userName || actor.userId}`, '此消息仅供抄送，无需处理。']
+    try {
+      const result = await this.messages.notifyDirectUsers({
+        category: `${subject}审批抄送`, objectType: type === 'position' ? '岗位' : '月度需求', objectId: id,
+        userIds: recipients.map((item) => item.userId), markdown: lines.join('\n'), operator: actor.userName || actor.userId, operatorUserId: actor.userId,
+      })
+      const now = timestamp()
+      for (const recipient of recipients) {
+        recipient.status = '已抄送'
+        recipient.actedAt = now
+      }
+      await teable.updateRecord(this.table(type === 'position' ? 'recruitment_positions' : 'recruitment_monthly_demands'), row.id, { 审批进度JSON: JSON.stringify(progress), 更新时间: now })
+      return result
+    } catch (error) {
+      this.logger.error(`${subject}审批抄送失败：${error instanceof Error ? error.message : String(error)}`)
+      return { status: '发送失败', reason: error instanceof Error ? error.message : String(error) }
+    }
+  }
+
   private recruitmentApproverWecomUserId() {
     const configured = text(process.env.WECOM_RECRUITMENT_APPROVER_USER_ID)
     return configured === recruitmentApproverUserId ? configured : ''
@@ -1508,7 +1659,7 @@ export class RecruitmentService implements OnApplicationBootstrap {
   }
 
   async retryPendingRecruitmentApprovalNotifications() {
-    if (!this.recruitmentApproverWecomUserId() || !this.messages) return { scanned: 0, sent: 0, failed: 0 }
+    if (!this.messages) return { scanned: 0, sent: 0, failed: 0 }
     const sources: Array<{ type: 'position'; table: string }> = [
       { type: 'position', table: 'recruitment_positions' },
     ]
@@ -1577,7 +1728,10 @@ export class RecruitmentService implements OnApplicationBootstrap {
     if (this.approvalNotificationLocks.has(lockKey)) return { status: '发送中', error: '' }
     if (text(row.fields['审批通知状态']) === '已发送') return { status: '已发送', error: '' }
     this.approvalNotificationLocks.add(lockKey)
-    const approver = this.recruitmentApproverWecomUserId()
+    const progress = this.approvalProgress(row)
+    const current = progress.find((step) => step.role === '审批人' && step.order === this.currentApprovalOrder(row, progress))
+    const approver = current?.wecomUserId || this.recruitmentApproverWecomUserId()
+    const recipientUserId = current?.userId || ''
     const tableId = this.table(type === 'position' ? 'recruitment_positions' : 'recruitment_monthly_demands')
     const updateNotification = async (status: string, error = '') => {
       const notificationFields = { 审批人企微ID: approver || text(row.fields['审批人企微ID']), 审批通知状态: status, 审批通知错误: error, 更新时间: timestamp() }
@@ -1586,10 +1740,10 @@ export class RecruitmentService implements OnApplicationBootstrap {
       return { status, error }
     }
     try {
-      if (!approver) return await updateNotification('未配置', this.recruitmentApproverConfigurationError())
+      if (!approver && !recipientUserId) return await updateNotification('未配置', this.recruitmentApproverConfigurationError())
       if (!this.messages) return await updateNotification('未发送', '消息服务不可用')
-      const messageRecipient = await this.recruitmentApproverMessageWechatId()
-      if (!messageRecipient) return await updateNotification('未配置', '无法匹配指定招聘审批人的天玑微信ID，请先同步审批人员工信息')
+      const messageRecipient = recipientUserId ? '' : await this.recruitmentApproverMessageWechatId()
+      if (!recipientUserId && !messageRecipient) return await updateNotification('未配置', '无法匹配指定招聘审批人的天玑微信ID，请先同步审批人员工信息')
       await updateNotification('发送中')
       const approval: any = this.mapRecruitmentApproval(type, row)
       const approvalUrl = appFlowUrl('recruitment_approval', { approval_type: type, approval_id: id })
@@ -1598,7 +1752,14 @@ export class RecruitmentService implements OnApplicationBootstrap {
         ? [`【新增岗位审批】${approval.title}`, `申请人：${approval.applicant || operator}`, `部门：${approval.department || '待补充'}`, `薪资：${approval.salaryText || '待补充'}`]
         : [`【新增招聘需求审批】${approval.positionName || approval.title}`, `申请人：${approval.applicant || operator}`, `申请岗位：${approval.positionName || '待补充'}`, `部门：${approval.department || '待补充'}`, `需求人数：${approval.headcount || 0}`, `需求类型：${approval.demandType || '新增需求'}`, `优先级：${approval.priority || '储备'}`, `需求要求：${demandNote.requirement}`, `需求说明：${demandNote.note}`]
       if (approvalUrl) lines.push(`[点击打开审批页面 →](${approvalUrl})`)
-      lines.push('只有你审批通过后，该需求或岗位才允许生效和发布。')
+      lines.push(progress.filter((step) => step.role === '审批人').length > 1 ? '请完成本级审批。通过后将自动交给下一位审批人。' : '只有你审批通过后，该需求或岗位才允许生效和发布。')
+      if (recipientUserId) {
+        await this.messages.notifyDirectUsers({
+          category: type === 'position' ? '新增岗位审批' : '新增招聘需求审批', objectType: type === 'position' ? '岗位' : '月度需求', objectId: id,
+          userIds: [recipientUserId], markdown: lines.join('\n'), operator,
+        })
+        return updateNotification('已发送')
+      }
       const preview = await this.messages.preview({
         category: type === 'position' ? '新增岗位审批' : '新增招聘需求审批', channel: '企业微信单聊', recipientType: '员工',
         recipientAddress: messageRecipient, objectType: type === 'position' ? '岗位' : '月度需求', objectId: id, content: lines.join('\n'), operator,

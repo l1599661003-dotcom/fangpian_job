@@ -23,6 +23,7 @@ export const RECRUITMENT_TABLES: RecruitmentTableDefinition[] = [
       text('最晚到岗日期'),
       longText('变更原因'), text('审批状态'), text('审批通过后状态'), text('审批提交时间'), text('审批申请人用户ID'), text('审批申请人'),
       text('审批人企微ID'), text('审批人用户ID'), text('审批人'), longText('审批意见'), text('审批时间'), text('审批通知状态'), longText('审批通知错误'),
+      number('当前审批步骤'), text('当前审批人用户ID'), longText('审批进度JSON'),
       text('创建人用户ID'), text('创建人'), text('创建时间'), text('更新时间'),
     ],
   },
@@ -35,7 +36,7 @@ export const RECRUITMENT_TABLES: RecruitmentTableDefinition[] = [
       longText('福利'), longText('标签JSON'), text('发布状态'), text('招聘状态'), text('需求类型'), text('优先级'), text('期望到岗日期'), text('审批状态'), text('发布时间'), text('下线时间'),
       text('最晚到岗日期'),
       text('审批提交时间'), text('审批申请人用户ID'), text('审批申请人'), text('审批人企微ID'), text('审批人用户ID'), text('审批人'), longText('审批意见'), text('审批时间'),
-      text('审批通知状态'), longText('审批通知错误'),
+      text('审批通知状态'), longText('审批通知错误'), number('当前审批步骤'), text('当前审批人用户ID'), longText('审批进度JSON'),
       number('应聘人数缓存'), number('JD版本'), text('重匹配状态'), number('待重匹配人数'), text('最近JD变更时间'), longText('最近JD变更原因'),
       text('最近重匹配时间'), text('创建时间'), text('更新时间'), text('来源类型'), text('来源ID'),
     ],
@@ -325,6 +326,13 @@ export const RECRUITMENT_TABLES: RecruitmentTableDefinition[] = [
     fields: [
       text('邮件事件ID'), text('面试ID'), text('候选人ID'), text('收件人邮箱'), text('邮件主题'), longText('邮件正文'),
       text('发送状态'), text('外部邮件ID'), longText('错误信息'), text('发送人'), text('发送时间'), text('创建时间'),
+    ],
+  },
+  {
+    name: 'recruitment_approval_flows',
+    fields: [
+      text('流程ID'), text('流程编码'), text('流程名称'), text('流程状态'), longText('步骤JSON'),
+      text('创建人'), text('更新人'), text('创建时间'), text('更新时间'),
     ],
   },
   {

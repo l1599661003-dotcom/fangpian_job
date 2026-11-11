@@ -101,6 +101,20 @@ export class RecruitmentController {
     return this.recruitment.extractMonthlyDemandTranscript(body?.transcript || '', actor.profile)
   }
 
+  @Get('approval-flow')
+  async approvalFlow(@Headers() headers: Record<string, string | string[] | undefined>) {
+    const actor = await this.actor(headers)
+    if (!actor.profile.roleCodes.includes('system_admin')) this.access.assertAction(actor.profile, 'manage_access_control')
+    return this.recruitment.getPositionApprovalFlow()
+  }
+
+  @Post('approval-flow')
+  async saveApprovalFlow(@Headers() headers: Record<string, string | string[] | undefined>, @Body() body: { approverUserIds?: string[]; ccUserIds?: string[] }) {
+    const actor = await this.actor(headers)
+    if (!actor.profile.roleCodes.includes('system_admin')) this.access.assertAction(actor.profile, 'manage_access_control')
+    return this.recruitment.savePositionApprovalFlow(body || {}, actor.identity.userName)
+  }
+
   @Get('approvals/:type/:id')
   async approval(@Headers() headers: Record<string, string | string[] | undefined>, @Param('type') type: string, @Param('id') id: string) {
     const actor = await this.actor(headers)
