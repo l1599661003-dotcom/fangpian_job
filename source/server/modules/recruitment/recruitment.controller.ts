@@ -109,7 +109,7 @@ export class RecruitmentController {
   }
 
   @Post('approval-flow')
-  async saveApprovalFlow(@Headers() headers: Record<string, string | string[] | undefined>, @Body() body: { approverUserIds?: string[]; ccUserIds?: string[] }) {
+  async saveApprovalFlow(@Headers() headers: Record<string, string | string[] | undefined>, @Body() body: { flows?: { demand?: { approverUserIds?: string[]; ccUserIds?: string[] }; external?: { approverUserIds?: string[]; ccUserIds?: string[] }; internal?: { approverUserIds?: string[]; ccUserIds?: string[] } }; approverUserIds?: string[]; ccUserIds?: string[] }) {
     const actor = await this.actor(headers)
     if (!actor.profile.roleCodes.includes('system_admin')) this.access.assertAction(actor.profile, 'manage_access_control')
     return this.recruitment.savePositionApprovalFlow(body || {}, actor.identity.userName)

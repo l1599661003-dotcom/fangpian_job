@@ -31,7 +31,7 @@ export const RECRUITMENT_TABLES: RecruitmentTableDefinition[] = [
     name: 'recruitment_positions',
     fields: [
       text('职位ID'), text('需求ID'), text('职位名称'), text('职位编码'), text('部门ID'), text('部门'),
-      text('负责人用户ID'), text('负责人'), text('招聘HR用户ID'), text('招聘HR'), text('备用招聘HR用户ID'), text('备用招聘HR'), text('招聘类别'), text('岗位层级'), text('工作城市'), text('工作地点'),
+      text('负责人用户ID'), text('负责人'), text('招聘HR用户ID'), text('招聘HR'), text('备用招聘HR用户ID'), text('备用招聘HR'), text('招聘类别'), text('是否对外招聘'), text('岗位层级'), text('工作城市'), text('工作地点'),
       number('招聘人数'), number('在职人数'), number('已到岗人数'), number('最低薪资'), number('最高薪资'), text('薪资文本'), longText('岗位JD'), longText('工作职责'), longText('任职要求'),
       longText('福利'), longText('标签JSON'), text('发布状态'), text('招聘状态'), text('需求类型'), text('优先级'), text('期望到岗日期'), text('审批状态'), text('发布时间'), text('下线时间'),
       text('最晚到岗日期'),

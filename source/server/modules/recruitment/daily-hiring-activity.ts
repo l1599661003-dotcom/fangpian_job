@@ -78,7 +78,7 @@ export function buildDailyHiringActivity(input: DailyHiringActivityInput) {
     const candidateId = text(row.fields['候选人ID'])
     const createdAt = text(row.fields['创建时间']) || text(row.createdTime)
     const parseStatus = text(row.fields['解析状态'])
-    if (!candidateId || !input.allAccess && !input.allowedCandidateIds.has(candidateId) || !isToday(createdAt) || parseStatus && parseStatus !== '已完成') continue
+    if (!candidateId || !isToday(createdAt) || parseStatus && parseStatus !== '已完成') continue
     const resumeId = text(row.fields['简历记录ID']) || text(row.fields['简历版本ID']) || row.id
     if (resumeUploadsById.has(resumeId)) continue
     const candidate = candidates.get(candidateId)
@@ -91,7 +91,7 @@ export function buildDailyHiringActivity(input: DailyHiringActivityInput) {
       candidateId,
       candidateName: text(candidate?.fields['姓名']) || candidateId,
       fileName: text(row.fields['文件名']) || '未命名简历',
-      sourceUrl: text(row.fields['文件地址']),
+      sourceUrl: input.allAccess || input.allowedCandidateIds.has(candidateId) ? text(row.fields['文件地址']) : '',
       uploader,
       uploaderUserId: isReferral ? '' : uploaderUserId,
       department,

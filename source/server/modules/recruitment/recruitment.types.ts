@@ -37,6 +37,7 @@ export interface PositionInput {
   backupRecruiterUserId?: string
   currentEmployeeCount?: number
   category?: string
+  externalRecruitment?: boolean | string
   level?: string
   city?: string
   location?: string

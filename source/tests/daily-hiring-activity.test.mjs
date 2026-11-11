@@ -94,14 +94,14 @@ test('daily hiring activity groups referral resumes without exposing referrers',
   assert.ok(!JSON.stringify(result).includes('顾承均'));
 });
 
-test('department-scoped daily activity excludes other departments and unassigned resumes', () => {
+test('department-scoped daily activity counts all resume uploads but keeps other departments attachments hidden', () => {
   const result = buildDailyHiringActivity({
     date, from, to, allAccess: false,
     allowedCandidateIds: new Set(['candidate_a']), allowedPositionIds: new Set(['position_a']),
     candidates: [row('candidate_a', { 候选人ID: 'candidate_a', 姓名: '部门内候选人' })],
     resumeVersions: [
-      row('resume_a', { 候选人ID: 'candidate_a', 简历记录ID: 'resume_a', 文件名: 'a.pdf', 创建人: '部门同事', 创建时间: '2026-10-14T00:00:00.000Z', 解析状态: '已完成' }),
-      row('resume_b', { 候选人ID: 'candidate_b', 简历记录ID: 'resume_b', 文件名: 'b.pdf', 创建人: '其他部门', 创建时间: '2026-10-14T00:00:00.000Z', 解析状态: '已完成' }),
+      row('resume_a', { 候选人ID: 'candidate_a', 简历记录ID: 'resume_a', 文件名: 'a.pdf', 文件地址: 'https://cdn.example.test/a.pdf', 创建人: '部门同事', 创建时间: '2026-10-14T00:00:00.000Z', 解析状态: '已完成' }),
+      row('resume_b', { 候选人ID: 'candidate_b', 简历记录ID: 'resume_b', 文件名: 'b.pdf', 文件地址: 'https://cdn.example.test/b.pdf', 创建人: '其他部门', 创建时间: '2026-10-14T00:00:00.000Z', 解析状态: '已完成' }),
     ],
     interviews: [
       row('interview_a', { 面试ID: 'interview_a', 候选人ID: 'candidate_a', 职位ID: 'position_a', 开始时间: '2026-10-14T01:00:00.000Z', 面试状态: '已确认' }),
@@ -110,8 +110,9 @@ test('department-scoped daily activity excludes other departments and unassigned
     offers: [], onboardings: [],
   });
 
-  assert.deepEqual(result.summary, { resumes: 1, interviews: 1, offers: 0, arrived: 0 });
-  assert.equal(result.resumeUploads[0].uploader, '部门同事');
+  assert.deepEqual(result.summary, { resumes: 2, interviews: 1, offers: 0, arrived: 0 });
+  assert.equal(result.resumeUploads.find(row => row.fileName === 'a.pdf').sourceUrl, 'https://cdn.example.test/a.pdf');
+  assert.equal(result.resumeUploads.find(row => row.fileName === 'b.pdf').sourceUrl, '');
 });
 
 test('monthly hiring endpoint returns today activity and queries only the company-day resume range', async context => {

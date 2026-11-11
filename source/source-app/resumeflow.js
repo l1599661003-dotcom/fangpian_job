@@ -6005,6 +6005,30 @@ if (!root) return;
     }
   }
 
+  function renderJobDepartmentFilter(jobs) {
+    const root = document.getElementById('job-department-filter');
+    const options = root?.querySelector('[data-job-department-options]');
+    const label = root?.querySelector('[data-job-department-label]');
+    if (!root || !options || !label) return;
+    const departments = [...new Set((jobs || []).map((item) => item.department || '未分配部门'))].sort((left, right) => left.localeCompare(right, 'zh-CN'));
+    const selected = new Set((state.jobDepartmentFilters || []).filter((item) => departments.includes(item)));
+    state.jobDepartmentFilters = [...selected];
+    label.textContent = selected.size ? `已选 ${selected.size} 个部门` : '全部部门';
+    if (root.open && root.dataset.departmentOptions === departments.join('\u0001')) return;
+    root.dataset.departmentOptions = departments.join('\u0001');
+    options.innerHTML = departments.length
+      ? `${departments.map((department) => `<label><input type="checkbox" data-job-department value="${escapeHtml(department)}" ${selected.has(department) ? 'checked' : ''}><span>${escapeHtml(department)}</span></label>`).join('')}<button type="button" data-job-department-clear ${selected.size ? '' : 'hidden'}>清空</button>`
+      : '<span>暂无部门</span>';
+    options.querySelectorAll('[data-job-department]').forEach((input) => input.addEventListener('change', () => {
+      state.jobDepartmentFilters = [...options.querySelectorAll('[data-job-department]:checked')].map((item) => item.value);
+      renderJobsTable();
+    }));
+    options.querySelector('[data-job-department-clear]')?.addEventListener('click', () => {
+      state.jobDepartmentFilters = [];
+      renderJobsTable();
+    });
+  }
+
   function renderJobsTable() {
     const wrap = document.getElementById('jobs-table-wrap');
     if (!wrap) return;
@@ -6012,6 +6036,7 @@ if (!root) return;
     const resultCount = document.getElementById('jobs-result-count');
     const keyword = (document.getElementById('job-keyword-filter')?.value || '').trim().toLowerCase();
     const selectedMonth = document.getElementById('job-month-filter')?.value || '';
+    const selectedDepartments = new Set(state.jobDepartmentFilters || []);
     const demandsFor = (positionId) => (state.monthlyDemands || []).filter((item) => item.positionId === positionId && (!selectedMonth || item.month === selectedMonth));
     const isRejectedDemand = (demand) => demand.status === '审批驳回' || demand.approvalStatus === '已驳回';
     const activeDemandsFor = (item) => demandsFor(item.id).filter((demand) => Number(demand.headcount || 0) > 0 && demand.status !== '已停用' && !isRejectedDemand(demand));
@@ -6025,6 +6050,7 @@ if (!root) return;
     const approvedJobs = (state.jobs || []).filter((item) => (item.approvalStatus || '已通过') === '已通过');
     const rejectedJobs = (state.jobs || []).filter((item) => item.approvalStatus === '已驳回');
     const rows = [...approvedJobs, ...rejectedJobs].slice().sort((left, right) => demandPriority(left) - demandPriority(right) || statusPriority(left) - statusPriority(right) || (left.department || '').localeCompare(right.department || '', 'zh-CN') || (left.name || '').localeCompare(right.name || '', 'zh-CN')).filter((item) => {
+      if (selectedDepartments.size && !selectedDepartments.has(item.department || '未分配部门')) return false;
       if (!keyword) return true;
       const demandNames = demandsFor(item.id).map((demand) => demand.positionName);
       const haystack = [item.name, item.code, item.department, item.owner, item.recruiter, item.backupRecruiter, item.responsibilities, item.requirements, (item.tags || []).join(' '), ...demandNames].join('|').toLowerCase();
@@ -6041,10 +6067,11 @@ if (!root) return;
       <article><span class="rf-job-summary-mark active" aria-hidden="true">招</span><div><small>招聘中</small><strong>${recruitingPositions}</strong><em>正在接收候选人</em></div></article>
       <article><button type="button" data-rf-pending-approvals ${pendingApprovals ? '' : 'disabled'}><span class="rf-job-summary-mark pending" aria-hidden="true">审</span><div><small>待审批</small><strong>${pendingApprovals}</strong><em>${pendingApprovals ? '点击查看未通过申请' : '暂无待审批'}</em></div></button></article>
       <article><span class="rf-job-summary-mark demand" aria-hidden="true">需</span><div><small>${escapeHtml(monthLabel)}需求</small><strong>${demandHeadcount}</strong><em>计划招聘人数</em></div></article>`;
-    if (resultCount) resultCount.textContent = keyword ? `找到 ${rows.length} 个岗位` : `共 ${rows.length} 个岗位 · 按紧急、重要、储备排序`;
+    if (resultCount) resultCount.textContent = keyword || selectedDepartments.size ? `找到 ${rows.length} 个岗位` : `共 ${rows.length} 个岗位 · 按紧急、重要、储备排序`;
+    renderJobDepartmentFilter([...approvedJobs, ...rejectedJobs]);
     document.querySelector('[data-rf-pending-approvals]')?.addEventListener('click', () => openPendingApprovals());
     if (!rows.length) {
-      wrap.innerHTML = `<div class="rf-dialog-empty"><strong>暂无岗位</strong><p>${keyword ? '没有匹配的岗位，换个关键词试试。' : '审批通过后的岗位才会出现在这里。'}</p></div>`;
+      wrap.innerHTML = `<div class="rf-dialog-empty"><strong>暂无岗位</strong><p>${keyword || selectedDepartments.size ? '没有匹配的岗位，换个部门或关键词试试。' : '审批通过后的岗位才会出现在这里。'}</p></div>`;
       return;
     }
     const selectedCount = state.jobSelectedIds.size;
@@ -7768,39 +7795,48 @@ if (!root) return;
     if (!editor) return;
     const employees = (state.accessAdminData?.users || []).filter((user) => user.status !== '停用' && user.name);
     const options = (selected) => `<option value="">选择员工</option>${employees.map((user) => `<option value="${escapeHtml(user.id)}" ${user.id === selected ? 'selected' : ''}>${escapeHtml(user.name)}${user.department ? ` · ${escapeHtml(user.department)}` : ''}</option>`).join('')}`;
-    const node = (role, userId, index) => `<article class="rf-flow-node" data-flow-role="${role}"><span>${role === '审批人' ? index + 1 : '抄'}</span><div><strong>${role === '审批人' ? `第 ${index + 1} 位审批人` : '抄送人'}</strong><small>${role === '审批人' ? '通过后进入下一节点' : '仅接收结果，不能审批'}</small><select>${options(userId)}</select></div><button type="button" data-flow-remove>移除</button></article>`;
+    const node = (kind, role, userId, index) => `<article class="rf-flow-node" data-flow-kind="${kind}" data-flow-role="${role}"><span>${role === '审批人' ? index + 1 : '抄'}</span><div><strong>${role === '审批人' ? `第 ${index + 1} 位审批人` : '抄送人'}</strong><small>${role === '审批人' ? '通过后进入下一节点' : '仅接收结果，不能审批'}</small><select>${options(userId)}</select></div><button type="button" data-flow-remove>移除</button></article>`;
+    const board = (kind, title, hint, flow) => {
+      const approvers = flow?.approvers?.length ? flow.approvers : [{ userId: '' }];
+      const ccUsers = flow?.ccUsers || [];
+      return `<section class="rf-flow-kind" data-flow-kind-board="${kind}"><header><div><h4>${title}</h4><small>${hint}</small></div></header><div class="rf-flow-board"><section><header><div><h4>审批节点</h4><small>从上到下依次审批</small></div><button type="button" data-flow-add="审批人" data-flow-kind="${kind}">添加审批人</button></header><div class="rf-flow-track" data-flow-kind="${kind}" data-flow-list="审批人">${approvers.map((item, index) => node(kind, '审批人', item.userId, index)).join('')}</div></section><div class="rf-flow-join">全部通过后</div><section><header><div><h4>抄送节点</h4><small>同时通知，不分先后</small></div><button type="button" data-flow-add="抄送人" data-flow-kind="${kind}">添加抄送人</button></header><div class="rf-flow-track cc" data-flow-kind="${kind}" data-flow-list="抄送人">${ccUsers.map((item) => node(kind, '抄送人', item.userId, 0)).join('') || '<p data-flow-empty>暂无抄送人</p>'}</div></section></div></section>`;
+    };
     try {
-      const flow = await request('api/recruitment/approval-flow');
-      const approvers = flow.approvers?.length ? flow.approvers : [{ userId: '' }];
-      const ccUsers = flow.ccUsers || [];
-      editor.innerHTML = `<div class="rf-flow-board"><p>岗位审批和招聘需求共用这条流程。任一审批人拒绝即结束并通知提报人；全部通过后才通知提报人和抄送人。</p><section><header><div><h4>审批节点</h4><small>从上到下依次审批</small></div><button type="button" data-flow-add="审批人">添加审批人</button></header><div class="rf-flow-track" data-flow-list="审批人">${approvers.map((item, index) => node('审批人', item.userId, index)).join('')}</div></section><div class="rf-flow-join">全部通过后</div><section><header><div><h4>抄送节点</h4><small>同时通知，不分先后</small></div><button type="button" data-flow-add="抄送人">添加抄送人</button></header><div class="rf-flow-track cc" data-flow-list="抄送人">${ccUsers.map((item) => node('抄送人', item.userId, 0)).join('') || '<p data-flow-empty>暂无抄送人</p>'}</div></section></div>`;
-      const renumber = () => editor.querySelectorAll('[data-flow-list="审批人"] .rf-flow-node').forEach((item, index) => {
+      const flows = await request('api/recruitment/approval-flow');
+      const legacy = flows.approvers ? { approvers: flows.approvers, ccUsers: flows.ccUsers || [] } : null;
+      editor.innerHTML = `<div class="rf-flow-groups"><p>新建岗位选“是”走对外招聘审批，选“否”走非对外招聘审批。招聘需求仍走自己的流程。任一审批人拒绝即结束；全部通过后才通知提报人和抄送人。</p>${board('external', '对外招聘岗位', '新增岗位选择“是”时使用', flows.external || legacy)}${board('internal', '非对外招聘岗位', '新增岗位选择“否”时使用', flows.internal || legacy)}${board('demand', '招聘需求', '月度需求提报使用，不跟岗位按钮走', flows.demand || legacy)}</div>`;
+      const renumber = (kind) => editor.querySelectorAll(`[data-flow-list="审批人"][data-flow-kind="${kind}"] .rf-flow-node`).forEach((item, index) => {
         item.querySelector('span').textContent = String(index + 1);
         item.querySelector('strong').textContent = `第 ${index + 1} 位审批人`;
       });
       const bind = () => editor.querySelectorAll('[data-flow-remove]').forEach((button) => button.onclick = () => {
         const list = button.closest('[data-flow-list]');
         button.closest('.rf-flow-node')?.remove();
-        if (list?.dataset.flowList === '审批人') renumber();
+        if (list?.dataset.flowList === '审批人') renumber(list.dataset.flowKind);
         if (list?.dataset.flowList === '抄送人' && !list.querySelector('.rf-flow-node')) list.innerHTML = '<p data-flow-empty>暂无抄送人</p>';
       });
       bind();
       editor.querySelectorAll('[data-flow-add]').forEach((button) => button.onclick = () => {
         const role = button.dataset.flowAdd;
-        const list = editor.querySelector(`[data-flow-list="${role}"]`);
+        const kind = button.dataset.flowKind;
+        const list = editor.querySelector(`[data-flow-list="${role}"][data-flow-kind="${kind}"]`);
         list?.querySelector('[data-flow-empty]')?.remove();
         const index = role === '审批人' ? list.querySelectorAll('.rf-flow-node').length : 0;
-        list?.insertAdjacentHTML('beforeend', node(role, '', index));
+        list?.insertAdjacentHTML('beforeend', node(kind, role, '', index));
         bind();
       });
       document.querySelector('[data-access-flow-save]')?.addEventListener('click', async (event) => {
-        const selected = (role) => [...editor.querySelectorAll(`[data-flow-role="${role}"] select`)].map((input) => input.value).filter(Boolean);
-        const approverUserIds = selected('审批人');
-        const ccUserIds = selected('抄送人');
-        if (!approverUserIds.length) return dialogFailure('请至少选择一位审批人', new Error('审批人不能为空'));
-        if (new Set(approverUserIds).size !== approverUserIds.length) return dialogFailure('审批人不能重复', new Error('同一位员工不能出现在多个审批节点'));
+        const selected = (kind, role) => [...editor.querySelectorAll(`[data-flow-role="${role}"][data-flow-kind="${kind}"] select`)].map((input) => input.value).filter(Boolean);
+        const flowsToSave = {};
+        for (const [kind, title] of [['external', '对外招聘岗位'], ['internal', '非对外招聘岗位'], ['demand', '招聘需求']]) {
+          const approverUserIds = selected(kind, '审批人');
+          const ccUserIds = selected(kind, '抄送人');
+          if (!approverUserIds.length) return dialogFailure(`${title}请至少选择一位审批人`, new Error('审批人不能为空'));
+          if (new Set(approverUserIds).size !== approverUserIds.length) return dialogFailure(`${title}审批人不能重复`, new Error('同一位员工不能出现在多个审批节点'));
+          flowsToSave[kind] = { approverUserIds, ccUserIds };
+        }
         try {
-          await request('api/recruitment/approval-flow', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ approverUserIds, ccUserIds }), initiator: event.currentTarget });
+          await request('api/recruitment/approval-flow', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ flows: flowsToSave }), initiator: event.currentTarget });
           await renderApprovalFlowEditor();
         } catch (error) { dialogFailure('审核流程保存失败', error); }
       }, { once: true });
@@ -7966,11 +8002,11 @@ if (!root) return;
     showTalentDialog(`
       <header class="rf-dialog-head rf-access-dialog-head"><div><span>PEOPLE · STRUCTURE · ACCESS</span><h2>组织与权限</h2><p>先确定员工归属，再配置角色能看到什么、能操作什么。</p></div><div class="rf-assessment-head-actions"><div data-access-actions-for="employees" ${currentTab === 'employees' ? '' : 'hidden'}><details class="rf-access-sync-menu"><summary>同步信息</summary><div><button class="btn-soft" data-access-sync-tianji type="button">同步天玑状态</button><button class="btn-soft" data-access-sync-wecom type="button">同步企微 ID</button></div></details><button class="btn-soft" data-access-user-batch data-access-mutate type="button">批量导入</button><button class="btn-primary" data-access-user data-access-mutate type="button">新增员工</button></div><div data-access-actions-for="departments" ${currentTab === 'departments' ? '' : 'hidden'}><button class="btn-primary" data-access-org data-access-mutate type="button">新增部门</button></div><div data-access-actions-for="roles" ${currentTab === 'roles' ? '' : 'hidden'}><button class="btn-primary" data-access-role-create data-access-mutate type="button">新增角色</button></div></div></header>
       <div class="rf-access-summary" aria-label="管理概览"><article><span>员工档案</span><strong>${data.users.length}</strong><small>含全部账号状态</small></article><article class="${pendingUsers.length ? 'warn' : ''}"><span>待开通</span><strong>${pendingUsers.length}</strong><small>等待分配访问权限</small></article><article><span>启用部门</span><strong>${departments.length}</strong><small>按组织树归属</small></article><article class="${pending.length ? 'warn' : ''}"><span>待审批</span><strong>${pending.length}</strong><small>敏感字段临时申请</small></article></div>
-      <nav class="rf-access-tabs" role="tablist" aria-label="组织与权限管理"><button type="button" role="tab" data-access-tab="employees" aria-selected="${currentTab === 'employees'}" class="${currentTab === 'employees' ? 'active' : ''}"><span>员工</span><b>${data.users.length}</b></button><button type="button" role="tab" data-access-tab="departments" aria-selected="${currentTab === 'departments'}" class="${currentTab === 'departments' ? 'active' : ''}"><span>部门</span><b>${departments.length}</b></button><button type="button" role="tab" data-access-tab="roles" aria-selected="${currentTab === 'roles'}" class="${currentTab === 'roles' ? 'active' : ''}"><span>角色</span><b>${data.roles.length}</b></button><button type="button" role="tab" data-access-tab="approvals" aria-selected="${currentTab === 'approvals'}" class="${currentTab === 'approvals' ? 'active' : ''}"><span>审核流程</span><b>1</b></button><button type="button" role="tab" data-access-tab="loginActivity" aria-selected="${currentTab === 'loginActivity'}" class="${currentTab === 'loginActivity' ? 'active' : ''}"><span>登录动态</span><b data-login-online-count>—</b></button></nav>
+      <nav class="rf-access-tabs" role="tablist" aria-label="组织与权限管理"><button type="button" role="tab" data-access-tab="employees" aria-selected="${currentTab === 'employees'}" class="${currentTab === 'employees' ? 'active' : ''}"><span>员工</span><b>${data.users.length}</b></button><button type="button" role="tab" data-access-tab="departments" aria-selected="${currentTab === 'departments'}" class="${currentTab === 'departments' ? 'active' : ''}"><span>部门</span><b>${departments.length}</b></button><button type="button" role="tab" data-access-tab="roles" aria-selected="${currentTab === 'roles'}" class="${currentTab === 'roles' ? 'active' : ''}"><span>角色</span><b>${data.roles.length}</b></button><button type="button" role="tab" data-access-tab="approvals" aria-selected="${currentTab === 'approvals'}" class="${currentTab === 'approvals' ? 'active' : ''}"><span>审核流程</span><b>3</b></button><button type="button" role="tab" data-access-tab="loginActivity" aria-selected="${currentTab === 'loginActivity'}" class="${currentTab === 'loginActivity' ? 'active' : ''}"><span>登录动态</span><b data-login-online-count>—</b></button></nav>
       <section class="rf-access-view" data-access-view="employees" ${currentTab === 'employees' ? '' : 'hidden'}><div class="rf-access-view-heading"><div><h3>员工档案</h3><p>搜索员工后编辑资料、追加多个角色；现有权限不会被批量操作覆盖。</p></div><small data-access-visible-count>显示 ${data.users.length} 名员工</small></div><div class="rf-access-employee-toolbar"><label class="rf-access-search-field"><span>快速查找</span><input type="search" data-access-user-search placeholder="姓名、手机号、邮箱、部门或企微 ID" autocomplete="off"></label><label><span>账号状态</span><select data-access-user-status><option value="all">全部状态</option><option value="启用">正常使用</option><option value="待开通">待开通</option><option value="停用">已停用</option></select></label><label><span>所属部门</span><select data-access-department-filter><option value="">全部部门</option>${departments.map((item) => `<option value="${escapeHtml(item.id)}" ${String(state.accessEmployeeDepartmentFilter || '') === String(item.id) ? 'selected' : ''}>${escapeHtml(item.path)}</option>`).join('')}</select></label><label><span>已分配角色</span><select data-access-role-filter><option value="">全部角色</option>${enabledRoles.map((role) => `<option value="${escapeHtml(role.code)}" ${state.accessEmployeeRoleFilter === role.code ? 'selected' : ''}>${escapeHtml(role.name)}</option>`).join('')}</select></label></div><div class="rf-access-list-toolbar"><label class="rf-access-select-visible"><input type="checkbox" data-access-select-visible><span>全选当前筛选结果</span></label><small>只会选中可授权的启用账号</small></div><div class="rf-access-selection-tools" data-access-selection-tools ${selectedAccessUsers.size ? '' : 'hidden'}><span data-access-selected-count aria-live="polite">已选 ${selectedAccessUsers.size} 人</span><button class="btn-soft" data-access-clear-selection type="button">清空选择</button><button class="btn-primary" data-access-bulk-binding data-access-mutate type="button" ${selectedAccessUsers.size ? '' : 'disabled'}>批量分配角色</button></div><div class="rf-access-list">${data.users.map((user) => { const bindings = activeBindings.filter((item) => item.userId === user.id), departmentId = user.departmentIds?.[0], department = (departmentId ? accessOrganizationPath(departmentId, data.organizations) : '') || user.departments?.[0] || '暂未归属部门', userStatus = user.status || '待开通', roleCodes = bindings.map((item) => item.roleCode), searchText = [user.name, user.id, user.mobile, user.email, user.employeeNumber, user.tianjiWechatId, user.wecomUserId, department, ...(user.departments || []), ...roleCodes.map(roleName)].filter(Boolean).join(' '); return `<article class="rf-access-user-card ${userStatus === '待开通' ? 'pending-user' : ''}" data-access-user-row="${escapeHtml(user.id)}" data-access-user-search="${escapeHtml(searchText)}" data-access-user-status="${escapeHtml(userStatus)}" data-access-user-departments="${escapeHtml(accessUserDepartmentIds(user, data.organizations).join(' '))}" data-access-user-roles="${escapeHtml(roleCodes.join(' '))}"><div class="rf-access-user-main"><label class="rf-access-user-select"><input type="checkbox" data-access-user-select value="${escapeHtml(user.id)}" aria-label="选择${escapeHtml(user.name || user.id)}" ${selectedAccessUsers.has(String(user.id)) ? 'checked' : ''} ${userStatus === '停用' ? 'disabled' : ''}><span></span></label><div class="rf-access-user-avatar" aria-hidden="true">${escapeHtml(String(user.name || user.id).trim().slice(0, 1) || '员')}</div><div class="rf-access-user-details"><div class="rf-access-user-head"><strong>${escapeHtml(user.name || user.id)}</strong><span class="rf-access-status ${userStatus === '启用' ? 'active' : ''}">${escapeHtml(userStatus)}</span></div><p>${escapeHtml(department)}</p><div class="rf-access-role-chips">${bindings.length ? bindings.map((item) => `<span class="rf-access-role-chip"><b>${escapeHtml(roleName(item.roleCode))}</b><button class="danger" data-access-revoke="${escapeHtml(item.id)}" type="button" aria-label="移除${escapeHtml(roleName(item.roleCode))}权限">×</button></span>`).join('') : '<em>尚未配置权限</em>'}</div><small>${user.mobile ? `手机号：${escapeHtml(user.mobile)}` : `账号：${escapeHtml(user.id)}`} · 天玑：${escapeHtml(user.tianjiEmployeeStatus || '未匹配')} · ${user.tianjiWechatId ? `企微私信 ID：${escapeHtml(user.tianjiWechatId)}` : '未同步企微成员 ID'}</small></div></div><div class="rf-access-user-actions"><button class="btn-soft" data-access-user-mobile="${escapeHtml(user.id)}" type="button">编辑资料</button><button class="btn-primary" data-access-user-binding="${escapeHtml(user.id)}" type="button">分配角色</button></div></article>`; }).join('') || '<div class="rf-dialog-empty"><p>暂无系统用户。</p></div>'}</div></section>
       <section class="rf-access-view" data-access-view="departments" ${currentTab === 'departments' ? '' : 'hidden'}><div class="rf-access-view-heading"><div><h3>部门架构</h3><p>按公司层级查看组织；点“查看员工”直接进入该部门人员列表。</p></div><label class="rf-access-department-search"><span>搜索部门或负责人</span><input type="search" data-access-department-search placeholder="输入部门名、上级或负责人"></label></div><div class="rf-access-tree-workspace"><div class="rf-access-tree-panel"><div class="rf-access-tree-heading"><strong>组织树</strong><small>数字为该组织下员工数</small></div><div class="rf-access-tree" aria-label="部门层级">${renderAccessOrganizationTree(data.organizations, data.users)}</div></div><aside class="rf-access-tree-guide"><span>维护提示</span><strong>先选对上级，再设置负责人</strong><p>新增或编辑部门时，可维护部门名称、上级部门、负责人和启用状态。停用前系统会检查是否仍有员工或启用中的下级部门。</p><small>员工调部门请在员工资料中联系管理员处理，避免角色数据范围不同步。</small></aside></div></section>
       <section class="rf-access-view rf-access-roles-view" data-access-view="roles" ${currentTab === 'roles' ? '' : 'hidden'}><div class="rf-access-view-heading"><div><h3>角色与访问范围</h3><p>角色决定菜单、操作和敏感字段；同一员工的多个角色权限会合并。</p></div></div><div class="rf-access-role-metrics"><article><span>启用角色</span><strong>${enabledRoleCards.length}</strong></article><article><span>停用角色</span><strong>${disabledRoleCards.length}</strong></article><article><span>覆盖员工</span><strong>${roleMemberCount}</strong></article><article><span>自定义角色</span><strong>${sortedRoles.filter((role) => !role.system).length}</strong></article></div>${renderRoleGroup('启用中', '优先展示当前可分配的角色', enabledRoleCards)}${renderRoleGroup('已停用', '保留绑定与审计，可重新启用', disabledRoleCards)}${sortedRoles.length ? '' : '<div class="rf-dialog-empty"><p>暂无可配置角色。</p></div>'}<aside data-role-permission-panel><div class="rf-role-editor-empty"><strong>选择一个角色开始维护</strong><p>查看成员可定位到员工；配置权限可调整该角色的页面、按钮和字段范围。</p></div></aside></section>
-      <section class="rf-access-view" data-access-view="approvals" ${currentTab === 'approvals' ? '' : 'hidden'}><div class="rf-access-view-heading"><div><h3>审核流程</h3><p>岗位审批按审批人顺序流转，全部通过后通知抄送人。</p></div><button class="btn-primary" type="button" data-access-flow-save data-required-action="manage_access_control">保存流程</button></div><div data-approval-flow-editor><div class="rf-dialog-loading">正在读取岗位审批流程…</div></div></section>`, 'wide');
+      <section class="rf-access-view" data-access-view="approvals" ${currentTab === 'approvals' ? '' : 'hidden'}><div class="rf-access-view-heading"><div><h3>审核流程</h3><p>对外招聘、非对外招聘和招聘需求分别配置。岗位提交时按“是否对外招聘”选择对应流程。</p></div><button class="btn-primary" type="button" data-access-flow-save data-required-action="manage_access_control">保存流程</button></div><div data-approval-flow-editor><div class="rf-dialog-loading">正在读取审批流程…</div></div></section>`, 'wide');
     document.querySelector('[data-access-view="approvals"]')?.insertAdjacentHTML('afterend', `<section class="rf-access-view rf-login-activity-view" data-access-view="loginActivity" ${currentTab === 'loginActivity' ? '' : 'hidden'}><div class="rf-access-view-heading"><div><h3>登录动态</h3><p>按员工去重统计登录历史；已登录且页面在前台，最近 3 分钟收到心跳则显示在线。</p></div><button class="btn-soft" type="button" data-login-activity-refresh>刷新动态</button></div><div data-login-activity-content role="status" aria-live="polite"><div class="rf-login-activity-loading"><i></i><span>打开此页后读取登录动态</span></div></div></section>`);
     document.querySelector('[data-access-org]')?.addEventListener('click', () => openAccessOrganizationForm());
     document.querySelector('[data-access-role-create]')?.addEventListener('click', () => openAccessRoleForm());

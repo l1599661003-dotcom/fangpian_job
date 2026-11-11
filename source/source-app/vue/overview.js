@@ -175,7 +175,7 @@ const OverviewPage = {
         return `<article class="overview-metric-detail tone-${tone}">
           <div><strong>${escape(row.candidateName || '未命名候选人')}</strong><span>${escape(row.department || '未归属部门')} · ${escape(row.uploader || '未记录上传人')}</span></div>
           <dl><div><dt>简历</dt><dd>${escape(row.fileName || '未命名简历')}</dd></div><div><dt>时间</dt><dd>${escape(formatShanghaiDateTime(row.uploadedAt) || row.uploadedAt || '未记录')}</dd></div><div><dt>来源</dt><dd>${escape(row.source || '简历上传')}</dd></div></dl>
-          ${row.sourceUrl ? `<a href="${escape(row.sourceUrl)}" target="_blank" rel="noopener">查看原始简历 ↗</a>` : '<span class="overview-metric-miss">未找到原始附件</span>'}
+          ${row.sourceUrl ? `<a href="${escape(row.sourceUrl)}" target="_blank" rel="noopener">查看原始简历 ↗</a>` : '<span class="overview-metric-miss">仅统计，原始附件按岗位权限查看</span>'}
         </article>`;
       }
       if (metric === 'interviews') {

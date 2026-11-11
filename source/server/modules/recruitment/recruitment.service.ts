@@ -24,6 +24,14 @@ const text = (value: unknown) => String(value ?? '').trim()
 const recruitmentApproverUserId = 'wozR29DwAACxXU8MVtW44tVUZ4ZMF0qg'
 const recruitmentApproverWechatId = 'LiuJinHu'
 const positionApprovalFlowCode = 'position_approval'
+const externalPositionApprovalFlowCode = 'position_approval_external'
+const internalPositionApprovalFlowCode = 'position_approval_internal'
+const positionApprovalFlowCodes = {
+  demand: positionApprovalFlowCode,
+  external: externalPositionApprovalFlowCode,
+  internal: internalPositionApprovalFlowCode,
+} as const
+type PositionApprovalFlowKind = keyof typeof positionApprovalFlowCodes
 type ApprovalFlowPerson = { userId: string; name: string; wecomUserId: string; wechatId: string }
 type ApprovalFlowStep = { order: number; role: '审批人' | '抄送人'; userId: string; name: string; wecomUserId: string; status: string; opinion: string; actedAt: string }
 const number = (value: unknown) => Number.isFinite(Number(value)) ? Number(value) : 0
@@ -495,14 +503,15 @@ export class RecruitmentService implements OnApplicationBootstrap {
     const scopedCandidateIds = new Set(scopedApplications.map((row) => text(row.fields['候选人ID'])).filter(Boolean))
     const scopedInterviews = this.hasAllPositionAccess(profile) ? interviews : interviews.filter((row) => allowedPositionIds.has(text(row.fields['职位ID'])) || scopedCandidateIds.has(text(row.fields['候选人ID'])))
     const scopedOffers = this.hasAllPositionAccess(profile) ? offers : offers.filter((row) => allowedPositionIds.has(text(row.fields['职位ID'])) || scopedCandidateIds.has(text(row.fields['候选人ID'])))
-    const activeCandidates = candidates.filter((row) => text(row.fields['候选人状态']) !== '已删除' && (this.hasAllPositionAccess(profile) || scopedCandidateIds.has(text(row.fields['候选人ID']) || row.id)))
+    const visibleCandidates = candidates.filter((row) => text(row.fields['候选人状态']) !== '已删除')
+    const activeCandidates = this.hasAllPositionAccess(profile) ? visibleCandidates : visibleCandidates.filter((row) => scopedCandidateIds.has(text(row.fields['候选人ID']) || row.id))
     const activeCandidateIds = new Set(activeCandidates.map((row) => text(row.fields['候选人ID']) || row.id))
     const hiringActivity = buildDailyHiringActivity({
       date: activityLabel,
       from: activityFrom,
       to: activityTo,
       resumeVersions,
-      candidates: activeCandidates,
+      candidates: visibleCandidates,
       interviews: scopedInterviews,
       offers: scopedOffers,
       onboardings: todayOnboardings,
@@ -741,7 +750,7 @@ export class RecruitmentService implements OnApplicationBootstrap {
     if (!['紧急', '重要', '储备'].includes(priority)) throw new BadRequestException('优先级只能是紧急、重要或储备')
     const note = text(input.note)
     if (!note) throw new BadRequestException('请填写审批用的需求说明')
-    const approvalStart = await this.approvalSubmissionFields()
+    const approvalStart = await this.approvalSubmissionFields('demand')
     const fields = {
       需求月份: text(input.month), 职位ID: position.id, 职位名称: position.name, 部门: position.department || '未分配部门',
       负责人: position.owner, 需求数量: headcount, 需求类型: demandType, 需求状态: '待审批', 优先级: priority,
@@ -933,12 +942,13 @@ export class RecruitmentService implements OnApplicationBootstrap {
     const tableId = await this.verify('recruitment_positions', ['职位ID', '职位名称', '部门', '发布状态', '最晚到岗日期', '创建时间', '更新时间'])
     const id = businessId('pos')
     const now = timestamp()
-    const approvalStart = await this.approvalSubmissionFields()
+    const externalRecruitment = this.externalRecruitmentValue(input.externalRecruitment)
+    const approvalStart = await this.approvalSubmissionFields(externalRecruitment === '是' ? 'external' : 'internal')
     const fields = compact({
       职位ID: id, 需求ID: '', 职位名称: input.name, 职位编码: input.code || this.positionCode(),
       部门ID: department.id, 部门: department.name, 负责人用户ID: text(input.ownerUserId), 负责人: input.owner || operator,
       ...recruiterFields,
-      招聘类别: input.category || '社招', 岗位层级: input.level || '普通岗位',
+      招聘类别: input.category || '社招', 是否对外招聘: externalRecruitment, 岗位层级: input.level || '普通岗位',
       工作城市: input.city || '', 工作地点: input.location || '', 招聘人数: Math.max(0, Math.round(number(input.headcount))),
       在职人数: Math.max(0, Math.round(number(input.currentEmployeeCount))), 已到岗人数: 0,
       最低薪资: number(input.minSalary) || undefined,
@@ -1023,7 +1033,7 @@ export class RecruitmentService implements OnApplicationBootstrap {
       职位名称: input.name, 职位编码: input.code, 部门ID: department?.id, 部门: department?.name,
       负责人用户ID: input.ownerUserId, 负责人: input.owner,
       ...recruiterFields,
-      招聘类别: input.category, 岗位层级: input.level, 工作城市: input.city, 工作地点: input.location,
+      招聘类别: input.category, 是否对外招聘: input.externalRecruitment === undefined ? undefined : this.externalRecruitmentValue(input.externalRecruitment), 岗位层级: input.level, 工作城市: input.city, 工作地点: input.location,
       招聘人数: input.headcount == null ? undefined : Math.max(0, Math.round(number(input.headcount))),
       在职人数: input.currentEmployeeCount == null ? undefined : Math.max(0, Math.round(number(input.currentEmployeeCount))),
       最低薪资: input.minSalary, 最高薪资: input.maxSalary, 薪资文本: input.salaryText, 岗位JD: input.jobDescription,
@@ -1434,6 +1444,8 @@ export class RecruitmentService implements OnApplicationBootstrap {
 
   private validatePosition(input: PositionInput) {
     if (!text(input.name)) throw new BadRequestException('请填写岗位名称')
+    const externalRecruitment = text(input.externalRecruitment).toLowerCase()
+    if (!['是', '否', 'true', 'false', '1', '0', 'yes', 'no'].includes(externalRecruitment)) throw new BadRequestException('请选择是否对外招聘')
   }
 
   private async resolveRecruiterFields(primaryValue: unknown, backupValue: unknown, requirePrimary: boolean) {
@@ -1457,22 +1469,22 @@ export class RecruitmentService implements OnApplicationBootstrap {
   }
 
   async getPositionApprovalFlow() {
-    const flow = await this.positionApprovalFlow()
+    const [demand, external, internal] = await Promise.all([
+      this.positionApprovalFlow('demand'),
+      this.positionApprovalFlow('external'),
+      this.positionApprovalFlow('internal'),
+    ])
     return {
-      code: positionApprovalFlowCode,
-      name: '岗位审批',
-      enabled: flow.enabled,
-      approvers: flow.approvers,
-      ccUsers: flow.ccUsers,
+      demand: { code: positionApprovalFlowCodes.demand, name: '招聘需求审批', enabled: demand.enabled, approvers: demand.approvers, ccUsers: demand.ccUsers },
+      external: { code: positionApprovalFlowCodes.external, name: '对外招聘岗位审批', enabled: external.enabled, approvers: external.approvers, ccUsers: external.ccUsers },
+      internal: { code: positionApprovalFlowCodes.internal, name: '非对外招聘岗位审批', enabled: internal.enabled, approvers: internal.approvers, ccUsers: internal.ccUsers },
     }
   }
 
-  async savePositionApprovalFlow(input: { approverUserIds?: string[]; ccUserIds?: string[] }, operator = '当前用户') {
-    const approverUserIds = [...new Set((input.approverUserIds || []).map(text).filter(Boolean))]
-    const ccUserIds = [...new Set((input.ccUserIds || []).map(text).filter(Boolean))]
-    if (!approverUserIds.length) throw new BadRequestException('请至少选择一位审批人')
-    if (approverUserIds.length > 5) throw new BadRequestException('审批人最多5位')
-    if (ccUserIds.length > 10) throw new BadRequestException('抄送人最多10位')
+  async savePositionApprovalFlow(input: { flows?: Partial<Record<PositionApprovalFlowKind, { approverUserIds?: string[]; ccUserIds?: string[] }>>; approverUserIds?: string[]; ccUserIds?: string[] }, operator = '当前用户') {
+    const flows = input.flows || { demand: { approverUserIds: input.approverUserIds, ccUserIds: input.ccUserIds } }
+    const kinds = (Object.keys(flows) as PositionApprovalFlowKind[]).filter((kind) => positionApprovalFlowCodes[kind])
+    if (!kinds.length) throw new BadRequestException('请选择要保存的审批流程')
     const users = await teable.listAllRecords(this.table('recruitment_users'))
     const resolve = (userId: string, label: string) => {
       const user = users.find((row) => (text(row.fields['用户ID']) || row.id) === userId)
@@ -1486,29 +1498,46 @@ export class RecruitmentService implements OnApplicationBootstrap {
       if (!person.wechatId) throw new BadRequestException(`${label}“${person.name}”尚未同步企微成员ID`)
       return person
     }
-    const approvers = approverUserIds.map((userId) => resolve(userId, '审批人'))
-    const ccUsers = ccUserIds.map((userId) => resolve(userId, '抄送人'))
     const tableId = await this.verify('recruitment_approval_flows', ['流程ID', '流程编码', '流程名称', '流程状态', '步骤JSON', '创建时间', '更新时间'])
     const rows = await teable.listAllRecords(tableId)
-    const existing = rows.find((row) => text(row.fields['流程编码']) === positionApprovalFlowCode)
-    const now = timestamp()
-    const fields = {
-      流程编码: positionApprovalFlowCode, 流程名称: '岗位审批', 流程状态: '启用',
-      步骤JSON: JSON.stringify({ approvers, ccUsers }), 更新人: operator, 更新时间: now,
+    const names: Record<PositionApprovalFlowKind, string> = { demand: '招聘需求审批', external: '对外招聘岗位审批', internal: '非对外招聘岗位审批' }
+    for (const kind of kinds) {
+      const approverUserIds = [...new Set((flows[kind]?.approverUserIds || []).map(text).filter(Boolean))]
+      const ccUserIds = [...new Set((flows[kind]?.ccUserIds || []).map(text).filter(Boolean))]
+      if (!approverUserIds.length) throw new BadRequestException(`${names[kind]}请至少选择一位审批人`)
+      if (approverUserIds.length > 5) throw new BadRequestException(`${names[kind]}审批人最多5位`)
+      if (ccUserIds.length > 10) throw new BadRequestException(`${names[kind]}抄送人最多10位`)
+      const approvers = approverUserIds.map((userId) => resolve(userId, `${names[kind]}审批人`))
+      const ccUsers = ccUserIds.map((userId) => resolve(userId, `${names[kind]}抄送人`))
+      const code = positionApprovalFlowCodes[kind]
+      const existing = rows.find((row) => text(row.fields['流程编码']) === code)
+      const now = timestamp()
+      const fields = {
+        流程编码: code, 流程名称: names[kind], 流程状态: '启用',
+        步骤JSON: JSON.stringify({ approvers, ccUsers }), 更新人: operator, 更新时间: now,
+      }
+      if (existing) await teable.updateRecord(tableId, existing.id, fields)
+      else await teable.createRecord(tableId, { 流程ID: businessId('flow'), ...fields, 创建人: operator, 创建时间: now })
+      await this.audit(existing ? `修改${names[kind]}` : `创建${names[kind]}`, '审批流程', code, existing?.fields || {}, fields, operator)
     }
-    if (existing) await teable.updateRecord(tableId, existing.id, fields)
-    else await teable.createRecord(tableId, { 流程ID: businessId('flow'), ...fields, 创建人: operator, 创建时间: now })
-    await this.audit(existing ? '修改岗位审批流程' : '创建岗位审批流程', '审批流程', positionApprovalFlowCode, existing?.fields || {}, fields, operator)
     return this.getPositionApprovalFlow()
   }
 
-  private async positionApprovalFlow() {
+  private externalRecruitmentValue(value: unknown) {
+    const raw = text(value).toLowerCase()
+    if (['否', '不对外', '内部', 'false', '0', 'no'].includes(raw)) return '否'
+    return '是'
+  }
+
+  private async positionApprovalFlow(kind: PositionApprovalFlowKind = 'demand') {
     const empty = { enabled: false, approvers: [] as ApprovalFlowPerson[], ccUsers: [] as ApprovalFlowPerson[] }
     try {
       const tableId = this.table('recruitment_approval_flows')
       if (!tableId) return empty
       const rows = await teable.listAllRecords(tableId)
-      const row = rows.find((item) => text(item.fields['流程编码']) === positionApprovalFlowCode && text(item.fields['流程状态']) !== '停用')
+      const code = positionApprovalFlowCodes[kind]
+      const row = rows.find((item) => text(item.fields['流程编码']) === code && text(item.fields['流程状态']) !== '停用')
+        || (kind === 'demand' ? undefined : rows.find((item) => text(item.fields['流程编码']) === positionApprovalFlowCode && text(item.fields['流程状态']) !== '停用'))
       const saved = json<{ approvers?: ApprovalFlowPerson[]; ccUsers?: ApprovalFlowPerson[] }>(row?.fields['步骤JSON'], {})
       const approvers = (saved.approvers || []).filter((item) => text(item.userId))
       return { enabled: approvers.length > 0, approvers, ccUsers: (saved.ccUsers || []).filter((item) => text(item.userId)) }
@@ -1517,8 +1546,8 @@ export class RecruitmentService implements OnApplicationBootstrap {
     }
   }
 
-  private async approvalSubmissionFields() {
-    const flow = await this.positionApprovalFlow()
+  private async approvalSubmissionFields(kind: PositionApprovalFlowKind = 'demand') {
+    const flow = await this.positionApprovalFlow(kind)
     const first = flow.approvers[0]
     const progress: ApprovalFlowStep[] = [
       ...flow.approvers.map((person, index) => ({ order: index + 1, role: '审批人' as const, userId: person.userId, name: person.name, wecomUserId: person.wecomUserId, status: '待审批', opinion: '', actedAt: '' })),
@@ -1838,7 +1867,7 @@ export class RecruitmentService implements OnApplicationBootstrap {
       id, name: text(f['职位名称']), code: text(f['职位编码']),
       departmentId: text(f['部门ID']), department: text(f['部门']), ownerUserId: text(f['负责人用户ID']), owner: text(f['负责人']),
       recruiterUserId: text(f['招聘HR用户ID']), recruiter: text(f['招聘HR']), backupRecruiterUserId: text(f['备用招聘HR用户ID']), backupRecruiter: text(f['备用招聘HR']),
-      category: text(f['招聘类别']), level: text(f['岗位层级']) || '普通岗位', city: text(f['工作城市']),
+      category: text(f['招聘类别']), externalRecruitment: text(f['是否对外招聘']) || '是', level: text(f['岗位层级']) || '普通岗位', city: text(f['工作城市']),
       location: text(f['工作地点']), minSalary: number(f['最低薪资']), maxSalary: number(f['最高薪资']), salaryText: text(f['薪资文本']),
       jobDescription: text(f['岗位JD']), responsibilities: text(f['工作职责']), requirements: text(f['任职要求']),
       benefits: text(f['福利']), tags: json<string[]>(f['标签JSON'], []), status: text(f['发布状态']) || '待发布',
