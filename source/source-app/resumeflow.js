@@ -7768,24 +7768,29 @@ if (!root) return;
     if (!editor) return;
     const employees = (state.accessAdminData?.users || []).filter((user) => user.status !== '停用' && user.name);
     const options = (selected) => `<option value="">选择员工</option>${employees.map((user) => `<option value="${escapeHtml(user.id)}" ${user.id === selected ? 'selected' : ''}>${escapeHtml(user.name)}${user.department ? ` · ${escapeHtml(user.department)}` : ''}</option>`).join('')}`;
-    const row = (role, userId) => `<div class="rf-access-flow-row" data-flow-role="${role}"><select>${options(userId)}</select><button type="button" data-flow-remove>移除</button></div>`;
+    const node = (role, userId, index) => `<article class="rf-flow-node" data-flow-role="${role}"><span>${role === '审批人' ? index + 1 : '抄'}</span><div><strong>${role === '审批人' ? `第 ${index + 1} 位审批人` : '抄送人'}</strong><small>${role === '审批人' ? '通过后进入下一节点' : '仅接收结果，不能审批'}</small><select>${options(userId)}</select></div><button type="button" data-flow-remove>移除</button></article>`;
     try {
       const flow = await request('api/recruitment/approval-flow');
       const approvers = flow.approvers?.length ? flow.approvers : [{ userId: '' }];
       const ccUsers = flow.ccUsers || [];
-      editor.innerHTML = `<div class="rf-access-flow-grid"><section><header><h4>审批人</h4><button type="button" data-flow-add="审批人">添加审批人</button></header><div data-flow-list="审批人">${approvers.map((item) => row('审批人', item.userId)).join('')}</div><small>按从上到下的顺序审批，前一位通过后才到下一位。</small></section><section><header><h4>抄送人</h4><button type="button" data-flow-add="抄送人">添加抄送人</button></header><div data-flow-list="抄送人">${ccUsers.map((item) => row('抄送人', item.userId)).join('') || '<p data-flow-empty>暂无抄送人</p>'}</div><small>全部审批通过后同时通知，抄送人不能审批。</small></section></div>`;
-      const bind = () => {
-        editor.querySelectorAll('[data-flow-remove]').forEach((button) => button.onclick = () => {
-          const list = button.closest('[data-flow-list]');
-          button.closest('.rf-access-flow-row')?.remove();
-          if (list?.dataset.flowList === '抄送人' && !list.querySelector('.rf-access-flow-row')) list.innerHTML = '<p data-flow-empty>暂无抄送人</p>';
-        });
-      };
+      editor.innerHTML = `<div class="rf-flow-board"><p>岗位审批和招聘需求共用这条流程。任一审批人拒绝即结束并通知提报人；全部通过后才通知提报人和抄送人。</p><section><header><div><h4>审批节点</h4><small>从上到下依次审批</small></div><button type="button" data-flow-add="审批人">添加审批人</button></header><div class="rf-flow-track" data-flow-list="审批人">${approvers.map((item, index) => node('审批人', item.userId, index)).join('')}</div></section><div class="rf-flow-join">全部通过后</div><section><header><div><h4>抄送节点</h4><small>同时通知，不分先后</small></div><button type="button" data-flow-add="抄送人">添加抄送人</button></header><div class="rf-flow-track cc" data-flow-list="抄送人">${ccUsers.map((item) => node('抄送人', item.userId, 0)).join('') || '<p data-flow-empty>暂无抄送人</p>'}</div></section></div>`;
+      const renumber = () => editor.querySelectorAll('[data-flow-list="审批人"] .rf-flow-node').forEach((item, index) => {
+        item.querySelector('span').textContent = String(index + 1);
+        item.querySelector('strong').textContent = `第 ${index + 1} 位审批人`;
+      });
+      const bind = () => editor.querySelectorAll('[data-flow-remove]').forEach((button) => button.onclick = () => {
+        const list = button.closest('[data-flow-list]');
+        button.closest('.rf-flow-node')?.remove();
+        if (list?.dataset.flowList === '审批人') renumber();
+        if (list?.dataset.flowList === '抄送人' && !list.querySelector('.rf-flow-node')) list.innerHTML = '<p data-flow-empty>暂无抄送人</p>';
+      });
       bind();
       editor.querySelectorAll('[data-flow-add]').forEach((button) => button.onclick = () => {
-        const list = editor.querySelector(`[data-flow-list="${button.dataset.flowAdd}"]`);
+        const role = button.dataset.flowAdd;
+        const list = editor.querySelector(`[data-flow-list="${role}"]`);
         list?.querySelector('[data-flow-empty]')?.remove();
-        list?.insertAdjacentHTML('beforeend', row(button.dataset.flowAdd, ''));
+        const index = role === '审批人' ? list.querySelectorAll('.rf-flow-node').length : 0;
+        list?.insertAdjacentHTML('beforeend', node(role, '', index));
         bind();
       });
       document.querySelector('[data-access-flow-save]')?.addEventListener('click', async (event) => {
