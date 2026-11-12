@@ -141,6 +141,8 @@ const fieldLine = (label: string, value = '') => `<text:p text:style-name="P_Fie
 
 const underline = (value = '') => `<text:span text:style-name="T_Underline">${value ? escapeXml(value) : '        '}</text:span>`
 
+const signatureLine = (label: string, tabPosition: string) => `<text:p text:style-name="P_Sign_${tabPosition.replace('.', '_')}">${escapeXml(label)}<text:tab/><text:span text:style-name="T_SignLine">${'&#160;'.repeat(16)}</text:span></text:p>`
+
 const offerEmailHtml = (candidateName: string, responseUrl: string, note: string, details: CandidateEmailDetail[]) => candidateEmailCard({
   candidateName,
   title: '录用通知书',
@@ -172,7 +174,7 @@ export const offerDocument = (values: OfferFileValues, templateType: OfferTempla
     : `本通知书有效期为${underline(values.validFrom)}至${underline(values.validTo)}。`
 
   return `<?xml version="1.0" encoding="UTF-8"?>
-<office:document xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:style="urn:oasis:names:tc:opendocument:xmlns:style:1.0" xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0" xmlns:fo="urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0" xmlns:svg="urn:oasis:names:tc:opendocument:xmlns:svg-compatible:1.0" office:version="1.3" office:mimetype="application/vnd.oasis.opendocument.text">
+<office:document xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:style="urn:oasis:names:tc:opendocument:xmlns:style:1.0" xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0" xmlns:table="urn:oasis:names:tc:opendocument:xmlns:table:1.0" xmlns:fo="urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0" xmlns:svg="urn:oasis:names:tc:opendocument:xmlns:svg-compatible:1.0" office:version="1.3" office:mimetype="application/vnd.oasis.opendocument.text">
   <office:automatic-styles>
     <style:page-layout style:name="PM1"><style:page-layout-properties fo:page-width="21.0cm" fo:page-height="29.7cm" fo:margin-top="4.3cm" fo:margin-bottom="3.7cm" fo:margin-left="3.17cm" fo:margin-right="2.83cm"/></style:page-layout>
     <style:style style:name="dp1" style:family="drawing-page"/>
@@ -184,6 +186,13 @@ export const offerDocument = (values: OfferFileValues, templateType: OfferTempla
     <style:style style:name="P_Indent" style:family="paragraph" style:parent-style-name="Standard"><style:paragraph-properties fo:margin-left="1.0cm"/><style:text-properties fo:font-size="10.5pt"/></style:style>
     <style:style style:name="P_List" style:family="paragraph" style:parent-style-name="Standard"><style:paragraph-properties fo:margin-left="1.1cm" fo:margin-top="0.32cm" fo:margin-bottom="0.32cm"/><style:text-properties fo:font-size="10.5pt"/></style:style>
     <style:style style:name="P_Gap" style:family="paragraph" style:parent-style-name="Standard"><style:paragraph-properties fo:margin-top="0.16cm" fo:margin-bottom="0.16cm"/><style:text-properties fo:font-size="10.5pt"/></style:style>
+    <style:style style:name="P_Sign_1_6" style:family="paragraph" style:parent-style-name="Standard"><style:paragraph-properties fo:margin-top="0.55cm" fo:margin-bottom="0.15cm"><style:tab-stops><style:tab-stop style:position="1.6cm"/></style:tab-stops></style:paragraph-properties><style:text-properties fo:font-size="10.5pt"/></style:style>
+    <style:style style:name="P_Sign_2_6" style:family="paragraph" style:parent-style-name="Standard"><style:paragraph-properties fo:margin-top="0.55cm" fo:margin-bottom="0.15cm"><style:tab-stops><style:tab-stop style:position="2.6cm"/></style:tab-stops></style:paragraph-properties><style:text-properties fo:font-size="10.5pt"/></style:style>
+    <style:style style:name="P_Sign_3_4" style:family="paragraph" style:parent-style-name="Standard"><style:paragraph-properties fo:margin-top="0.55cm" fo:margin-bottom="0.15cm"><style:tab-stops><style:tab-stop style:position="3.4cm"/></style:tab-stops></style:paragraph-properties><style:text-properties fo:font-size="10.5pt"/></style:style>
+    <style:style style:name="T_SignLine" style:family="text"><style:text-properties fo:font-size="10.5pt" style:text-underline-style="solid" style:text-underline-width="auto" style:text-underline-color="font-color"/></style:style>
+    <style:style style:name="SignTable" style:family="table"><style:table-properties style:width="14.9cm" table:align="left" fo:margin-top="0.2cm"/></style:style>
+    <style:style style:name="SignCol" style:family="table-column"><style:table-column-properties style:column-width="7.45cm"/></style:style>
+    <style:style style:name="SignCell" style:family="table-cell"><style:table-cell-properties fo:padding="0.15cm" fo:border="none"/></style:style>
     <text:list-style style:name="L1"><text:list-level-style-bullet text:level="1" text:bullet-char="•"><style:list-level-properties text:space-before="0.18cm" text:min-label-width="0.34cm"/></text:list-level-style-bullet></text:list-style>
   </office:automatic-styles>
   <office:master-styles><style:master-page style:name="Standard" style:page-layout-name="PM1" style:drawing-page-style-name="dp1"/></office:master-styles>
@@ -220,8 +229,18 @@ export const offerDocument = (values: OfferFileValues, templateType: OfferTempla
     <text:p text:style-name="P_Field">若录用者延长报到时间，需事先电话或书面通知我司同意后方可延长，否则本通知书自动失效。</text:p>
     ${blankLines(3)}
     <text:p text:style-name="P_Label">签署栏：</text:p>
-    <text:p text:style-name="P_Field">公司：${underline()} 候选人：${underline()}</text:p>
-    <text:p text:style-name="P_Field">签字：${underline()} 日期：${underline()}</text:p>
+    <table:table table:name="SignTable" table:style-name="SignTable">
+      <table:table-column table:style-name="SignCol"/>
+      <table:table-column table:style-name="SignCol"/>
+      <table:table-row>
+        <table:table-cell table:style-name="SignCell" office:value-type="string">${signatureLine('公司（盖章）：', '2.6')}</table:table-cell>
+        <table:table-cell table:style-name="SignCell" office:value-type="string">${signatureLine('候选人（签字）：', '3.4')}</table:table-cell>
+      </table:table-row>
+      <table:table-row>
+        <table:table-cell table:style-name="SignCell" office:value-type="string">${signatureLine('日期：', '1.6')}</table:table-cell>
+        <table:table-cell table:style-name="SignCell" office:value-type="string">${signatureLine('日期：', '1.6')}</table:table-cell>
+      </table:table-row>
+    </table:table>
   </office:text></office:body>
 </office:document>`
 }

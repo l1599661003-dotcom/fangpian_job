@@ -18,6 +18,7 @@ export function resolveAccessPolicy(method: string, path: string): AccessRoutePo
     if (path.startsWith('/api/recruitment/department-demands')) return { pagesAny: ['positions'], actionsAny: write ? ['create_demand'] : [] }
     if (path === '/api/recruitment/referral-poster-order') return { pagesAny: ['referrals'] }
     if (path === '/api/recruitment/position-options') return { pagesAny: ['home', 'positions', 'candidates', 'interviews', 'offers'] }
+    if (path === '/api/recruitment/form-options') return { pagesAny: ['home', 'positions', 'candidates'] }
     if (path.includes('/approvals/')) return { pagesAny: ['home', 'positions'] }
     if (path.includes('/positions') || path.includes('/channels') || path.includes('/collection-tasks')) return { pagesAny: ['positions'], actionsAny: write ? ['manage_positions'] : [] }
     if (path.includes('/monthly-demands')) return { pagesAny: ['positions'], actionsAny: write ? ['create_demand'] : [] }

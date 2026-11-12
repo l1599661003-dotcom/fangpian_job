@@ -12,7 +12,7 @@
     interviewData: null,
     selectedInterviewId: '',
     evaluationData: null,
-    offerData: null, backgroundData: [], backgroundCandidateId: '', backgroundSelectedId: '', lifecycleData: null, lifecycleCandidateId: '', lifecycleSelectedId: '', referralData: null, messageData: null, governanceData: null, jobs: [], jobCatalogLoaded: false, jobFormOptions: null, monthlyDemands: [], jobSelectedIds: new Set(), positionOptions: [], positionOptionsPromise: null, accessAdminData: null, currentAccess: null, referralListCache: null, talentPage: 1, talentTotal: 0, talentTotalPages: 1, talentLoadSequence: 0, talentDetailLoadSequence: 0, talentSearchLoading: false, showTalentAdvancedFilters: false, avatarBackfillStarted: false,
+    offerData: null, backgroundData: [], backgroundCandidateId: '', backgroundSelectedId: '', lifecycleData: null, lifecycleCandidateId: '', lifecycleSelectedId: '', referralData: null, messageData: null, governanceData: null, jobs: [], jobCatalogLoaded: false, jobFormOptions: null, importerFilterOptionsLoaded: false, importerFilterOptionsPromise: null, monthlyDemands: [], jobSelectedIds: new Set(), positionOptions: [], positionOptionsPromise: null, accessAdminData: null, currentAccess: null, referralListCache: null, talentPage: 1, talentTotal: 0, talentTotalPages: 1, talentLoadSequence: 0, talentDetailLoadSequence: 0, talentSearchLoading: false, showTalentAdvancedFilters: false, avatarBackfillStarted: false,
   };
   const initialApplicationState = structuredClone(state);
   let accessEpoch = 0;
@@ -1484,7 +1484,7 @@
         && (state.talentFilters.source === '全部来源' || item.source === state.talentFilters.source)
         && (state.talentFilters.tag === '全部标签' || item.tags?.some((tag) => tag.name === state.talentFilters.tag))
         && rangeMatches(item.age, state.talentFilters.age)
-        && (state.talentFilters.region === '全部地区' || item.address === state.talentFilters.region)
+        && regionMatches(item.address, state.talentFilters.region)
         && rangeMatches(item.bestMatchScore, state.talentFilters.score);
     });
   }
@@ -1568,10 +1568,11 @@
     else setTalentSearchLoading(true);
     const sequence = ++state.talentLoadSequence;
     const positionOptionsPromise = loadPositionOptions(force).catch(() => []);
+    const importerOptionsPromise = loadImporterFilterOptions();
     try {
       if (force) params.set('refresh', '1');
       const result = await request(`api/talents${params.toString() ? `?${params}` : ''}`);
-      await positionOptionsPromise;
+      await Promise.all([positionOptionsPromise, importerOptionsPromise]);
       if (sequence !== state.talentLoadSequence) return;
       if (revision === talentSnapshotRevision) {
         talentListSnapshots.delete(cacheKey);
@@ -1720,6 +1721,32 @@
     return [...new Set(choices)].map((value) => `<option value="${escapeHtml(value)}" ${value === current ? 'selected' : ''}>${escapeHtml(value)}</option>`).join('');
   }
 
+  function regionMatches(address, filter) {
+    const keyword = String(filter || '').trim().toLowerCase();
+    if (!keyword || keyword === '全部地区') return true;
+    return String(address || '').toLowerCase().includes(keyword);
+  }
+
+  function importerFilterValues() {
+    const employees = state.jobFormOptions?.employees || state.communicationHrOptions || [];
+    return [...new Set(employees.map((item) => String(item?.name || '').trim()).filter(Boolean))]
+      .sort((left, right) => left.localeCompare(right, 'zh-CN'));
+  }
+
+  function loadImporterFilterOptions() {
+    if (state.importerFilterOptionsLoaded) return Promise.resolve(state.jobFormOptions || { employees: [] });
+    if (state.importerFilterOptionsPromise) return state.importerFilterOptionsPromise;
+    state.importerFilterOptionsPromise = request('api/recruitment/form-options?employees=all')
+      .then((options) => {
+        state.jobFormOptions = options;
+        state.importerFilterOptionsLoaded = true;
+        return options;
+      })
+      .catch(() => ({ employees: [] }))
+      .finally(() => { state.importerFilterOptionsPromise = null; });
+    return state.importerFilterOptionsPromise;
+  }
+
   const TALENT_FILTER_DEFAULTS = { q: '', job: '全部岗位', status: '全部状态', source: '全部来源', tag: '全部标签', importer: '', age: '全部年龄', region: '全部地区', score: '全部评分' };
   const TALENT_FILTER_LABELS = { q: '姓名', job: '岗位', status: '在职状态', source: '来源', importer: '导入人', age: '年龄', region: '地区', score: '评分' };
 
@@ -1798,9 +1825,9 @@
             <label><span>岗位</span><select id="rf-job-filter">${talentOptions(jobFilterValues, state.talentFilters.job, '全部岗位')}</select></label>
             <label><span>在职状态</span><select id="rf-status-filter">${talentOptions(['在职','离职','未入职'], state.talentFilters.status, '全部状态')}</select></label>
             <label><span>人才来源</span><select id="rf-source-filter">${talentOptions(facets.sources, state.talentFilters.source, '全部来源')}</select></label>
-            <label><span>导入人 / 内推人</span><input id="rf-importer-filter" type="search" value="${escapeHtml(state.talentFilters.importer)}" placeholder="输入姓名" autocomplete="off" enterkeyhint="search"></label>
+            <label><span>导入人 / 内推人</span><select id="rf-importer-filter" data-placeholder="输入姓名并选择">${talentOptions(importerFilterValues(), state.talentFilters.importer, '')}</select></label>
             <label><span>年龄</span><select id="rf-age-filter">${talentOptions(['18-25岁','26-30岁','31-35岁','36岁以上'], state.talentFilters.age, '全部年龄')}</select></label>
-            <label><span>地区</span><select id="rf-region-filter">${talentOptions(facets.regions, state.talentFilters.region, '全部地区')}</select></label>
+            <label><span>地区</span><input id="rf-region-filter" type="search" value="${escapeHtml(state.talentFilters.region === '全部地区' ? '' : state.talentFilters.region)}" placeholder="输入城市，支持模糊查询" autocomplete="off" enterkeyhint="search"></label>
             <label><span>AI 评分</span><select id="rf-score-filter">${talentOptions(['90-100分','80-89分','70-79分','60-69分','0-59分'], state.talentFilters.score, '全部评分')}</select></label>
           </div>
           <div class="rf-talent-active-filters" ${activeFilters.length ? '' : 'hidden'}>${activeFilters.map((item) => `<button type="button" data-rf-clear-filter="${escapeHtml(item.key)}"><span>${escapeHtml(item.label)}</span><strong>${escapeHtml(item.value)}</strong><i aria-hidden="true">×</i></button>`).join('')}</div>
@@ -2032,7 +2059,7 @@
         tag: filterValue('rf-tag-filter', '全部标签'),
         importer: filterValue('rf-importer-filter', ''),
         age: filterValue('rf-age-filter', '全部年龄'),
-        region: filterValue('rf-region-filter', '全部地区'),
+        region: filterValue('rf-region-filter', '').trim() || '全部地区',
         score: filterValue('rf-score-filter', '全部评分'),
       };
       state.talentPage = 1;

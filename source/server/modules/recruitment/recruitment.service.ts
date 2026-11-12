@@ -778,7 +778,7 @@ export class RecruitmentService implements OnApplicationBootstrap {
   }
 
   /** 岗位表单使用组织与员工作为下拉数据源，不再让用户手填部门/负责人。 */
-  async formOptions(profile?: RoleAccessProfile) {
+  async formOptions(profile?: RoleAccessProfile, options: { employees?: 'all' } = {}) {
     const [organizations, users] = await Promise.all([
       teable.listAllRecords(this.table('recruitment_organization_units')),
       teable.listAllRecords(this.table('recruitment_users')),
@@ -789,7 +789,7 @@ export class RecruitmentService implements OnApplicationBootstrap {
         .filter((row) => this.hasAllPositionAccess(profile) || allowedDepartmentIds.has(text(row.fields['组织单元ID']) || row.id))
         .map((row) => ({ id: text(row.fields['组织单元ID']) || row.id, name: text(row.fields['组织名称']), owner: text(row.fields['负责人']) }))
         .sort((left, right) => left.name.localeCompare(right.name, 'zh-CN')),
-      employees: users.filter((row) => ['启用', '待开通', ''].includes(text(row.fields['用户状态'])))
+      employees: users.filter((row) => options.employees === 'all' || ['启用', '待开通', ''].includes(text(row.fields['用户状态'])))
         .map((row) => ({ id: text(row.fields['用户ID']) || row.id, name: text(row.fields['姓名']), department: json<string[]>(row.fields['部门JSON'], [])[0] || '', mobile: text(row.fields['手机']), tianjiWechatId: text(row.fields['天玑微信ID']) || text(row.fields['企业微信用户ID']) }))
         .filter((item) => item.name)
         .sort((left, right) => left.name.localeCompare(right.name, 'zh-CN')),

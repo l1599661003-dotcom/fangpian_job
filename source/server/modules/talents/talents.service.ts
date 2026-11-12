@@ -662,7 +662,7 @@ export class TalentsService implements OnModuleInit {
         && (!query.tag || query.tag === '全部标签' || item.tags.some((tag: any) => tag.name === query.tag))
         && (!minimum || item.bestMatchScore >= minimum)
         && rangeMatches(Number(item.age || 0), query.age)
-        && (!query.region || query.region === '全部地区' || item.address === query.region)
+        && this.regionMatches(item.address, query.region)
         && rangeMatches(Number(item.bestMatchScore || 0), query.score)
     })
     candidates.sort((a, b) => (b.createdTime || '').localeCompare(a.createdTime || ''))
@@ -3167,6 +3167,12 @@ export class TalentsService implements OnModuleInit {
       fields: TALENT_DIRECTORY_FILTER_FIELDS.recruitment_referrals,
     })
     return [...new Set(rows.map((row) => text(row.fields['候选人ID'])).filter(Boolean))]
+  }
+
+  private regionMatches(address: unknown, filter: unknown) {
+    const keyword = text(filter).toLowerCase()
+    if (!keyword || keyword === '全部地区') return true
+    return text(address).toLowerCase().includes(keyword)
   }
 
   private directoryFilter(query: Pick<TalentDirectoryQuery, 'q' | 'status' | 'source' | 'importer'>, referralCandidateIds: string[] = []) {

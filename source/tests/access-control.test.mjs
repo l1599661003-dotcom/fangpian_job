@@ -463,6 +463,7 @@ test('global controller guard covers every internal API family and audits sensit
     assert.deepEqual(resolveAccessPolicy('GET', '/api/resumes/api-config').actionsAny, ['manage_resume_api']);
     assert.deepEqual(resolveAccessPolicy('POST', '/api/studio-tasks/daily/run-now').actionsAny, ['manage_system']);
     assert.deepEqual(resolveAccessPolicy('GET', '/api/talents/talent_a').pagesAny, ['candidates']);
+    assert.deepEqual(resolveAccessPolicy('GET', '/api/recruitment/form-options').pagesAny, ['home', 'positions', 'candidates']);
     assert.deepEqual(resolveAccessPolicy('DELETE', '/api/resumes/resume_a').pagesAny, ['candidates', 'resume_parse']);
     assert.deepEqual(resolveAccessPolicy('DELETE', '/api/resumes/resume_a').actionsAny, ['edit_candidate']);
     assert.deepEqual(resolveAccessPolicy('POST', '/api/resumes/backfill-identity').pagesAny, ['resume_parse']);
@@ -836,6 +837,8 @@ test('talent search uses raw contact data before masking and applies age region 
     assert.equal(byPhone.total, 1);
     assert.equal(byPhone.talents[0].name, '搜索候选人');
     assert.equal(byPhone.talents[0].phone, '138****8001');
+    const byRegionKeyword = await talents.list({ region: '武' }, profile);
+    assert.equal(byRegionKeyword.talents.filter((item) => item.name === '搜索候选人').length, 1);
     const bySkill = await talents.list({ q: '数据分析', age: '26-30岁', region: '武汉', score: '80-89分' }, profile);
     assert.equal(bySkill.total, 1);
     assert.equal(bySkill.talents[0].bestMatchScore, 86);

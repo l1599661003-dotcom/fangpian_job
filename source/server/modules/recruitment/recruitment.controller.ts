@@ -44,9 +44,9 @@ export class RecruitmentController {
   }
 
   @Get('form-options')
-  async formOptions(@Headers() headers: Record<string, string | string[] | undefined>) {
+  async formOptions(@Headers() headers: Record<string, string | string[] | undefined>, @Query('employees') employees?: string) {
     const actor = await this.actor(headers)
-    return this.recruitment.formOptions(actor.profile)
+    return this.recruitment.formOptions(actor.profile, { employees: employees === 'all' ? 'all' : undefined })
   }
 
   @Get('monthly-demands')
