@@ -50,10 +50,12 @@ function memoryTeable() {
     records,
     install() {
       const originals = {};
-      for (const method of ['listFields', 'listRecords', 'listAllRecords', 'createRecord', 'updateRecord', 'deleteRecord']) originals[method] = teable[method];
+      for (const method of ['listFields', 'listRecords', 'listAllRecords', 'createRecord', 'updateRecord', 'deleteRecord', 'findOneByField', 'getRecord']) originals[method] = teable[method];
       teable.listFields = async (tableId) => (definitions.get(tableId)?.fields || []).map((field, index) => ({ id: `${tableId}_field_${index}`, ...field }));
       teable.listRecords = async (tableId, options = {}) => filterLocalRecords([...(records.get(tableId) || [])], options.filterByTql);
       teable.listAllRecords = async (tableId, options = {}) => filterLocalRecords([...(records.get(tableId) || [])], options.filterByTql);
+      teable.findOneByField = async (tableId, fieldName, value) => (records.get(tableId) || []).find((item) => String(item.fields?.[fieldName] ?? '') === String(value ?? ''));
+      teable.getRecord = async (tableId, recordId) => (records.get(tableId) || []).find((item) => item.id === recordId);
       teable.createRecord = async (tableId, fields) => {
         const row = { id: `${tableId}_record_${++sequence}`, fields: { ...fields }, createdTime: new Date().toISOString() };
         records.get(tableId).push(row);
@@ -73,6 +75,38 @@ function memoryTeable() {
     },
   };
 }
+
+test('opening an approval uses the saved approver even when the record primary key read omits progress', async () => {
+  const memory = memoryTeable(), restore = memory.install();
+  const originalGetRecord = teable.getRecord;
+  try {
+    const service = new RecruitmentService({ requireTableId: name => name });
+    await teable.createRecord('recruitment_users', { 用户ID: 'zhang_jie', 姓名: '张杰', 企业微信用户ID: 'wecom_zhang', 用户状态: '启用' });
+    await teable.createRecord('recruitment_users', { 用户ID: 'current_user', 姓名: '当前审批人', 企业微信用户ID: 'wecom_current', 用户状态: '启用' });
+    const progress = JSON.stringify([
+      { order: 1, role: '审批人', userId: 'current_user', name: '当前审批人', wecomUserId: 'wecom_current', status: '待审批', opinion: '', actedAt: '' },
+    ]);
+    const created = await teable.createRecord('recruitment_positions', {
+      职位ID: 'approval_position', 职位名称: '审批测试岗位', 审批状态: '待审批', 当前审批步骤: 1,
+      当前审批人用户ID: 'current_user', 审批人企微ID: 'wecom_current', 审批进度JSON: progress,
+    });
+    let primaryReads = 0;
+    teable.getRecord = async (tableId, recordId) => {
+      const row = await originalGetRecord(tableId, recordId);
+      primaryReads += 1;
+      if (!row) return row;
+      const { 审批进度JSON: _progress, ...fields } = row.fields;
+      return { ...row, fields };
+    };
+    const first = await service.getRecruitmentApproval('position', 'approval_position', { userId: 'current_user', userName: '当前审批人' });
+    const second = await service.getRecruitmentApproval('position', 'approval_position', { userId: 'current_user', userName: '当前审批人' });
+    assert.equal(first.id, 'approval_position');
+    assert.equal(second.approvalStatus, '待审批');
+    assert.equal(primaryReads, 0);
+    assert.equal(created.fields['当前审批人用户ID'], 'current_user');
+    await assert.rejects(() => service.getRecruitmentApproval('position', 'approval_position', { userId: 'zhang_jie', userName: '张杰' }), /当前审批人是当前审批人/);
+  } finally { restore(); }
+});
 
 test('position and demand require the configured WeCom approver before publishing', async () => {
   const memory = memoryTeable(), restore = memory.install(), previousApprover = process.env.WECOM_RECRUITMENT_APPROVER_USER_ID, previousMessageRecipient = process.env.TIANJI_RECRUITMENT_APPROVER_WECHAT_ID, previousPublicUrl = process.env.APP_PUBLIC_URL;

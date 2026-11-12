@@ -1576,14 +1576,19 @@ export class RecruitmentService implements OnApplicationBootstrap {
   private async assertCurrentApprovalActor(row: TeableRecord, actorUserId: string) {
     const progress = this.approvalProgress(row)
     const current = progress.find((step) => step.role === '审批人' && step.order === this.currentApprovalOrder(row, progress))
-    if (current) {
-      if (actorUserId !== current.userId) {
+    const currentUserId = text(current?.userId) || text(row.fields['当前审批人用户ID'])
+    if (currentUserId) {
+      if (actorUserId !== currentUserId) {
         const users = await teable.listAllRecords(this.table('recruitment_users'))
         const actor = users.find((item) => (text(item.fields['用户ID']) || item.id) === actorUserId)
         const actorWecomUserId = text(actor?.fields['企业微信用户ID'])
-        if (!actor || actorWecomUserId !== current.wecomUserId) throw new ForbiddenException(`当前审批人是${current.name || '下一位审批人'}，请使用对应账号处理`)
+        const currentWecomUserId = text(current?.wecomUserId) || text(row.fields['审批人企微ID'])
+        if (!actor || !currentWecomUserId || actorWecomUserId !== currentWecomUserId) {
+          const currentName = text(current?.name) || text(users.find((item) => (text(item.fields['用户ID']) || item.id) === currentUserId)?.fields['姓名']) || '下一位审批人'
+          throw new ForbiddenException(`当前审批人是${currentName}，请使用对应账号处理`)
+        }
       }
-      return current.wecomUserId
+      return text(current?.wecomUserId) || text(row.fields['审批人企微ID'])
     }
     return this.assertRecruitmentApprover(actorUserId)
   }
@@ -1678,8 +1683,11 @@ export class RecruitmentService implements OnApplicationBootstrap {
   private async recruitmentApprovalRow(type: 'position' | 'demand', id: string) {
     const tableName = type === 'position' ? 'recruitment_positions' : 'recruitment_monthly_demands'
     const idField = type === 'position' ? '职位ID' : '月度需求ID'
-    const tableId = await this.verify(tableName, [idField, '审批状态', '更新时间'])
-    const row = await this.find(tableId, idField, id, type === 'position' ? '岗位不存在' : '招聘需求不存在')
+    const tableId = await this.verify(tableName, [idField, '审批状态', '当前审批人用户ID', '审批进度JSON', '更新时间'])
+    // 按记录主键读取时，平台偶发不返回长文本审批进度。第一次打开就会把当前审批人误判成默认审批人。
+    // 业务编号查询会带回完整字段，所以审批详情固定走业务编号。
+    const row = await teable.findOneByField(tableId, idField, id)
+    if (!row) throw new NotFoundException(type === 'position' ? '岗位不存在' : '招聘需求不存在')
     return { tableId, row }
   }
 
