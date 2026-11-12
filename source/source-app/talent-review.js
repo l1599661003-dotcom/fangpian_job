@@ -15,6 +15,23 @@
     return `<div class="score-chart">${rows}<p>综合评分 ${Math.round(Number(overall))} = ${items.map((item) => `${Math.round(Number(item.score))}×${Number(item.weight)}%`).join(' + ')} = ${weighted.toFixed(1)}</p></div>`;
   }
 
+  function openReviewAvatar(url, label = '候选人头像') {
+    const source = String(url || '').trim();
+    if (!source) return;
+    document.getElementById('review-avatar-preview')?.remove();
+    document.body.insertAdjacentHTML('beforeend', `<div class="review-avatar-preview" id="review-avatar-preview" role="dialog" aria-modal="true" aria-label="${esc(label)}"><button type="button" aria-label="关闭头像">×</button><img src="${esc(source)}" alt="${esc(label)}"></div>`);
+    const layer = document.getElementById('review-avatar-preview');
+    const close = () => layer?.remove();
+    layer?.addEventListener('click', close);
+    layer?.querySelector('button')?.focus();
+    document.addEventListener('keydown', function onKey(event) {
+      if (event.key !== 'Escape' || !document.getElementById('review-avatar-preview')) return;
+      event.preventDefault();
+      close();
+      document.removeEventListener('keydown', onKey);
+    });
+  }
+
   function render() {
     const candidate = detail.candidate || {};
     const analysis = candidate.analysis || {};
@@ -27,7 +44,7 @@
     const avatarFallback = String(candidate.name || '候选人').slice(0, 2);
     const avatarLabel = `${candidate.name || '候选人'}头像`;
     const avatar = candidate.avatarUrl
-      ? `<img src="${esc(candidate.avatarUrl)}" alt="${esc(avatarLabel)}">`
+      ? `<button type="button" class="resume-avatar-zoom" data-avatar-preview="${esc(candidate.avatarUrl)}" aria-label="查看${esc(avatarLabel)}"><img src="${esc(candidate.avatarUrl)}" alt="${esc(avatarLabel)}"></button>`
       : `<span aria-hidden="true">${esc(avatarFallback)}</span>`;
     const avatarAccessibility = candidate.avatarUrl ? '' : `role="img" aria-label="${esc(avatarLabel)}"`;
     const resumeFacts = [
@@ -52,6 +69,10 @@
       </article>
       ${detail.reviewed ? `<section class="review-action" id="review-action"><h2>本次评审已完成</h2><div class="review-success"><i>✓</i><h3>${esc(['合适', '适合', '推荐其他部门'].includes(detail.review?.decision) ? '已提交并通知招聘 HR' : '意见已提交')}</h3><p>评审人：${esc(detail.review?.reviewer || '业务同事')} · ${esc(detail.review?.submittedAt || '')}</p><p>结论：${esc(detail.review?.decision || '已提交')} · ${esc(detail.review?.position || detail.claimedPosition || '未选择岗位')}</p></div></section>` : `<section class="review-action" id="review-action"><h2>这份简历怎么处理？</h2><p>合适时选择岗位并给出至少 2 个可面试时间；推荐其他部门时必须确认目标岗位。</p><div class="review-identity"><span>评审人</span><strong>${esc(detail.viewer?.name || '当前登录用户')}</strong><span>部门</span><strong>${esc((detail.viewer?.departments || []).join('、') || '已按登录权限识别')}</strong></div><div class="decision-grid"><button class="active" data-decision="合适">合适</button><button data-decision="不合适">不合适</button><button data-decision="推荐其他部门">推荐其他部门</button></div><div class="review-form">${positionPicker}<div class="wide" id="reason-field" hidden><label for="reject-reason">不合适原因 <span class="field-required" aria-hidden="true">必填</span></label><p>说明不合适的具体原因，招聘同事会记录在评审意见中。</p><textarea id="reject-reason" maxlength="300" placeholder="例如：经验方向与岗位不匹配"></textarea></div><div class="wide" id="slot-field"><div class="slot-heading"><label>可面试时间 <span class="field-required" aria-hidden="true">必填</span></label><p>至少填写 2 个，需要更多时间可以继续添加。</p></div><div id="slot-list"><label class="slot-item"><span>时间 1</span><input type="text" maxlength="40" placeholder="例如 10月28日 14:00"></label><label class="slot-item"><span>时间 2</span><input type="text" maxlength="40" placeholder="例如 10月29日 10:30"></label></div><button type="button" id="add-slot">添加一个时间</button></div></div><button class="submit-review" id="submit-review">提交评审意见</button><div class="review-note">推荐其他部门会先按你确认的目标岗位提交，不会直接转走。</div></section>`}`;
     document.getElementById('print-resume')?.addEventListener('click', () => window.print());
+    document.querySelector('[data-avatar-preview]')?.addEventListener('click', (event) => {
+      event.preventDefault();
+      openReviewAvatar(event.currentTarget.dataset.avatarPreview, event.currentTarget.getAttribute('aria-label'));
+    });
     const feedback = document.createElement('p');
     feedback.id = 'review-feedback';
     feedback.className = 'review-inline-message';

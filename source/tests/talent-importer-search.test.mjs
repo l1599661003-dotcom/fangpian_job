@@ -16,8 +16,9 @@ test('talent importer search matches both uploaders and referral referrers', asy
   const referralFilters = [];
   const candidateFilters = [];
   const filterCandidates = (filter = '') => candidates.filter((row) => {
-    if (filter.includes('王导入')) return row.fields.创建人 === '王导入';
-    if (filter.includes('candidate_referral')) return row.fields.候选人ID === 'candidate_referral';
+    const matchesImporter = filter.includes('王导入') && row.fields.创建人 === '王导入';
+    const matchesReferral = filter.includes('candidate_referral') && row.fields.候选人ID === 'candidate_referral';
+    if (filter.includes('王导入') || filter.includes('candidate_referral')) return matchesImporter || matchesReferral;
     return true;
   });
   teable.listAllRecords = async (table, options = {}) => {
@@ -48,6 +49,12 @@ test('talent importer search matches both uploaders and referral referrers', asy
     assert.equal(byReferrer.talents[0].referrer, '李内推');
     assert.ok(referralFilters.some(filter => filter?.includes('{推荐人} LIKE "%李内推%"')));
     assert.ok(candidateFilters.some(filter => filter?.includes('{候选人ID} = "candidate_referral"')));
+
+    const byMultiple = await service.list({ importer: '王导入、李内推', pageSize: '10' });
+    assert.equal(byMultiple.total, 2);
+    assert.deepEqual([...byMultiple.talents.map((item) => item.name)].sort(), ['内推候选人', '导入候选人']);
+    assert.ok(referralFilters.some(filter => filter?.includes('{推荐人} LIKE "%王导入%"') && filter.includes('{推荐人} LIKE "%李内推%"')));
+    assert.ok(candidateFilters.some(filter => filter?.includes('{创建人} LIKE "%王导入%"') && filter.includes('{创建人} LIKE "%李内推%"') && filter.includes('{候选人ID} = "candidate_referral"')));
   } finally {
     Object.assign(teable, originals);
   }

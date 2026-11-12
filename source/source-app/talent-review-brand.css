@@ -14,6 +14,10 @@
 .resume-head-main { display: flex; align-items: center; gap: 22px; }
 .resume-avatar { flex: 0 0 104px; width: 104px; height: 128px; display: grid; place-items: center; overflow: hidden; border: 1px solid #dce4e5; border-radius: 10px; background: linear-gradient(145deg, #edf4f4, #dce9e8); color: #496a6b; font-size: 28px; font-weight: 800; }
 .resume-avatar img { width: 100%; height: 100%; display: block; object-fit: cover; }
+.resume-avatar-zoom { width: 100%; height: 100%; padding: 0; border: 0; background: transparent; cursor: zoom-in; }
+.review-avatar-preview { position: fixed; z-index: 80; inset: 0; display: grid; place-items: center; padding: 24px; background: rgba(24, 32, 32, .78); }
+.review-avatar-preview img { max-width: min(92vw, 860px); max-height: 86vh; border-radius: 12px; background: #fff; object-fit: contain; }
+.review-avatar-preview button { position: absolute; top: 16px; right: 16px; width: 40px; height: 40px; border: 0; border-radius: 50%; background: #fff; color: #243333; font-size: 26px; cursor: pointer; }
 .resume-head-copy { min-width: 0; }
 .resume-head small { display: block; margin-bottom: 10px; color: #687178; font-size: 11px; letter-spacing: .12em; }
 .resume-head h1 { margin: 0 0 8px; font-size: 30px; overflow-wrap: anywhere; }

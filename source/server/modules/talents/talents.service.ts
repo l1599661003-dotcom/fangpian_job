@@ -598,8 +598,8 @@ export class TalentsService implements OnModuleInit {
     // 仅在 detail() 中按点击加载。这样人才数量增长时，列表不会随完整档案膨胀。
     const pageSize = Math.max(10, Math.min(100, Math.round(num(query.pageSize) || 25)))
     const page = Math.max(1, Math.round(num(query.page) || 1))
-    const importerKeyword = text(query.importer)
-    const referralCandidateIds = importerKeyword ? await this.importerReferralCandidateIds(importerKeyword) : []
+    const importerKeywords = this.importerKeywords(query.importer)
+    const referralCandidateIds = importerKeywords.length ? await this.importerReferralCandidateIds(importerKeywords) : []
     const hasRelationFilter = Boolean((query.job && query.job !== '全部岗位') || (query.tag && query.tag !== '全部标签') || query.minScore || (query.age && query.age !== '全部年龄') || (query.region && query.region !== '全部地区') || (query.score && query.score !== '全部评分'))
     const hasComplexFilter = Boolean(hasRelationFilter || query.status === '未入职')
     const serverFilter = this.directoryFilter(query, referralCandidateIds)
@@ -3160,10 +3160,18 @@ export class TalentsService implements OnModuleInit {
     return batches.flat()
   }
 
-  private async importerReferralCandidateIds(keyword: string) {
-    const escaped = keyword.replace(/\\/g, '\\\\').replace(/"/g, '\\"')
+  private importerKeywords(value: unknown) {
+    return [...new Set(text(value).split(/[、,，]/).map((item) => item.trim()).filter(Boolean))]
+  }
+
+  private async importerReferralCandidateIds(keywords: string[]) {
+    const escape = (value: string) => value.replace(/\\/g, '\\\\').replace(/"/g, '\\"')
+    const filterByTql = keywords.flatMap((keyword) => {
+      const escaped = escape(keyword)
+      return [`{推荐人} LIKE "%${escaped}%"`, `{推荐人用户ID} LIKE "%${escaped}%"`]
+    }).join(' OR ')
     const rows = await teable.listAllRecords(this.table('recruitment_referrals'), {
-      filterByTql: `{推荐人} LIKE "%${escaped}%" OR {推荐人用户ID} LIKE "%${escaped}%"`,
+      filterByTql,
       fields: TALENT_DIRECTORY_FILTER_FIELDS.recruitment_referrals,
     })
     return [...new Set(rows.map((row) => text(row.fields['候选人ID'])).filter(Boolean))]
@@ -3183,14 +3191,14 @@ export class TalentsService implements OnModuleInit {
     else if (query.status && query.status !== '全部状态' && query.status !== '未入职') conditions.push(`{候选人状态} = "${escape(query.status)}"`)
     if (query.source && query.source !== '全部来源') conditions.push(`{来源类型} = "${escape(query.source)}"`)
     const keywordClauses = keyword ? [`{姓名} LIKE "%${escape(keyword)}%"`] : []
-    const importer = text(query.importer)
-    const importerClauses = importer
-      ? [
-          `{创建人} LIKE "%${escape(importer)}%"`,
-          `{创建人用户ID} LIKE "%${escape(importer)}%"`,
-          ...referralCandidateIds.map((candidateId) => `{候选人ID} = "${escape(candidateId)}"`),
-        ]
-      : []
+    const importers = this.importerKeywords(query.importer)
+    const importerClauses = [
+      ...importers.flatMap((importer) => [
+        `{创建人} LIKE "%${escape(importer)}%"`,
+        `{创建人用户ID} LIKE "%${escape(importer)}%"`,
+      ]),
+      ...referralCandidateIds.map((candidateId) => `{候选人ID} = "${escape(candidateId)}"`),
+    ]
     const clauses = keywordClauses.length && importerClauses.length
       ? keywordClauses.flatMap((keywordClause) => importerClauses.map((importerClause) => `${keywordClause} AND ${importerClause}`))
       : keywordClauses.length ? keywordClauses : importerClauses

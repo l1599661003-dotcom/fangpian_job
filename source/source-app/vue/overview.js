@@ -69,6 +69,7 @@ const OverviewPage = {
     const period = ref(['day', 'week', 'month'].includes(dependencies?.initialPeriod) ? dependencies.initialPeriod : 'day');
     const selectedMonth = ref(/^\d{4}-\d{2}$/.test(text(dependencies?.initialMonth)) ? dependencies.initialMonth : currentMonthValue());
     const arrivalSort = ref(['priority', 'expectedArrivalDate', 'latestArrivalDate'].includes(dependencies?.initialArrivalSort) ? dependencies.initialArrivalSort : 'priority');
+    const selectedDepartments = ref(Array.isArray(dependencies?.initialDepartments) ? dependencies.initialDepartments.map(text).filter(Boolean) : []);
     const data = ref(null);
     const loading = ref(true);
     const error = ref('');
@@ -80,7 +81,7 @@ const OverviewPage = {
     const departmentUploads = computed(() => Array.isArray(hiringActivity.value.departmentUploads) ? hiringActivity.value.departmentUploads : []);
     const periodName = computed(() => ({ day: '今日', week: '本周', month: '所选公司月' })[period.value]);
 
-    const departments = computed(() => {
+    const allDepartments = computed(() => {
       const priorityRank = (priority) => ({ 紧急: 0, 高: 0, 重要: 1, 中: 1, 储备: 2, 低: 2 }[priority] ?? 3);
       const normalizePriority = (priority) => ({ 高: '紧急', 中: '重要', 低: '储备', 一般: '储备' }[priority] || priority || '储备');
       return (data.value?.departments || []).map((row) => {
@@ -107,6 +108,12 @@ const OverviewPage = {
         || String(left.department || '').localeCompare(String(right.department || ''), 'zh-CN')
         || String(left.role || '').localeCompare(String(right.role || ''), 'zh-CN'));
     });
+
+    const departmentOptions = computed(() => [...new Set(allDepartments.value.map((row) => row.department || '未分配部门'))].sort((left, right) => left.localeCompare(right, 'zh-CN')));
+    const activeDepartmentFilters = computed(() => selectedDepartments.value.filter((item) => departmentOptions.value.includes(item)));
+    const departments = computed(() => activeDepartmentFilters.value.length
+      ? allDepartments.value.filter((row) => activeDepartmentFilters.value.includes(row.department || '未分配部门'))
+      : allDepartments.value);
 
     const completedPositionCount = computed(() => departments.value.filter((row) => row.completedAll).length);
     const remainingHeadcount = computed(() => departments.value.reduce((total, row) => total + row.remaining, 0));
@@ -160,11 +167,19 @@ const OverviewPage = {
       load();
     }
 
-    watch([period, selectedMonth, arrivalSort], () => {
+    function toggleDepartment(department, checked) {
+      const next = new Set(activeDepartmentFilters.value);
+      if (checked) next.add(department);
+      else next.delete(department);
+      selectedDepartments.value = [...next];
+    }
+
+    watch([period, selectedMonth, arrivalSort, selectedDepartments], () => {
       dependencies?.onStateChange?.({
         period: period.value,
         selectedMonth: selectedMonth.value,
         arrivalSort: arrivalSort.value,
+        departments: selectedDepartments.value,
       });
     });
 
@@ -309,6 +324,7 @@ const OverviewPage = {
       if (['day', 'week', 'month'].includes(options.initialPeriod)) period.value = options.initialPeriod;
       if (/^\d{4}-\d{2}$/.test(text(options.initialMonth))) selectedMonth.value = options.initialMonth;
       if (['priority', 'expectedArrivalDate', 'latestArrivalDate'].includes(options.initialArrivalSort)) arrivalSort.value = options.initialArrivalSort;
+      if (Array.isArray(options.initialDepartments)) selectedDepartments.value = options.initialDepartments.map(text).filter(Boolean);
     };
 
     return () => {
@@ -372,6 +388,18 @@ const OverviewPage = {
             <section class="overview-target-delivery" aria-label="部门岗位达成">
               <header class="overview-analysis-head">
                 <div class="overview-analysis-actions">
+                  <details class="overview-department-filter">
+                    <summary><span>部门</span><b>{activeDepartmentFilters.value.length ? `已选 ${activeDepartmentFilters.value.length} 个` : '全部部门'}</b></summary>
+                    <div>
+                      {departmentOptions.value.length ? departmentOptions.value.map((department) => (
+                        <label key={department}>
+                          <input type="checkbox" checked={activeDepartmentFilters.value.includes(department)} onChange={(event) => toggleDepartment(department, event.target.checked)} />
+                          <span>{department}</span>
+                        </label>
+                      )) : <span>暂无部门</span>}
+                      {activeDepartmentFilters.value.length ? <button type="button" onClick={() => { selectedDepartments.value = []; }}>清空</button> : null}
+                    </div>
+                  </details>
                   <label class="overview-arrival-sort">
                     <span>排序</span>
                     <select id="overview-arrival-sort" aria-label="部门岗位达成排序" value={arrivalSort.value} onChange={(event) => { arrivalSort.value = event.target.value; }}>

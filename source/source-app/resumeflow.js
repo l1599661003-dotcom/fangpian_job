@@ -1097,10 +1097,17 @@
   function profileAvatar(item, className = 'rf-profile-avatar') {
     const initial = (item?.name || '候').trim().slice(0, 1);
     const avatarUrl = String(item?.avatarUrl || '').trim();
-    if (className === 'rf-candidate-avatar') {
-      return `<span class="${className}">${avatarUrl ? `<img src="${escapeHtml(avatarUrl)}" alt="${escapeHtml(item?.name || '候选人')}头像">` : escapeHtml(initial)}</span>`;
-    }
-    return `<button type="button" class="${className}" data-rf-avatar-preview="${escapeHtml(avatarUrl)}" aria-label="查看头像大图">${avatarUrl ? `<img src="${escapeHtml(avatarUrl)}" alt="${escapeHtml(item?.name || '候选人')}头像">` : escapeHtml(initial)}</button>`;
+    const image = avatarUrl ? `<img src="${escapeHtml(avatarUrl)}" alt="${escapeHtml(item?.name || '候选人')}头像">` : escapeHtml(initial);
+    if (!avatarUrl) return `<span class="${className}">${image}</span>`;
+    return `<button type="button" class="${className} rf-avatar-zoomable" data-rf-avatar-preview="${escapeHtml(avatarUrl)}" aria-label="查看${escapeHtml(item?.name || '候选人')}头像大图">${image}</button>`;
+  }
+
+  function openAvatarPreview(url, label = '候选人头像') {
+    const source = String(url || '').trim();
+    if (!source) return;
+    document.getElementById('rf-avatar-preview')?.remove();
+    document.body.insertAdjacentHTML('beforeend', `<div class="rf-avatar-preview" id="rf-avatar-preview" role="dialog" aria-modal="true" aria-label="${escapeHtml(label)}"><button type="button" data-rf-avatar-close aria-label="关闭头像">×</button><img src="${escapeHtml(source)}" alt="${escapeHtml(label)}"></div>`);
+    document.querySelector('#rf-avatar-preview [data-rf-avatar-close]')?.focus();
   }
 
   function resumeWarningsHtml(item) {
@@ -1466,7 +1473,7 @@
 
   function filterFallbackTalents(rows) {
     const keyword = state.talentFilters.q.trim().toLowerCase();
-    const importer = state.talentFilters.importer.trim().toLowerCase();
+    const importers = importerNames(state.talentFilters.importer).map((item) => item.toLowerCase());
     const rangeMatches = (value, filter) => {
       const label = String(filter || '');
       if (!label || label.startsWith('全部')) return true;
@@ -1478,7 +1485,7 @@
       const haystack = [item.name, item.phone, item.email, item.wechat, item.company, item.currentCompany, item.currentRole, item.jobIntention, item.address, item.educationBackground, item.skills?.join(' '), item.matches?.map((match) => match.positionName).join(' ')].join('|').toLowerCase();
       const importerHaystack = [item.importedBy, item.referrer].filter(Boolean).join('|').toLowerCase();
       return (!keyword || haystack.includes(keyword))
-        && (!importer || importerHaystack.includes(importer))
+        && (!importers.length || importers.some((item) => importerHaystack.includes(item)))
         && (state.talentFilters.job === '全部岗位' || item.matches?.some((match) => match.positionName === state.talentFilters.job))
         && (state.talentFilters.status === '全部状态' || item.employmentStatus === state.talentFilters.status)
         && (state.talentFilters.source === '全部来源' || item.source === state.talentFilters.source)
@@ -1721,6 +1728,16 @@
     return [...new Set(choices)].map((value) => `<option value="${escapeHtml(value)}" ${value === current ? 'selected' : ''}>${escapeHtml(value)}</option>`).join('');
   }
 
+  function importerNames(value) {
+    return [...new Set(String(value || '').split(/[、,，]/).map((item) => item.trim()).filter(Boolean))];
+  }
+
+  function importerOptionHtml(values, current) {
+    const selected = new Set(importerNames(current));
+    return [...new Set([...(values || []), ...selected].map((value) => String(value || '').trim()).filter(Boolean))]
+      .map((value) => `<option value="${escapeHtml(value)}" ${selected.has(value) ? 'selected' : ''}>${escapeHtml(value)}</option>`).join('');
+  }
+
   function regionMatches(address, filter) {
     const keyword = String(filter || '').trim().toLowerCase();
     if (!keyword || keyword === '全部地区') return true;
@@ -1825,7 +1842,7 @@
             <label><span>岗位</span><select id="rf-job-filter">${talentOptions(jobFilterValues, state.talentFilters.job, '全部岗位')}</select></label>
             <label><span>在职状态</span><select id="rf-status-filter">${talentOptions(['在职','离职','未入职'], state.talentFilters.status, '全部状态')}</select></label>
             <label><span>人才来源</span><select id="rf-source-filter">${talentOptions(facets.sources, state.talentFilters.source, '全部来源')}</select></label>
-            <label><span>导入人 / 内推人</span><select id="rf-importer-filter" data-placeholder="输入姓名并选择">${talentOptions(importerFilterValues(), state.talentFilters.importer, '')}</select></label>
+            <label><span>导入人 / 内推人</span><select id="rf-importer-filter" multiple data-placeholder="输入姓名，可多选">${importerOptionHtml(importerFilterValues(), state.talentFilters.importer)}</select></label>
             <label><span>年龄</span><select id="rf-age-filter">${talentOptions(['18-25岁','26-30岁','31-35岁','36岁以上'], state.talentFilters.age, '全部年龄')}</select></label>
             <label><span>地区</span><input id="rf-region-filter" type="search" value="${escapeHtml(state.talentFilters.region === '全部地区' ? '' : state.talentFilters.region)}" placeholder="输入城市，支持模糊查询" autocomplete="off" enterkeyhint="search"></label>
             <label><span>AI 评分</span><select id="rf-score-filter">${talentOptions(['90-100分','80-89分','70-79分','60-69分','0-59分'], state.talentFilters.score, '全部评分')}</select></label>
@@ -2047,6 +2064,7 @@
   function bindTalentArchive() {
     const search = document.getElementById('rf-search');
     const filterValue = (id, fallback) => document.getElementById(id)?.value || fallback;
+    const selectedFilterValues = (id) => [...(document.getElementById(id)?.selectedOptions || [])].map((option) => option.value.trim()).filter(Boolean);
     const applyFilters = () => {
       if (state.talentSearchLoading) return;
       state.talentSearchDraft = search?.value.trim() || '';
@@ -2057,7 +2075,7 @@
         status: filterValue('rf-status-filter', '全部状态'),
         source: filterValue('rf-source-filter', '全部来源'),
         tag: filterValue('rf-tag-filter', '全部标签'),
-        importer: filterValue('rf-importer-filter', ''),
+        importer: selectedFilterValues('rf-importer-filter').join('、'),
         age: filterValue('rf-age-filter', '全部年龄'),
         region: filterValue('rf-region-filter', '').trim() || '全部地区',
         score: filterValue('rf-score-filter', '全部评分'),
@@ -2257,12 +2275,30 @@
   }
 
   document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && document.getElementById('rf-avatar-preview')) {
+      event.preventDefault();
+      event.stopPropagation();
+      document.getElementById('rf-avatar-preview')?.remove();
+      return;
+    }
     if (event.key !== 'Escape' || !document.getElementById('rf-talent-dialog')) return;
     event.preventDefault();
     cancelTalentDialog();
   });
 
   document.addEventListener('click', (event) => {
+    const preview = event.target instanceof Element ? event.target.closest('[data-rf-avatar-preview]') : null;
+    if (preview) {
+      event.preventDefault();
+      event.stopPropagation();
+      openAvatarPreview(preview.dataset.rfAvatarPreview, preview.getAttribute('aria-label') || '候选人头像');
+      return;
+    }
+    if (event.target instanceof Element && event.target.closest('#rf-avatar-preview')) {
+      event.preventDefault();
+      document.getElementById('rf-avatar-preview')?.remove();
+      return;
+    }
     const button = event.target instanceof Element ? event.target.closest('[data-rf-open-interview-feedback]') : null;
     if (!button || button.disabled) return;
     event.preventDefault();
@@ -5519,10 +5555,12 @@ if (!root) return;
       initialPeriod: state.overviewPeriod,
       initialMonth: state.overviewSelectedMonth,
       initialArrivalSort: state.overviewArrivalSort,
+      initialDepartments: state.overviewDepartmentFilters,
       onStateChange: (next) => {
         state.overviewPeriod = next.period;
         state.overviewSelectedMonth = next.selectedMonth;
         state.overviewArrivalSort = next.arrivalSort;
+        state.overviewDepartmentFilters = next.departments;
       },
     });
   }
