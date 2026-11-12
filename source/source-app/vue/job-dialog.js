@@ -35,6 +35,7 @@ const JobDialog = {
       backupRecruiterUserId: '',
       responsibilities: props.position?.responsibilities || '',
       requirements: props.position?.requirements || '',
+      creationReason: props.position?.creationReason || '',
     });
 
     const employees = computed(() => props.options?.employees || []);
@@ -49,6 +50,7 @@ const JobDialog = {
       department: form.department ? '' : '请选择部门',
       level: form.level ? '' : '请选择岗位层级',
       externalRecruitment: form.externalRecruitment === '是' || form.externalRecruitment === '否' ? '' : '请选择是否对外招聘',
+      creationReason: isEdit.value || form.creationReason.trim() ? '' : '请填写新增理由',
       ownerUserId: form.ownerUserId ? '' : '请选择业务负责人',
       recruiterUserId: form.recruiterUserId ? '' : '请选择接收招聘流程私信的招聘HR',
     }));
@@ -89,6 +91,7 @@ const JobDialog = {
           backupRecruiter: employeeName(form.backupRecruiterUserId),
           responsibilities: form.responsibilities,
           requirements: form.requirements,
+          creationReason: isEdit.value ? undefined : form.creationReason.trim(),
           operator: window.recruitmentCurrentUser?.name || '当前用户',
         }, event.currentTarget);
       } catch (error) {
@@ -100,7 +103,7 @@ const JobDialog = {
     const field = (key, label, control, hint = '', required = false) => {
       const error = showError(key) ? errors.value[key] : '';
       return h('label', {
-        class: ['rf-job-field', { invalid: Boolean(error), wide: key === 'name' || key === 'responsibilities' || key === 'requirements' }],
+        class: ['rf-job-field', { invalid: Boolean(error), wide: key === 'name' || key === 'responsibilities' || key === 'requirements' || key === 'creationReason' }],
       }, [
         h('span', [label, required ? h('b', ' *') : null]),
         control,
@@ -154,6 +157,12 @@ const JobDialog = {
           placeholder: '一条一行，写经验和能力要求',
           onInput: (event) => { form.requirements = event.target.value; },
         })),
+        isEdit.value ? null : field('creationReason', '新增理由', h('textarea', {
+          value: form.creationReason,
+          placeholder: '说明为什么现在要新增这个岗位，审批人会看到这段理由',
+          onInput: (event) => { form.creationReason = event.target.value; },
+          onBlur: () => mark('creationReason'),
+        }), '这段理由会随审批一起提交，审批人在审批页和企微通知里都能看到。', true),
       ]),
       h('footer', [
         message.value ? h('p', { role: 'status' }, message.value) : null,

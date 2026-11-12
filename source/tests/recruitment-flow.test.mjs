@@ -94,7 +94,7 @@ test('position and demand require the configured WeCom approver before publishin
     const position = await service.createPosition({
       name: '高级后端工程师', department: '技术部', headcount: 3, priority: '高',
       jobDescription: '负责核心招聘系统服务端建设', owner: '王HR', expectedArrivalDate: '2026-10-15',
-      responsibilities: '负责NestJS服务与数据治理', requirements: '5年以上后端经验',
+      responsibilities: '负责NestJS服务与数据治理', requirements: '5年以上后端经验', externalRecruitment: '是', creationReason: '核心系统需要补一名后端负责人',
       recruiterUserId: 'other_user', recruiter: '其他员工',
       tags: ['NestJS', '数据治理'],
     }, '招聘管理员', 'recruiter_user');
@@ -103,9 +103,13 @@ test('position and demand require the configured WeCom approver before publishin
     assert.equal(position.approvalStatus, '待审批');
     assert.equal(position.approvalNotification.status, '已发送');
     assert.equal(approvalMessages[0].recipientAddress, 'LiSiQi');
-    assert.match(approvalMessages[0].content, /新增岗位审批/);
+    assert.match(approvalMessages[0].content, /审批：新增岗位待审批/);
+    assert.match(approvalMessages[0].content, /发起部门：技术部/);
+    assert.match(approvalMessages[0].content, /岗位名称：高级后端工程师/);
+    assert.match(approvalMessages[0].content, /发起人：招聘管理员/);
+    assert.match(approvalMessages[0].content, /新增理由：核心系统需要补一名后端负责人/);
     assert.match(approvalMessages[0].content, /flow_action=recruitment_approval/);
-    assert.match(approvalMessages[0].content, /\[点击打开审批页面 →\]\(https:\/\//);
+    assert.match(approvalMessages[0].content, /\[点击查看申请详情 →\]\(https:\/\//);
     assert.doesNotMatch(approvalMessages[0].content, /打开审批：https:\/\//);
 
     const attemptedBypass = await service.updatePosition(position.id, { approvalStatus: '已通过', changeReason: '尝试绕过审批' }, '王HR');
@@ -140,7 +144,11 @@ test('position and demand require the configured WeCom approver before publishin
     assert.equal(demand.positionAutoPublished, false);
     assert.equal(demand.approvalNotification.status, '发送中');
     await new Promise((resolve) => setImmediate(resolve));
-    assert.match(approvalMessages[1].content, /需求要求：重点承接招聘系统后端重构，优先NestJS和AI应用经验/);
+    assert.match(approvalMessages[1].content, /审批：新增需求待审批/);
+    assert.match(approvalMessages[1].content, /需求人数：4人/);
+    assert.match(approvalMessages[1].content, /需求类型：新增需求/);
+    assert.match(approvalMessages[1].content, /优先级：紧急/);
+    assert.match(approvalMessages[1].content, /新增理由：新增业务线，需要补充高级后端研发编制。/);
     await assert.rejects(
       () => service.saveMonthlyDemand({ month: '2026-10', positionId: position.id, headcount: 6, demandType: '新增需求', priority: '紧急', note: '另一个人重复提交。', operator: '其他员工' }, 'other_user'),
       /已由王HR提交，当前还在审批中/,
@@ -151,7 +159,8 @@ test('position and demand require the configured WeCom approver before publishin
     assert.equal(demand.approvalStatus, '待审批');
     assert.equal(demand.positionAutoPublished, false);
     await new Promise((resolve) => setImmediate(resolve));
-    assert.match(approvalMessages[2].content, /需求人数：5/);
+    assert.match(approvalMessages[2].content, /需求人数：5人/);
+    assert.match(approvalMessages[2].content, /新增理由：调整为本月新增5名高级后端研发编制。/);
     const pendingHiring = await service.monthlyHiring('2026-10');
     assert.equal(pendingHiring.summary.demand, 0);
     const approvedDemand = await service.decideRecruitmentApproval('demand', demand.id, { decision: '通过', opinion: '需求合理' }, { userId: 'approver_user', userName: '招聘审批人' });
@@ -457,7 +466,7 @@ test('position update keeps name and responsibilities synchronized', async () =>
     await teable.createRecord('recruitment_users', { 用户ID: 'hr_frontend', 姓名: '前端招聘HR', 天玑微信ID: 'HR_FRONTEND', 用户状态: '启用' });
     const service = new RecruitmentService({ requireTableId: (name) => name });
     const position = await service.createPosition({
-      name: '前端开发工程师', department: '技术部', headcount: 2, responsibilities: '负责Web前端开发', recruiterUserId: 'hr_frontend',
+      name: '前端开发工程师', department: '技术部', headcount: 2, responsibilities: '负责Web前端开发', externalRecruitment: '是', creationReason: '前端项目需要补人', recruiterUserId: 'hr_frontend',
     }, '招聘管理员');
     const updated = await service.updatePosition(position.id, { name: '高级前端开发工程师', responsibilities: '负责Web前端开发与小程序', changeReason: '岗位升级' }, '招聘管理员');
     assert.equal(updated.name, '高级前端开发工程师');
@@ -508,7 +517,7 @@ test('position selectors are limited to the current department while system admi
     );
     const organizationCount = memory.records.get('recruitment_organization_units').length;
     await assert.rejects(
-      () => service.createPosition({ name: '越权岗位', department: '新建部门' }, '商务员工', 'user_sales', salesProfile),
+      () => service.createPosition({ name: '越权岗位', department: '新建部门', externalRecruitment: '是', creationReason: '测试越权创建' }, '商务员工', 'user_sales', salesProfile),
       /只能选择所属部门/,
     );
     assert.equal(memory.records.get('recruitment_organization_units').length, organizationCount);

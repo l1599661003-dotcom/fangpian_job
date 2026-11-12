@@ -48,6 +48,7 @@ export interface PositionInput {
   jobDescription?: string
   responsibilities?: string
   requirements?: string
+  creationReason?: string
   benefits?: string
   tags?: string[]
   changeReason?: string

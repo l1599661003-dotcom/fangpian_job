@@ -6285,10 +6285,10 @@ if (!root) return;
     showPendingApprovals();
   }
 
-  function approvalTextBlock(label, value) {
+  function approvalTextBlock(label, value, required = false) {
     const content = String(value || '').trim();
-    if (!content) return '';
-    return `<section class="rf-approval-note"><h3>${escapeHtml(label)}</h3><p>${escapeHtml(content)}</p></section>`;
+    if (!content && !required) return '';
+    return `<section class="rf-approval-note"><h3>${escapeHtml(label)}</h3><p>${escapeHtml(content || '未填写')}</p></section>`;
   }
 
   async function openRecruitmentApproval(type, id) {
@@ -6304,13 +6304,14 @@ if (!root) return;
       const notes = [
         !isPosition ? approvalTextBlock('需求要求', item.demandRequirement) : '',
         !isPosition ? approvalTextBlock('需求说明', item.note) : '',
+        isPosition ? approvalTextBlock('新增理由', item.creationReason, true) : '',
         isPosition ? approvalTextBlock('工作职责', item.responsibilities) : '',
         isPosition ? approvalTextBlock('任职要求', item.requirements) : '',
       ].join('');
       const pending = item.approvalStatus === '待审批';
       const decisionBar = pending
         ? `<footer class="rf-approval-decision"><label><span>审批意见</span><textarea id="rf-recruitment-approval-opinion" placeholder="通过可不填；驳回必须说明原因"></textarea></label><div><p id="rf-recruitment-approval-message"></p><div><button class="rf-approval-reject" data-rf-recruitment-decision="驳回" type="button">驳回</button><button class="rf-approval-pass" data-rf-recruitment-decision="通过" type="button">通过</button></div></div></footer>`
-        : `<div class="rf-approval-finished ${item.approvalStatus === '已通过' ? 'passed' : 'rejected'}"><strong>${escapeHtml(item.approvalStatus || '已处理')}</strong><p>${escapeHtml(item.opinion || (item.approvalStatus === '已通过' ? '申请已通过。' : '申请已驳回。'))}</p><button type="button" data-rf-back-approvals>返回待审批</button></div>`;
+        : `<div class="rf-approval-finished ${item.approvalStatus === '已通过' ? 'passed' : 'rejected'}"><strong>${escapeHtml(item.approvalStatus || '已处理')}</strong><p>${escapeHtml(item.opinion || (item.approvalStatus === '已通过' ? '申请已通过。' : '申请已驳回。'))}</p></div>`;
       showTalentDialog(`<section class="rf-approval-workbench"><header class="rf-approval-head"><div><span>${isPosition ? '岗位审批' : '需求审批'}</span><h2>${escapeHtml(item.title || (isPosition ? '未命名岗位' : '招聘需求'))}</h2><p>确认信息后，在页面底部通过或驳回。</p></div><b class="${pending ? 'pending' : item.approvalStatus === '已通过' ? 'passed' : 'rejected'}">${escapeHtml(item.approvalStatus || '待审批')}</b></header><div class="rf-approval-facts">${facts}</div>${notes}${decisionBar}</section>`, 'wide');
       document.querySelector('[data-rf-back-approvals]')?.addEventListener('click', () => showPendingApprovals());
       document.querySelectorAll('#rf-talent-dialog [data-rf-recruitment-decision]').forEach((button) => button.addEventListener('click', async () => {
@@ -8674,8 +8675,16 @@ if (!root) return;
       } else if (action === 'demand') {
         window.setPage?.('jobs');
         const monthInput = document.getElementById('job-month-filter');
+        const demandPositionId = params.get('position_id') || '';
         if (monthInput && /^\d{4}-\d{2}$/.test(demandMonth)) monthInput.value = demandMonth;
-        await window.openDepartmentDemandWorkbench({ request, escapeHtml, showTalentDialog, isTalentDialogCurrent, openMonthlyDemandDialog, notifyUser }, /^\d{4}-(0[1-9]|1[0-2])$/.test(demandMonth) ? demandMonth : currentMonthValue());
+        if (demandPositionId) {
+          await loadJobsPage();
+          const linkedPosition = (state.jobs || []).find((item) => item.id === demandPositionId);
+          if (linkedPosition) openMonthlyDemandDialog(linkedPosition);
+          else await window.openDepartmentDemandWorkbench({ request, escapeHtml, showTalentDialog, isTalentDialogCurrent, openMonthlyDemandDialog, notifyUser }, /^\d{4}-(0[1-9]|1[0-2])$/.test(demandMonth) ? demandMonth : currentMonthValue());
+        } else {
+          await window.openDepartmentDemandWorkbench({ request, escapeHtml, showTalentDialog, isTalentDialogCurrent, openMonthlyDemandDialog, notifyUser }, /^\d{4}-(0[1-9]|1[0-2])$/.test(demandMonth) ? demandMonth : currentMonthValue());
+        }
       } else if (action === 'referral_review') {
         if (!candidateId) throw new Error('审核链接缺少候选人，无法打开审批');
         await openReferralResumeReview(candidateId, '', referralId);
@@ -8701,6 +8710,7 @@ if (!root) return;
       cleanUrl.searchParams.delete('approval_type');
       cleanUrl.searchParams.delete('approval_id');
       cleanUrl.searchParams.delete('demand_month');
+      cleanUrl.searchParams.delete('position_id');
       cleanUrl.searchParams.delete('overview_month');
       cleanUrl.searchParams.delete('referral_id');
       if (action === 'schedule' && candidateId) {

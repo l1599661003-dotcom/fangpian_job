@@ -873,7 +873,7 @@ export class RecruitmentService implements OnApplicationBootstrap {
   async getRecruitmentApproval(typeInput: string, id: string, actor: { userId: string; userName: string }) {
     const type = this.recruitmentApprovalType(typeInput)
     const { row } = await this.recruitmentApprovalRow(type, id)
-    await this.assertCurrentApprovalActor(row, actor.userId)
+    await this.assertApprovalViewer(row, actor.userId)
     return this.mapRecruitmentApproval(type, row)
   }
 
@@ -939,7 +939,7 @@ export class RecruitmentService implements OnApplicationBootstrap {
     const dates = this.arrivalDates(input)
     const department = await this.departmentForAccess(input.department, operator, profile)
     const recruiterFields = await this.resolveRecruiterFields(input.recruiterUserId, input.backupRecruiterUserId, true)
-    const tableId = await this.verify('recruitment_positions', ['职位ID', '职位名称', '部门', '发布状态', '最晚到岗日期', '创建时间', '更新时间'])
+    const tableId = await this.verify('recruitment_positions', ['职位ID', '职位名称', '部门', '发布状态', '新增理由', '最晚到岗日期', '创建时间', '更新时间'])
     const id = businessId('pos')
     const now = timestamp()
     const externalRecruitment = this.externalRecruitmentValue(input.externalRecruitment)
@@ -953,7 +953,7 @@ export class RecruitmentService implements OnApplicationBootstrap {
       在职人数: Math.max(0, Math.round(number(input.currentEmployeeCount))), 已到岗人数: 0,
       最低薪资: number(input.minSalary) || undefined,
       最高薪资: number(input.maxSalary) || undefined, 薪资文本: input.salaryText || '', 岗位JD: input.jobDescription || '',
-      工作职责: input.responsibilities || '', 任职要求: input.requirements || '', 福利: input.benefits || '',
+      工作职责: input.responsibilities || '', 任职要求: input.requirements || '', 新增理由: text(input.creationReason), 福利: input.benefits || '',
       标签JSON: JSON.stringify(input.tags || []), 发布状态: '待发布', 招聘状态: input.recruitmentStatus || '待启动',
       需求类型: input.demandType || '新增需求', 优先级: input.priority || '中', 期望到岗日期: dates.expectedArrivalDate, 最晚到岗日期: dates.latestArrivalDate,
       审批状态: '待审批', 审批提交时间: now, 审批申请人用户ID: operatorUserId, 审批申请人: operator,
@@ -1446,6 +1446,7 @@ export class RecruitmentService implements OnApplicationBootstrap {
     if (!text(input.name)) throw new BadRequestException('请填写岗位名称')
     const externalRecruitment = text(input.externalRecruitment).toLowerCase()
     if (!['是', '否', 'true', 'false', '1', '0', 'yes', 'no'].includes(externalRecruitment)) throw new BadRequestException('请选择是否对外招聘')
+    if (!text(input.creationReason)) throw new BadRequestException('请填写新增理由')
   }
 
   private async resolveRecruiterFields(primaryValue: unknown, backupValue: unknown, requirePrimary: boolean) {
@@ -1587,13 +1588,29 @@ export class RecruitmentService implements OnApplicationBootstrap {
     return this.assertRecruitmentApprover(actorUserId)
   }
 
+  /** 当前审批人可以处理；抄送人只能查看已通过的申请详情。 */
+  private async assertApprovalViewer(row: TeableRecord, actorUserId: string) {
+    try {
+      await this.assertCurrentApprovalActor(row, actorUserId)
+      return
+    } catch (error) {
+      const progress = this.approvalProgress(row)
+      const cc = progress.find((step) => step.role === '抄送人' && step.userId === actorUserId)
+      if (cc && text(row.fields['审批状态']) === '已通过') return
+      throw error
+    }
+  }
+
   private async notifyApprovalCc(type: 'position' | 'demand', id: string, row: TeableRecord, progress: ApprovalFlowStep[], actor: { userId: string; userName: string }) {
     const recipients = progress.filter((step) => step.role === '抄送人')
     if (!recipients.length || !this.messages) return { status: '未发送', reason: recipients.length ? '消息服务不可用' : '未配置抄送人' }
     const approval: any = this.mapRecruitmentApproval(type, row)
-    const subject = type === 'position' ? '岗位' : '招聘需求'
-    const title = approval.positionName || approval.title || subject
-    const lines = [`【${subject}审批已通过】${title}`, `最终审批人：${actor.userName || actor.userId}`, '此消息仅供抄送，无需处理。']
+    const subject = type === 'position' ? '岗位' : '需求'
+    const lines = this.recruitmentNoticeLines({
+      headline: `抄送：新增${subject}审批已通过`,
+      approval, type,
+      url: appFlowUrl('recruitment_approval', { approval_type: type, approval_id: id }),
+    })
     try {
       const result = await this.messages.notifyDirectUsers({
         category: `${subject}审批抄送`, objectType: type === 'position' ? '岗位' : '月度需求', objectId: id,
@@ -1676,7 +1693,7 @@ export class RecruitmentService implements OnApplicationBootstrap {
     }
     if (type === 'position') return {
       ...common, title: text(fields['职位名称']) || '未命名岗位', department: text(fields['部门']), owner: text(fields['负责人']),
-      headcount: number(fields['招聘人数']), salaryText: text(fields['薪资文本']), responsibilities: text(fields['工作职责']), requirements: text(fields['任职要求']),
+      headcount: number(fields['招聘人数']), salaryText: text(fields['薪资文本']), responsibilities: text(fields['工作职责']), requirements: text(fields['任职要求']), creationReason: text(fields['新增理由']),
       publishStatus: text(fields['发布状态']) || '待发布',
     }
     return {
@@ -1713,6 +1730,29 @@ export class RecruitmentService implements OnApplicationBootstrap {
     return result
   }
 
+  private recruitmentNoticeLines(input: { headline: string; approval: any; type: 'position' | 'demand'; applicant?: string; url?: string }) {
+    const approval = input.approval
+    const reason = input.type === 'position'
+      ? text(approval.creationReason) || '未填写'
+      : text(approval.note) || text(approval.demandRequirement) || '未填写'
+    const lines = [
+      input.headline,
+      `发起部门：${text(approval.department) || '未填写'}`,
+      `岗位名称：${text(approval.positionName) || text(approval.title) || '未填写'}`,
+      `发起人：${text(input.applicant || approval.applicant) || '未填写'}`,
+    ]
+    if (input.type === 'demand') lines.push(
+      `需求人数：${number(approval.headcount) || 0}人`,
+      `需求类型：${text(approval.demandType) || '新增需求'}`,
+      `优先级：${text(approval.priority) || '储备'}`,
+      `期望到岗：${text(approval.expectedArrivalDate) || '未填写'}`,
+      `最晚到岗：${text(approval.latestArrivalDate) || '未填写'}`,
+    )
+    lines.push(`新增理由：${reason}`)
+    if (input.url) lines.push(`[点击查看申请详情 →](${input.url})`)
+    return lines
+  }
+
   private approvalDemandNote(approval: { demandRequirement?: string; note?: string }) {
     const requirement = text(approval.demandRequirement)
     const rawNote = text(approval.note)
@@ -1741,6 +1781,10 @@ export class RecruitmentService implements OnApplicationBootstrap {
     ]
     if (type === 'demand') lines.push(`需求月份：${approval.month || '未填写'}`, `需求人数：${approval.headcount || 0}`)
     lines.push(decision === '驳回' ? `驳回原因：${opinion || '未填写'}` : '申请已通过，可以继续后续招聘。')
+    if (type === 'position' && decision === '通过' && text(row.fields['是否对外招聘']) !== '否') {
+      const demandUrl = appFlowUrl('demand', { position_id: id })
+      lines.push(demandUrl ? `[录入需求 →](${demandUrl})` : '请进入岗位页面录入招聘需求。')
+    }
     try {
       return await this.messages.notifyDirectUsers({
         category: `${subject}审批${decision}`, objectType: type === 'position' ? '岗位' : '月度需求', objectId: id,
@@ -1775,13 +1819,12 @@ export class RecruitmentService implements OnApplicationBootstrap {
       if (!recipientUserId && !messageRecipient) return await updateNotification('未配置', '无法匹配指定招聘审批人的天玑微信ID，请先同步审批人员工信息')
       await updateNotification('发送中')
       const approval: any = this.mapRecruitmentApproval(type, row)
-      const approvalUrl = appFlowUrl('recruitment_approval', { approval_type: type, approval_id: id })
-      const demandNote = this.approvalDemandNote(approval)
-      const lines = type === 'position'
-        ? [`【新增岗位审批】${approval.title}`, `申请人：${approval.applicant || operator}`, `部门：${approval.department || '待补充'}`, `薪资：${approval.salaryText || '待补充'}`]
-        : [`【新增招聘需求审批】${approval.positionName || approval.title}`, `申请人：${approval.applicant || operator}`, `申请岗位：${approval.positionName || '待补充'}`, `部门：${approval.department || '待补充'}`, `需求人数：${approval.headcount || 0}`, `需求类型：${approval.demandType || '新增需求'}`, `优先级：${approval.priority || '储备'}`, `需求要求：${demandNote.requirement}`, `需求说明：${demandNote.note}`]
-      if (approvalUrl) lines.push(`[点击打开审批页面 →](${approvalUrl})`)
-      lines.push(progress.filter((step) => step.role === '审批人').length > 1 ? '请完成本级审批。通过后将自动交给下一位审批人。' : '只有你审批通过后，该需求或岗位才允许生效和发布。')
+      const subject = type === 'position' ? '岗位' : '需求'
+      const lines = this.recruitmentNoticeLines({
+        headline: `审批：新增${subject}待审批`,
+        approval, type, applicant: approval.applicant || operator,
+        url: appFlowUrl('recruitment_approval', { approval_type: type, approval_id: id }),
+      })
       if (recipientUserId) {
         await this.messages.notifyDirectUsers({
           category: type === 'position' ? '新增岗位审批' : '新增招聘需求审批', objectType: type === 'position' ? '岗位' : '月度需求', objectId: id,
@@ -1869,7 +1912,7 @@ export class RecruitmentService implements OnApplicationBootstrap {
       recruiterUserId: text(f['招聘HR用户ID']), recruiter: text(f['招聘HR']), backupRecruiterUserId: text(f['备用招聘HR用户ID']), backupRecruiter: text(f['备用招聘HR']),
       category: text(f['招聘类别']), externalRecruitment: text(f['是否对外招聘']) || '是', level: text(f['岗位层级']) || '普通岗位', city: text(f['工作城市']),
       location: text(f['工作地点']), minSalary: number(f['最低薪资']), maxSalary: number(f['最高薪资']), salaryText: text(f['薪资文本']),
-      jobDescription: text(f['岗位JD']), responsibilities: text(f['工作职责']), requirements: text(f['任职要求']),
+      jobDescription: text(f['岗位JD']), responsibilities: text(f['工作职责']), requirements: text(f['任职要求']), creationReason: text(f['新增理由']),
       benefits: text(f['福利']), tags: json<string[]>(f['标签JSON'], []), status: text(f['发布状态']) || '待发布',
       recruitmentStatus: text(f['招聘状态']) || '待启动', demandType: text(f['需求类型']) || '新增需求',
       priority: normalizeHiringPriority(text(f['优先级']) || '中'), expectedArrivalDate: text(f['期望到岗日期']), latestArrivalDate: text(f['最晚到岗日期']), approvalStatus: text(f['审批状态']) || (text(f['审批提交时间']) ? '待审批' : '已通过'),
