@@ -108,6 +108,46 @@ test('opening an approval uses the saved approver even when the record primary k
   } finally { restore(); }
 });
 
+test('applicant and current approver both see a pending approval, but only the approver can decide', async () => {
+  const memory = memoryTeable(), restore = memory.install();
+  try {
+    const service = new RecruitmentService({ requireTableId: name => name });
+    await teable.createRecord('recruitment_users', { 用户ID: 'applicant_user', 姓名: '需求人', 企业微信用户ID: 'wecom_applicant', 用户状态: '启用' });
+    await teable.createRecord('recruitment_users', { 用户ID: 'approver_user', 姓名: '审批人', 企业微信用户ID: 'wecom_approver', 用户状态: '启用' });
+    await teable.createRecord('recruitment_users', { 用户ID: 'outsider_user', 姓名: '无关同事', 企业微信用户ID: 'wecom_outsider', 用户状态: '启用' });
+    await teable.createRecord('recruitment_users', { 用户ID: 'cc_user', 姓名: '抄送人', 企业微信用户ID: 'wecom_cc', 用户状态: '启用' });
+    const progress = JSON.stringify([
+      { order: 1, role: '审批人', userId: 'approver_user', name: '审批人', wecomUserId: 'wecom_approver', status: '待审批', opinion: '', actedAt: '' },
+      { order: 2, role: '抄送人', userId: 'cc_user', name: '抄送人', wecomUserId: 'wecom_cc', status: '待抄送', opinion: '', actedAt: '' },
+    ]);
+    await teable.createRecord('recruitment_positions', {
+      职位ID: 'visible_position', 职位名称: '跨部门审批岗位', 部门: '其他部门', 审批状态: '待审批', 审批提交时间: '2026-10-26T02:00:00.000Z',
+      审批申请人: '需求人', 审批申请人用户ID: 'applicant_user', 当前审批步骤: 1, 当前审批人用户ID: 'approver_user', 审批人企微ID: 'wecom_approver', 审批进度JSON: progress,
+    });
+    const applicantList = await service.listRecruitmentApprovals({ userId: 'applicant_user', userName: '需求人' }, '待审批');
+    const approverList = await service.listRecruitmentApprovals({ userId: 'approver_user', userName: '审批人' }, '待审批');
+    const ccList = await service.listRecruitmentApprovals({ userId: 'cc_user', userName: '抄送人' }, '待审批');
+    const outsiderList = await service.listRecruitmentApprovals({ userId: 'outsider_user', userName: '无关同事' }, '待审批');
+    assert.equal(applicantList.items.length, 1);
+    assert.equal(applicantList.items[0].canDecide, false);
+    assert.equal(approverList.items.length, 1);
+    assert.equal(approverList.items[0].canDecide, true);
+    assert.equal(ccList.items.length, 1);
+    assert.equal(ccList.items[0].canDecide, false);
+    assert.equal(ccList.items[0].cc, true);
+    assert.equal(outsiderList.items.length, 0);
+    const applicantView = await service.getRecruitmentApproval('position', 'visible_position', { userId: 'applicant_user', userName: '需求人' });
+    const approverView = await service.getRecruitmentApproval('position', 'visible_position', { userId: 'approver_user', userName: '审批人' });
+    assert.equal(applicantView.canDecide, false);
+    assert.equal(approverView.canDecide, true);
+    const ccView = await service.getRecruitmentApproval('position', 'visible_position', { userId: 'cc_user', userName: '抄送人' });
+    assert.equal(ccView.canDecide, false);
+    assert.equal(ccView.cc, true);
+    await assert.rejects(() => service.decideRecruitmentApproval('position', 'visible_position', { decision: '通过' }, { userId: 'applicant_user', userName: '需求人' }), /当前审批人是审批人/);
+    await assert.rejects(() => service.getRecruitmentApproval('position', 'visible_position', { userId: 'outsider_user', userName: '无关同事' }), /当前审批人是审批人/);
+  } finally { restore(); }
+});
+
 test('position and demand require the configured WeCom approver before publishing', async () => {
   const memory = memoryTeable(), restore = memory.install(), previousApprover = process.env.WECOM_RECRUITMENT_APPROVER_USER_ID, previousMessageRecipient = process.env.TIANJI_RECRUITMENT_APPROVER_WECHAT_ID, previousPublicUrl = process.env.APP_PUBLIC_URL;
   try {

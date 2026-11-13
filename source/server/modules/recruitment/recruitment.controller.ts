@@ -115,6 +115,12 @@ export class RecruitmentController {
     return this.recruitment.savePositionApprovalFlow(body || {}, actor.identity.userName)
   }
 
+  @Get('approvals')
+  async approvals(@Headers() headers: Record<string, string | string[] | undefined>, @Query('status') status?: string) {
+    const actor = await this.actor(headers)
+    return this.recruitment.listRecruitmentApprovals(actor.identity, status || '')
+  }
+
   @Get('approvals/:type/:id')
   async approval(@Headers() headers: Record<string, string | string[] | undefined>, @Param('type') type: string, @Param('id') id: string) {
     const actor = await this.actor(headers)
