@@ -1,5 +1,22 @@
 (() => {
   const supported = ['.pdf', '.doc', '.docx', '.odt', '.rtf', '.txt', '.jpg', '.jpeg', '.png', '.webp', '.bmp', '.gif', '.tif', '.tiff'];
+  document.addEventListener('click', (event) => {
+    const preview = event.target instanceof Element ? event.target.closest('[data-rf-avatar-preview]') : null;
+    if (preview) {
+      event.preventDefault();
+      event.stopPropagation();
+      const source = String(preview.dataset.rfAvatarPreview || '').trim();
+      if (!source) return;
+      const label = preview.getAttribute('aria-label') || '候选人头像';
+      const safe = (value) => String(value).replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
+      document.getElementById('rf-avatar-preview')?.remove();
+      document.body.insertAdjacentHTML('beforeend', `<div class="rf-avatar-preview" id="rf-avatar-preview" role="dialog" aria-modal="true" aria-label="${safe(label)}"><button type="button" data-rf-avatar-close aria-label="关闭头像">×</button><img src="${safe(source)}" alt="${safe(label)}"></div>`);
+      return;
+    }
+    if (!(event.target instanceof Element) || !event.target.closest('#rf-avatar-preview')) return;
+    event.preventDefault();
+    document.getElementById('rf-avatar-preview')?.remove();
+  }, true);
   const apiUrl = (path) => new URL(path.replace(/^\//, ''), new URL('.', window.location.href)).toString();
   const state = {
     file: null, resumes: [], talents: [], talentOverview: null, jobMap: [], talentDetails: {}, activeId: '',
@@ -2287,18 +2304,6 @@
   });
 
   document.addEventListener('click', (event) => {
-    const preview = event.target instanceof Element ? event.target.closest('[data-rf-avatar-preview]') : null;
-    if (preview) {
-      event.preventDefault();
-      event.stopPropagation();
-      openAvatarPreview(preview.dataset.rfAvatarPreview, preview.getAttribute('aria-label') || '候选人头像');
-      return;
-    }
-    if (event.target instanceof Element && event.target.closest('#rf-avatar-preview')) {
-      event.preventDefault();
-      document.getElementById('rf-avatar-preview')?.remove();
-      return;
-    }
     const button = event.target instanceof Element ? event.target.closest('[data-rf-open-interview-feedback]') : null;
     if (!button || button.disabled) return;
     event.preventDefault();

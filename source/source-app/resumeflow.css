@@ -643,7 +643,7 @@
 
 .rf-profile-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
 button.rf-avatar-zoomable { padding: 0; border: 0; cursor: zoom-in; }
-.rf-avatar-preview { position: fixed; z-index: 80; inset: 0; display: grid; place-items: center; padding: 28px; background: rgba(28, 24, 18, .78); }
+.rf-avatar-preview { position: fixed; z-index: 4000; inset: 0; display: grid; place-items: center; padding: 28px; background: rgba(28, 24, 18, .78); }
 .rf-avatar-preview img { max-width: min(92vw, 860px); max-height: 86vh; border-radius: 12px; background: #fff; object-fit: contain; box-shadow: 0 24px 60px rgba(0, 0, 0, .28); }
 .rf-avatar-preview button { position: absolute; top: 18px; right: 18px; width: 40px; height: 40px; border: 0; border-radius: 50%; background: #fff; color: #3c3220; font-size: 26px; line-height: 1; cursor: pointer; }
 .rf-profile-score { color: #765213; font-size: 20px; letter-spacing: 0; }

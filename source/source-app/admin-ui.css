@@ -873,7 +873,7 @@ button.rf-avatar-zoomable {
 
 .rf-avatar-preview {
   position: fixed;
-  z-index: 80;
+  z-index: 4000;
   inset: 0;
   display: grid;
   place-items: center;
@@ -5832,7 +5832,7 @@ body{color:var(--fd-ink);background:radial-gradient(circle at 90% -10%,rgba(189,
 .rf-full-detail-dialog .rf-talent-basic-card{margin:0;padding:0;border:0;background:transparent;box-shadow:none;}
 .rf-full-detail-dialog .rf-talent-profile-top{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"identity actions" "intent intent";align-items:start;gap:16px 36px;margin-top:28px;padding:0;border:0;background:transparent;box-shadow:none;}
 .rf-full-detail-dialog .rf-profile-identity{grid-area:identity;display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:26px;min-width:0;}
-.rf-full-detail-dialog .rf-profile-identity>.rf-profile-avatar{width:112px;height:112px;border:5px solid #fff;border-radius:50%;background:#fff;box-shadow:0 14px 32px rgba(91,63,18,.15);overflow:hidden;}
+.rf-full-detail-dialog .rf-profile-identity>.rf-profile-avatar{width:112px;height:112px;padding:0;border:5px solid #fff;border-radius:50%;background:#fff;box-shadow:0 14px 32px rgba(91,63,18,.15);overflow:hidden;cursor:zoom-in;}
 .rf-full-detail-dialog .rf-profile-name{display:flex;align-items:center;flex-wrap:wrap;gap:9px;}
 .rf-full-detail-dialog .rf-profile-quick-facts{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin-top:12px;color:#6f675a;font-size:13px;font-weight:700;}
 .rf-full-detail-dialog .rf-profile-quick-facts span{white-space:nowrap;}
@@ -9158,13 +9158,34 @@ body .rf-dialog .rf-schedule-actions::before {
   }
 
   body .rf-dialog.full .rf-full-detail-dialog .rf-profile-identity {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: 84px minmax(0, 1fr) !important;
+    align-items: center !important;
     gap: 14px !important;
   }
 
   body .rf-dialog.full .rf-full-detail-dialog .rf-profile-identity > .rf-profile-avatar {
     width: 84px !important;
     height: 84px !important;
+    padding: 0 !important;
+    cursor: zoom-in !important;
+  }
+
+  body .rf-dialog.full .rf-full-detail-dialog .rf-flow-track {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 16px 8px !important;
+  }
+
+  body .rf-dialog.full .rf-full-detail-dialog .rf-flow-node:nth-child(n) .rf-flow-link {
+    display: none !important;
+  }
+
+  body .rf-dialog.full .rf-full-detail-dialog .rf-flow-card {
+    width: 100% !important;
+    min-height: 96px !important;
+  }
+
+  body .rf-dialog.full .rf-full-detail-dialog .rf-flow-card strong {
+    white-space: normal !important;
   }
 
   body .rf-dialog.full .rf-full-detail-dialog .rf-profile-stage-actions {
