@@ -1608,16 +1608,9 @@ export class RecruitmentService implements OnApplicationBootstrap {
     throw new ForbiddenException('这条审批没有配置当前审批人，不能由其他账号处理')
   }
 
-  /** 申请人、审批人和抄送人都可以查看。通过和驳回仍只属于当前审批人。 */
-  private async assertApprovalViewer(row: TeableRecord, actorUserId: string) {
-    try {
-      await this.assertCurrentApprovalActor(row, actorUserId)
-      return
-    } catch (error) {
-      const { wecomUserId } = await this.approvalActor(actorUserId)
-      if (this.approvalInvolvesActor(row, actorUserId, wecomUserId, 'any')) return
-      throw error
-    }
+  /** 审批详情所有登录用户都能看。通过和驳回仍只属于当前审批人。 */
+  private async assertApprovalViewer(_row: TeableRecord, actorUserId: string) {
+    if (!text(actorUserId)) throw new ForbiddenException('请先登录后再查看审批')
   }
 
   private approvalInvolvesActor(row: TeableRecord, actorUserId: string, actorWecomUserId: string, relation: 'applicant' | 'approver' | 'cc' | 'any') {
@@ -1634,7 +1627,7 @@ export class RecruitmentService implements OnApplicationBootstrap {
     return isApplicant || isCc || isCurrentApprover || progress.some((step) => step.role === '审批人' && this.approvalPersonMatches(actorUserId, actorWecomUserId, step))
   }
 
-  /** 审批列表不看角色、也不走部门范围。只有申请人、配置的审批人和抄送人能看见自己相关的审批。 */
+  /** 审批列表所有登录用户都能看，不按角色和部门过滤。通过和驳回仍只属于当前审批人。 */
   async listRecruitmentApprovals(actor: { userId: string; userName: string }, status = '') {
     const { wecomUserId } = await this.approvalActor(actor.userId)
     const sources: Array<{ type: 'position' | 'demand'; table: 'recruitment_positions' | 'recruitment_monthly_demands' }> = [
@@ -1651,11 +1644,10 @@ export class RecruitmentService implements OnApplicationBootstrap {
         if (!text(summary.fields['审批提交时间']) && !text(summary.fields['审批申请人用户ID']) && !text(summary.fields['当前审批人用户ID'])) continue
         const idField = source.type === 'position' ? '职位ID' : '月度需求ID'
         const id = text(summary.fields[idField]) || summary.id
-        // 全表列表经常丢掉长文本审批进度。没有进度时，抄送人和非当前步骤的审批人会被当成无关的人。
+        // 全表列表经常丢掉长文本审批进度。没有进度时无法判断当前审批人，详情按业务编号补齐。
         const row = text(summary.fields['审批进度JSON'])
           ? summary
           : (await this.recruitmentApprovalRow(source.type, id).catch(() => undefined))?.row || summary
-        if (!this.approvalInvolvesActor(row, actor.userId, wecomUserId, 'any')) continue
         const item = this.mapRecruitmentApproval(source.type, row) as Record<string, unknown>
         item.canDecide = approvalStatus === '待审批' && this.approvalInvolvesActor(row, actor.userId, wecomUserId, 'approver')
         item.mine = this.approvalInvolvesActor(row, actor.userId, wecomUserId, 'applicant')
