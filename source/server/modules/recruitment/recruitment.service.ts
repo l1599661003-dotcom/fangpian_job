@@ -1608,9 +1608,11 @@ export class RecruitmentService implements OnApplicationBootstrap {
     throw new ForbiddenException('这条审批没有配置当前审批人，不能由其他账号处理')
   }
 
-  /** 审批详情所有登录用户都能看。通过和驳回仍只属于当前审批人。 */
-  private async assertApprovalViewer(_row: TeableRecord, actorUserId: string) {
-    if (!text(actorUserId)) throw new ForbiddenException('请先登录后再查看审批')
+  /** 只有申请人、配置的审批人和抄送人能看详情。通过和驳回仍只属于当前审批人。 */
+  private async assertApprovalViewer(row: TeableRecord, actorUserId: string) {
+    const { wecomUserId } = await this.approvalActor(actorUserId)
+    if (this.approvalInvolvesActor(row, actorUserId, wecomUserId, 'any')) return
+    throw new ForbiddenException('这条审批只对申请人、配置的审批人和抄送人可见')
   }
 
   private approvalInvolvesActor(row: TeableRecord, actorUserId: string, actorWecomUserId: string, relation: 'applicant' | 'approver' | 'cc' | 'any') {
@@ -1627,7 +1629,7 @@ export class RecruitmentService implements OnApplicationBootstrap {
     return isApplicant || isCc || isCurrentApprover || progress.some((step) => step.role === '审批人' && this.approvalPersonMatches(actorUserId, actorWecomUserId, step))
   }
 
-  /** 审批列表所有登录用户都能看，不按角色和部门过滤。通过和驳回仍只属于当前审批人。 */
+  /** 审批列表不看角色、也不走部门范围。只有申请人、配置的审批人和抄送人能看见自己相关的审批。 */
   async listRecruitmentApprovals(actor: { userId: string; userName: string }, status = '') {
     const { wecomUserId } = await this.approvalActor(actor.userId)
     const sources: Array<{ type: 'position' | 'demand'; table: 'recruitment_positions' | 'recruitment_monthly_demands' }> = [
@@ -1648,6 +1650,7 @@ export class RecruitmentService implements OnApplicationBootstrap {
         const row = text(summary.fields['审批进度JSON'])
           ? summary
           : (await this.recruitmentApprovalRow(source.type, id).catch(() => undefined))?.row || summary
+        if (!this.approvalInvolvesActor(row, actor.userId, wecomUserId, 'any')) continue
         const item = this.mapRecruitmentApproval(source.type, row) as Record<string, unknown>
         item.canDecide = approvalStatus === '待审批' && this.approvalInvolvesActor(row, actor.userId, wecomUserId, 'approver')
         item.mine = this.approvalInvolvesActor(row, actor.userId, wecomUserId, 'applicant')

@@ -104,9 +104,7 @@ test('opening an approval uses the saved approver even when the record primary k
     assert.equal(second.approvalStatus, '待审批');
     assert.equal(primaryReads, 0);
     assert.equal(created.fields['当前审批人用户ID'], 'current_user');
-    const outsiderView = await service.getRecruitmentApproval('position', 'approval_position', { userId: 'zhang_jie', userName: '张杰' });
-    assert.equal(outsiderView.canDecide, false);
-    await assert.rejects(() => service.decideRecruitmentApproval('position', 'approval_position', { decision: '通过' }, { userId: 'zhang_jie', userName: '张杰' }), /当前审批人是当前审批人/);
+    await assert.rejects(() => service.getRecruitmentApproval('position', 'approval_position', { userId: 'zhang_jie', userName: '张杰' }), /只对申请人、配置的审批人和抄送人可见/);
   } finally { restore(); }
 });
 
@@ -137,8 +135,7 @@ test('applicant and current approver both see a pending approval, but only the a
     assert.equal(ccList.items.length, 1);
     assert.equal(ccList.items[0].canDecide, false);
     assert.equal(ccList.items[0].cc, true);
-    assert.equal(outsiderList.items.length, 1);
-    assert.equal(outsiderList.items[0].canDecide, false);
+    assert.equal(outsiderList.items.length, 0);
     const applicantView = await service.getRecruitmentApproval('position', 'visible_position', { userId: 'applicant_user', userName: '需求人' });
     const approverView = await service.getRecruitmentApproval('position', 'visible_position', { userId: 'approver_user', userName: '审批人' });
     assert.equal(applicantView.canDecide, false);
@@ -147,11 +144,9 @@ test('applicant and current approver both see a pending approval, but only the a
     assert.equal(ccView.canDecide, false);
     assert.equal(ccView.cc, true);
     await assert.rejects(() => service.decideRecruitmentApproval('position', 'visible_position', { decision: '通过' }, { userId: 'applicant_user', userName: '需求人' }), /当前审批人是审批人/);
-    const outsiderView = await service.getRecruitmentApproval('position', 'visible_position', { userId: 'outsider_user', userName: '无关同事' });
-    assert.equal(outsiderView.canDecide, false);
+    await assert.rejects(() => service.getRecruitmentApproval('position', 'visible_position', { userId: 'outsider_user', userName: '无关同事' }), /只对申请人、配置的审批人和抄送人可见/);
     const adminList = await service.listRecruitmentApprovals({ userId: 'admin_user', userName: '管理员' }, '待审批');
-    assert.equal(adminList.items.length, 1);
-    assert.equal(adminList.items[0].canDecide, false);
+    assert.equal(adminList.items.length, 0);
   } finally { restore(); }
 });
 
@@ -333,9 +328,7 @@ test('position and demand require the configured WeCom approver before publishin
     const attemptedBypass = await service.updatePosition(position.id, { approvalStatus: '已通过', changeReason: '尝试绕过审批' }, '王HR');
     assert.equal(attemptedBypass.approvalStatus, '待审批');
     await assert.rejects(() => service.publishPosition(position.id, { platforms: ['Boss直聘'] }, '王HR'), /通过后才能发布/);
-    const outsiderView = await service.getRecruitmentApproval('position', position.id, { userId: 'other_user', userName: '其他员工' });
-    assert.equal(outsiderView.canDecide, false);
-    await assert.rejects(() => service.decideRecruitmentApproval('position', position.id, { decision: '通过' }, { userId: 'other_user', userName: '其他员工' }), /当前审批人是刘金虎/);
+    await assert.rejects(() => service.getRecruitmentApproval('position', position.id, { userId: 'other_user', userName: '其他员工' }), /只对申请人、配置的审批人和抄送人可见/);
     const approvedPosition = await service.decideRecruitmentApproval('position', position.id, { decision: '通过', opinion: '编制和预算已确认' }, { userId: 'approver_user', userName: '招聘审批人' });
     assert.equal(approvedPosition.approvalStatus, '已通过');
     assert.equal(approvedPosition.applicantNotification.status, '已发送');

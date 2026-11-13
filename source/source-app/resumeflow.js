@@ -6136,7 +6136,7 @@ if (!root) return;
     if (summary) summary.innerHTML = `
       <article><span class="rf-job-summary-mark total" aria-hidden="true">岗</span><div><small>岗位总数</small><strong>${totalPositions}</strong><em>公司岗位库</em></div></article>
       <article><span class="rf-job-summary-mark active" aria-hidden="true">招</span><div><small>招聘中</small><strong>${recruitingPositions}</strong><em>正在接收候选人</em></div></article>
-      <article><button type="button" data-rf-pending-approvals><span class="rf-job-summary-mark pending" aria-hidden="true">审</span><div><small>待审批</small><strong>${pendingApprovals}</strong><em>点击查看审批</em></div></button></article>
+      <article><button type="button" data-rf-pending-approvals><span class="rf-job-summary-mark pending" aria-hidden="true">审</span><div><small>待审批</small><strong>${pendingApprovals}</strong><em>${pendingApprovals ? '点击查看我的审批' : '暂无我的待审批'}</em></div></button></article>
       <article><span class="rf-job-summary-mark demand" aria-hidden="true">需</span><div><small>${escapeHtml(monthLabel)}需求</small><strong>${demandHeadcount}</strong><em>计划招聘人数</em></div></article>`;
     if (resultCount) resultCount.textContent = keyword || selectedDepartments.size ? `找到 ${rows.length} 个岗位` : `共 ${rows.length} 个岗位 · 按紧急、重要、储备排序`;
     renderJobDepartmentFilter([...approvedJobs, ...rejectedJobs]);
