@@ -145,7 +145,144 @@ test('applicant and current approver both see a pending approval, but only the a
     assert.equal(ccView.cc, true);
     await assert.rejects(() => service.decideRecruitmentApproval('position', 'visible_position', { decision: '通过' }, { userId: 'applicant_user', userName: '需求人' }), /当前审批人是审批人/);
     await assert.rejects(() => service.getRecruitmentApproval('position', 'visible_position', { userId: 'outsider_user', userName: '无关同事' }), /当前审批人是审批人/);
+    const adminList = await service.listRecruitmentApprovals({ userId: 'admin_user', userName: '管理员' }, '待审批');
+    assert.equal(adminList.items.length, 0);
   } finally { restore(); }
+});
+
+test('approval list restores omitted progress so a cc recipient is not hidden, and notices only the configured approver', async () => {
+  const memory = memoryTeable(), restore = memory.install();
+  const originalFind = teable.findOneByField.bind(teable);
+  const originalListAll = teable.listAllRecords.bind(teable);
+  try {
+    await teable.createRecord('recruitment_users', { 用户ID: 'applicant_user', 姓名: '需求人', 企业微信用户ID: 'wecom_applicant', 用户状态: '启用' });
+    await teable.createRecord('recruitment_users', { 用户ID: 'approver_user', 姓名: '审批人', 企业微信用户ID: 'wecom_approver', 用户状态: '启用' });
+    await teable.createRecord('recruitment_users', { 用户ID: 'cc_user', 姓名: '抄送人', 企业微信用户ID: 'wecom_cc', 用户状态: '启用' });
+    const progress = JSON.stringify([
+      { order: 1, role: '审批人', userId: 'approver_user', name: '审批人', wecomUserId: 'wecom_approver', status: '待审批', opinion: '', actedAt: '' },
+      { order: 2, role: '抄送人', userId: 'cc_user', name: '抄送人', wecomUserId: 'wecom_cc', status: '待抄送', opinion: '', actedAt: '' },
+    ]);
+    await teable.createRecord('recruitment_positions', {
+      职位ID: 'progress_position', 职位名称: '进度被截断的岗位', 部门: '其他部门', 审批状态: '待审批', 审批提交时间: '2026-10-26T03:00:00.000Z',
+      审批申请人: '需求人', 审批申请人用户ID: 'applicant_user', 当前审批步骤: 1, 当前审批人用户ID: 'approver_user', 审批人企微ID: 'wecom_approver', 审批进度JSON: progress,
+    });
+    teable.listAllRecords = async (tableId, options) => {
+      const rows = await originalListAll(tableId, options);
+      return rows.map((row) => ({ ...row, fields: { ...row.fields, 审批进度JSON: '' } }));
+    };
+    const directUsers = [];
+    const messages = { notifyDirectUsers: async (input) => { directUsers.push(input); return { status: '已发送', sent: 1 }; } };
+    const service = new RecruitmentService({ requireTableId: name => name }, messages);
+    const ccList = await service.listRecruitmentApprovals({ userId: 'cc_user', userName: '抄送人' }, '待审批');
+    assert.equal(ccList.items.length, 1);
+    assert.equal(ccList.items[0].cc, true);
+    assert.equal(ccList.items[0].canDecide, false);
+    const approverList = await service.listRecruitmentApprovals({ userId: 'approver_user', userName: '审批人' }, '待审批');
+    assert.equal(approverList.items[0].canDecide, true);
+    const row = memory.records.get('recruitment_positions')[0];
+    row.fields['审批通知状态'] = '待发送';
+    const sent = await service.retryPendingRecruitmentApprovalNotifications();
+    assert.equal(sent.sent, 1);
+    assert.deepEqual(directUsers[0].userIds, ['approver_user']);
+    const unconfigured = memory.records.get('recruitment_positions')[0];
+    unconfigured.fields = { ...unconfigured.fields, 审批通知状态: '待发送', 审批进度JSON: '[]', 当前审批人用户ID: '', 审批人企微ID: '' };
+    const stopped = await service.retryPendingRecruitmentApprovalNotifications();
+    assert.equal(stopped.failed, 1);
+    assert.equal(directUsers.length, 1);
+  } finally {
+    teable.findOneByField = originalFind;
+    teable.listAllRecords = originalListAll;
+    restore();
+  }
+});
+
+test('configured approvers receive each stage and only see their own pending approval', async () => {
+  const memory = memoryTeable(), restore = memory.install();
+  const previousApprover = process.env.WECOM_RECRUITMENT_APPROVER_USER_ID;
+  const previousRecipient = process.env.TIANJI_RECRUITMENT_APPROVER_WECHAT_ID;
+  try {
+    process.env.WECOM_RECRUITMENT_APPROVER_USER_ID = 'env_default_wecom';
+    process.env.TIANJI_RECRUITMENT_APPROVER_WECHAT_ID = 'EnvDefault';
+    const notices = [];
+    const messages = { notifyDirectUsers: async (input) => { notices.push(input); return { status: '已发送', sent: input.userIds.length }; } };
+    const users = [
+      ['applicant_user', '发起人', 'wecom_applicant'],
+      ['first_approver', '第一审批人', 'wecom_first'],
+      ['second_approver', '第二审批人', 'wecom_second'],
+      ['cc_user', '抄送人', 'wecom_cc'],
+      ['hr_user', '招聘HR', 'wecom_hr'],
+      ['env_default', '环境变量默认人', 'env_default_wecom'],
+    ];
+    for (const [userId, name, wecomUserId] of users) {
+      await teable.createRecord('recruitment_users', { 用户ID: userId, 姓名: name, 企业微信用户ID: wecomUserId, 天玑微信ID: wecomUserId, 用户状态: '启用' });
+    }
+    const service = new RecruitmentService({ requireTableId: (name) => name }, messages);
+    await service.savePositionApprovalFlow({
+      flows: {
+        external: { approverUserIds: ['first_approver', 'second_approver'], ccUserIds: ['cc_user'] },
+        demand: { approverUserIds: ['second_approver'], ccUserIds: [] },
+      },
+    }, '招聘管理员');
+
+    const position = await service.createPosition({
+      name: '多级审批岗位', department: '技术部', headcount: 1, externalRecruitment: '是', creationReason: '验证配置审批人',
+      recruiterUserId: 'hr_user', responsibilities: '负责审批链路', requirements: '熟悉招聘流程',
+    }, '发起人', 'applicant_user');
+    assert.deepEqual(notices[0].userIds, ['first_approver']);
+    assert.match(notices[0].markdown, /新增岗位待审批/);
+    assert.equal(notices.some((item) => item.userIds.includes('env_default')), false);
+
+    const firstList = await service.listRecruitmentApprovals({ userId: 'first_approver', userName: '第一审批人' }, '待审批');
+    const secondBefore = await service.listRecruitmentApprovals({ userId: 'second_approver', userName: '第二审批人' }, '待审批');
+    const applicantList = await service.listRecruitmentApprovals({ userId: 'applicant_user', userName: '发起人' }, '待审批');
+    assert.equal(firstList.items.length, 1);
+    assert.equal(firstList.items[0].canDecide, true);
+    assert.equal(secondBefore.items.length, 1);
+    assert.equal(secondBefore.items[0].canDecide, false);
+    assert.equal(applicantList.items[0].canDecide, false);
+    await assert.rejects(
+      () => service.decideRecruitmentApproval('position', position.id, { decision: '通过' }, { userId: 'second_approver', userName: '第二审批人' }),
+      /当前审批人是第一审批人/,
+    );
+
+    const advanced = await service.decideRecruitmentApproval('position', position.id, { decision: '通过', opinion: '第一级通过' }, { userId: 'first_approver', userName: '第一审批人' });
+    assert.equal(advanced.approvalStatus, '待审批');
+    assert.deepEqual(notices.at(-1).userIds, ['second_approver']);
+    const firstAfter = await service.listRecruitmentApprovals({ userId: 'first_approver', userName: '第一审批人' }, '待审批');
+    const secondAfter = await service.listRecruitmentApprovals({ userId: 'second_approver', userName: '第二审批人' }, '待审批');
+    assert.equal(firstAfter.items[0].canDecide, false);
+    assert.equal(secondAfter.items[0].canDecide, true);
+    const storedPosition = memory.records.get('recruitment_positions').find((row) => row.fields['职位ID'] === position.id);
+    assert.equal(storedPosition.fields['当前审批人用户ID'], 'second_approver');
+    assert.equal(storedPosition.fields['审批人企微ID'], 'wecom_second');
+
+    const approved = await service.decideRecruitmentApproval('position', position.id, { decision: '通过', opinion: '第二级通过' }, { userId: 'second_approver', userName: '第二审批人' });
+    assert.equal(approved.approvalStatus, '已通过');
+    assert.deepEqual(notices.at(-2).userIds, ['applicant_user']);
+    assert.deepEqual(notices.at(-1).userIds, ['cc_user']);
+    assert.equal(notices.filter((item) => item.userIds.includes('env_default')).length, 0);
+
+    const demand = await service.saveMonthlyDemand({
+      month: '2026-10', positionId: position.id, headcount: 2, demandType: '新增需求', priority: '紧急', note: '验证需求审批人', operator: '发起人',
+    }, 'applicant_user');
+    await new Promise((resolve) => setImmediate(resolve));
+    const demandNotice = notices.find((item) => /新增需求待审批/.test(item.markdown));
+    assert.deepEqual(demandNotice.userIds, ['second_approver']);
+    const demandApprover = await service.listRecruitmentApprovals({ userId: 'second_approver', userName: '第二审批人' }, '待审批');
+    const demandOutsider = await service.listRecruitmentApprovals({ userId: 'first_approver', userName: '第一审批人' }, '待审批');
+    assert.equal(demandApprover.items.some((item) => item.id === demand.id && item.canDecide), true);
+    assert.equal(demandOutsider.items.some((item) => item.id === demand.id && item.canDecide), false);
+    await assert.rejects(
+      () => service.decideRecruitmentApproval('demand', demand.id, { decision: '通过' }, { userId: 'first_approver', userName: '第一审批人' }),
+      /当前审批人是第二审批人/,
+    );
+  } finally {
+    if (previousApprover === undefined) delete process.env.WECOM_RECRUITMENT_APPROVER_USER_ID;
+    else process.env.WECOM_RECRUITMENT_APPROVER_USER_ID = previousApprover;
+    if (previousRecipient === undefined) delete process.env.TIANJI_RECRUITMENT_APPROVER_WECHAT_ID;
+    else process.env.TIANJI_RECRUITMENT_APPROVER_WECHAT_ID = previousRecipient;
+    restore();
+  }
 });
 
 test('position and demand require the configured WeCom approver before publishing', async () => {
@@ -165,6 +302,8 @@ test('position and demand require the configured WeCom approver before publishin
     await teable.createRecord('recruitment_users', { 用户ID: 'approver_user', 姓名: '刘金虎', 企业微信用户ID: 'wozR29DwAACxXU8MVtW44tVUZ4ZMF0qg', 天玑微信ID: 'LiSiQi', 用户状态: '启用' });
     await teable.createRecord('recruitment_users', { 用户ID: 'other_user', 姓名: '其他员工', 企业微信用户ID: 'wecom_other', 用户状态: '启用' });
     const service = new RecruitmentService({ requireTableId: (name) => name }, messages);
+    const configuredApprover = { approverUserIds: ['approver_user'], ccUserIds: [] };
+    await service.savePositionApprovalFlow({ flows: { external: configuredApprover, internal: configuredApprover, demand: configuredApprover } }, '招聘管理员');
     const position = await service.createPosition({
       name: '高级后端工程师', department: '技术部', headcount: 3, priority: '高',
       jobDescription: '负责核心招聘系统服务端建设', owner: '王HR', expectedArrivalDate: '2026-10-15',
@@ -176,25 +315,25 @@ test('position and demand require the configured WeCom approver before publishin
     assert.equal(position.headcount, 3);
     assert.equal(position.approvalStatus, '待审批');
     assert.equal(position.approvalNotification.status, '已发送');
-    assert.equal(approvalMessages[0].recipientAddress, 'LiSiQi');
-    assert.match(approvalMessages[0].content, /审批：新增岗位待审批/);
-    assert.match(approvalMessages[0].content, /发起部门：技术部/);
-    assert.match(approvalMessages[0].content, /岗位名称：高级后端工程师/);
-    assert.match(approvalMessages[0].content, /发起人：招聘管理员/);
-    assert.match(approvalMessages[0].content, /新增理由：核心系统需要补一名后端负责人/);
-    assert.match(approvalMessages[0].content, /flow_action=recruitment_approval/);
-    assert.match(approvalMessages[0].content, /\[点击查看申请详情 →\]\(https:\/\//);
-    assert.doesNotMatch(approvalMessages[0].content, /打开审批：https:\/\//);
+    assert.deepEqual(applicantNotifications[0].userIds, ['approver_user']);
+    assert.match(applicantNotifications[0].markdown, /审批：新增岗位待审批/);
+    assert.match(applicantNotifications[0].markdown, /发起部门：技术部/);
+    assert.match(applicantNotifications[0].markdown, /岗位名称：高级后端工程师/);
+    assert.match(applicantNotifications[0].markdown, /发起人：招聘管理员/);
+    assert.match(applicantNotifications[0].markdown, /新增理由：核心系统需要补一名后端负责人/);
+    assert.match(applicantNotifications[0].markdown, /flow_action=recruitment_approval/);
+    assert.match(applicantNotifications[0].markdown, /\[点击查看申请详情 →\]\(https:\/\//);
+    assert.doesNotMatch(applicantNotifications[0].markdown, /打开审批：https:\/\//);
 
     const attemptedBypass = await service.updatePosition(position.id, { approvalStatus: '已通过', changeReason: '尝试绕过审批' }, '王HR');
     assert.equal(attemptedBypass.approvalStatus, '待审批');
     await assert.rejects(() => service.publishPosition(position.id, { platforms: ['Boss直聘'] }, '王HR'), /通过后才能发布/);
-    await assert.rejects(() => service.getRecruitmentApproval('position', position.id, { userId: 'other_user', userName: '其他员工' }), /当前登录账号不是指定的招聘审批人/);
+    await assert.rejects(() => service.getRecruitmentApproval('position', position.id, { userId: 'other_user', userName: '其他员工' }), /当前审批人是刘金虎/);
     const approvedPosition = await service.decideRecruitmentApproval('position', position.id, { decision: '通过', opinion: '编制和预算已确认' }, { userId: 'approver_user', userName: '招聘审批人' });
     assert.equal(approvedPosition.approvalStatus, '已通过');
     assert.equal(approvedPosition.applicantNotification.status, '已发送');
-    assert.deepEqual(applicantNotifications[0].userIds, ['recruiter_user']);
-    assert.match(applicantNotifications[0].markdown, /岗位审批通过/);
+    assert.deepEqual(applicantNotifications.at(-1).userIds, ['recruiter_user']);
+    assert.match(applicantNotifications.at(-1).markdown, /岗位审批通过/);
 
     const published = await service.publishPosition(position.id, {
       platforms: ['Boss直聘', '猎聘'], targetCount: 80, filters: { city: '杭州', experienceYears: 5 },
@@ -218,11 +357,12 @@ test('position and demand require the configured WeCom approver before publishin
     assert.equal(demand.positionAutoPublished, false);
     assert.equal(demand.approvalNotification.status, '发送中');
     await new Promise((resolve) => setImmediate(resolve));
-    assert.match(approvalMessages[1].content, /审批：新增需求待审批/);
-    assert.match(approvalMessages[1].content, /需求人数：4人/);
-    assert.match(approvalMessages[1].content, /需求类型：新增需求/);
-    assert.match(approvalMessages[1].content, /优先级：紧急/);
-    assert.match(approvalMessages[1].content, /新增理由：新增业务线，需要补充高级后端研发编制。/);
+    const demandNotice = applicantNotifications.find((item) => item.userIds?.[0] === 'approver_user' && /新增需求待审批/.test(item.markdown));
+    assert.match(demandNotice.markdown, /审批：新增需求待审批/);
+    assert.match(demandNotice.markdown, /需求人数：4人/);
+    assert.match(demandNotice.markdown, /需求类型：新增需求/);
+    assert.match(demandNotice.markdown, /优先级：紧急/);
+    assert.match(demandNotice.markdown, /新增理由：新增业务线，需要补充高级后端研发编制。/);
     await assert.rejects(
       () => service.saveMonthlyDemand({ month: '2026-10', positionId: position.id, headcount: 6, demandType: '新增需求', priority: '紧急', note: '另一个人重复提交。', operator: '其他员工' }, 'other_user'),
       /已由王HR提交，当前还在审批中/,
@@ -233,8 +373,9 @@ test('position and demand require the configured WeCom approver before publishin
     assert.equal(demand.approvalStatus, '待审批');
     assert.equal(demand.positionAutoPublished, false);
     await new Promise((resolve) => setImmediate(resolve));
-    assert.match(approvalMessages[2].content, /需求人数：5人/);
-    assert.match(approvalMessages[2].content, /新增理由：调整为本月新增5名高级后端研发编制。/);
+    const adjustedNotice = applicantNotifications.filter((item) => item.userIds?.[0] === 'approver_user').at(-1);
+    assert.match(adjustedNotice.markdown, /需求人数：5人/);
+    assert.match(adjustedNotice.markdown, /新增理由：调整为本月新增5名高级后端研发编制。/);
     const pendingHiring = await service.monthlyHiring('2026-10');
     assert.equal(pendingHiring.summary.demand, 0);
     const approvedDemand = await service.decideRecruitmentApproval('demand', demand.id, { decision: '通过', opinion: '需求合理' }, { userId: 'approver_user', userName: '招聘审批人' });
@@ -431,7 +572,7 @@ test('historical pending demand approvals are not automatically sent after appro
     assert.equal(approvalMessages.length, 0);
     const stored = memory.records.get('recruitment_monthly_demands')[0];
     assert.equal(stored.fields['审批通知状态'], '未配置');
-    assert.match(stored.fields['审批通知错误'], /WECOM_RECRUITMENT_APPROVER_USER_ID/);
+    assert.match(stored.fields['审批通知错误'], /没有配置当前审批人/);
   } finally {
     if (previousApprover === undefined) delete process.env.WECOM_RECRUITMENT_APPROVER_USER_ID;
     else process.env.WECOM_RECRUITMENT_APPROVER_USER_ID = previousApprover;
@@ -466,8 +607,8 @@ test('recruitment approval notification stops when approver IDs resolve to diffe
 
     assert.deepEqual(result, { scanned: 1, sent: 0, failed: 1 });
     assert.equal(previews.length, 0);
-    assert.equal(memory.records.get('recruitment_positions')[0].fields['审批通知状态'], '发送失败');
-    assert.match(memory.records.get('recruitment_positions')[0].fields['审批通知错误'], /指向不同员工/);
+    assert.equal(memory.records.get('recruitment_positions')[0].fields['审批通知状态'], '未配置');
+    assert.match(memory.records.get('recruitment_positions')[0].fields['审批通知错误'], /没有配置当前审批人/);
   } finally {
     if (previousApprover === undefined) delete process.env.WECOM_RECRUITMENT_APPROVER_USER_ID;
     else process.env.WECOM_RECRUITMENT_APPROVER_USER_ID = previousApprover;
@@ -498,8 +639,9 @@ test('recruitment approval retry sends nothing when configured approver is not t
 
     const result = await service.retryPendingRecruitmentApprovalNotifications();
 
-    assert.deepEqual(result, { scanned: 0, sent: 0, failed: 0 });
+    assert.deepEqual(result, { scanned: 1, sent: 0, failed: 1 });
     assert.equal(previews.length, 0);
+    assert.equal(memory.records.get('recruitment_positions')[0].fields['审批通知状态'], '未配置');
   } finally {
     if (previousApprover === undefined) delete process.env.WECOM_RECRUITMENT_APPROVER_USER_ID;
     else process.env.WECOM_RECRUITMENT_APPROVER_USER_ID = previousApprover;
