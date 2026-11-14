@@ -1398,6 +1398,7 @@ html {
 .rf-approval-decision p.error { color: #b14f48; }
 .rf-approval-decision button { min-width: 112px; height: 44px; border-radius: 10px; font-size: 15px; font-weight: 800; cursor: pointer; }
 .rf-approval-decision button:disabled { cursor: wait; opacity: .62; }
+.rf-approval-transfer { color: #1d5f99; border: 1px solid #c5d9ea; background: #f4f9fd; }
 .rf-approval-reject { color: #9d4038; border: 1px solid #efd2cd; background: #fff7f6; }
 .rf-approval-pass { color: #fff; border: 0; background: #6d5424; }
 .rf-approval-finished { display: grid; justify-items: start; gap: 8px; padding: 18px; border-radius: 14px; background: #f8f6f2; }
@@ -1411,7 +1412,7 @@ html {
   .rf-approval-head h2 { font-size: 23px; }
   .rf-approval-decision { bottom: -18px; margin-right: -18px; margin-bottom: -18px; margin-left: -18px; padding-right: 18px; padding-left: 18px; }
   .rf-approval-decision > div { align-items: stretch; flex-direction: column; }
-  .rf-approval-decision > div > div { display: grid; grid-template-columns: 1fr 1fr; }
+  .rf-approval-decision > div > div { display: grid; grid-template-columns: 1fr 1fr 1fr; }
   .rf-approval-decision button { width: 100%; }
 }
 

@@ -9477,10 +9477,45 @@ body.rf-public-communication-body .rf-public-communication-scroll::-webkit-scrol
 .rf-approval-workbench.is-approved .rf-approval-tabs button.active b { background: #1f7a45; }
 .rf-approval-workbench.is-rejected .rf-approval-tabs button.active { border-color: #e3b3ad; background: #fdf3f1; color: #a83229; }
 .rf-approval-workbench.is-rejected .rf-approval-tabs button.active b { background: #a83229; }
-.rf-approval-workbench.is-approved .rf-pending-approval-list button { border-color: #cfe6d6; background: #f7fcf8; }
-.rf-approval-workbench.is-approved .rf-pending-approval-list span { color: #1f7a45; }
-.rf-approval-workbench.is-rejected .rf-pending-approval-list button { border-color: #efd2cd; background: #fffaf9; }
-.rf-approval-workbench.is-rejected .rf-pending-approval-list span { color: #a83229; }
+.rf-approval-type-filters {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: -6px 0 14px;
+}
+.rf-approval-type-filters button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 30px;
+  padding: 3px 10px;
+  border: 1px solid #e6dfd3;
+  border-radius: 8px;
+  background: #fff;
+  color: #6d6458;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.rf-approval-type-filters button b {
+  min-width: 16px;
+  padding: 0 5px;
+  border-radius: 99px;
+  background: #f3eee4;
+  color: #6d6458;
+  font-size: 11px;
+  line-height: 16px;
+  text-align: center;
+}
+.rf-approval-type-filters button.is-position.active { border-color: #1d5f99; background: #eaf4fc; color: #1d5f99; }
+.rf-approval-type-filters button.is-position.active b { background: #1d5f99; color: #fff; }
+.rf-approval-type-filters button.is-demand.active { border-color: #c56a12; background: #fff3e4; color: #c56a12; }
+.rf-approval-type-filters button.is-demand.active b { background: #c56a12; color: #fff; }
+.rf-approval-type-filters button.is-all.active { border-color: #8d8376; background: #f7f4ef; color: #3c3428; }
+.rf-approval-type-filters button.is-all.active b { background: #3c3428; color: #fff; }
+
+.rf-approval-workbench.is-approved .rf-pending-approval-list button { background: #f7fcf8; }
+.rf-approval-workbench.is-rejected .rf-pending-approval-list button { background: #fffaf9; }
 .rf-approval-workbench.is-approved .rf-pending-approval-list em,
 .rf-approval-workbench.is-rejected .rf-pending-approval-list em { white-space: normal; }
 
@@ -9491,7 +9526,8 @@ body.rf-public-communication-body .rf-public-communication-scroll::-webkit-scrol
 
 .rf-pending-approval-list button {
   display: grid;
-  grid-template-columns: 52px minmax(0, 1fr);
+  grid-template-columns: 58px minmax(0, 1fr);
+  grid-template-areas: "kind title" "kind detail" "flow flow" "kind meta";
   gap: 2px 12px;
   width: 100%;
   padding: 14px 16px;
@@ -9503,12 +9539,63 @@ body.rf-public-communication-body .rf-public-communication-scroll::-webkit-scrol
   cursor: pointer;
 }
 
-.rf-pending-approval-list button:hover { border-color: #c9a15a; background: #fff8ec; }
-.rf-pending-approval-list span { grid-row: span 3; align-self: center; color: #98651d; font-size: 13px; font-weight: 800; }
+.rf-pending-approval-list button.is-position { border-color: #b9d3ea; border-left: 5px solid #1d5f99; background: #f5faff; }
+.rf-pending-approval-list button.is-demand { border-color: #f0d2ad; border-left: 5px solid #c56a12; background: #fffaf4; }
+.rf-pending-approval-list button.is-position:hover { border-color: #7eafd8; background: #eaf4fc; }
+.rf-pending-approval-list button.is-demand:hover { border-color: #e2b275; background: #fff3e4; }
+.rf-pending-approval-list .rf-approval-kind {
+  grid-area: kind;
+  display: grid;
+  place-items: center;
+  align-self: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-style: normal;
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+.rf-pending-approval-list button.is-position .rf-approval-kind { background: #1d5f99; color: #fff; }
+.rf-pending-approval-list button.is-demand .rf-approval-kind { background: #c56a12; color: #fff; }
+.rf-pending-approval-list .rf-approval-role {
+  display: inline-block;
+  margin-right: 8px;
+  padding: 0 7px;
+  border-radius: 99px;
+  background: #f3eee4;
+  color: #6d6458;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 18px;
+}
 .rf-pending-approval-list strong,
 .rf-pending-approval-list small,
 .rf-pending-approval-list em { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.rf-pending-approval-list strong { font-size: 15px; }
+.rf-pending-approval-list strong { grid-area: title; font-size: 15px; }
+.rf-pending-approval-list small { grid-area: detail; }
+.rf-pending-approval-list em { grid-area: meta; }
+.rf-pending-approval-list .rf-approval-flow { grid-area: flow; min-width: 0; margin: 7px 0 4px; }
+.rf-approval-flow { display: grid; gap: 8px; }
+.rf-flow-steps { display: flex; align-items: flex-start; gap: 0; min-width: 0; overflow-x: auto; }
+.rf-flow-step { position: relative; display: grid; justify-items: center; min-width: 72px; padding: 0 8px; color: #8a8174; }
+.rf-flow-step i { width: 12px; height: 12px; border: 2px solid #d8d0c4; border-radius: 50%; background: #fff; }
+.rf-flow-step.has-line::after { content: ""; position: absolute; top: 5px; left: calc(50% + 10px); width: calc(100% - 20px); height: 2px; background: #e4dccf; }
+.rf-flow-step b, .rf-flow-step small { max-width: 86px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rf-flow-step b { margin-top: 4px; color: #4d463c; font-size: 12px; }
+.rf-flow-step small { color: #8a8174; font-size: 11px; }
+.rf-flow-step.done i { border-color: #1f7a45; background: #1f7a45; }
+.rf-flow-step.done small { color: #1f7a45; }
+.rf-flow-step.current i { border-color: #c9a15a; background: #fff4df; box-shadow: 0 0 0 3px #f6e7c8; }
+.rf-flow-step.current b, .rf-flow-step.current small { color: #8a5a12; font-weight: 800; }
+.rf-flow-step.rejected i { border-color: #a83229; background: #a83229; }
+.rf-flow-step.rejected small { color: #a83229; }
+.rf-flow-cc { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
+.rf-flow-cc span { color: #8a8174; font-size: 11px; font-weight: 800; }
+.rf-flow-cc b { padding: 1px 7px; border-radius: 99px; background: #f3eee4; color: #6d6458; font-size: 11px; font-weight: 750; }
+.rf-flow-cc b.done { background: #e7f6ec; color: #1f7a45; }
+.rf-approval-flow:not(.compact) { margin-bottom: 14px; padding: 14px; border: 1px solid #efe4cf; border-radius: 14px; background: #fffdf8; }
+.rf-approval-flow:not(.compact) .rf-flow-step { min-width: 96px; }
 .rf-pending-approval-list small,
 .rf-pending-approval-list em { color: #8a8174; font-size: 12px; font-style: normal; }
 

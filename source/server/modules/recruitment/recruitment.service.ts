@@ -939,6 +939,59 @@ export class RecruitmentService implements OnApplicationBootstrap {
     return { ...approval, canDecide: !finished, mine: text(row.fields['审批申请人用户ID']) === actor.userId, positionAutoPublished, applicantNotification }
   }
 
+  /** 只替换当前审批人。已处理步骤、后续审批人和抄送人都不改。 */
+  async transferRecruitmentApproval(typeInput: string, id: string, input: { userId?: string; reason?: string }, actor: { userId: string; userName: string }) {
+    const type = this.recruitmentApprovalType(typeInput)
+    const targetUserId = text(input.userId)
+    const reason = text(input.reason)
+    if (!targetUserId) throw new BadRequestException('请选择转交人')
+    if (!reason) throw new BadRequestException('请填写转交原因')
+    const { tableId, row } = await this.recruitmentApprovalRow(type, id)
+    const approvalStatus = text(row.fields['审批状态']) || '待审批'
+    if (approvalStatus !== '待审批') throw new ConflictException(`该${type === 'position' ? '岗位' : '需求'}已经${approvalStatus}，不能转交`)
+    await this.assertCurrentApprovalActor(row, actor.userId)
+    const progress = this.approvalProgress(row)
+    const currentOrder = this.currentApprovalOrder(row, progress)
+    const currentStep = progress.find((step) => step.role === '审批人' && step.order === currentOrder)
+    if (!currentStep) throw new ConflictException('这条审批没有可转交的当前审批人')
+    const { users } = await this.approvalActor(actor.userId)
+    const target = users.find((item) => (text(item.fields['用户ID']) || item.id) === targetUserId)
+    if (!target || !['启用', ''].includes(text(target.fields['用户状态']))) throw new BadRequestException('转交人不是有效员工')
+    const targetId = text(target.fields['用户ID']) || target.id
+    const targetName = text(target.fields['姓名']) || targetId
+    const targetWecomUserId = text(target.fields['企业微信用户ID'])
+    if (!targetWecomUserId && !text(target.fields['天玑微信ID'])) throw new BadRequestException(`“${targetName}”尚未同步企微成员ID，不能接收审批`)
+    if (this.approvalPersonMatches(targetId, targetWecomUserId, currentStep)) throw new BadRequestException('转交人已经是当前审批人')
+    const laterApprover = progress.find((step) => step.role === '审批人' && step.order > currentOrder && this.approvalPersonMatches(targetId, targetWecomUserId, step))
+    if (laterApprover) throw new BadRequestException(`“${targetName}”已在后续审批人中，不能重复加入当前步骤`)
+    const fromName = text(currentStep.name) || actor.userName || actor.userId
+    const now = timestamp()
+    const opinion = `由${fromName}转交给${targetName}：${reason}`
+    currentStep.userId = targetId
+    currentStep.name = targetName
+    currentStep.wecomUserId = targetWecomUserId
+    currentStep.status = '待审批'
+    currentStep.opinion = opinion
+    currentStep.actedAt = now
+    const fields = {
+      当前审批步骤: currentOrder,
+      当前审批人用户ID: targetId,
+      审批人企微ID: targetWecomUserId,
+      审批意见: opinion,
+      审批进度JSON: JSON.stringify(progress),
+      审批通知状态: '待发送',
+      审批通知错误: '',
+      更新时间: now,
+    }
+    await teable.updateRecord(tableId, row.id, fields)
+    const updatedRow = { ...row, fields: { ...row.fields, ...fields, 审批通知状态: '' } }
+    const notification = await this.sendRecruitmentApprovalRequest(type, id, updatedRow, actor.userName || actor.userId)
+    if (type === 'position') this.invalidateTables(['recruitment_positions'])
+    else { this.monthlyDemandCache = undefined; this.monthlyHiringCache.clear(); this.invalidateTables(['recruitment_monthly_demands']) }
+    await this.audit(`${type === 'position' ? '岗位' : '招聘需求'}审批转交`, type === 'position' ? '岗位' : '月度需求', id, row.fields, fields, actor.userName || actor.userId, opinion)
+    return { ...this.mapRecruitmentApproval(type, updatedRow), canDecide: false, transferredTo: targetName, notification }
+  }
+
   async createPosition(input: PositionInput, operator = '当前用户', operatorUserId = '', profile?: RoleAccessProfile) {
     this.invalidateTables(['recruitment_positions', 'recruitment_position_versions']);
     this.validatePosition(input)
@@ -1714,6 +1767,20 @@ export class RecruitmentService implements OnApplicationBootstrap {
     return { tableId, row }
   }
 
+  private approvalFlowView(row: TeableRecord) {
+    const progress = this.approvalProgress(row)
+    const approvalStatus = text(row.fields['审批状态']) || '待审批'
+    const currentOrder = this.currentApprovalOrder(row, progress)
+    const approvers = progress.filter((step) => step.role === '审批人').map((step) => {
+      const done = step.status === '已通过' || step.status === '已驳回'
+      const current = !done && approvalStatus === '待审批' && step.order === currentOrder
+      const state = done ? step.status : current ? '审批中' : approvalStatus === '已驳回' ? '未审批' : '待审批'
+      return { order: step.order, name: text(step.name) || '未命名审批人', status: state, opinion: text(step.opinion), actedAt: text(step.actedAt), current }
+    })
+    const ccUsers = progress.filter((step) => step.role === '抄送人').map((step) => ({ name: text(step.name) || '未命名抄送人', status: text(step.status) || '待抄送', actedAt: text(step.actedAt) }))
+    return { approvers, ccUsers }
+  }
+
   private mapRecruitmentApproval(type: 'position' | 'demand', row: TeableRecord) {
     const fields = row.fields
     const id = text(fields[type === 'position' ? '职位ID' : '月度需求ID']) || row.id
@@ -1721,6 +1788,7 @@ export class RecruitmentService implements OnApplicationBootstrap {
       type, id, approvalStatus: text(fields['审批状态']) || '待审批', applicant: text(fields['审批申请人']) || text(fields['创建人']),
       submittedAt: text(fields['审批提交时间']) || text(fields['创建时间']), approver: text(fields['审批人']), opinion: text(fields['审批意见']),
       approvedAt: text(fields['审批时间']), notificationStatus: text(fields['审批通知状态']), notificationError: text(fields['审批通知错误']),
+      flow: this.approvalFlowView(row),
     }
     if (type === 'position') return {
       ...common, title: text(fields['职位名称']) || '未命名岗位', department: text(fields['部门']), owner: text(fields['负责人']),

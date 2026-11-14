@@ -133,6 +133,12 @@ export class RecruitmentController {
     return this.recruitment.decideRecruitmentApproval(type, id, body || {}, actor.identity)
   }
 
+  @Post('approvals/:type/:id/transfer')
+  async transferApproval(@Headers() headers: Record<string, string | string[] | undefined>, @Param('type') type: string, @Param('id') id: string, @Body() body: { userId?: string; reason?: string }) {
+    const actor = await this.actor(headers)
+    return this.recruitment.transferRecruitmentApproval(type, id, body || {}, actor.identity)
+  }
+
   @Get('positions/:id')
   async position(@Headers() headers: Record<string, string | string[] | undefined>, @Param('id') id: string) {
     const actor = await this.actor(headers)
