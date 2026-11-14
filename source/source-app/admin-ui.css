@@ -9526,9 +9526,9 @@ body.rf-public-communication-body .rf-public-communication-scroll::-webkit-scrol
 
 .rf-pending-approval-list button {
   display: grid;
-  grid-template-columns: 58px minmax(0, 1fr);
-  grid-template-areas: "kind title" "kind detail" "flow flow" "kind meta";
-  gap: 2px 12px;
+  grid-template-columns: 64px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px 12px;
   width: 100%;
   padding: 14px 16px;
   border: 1px solid #e4d7bf;
@@ -9543,8 +9543,12 @@ body.rf-public-communication-body .rf-public-communication-scroll::-webkit-scrol
 .rf-pending-approval-list button.is-demand { border-color: #f0d2ad; border-left: 5px solid #c56a12; background: #fffaf4; }
 .rf-pending-approval-list button.is-position:hover { border-color: #7eafd8; background: #eaf4fc; }
 .rf-pending-approval-list button.is-demand:hover { border-color: #e2b275; background: #fff3e4; }
+.rf-pending-approval-list .rf-approval-card-body {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
 .rf-pending-approval-list .rf-approval-kind {
-  grid-area: kind;
   display: grid;
   place-items: center;
   align-self: center;
@@ -9572,10 +9576,8 @@ body.rf-public-communication-body .rf-public-communication-scroll::-webkit-scrol
 .rf-pending-approval-list strong,
 .rf-pending-approval-list small,
 .rf-pending-approval-list em { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.rf-pending-approval-list strong { grid-area: title; font-size: 15px; }
-.rf-pending-approval-list small { grid-area: detail; }
-.rf-pending-approval-list em { grid-area: meta; }
-.rf-pending-approval-list .rf-approval-flow { grid-area: flow; min-width: 0; margin: 7px 0 4px; }
+.rf-pending-approval-list strong { font-size: 15px; }
+.rf-pending-approval-list .rf-approval-flow { min-width: 0; margin: 6px 0 2px; }
 .rf-approval-flow { display: grid; gap: 8px; }
 .rf-flow-steps { display: flex; align-items: flex-start; gap: 0; min-width: 0; overflow-x: auto; }
 .rf-flow-step { position: relative; display: grid; justify-items: center; min-width: 72px; padding: 0 8px; color: #8a8174; }

@@ -6343,7 +6343,7 @@ if (!root) return;
   function approvalCard(item, actionText) {
     const role = item.canDecide ? '待我审批' : item.mine ? '我提交的' : item.cc ? '抄送我的' : '管理员查看';
     const isPosition = item.type === 'position';
-    return `<button type="button" class="${isPosition ? 'is-position' : 'is-demand'}" data-rf-open-approval="${escapeHtml(item.type)}:${escapeHtml(item.id)}"><i class="rf-approval-kind">${isPosition ? '岗位' : '需求'}</i><strong>${escapeHtml(item.title)}</strong><small>${escapeHtml(item.department)} · ${escapeHtml(item.detail)}</small>${approvalFlowHtml(item.flow, true)}<em><b class="rf-approval-role">${escapeHtml(role)}</b>${escapeHtml(actionText)}</em></button>`;
+    return `<button type="button" class="${isPosition ? 'is-position' : 'is-demand'}" data-rf-open-approval="${escapeHtml(item.type)}:${escapeHtml(item.id)}"><i class="rf-approval-kind">${isPosition ? '岗位' : '需求'}</i><span class="rf-approval-card-body"><strong>${escapeHtml(item.title)}</strong><small>${escapeHtml(item.department)} · ${escapeHtml(item.detail)}</small>${approvalFlowHtml(item.flow, true)}<em><b class="rf-approval-role">${escapeHtml(role)}</b>${escapeHtml(actionText)}</em></span></button>`;
   }
 
   function bindApprovalCards() {
