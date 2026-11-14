@@ -1980,7 +1980,7 @@
         <span class="rf-talent-tags">${tagsHtml}</span>
       </span>
       <span class="rf-talent-card-resume"><span class="rf-talent-card-title">工作经历</span>${workRows}</span>
-      <span class="rf-talent-card-side"><b class="rf-match-score ${scoreTone(item.bestMatchScore)}">${Number(item.bestMatchScore || 0)}分</b><span>${escapeHtml(matchedRole || '岗位待匹配')}</span><em class="rf-talent-stage-action" data-rf-stage-action="${escapeHtml(item.id)}" data-rf-stage-kind="${escapeHtml(stageAction.kind)}">${escapeHtml(stageAction.label)}</em></span>
+      <span class="rf-talent-card-side"><b class="rf-match-score ${scoreTone(item.bestMatchScore || item.analysis?.scores?.overall)}">${Number(item.bestMatchScore || item.analysis?.scores?.overall || 0)}分</b><span>${escapeHtml(matchedRole || '岗位待匹配')}</span><em class="rf-talent-stage-action" data-rf-stage-action="${escapeHtml(item.id)}" data-rf-stage-kind="${escapeHtml(stageAction.kind)}">${escapeHtml(stageAction.label)}</em></span>
     </article>`;
   }
 

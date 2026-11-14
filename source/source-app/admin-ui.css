@@ -5805,7 +5805,7 @@ body{color:var(--fd-ink);background:radial-gradient(circle at 90% -10%,rgba(189,
 #page-resume-archive .rf-talent-meta{display:flex;gap:6px 10px;overflow:hidden;margin-top:10px;color:#6b6254;font-size:13px;font-weight:700;white-space:nowrap;}
 #page-resume-archive .rf-talent-meta span{white-space:nowrap;}
 #page-resume-archive .rf-talent-meta .rf-meta-divider{flex:0 0 auto;color:#d5cbb8;font-style:normal;font-weight:600;}
-#page-resume-archive .rf-talent-tags{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px;}
+#page-resume-archive .rf-talent-tags{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px;padding-bottom:10px;}
 #page-resume-archive .rf-talent-tags span{max-width:100%;overflow:hidden;padding:5px 9px;border-radius:8px;background:#f7f4ee;color:#71695a;font-size:12px;font-weight:700;text-overflow:ellipsis;white-space:nowrap;}
 #page-resume-archive .rf-talent-tags span.empty{background:#fff7e9;color:#97661a;}
 #page-resume-archive .rf-talent-card-resume{grid-area:resume;min-width:0;max-height:112px;overflow:hidden;padding-left:18px;border-left:1px solid #eee7da;}

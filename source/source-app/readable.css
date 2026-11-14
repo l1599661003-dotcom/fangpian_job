@@ -4159,7 +4159,8 @@ body .rf-dialog.rf-feedback-dialog .rf-feedback-submit-actions {
 
 @media (min-width: 761px) {
   #page-resume-archive .rf-talent-tags {
-    margin-bottom: 4px !important;
+    margin-bottom: 0 !important;
+    padding-bottom: 12px !important;
   }
 }
 

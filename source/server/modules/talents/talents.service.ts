@@ -648,7 +648,7 @@ export class TalentsService implements OnModuleInit {
     const positionScopedItems = protectedItems.map((item: any) => {
       if (!visiblePositionIds || !visiblePositionNames) return item
       const matches = (item.matches || []).filter((match: any) => visiblePositionIds.has(match.positionId) || (!match.positionId && visiblePositionNames.has(match.positionName)))
-      return { ...item, matches, bestMatchRole: matches[0]?.positionName || '', bestMatchScore: Number(matches[0]?.score || 0) }
+      return { ...item, matches, bestMatchRole: matches[0]?.positionName || '', bestMatchScore: Number(matches[0]?.score || item.analysis?.scores?.overall || 0) }
     })
     const employeeByPhone = new Map(employeeRows.map((row) => [text(row.fields['手机']).replace(/\D/g, '').replace(/^86/, ''), text(row.fields['天玑人事状态'])]))
     const candidates = positionScopedItems.map((item: any) => {
@@ -3082,7 +3082,7 @@ export class TalentsService implements OnModuleInit {
       }
       detailed.matches = item.matches
       detailed.bestMatchRole = item.bestMatchRole
-      detailed.bestMatchScore = item.bestMatchScore
+      detailed.bestMatchScore = Number(item.bestMatchScore || detailed.bestMatchScore || detailed.analysis?.scores?.overall || 0)
       detailed.employmentStatus = item.employmentStatus
       return detailed
     })
@@ -3319,7 +3319,7 @@ export class TalentsService implements OnModuleInit {
       createdTime: text(f['创建时间']) || row.createdTime || '', updatedTime: text(f['更新时间']), latestResumeId: text(f['最新简历记录ID']),
       // 列表不传输 OCR 正文；文件名/地址来自主档缓存，详情再按最新简历校准。
       sourceFileName: text(f['当前简历文件名']) || text(index.resumes.get(candidateId)?.fields['源文件名']) || '', sourceFileUrl: text(f['当前简历地址']) || text(index.resumes.get(candidateId)?.fields['源文件地址']) || '', rawText: '完整简历原文将在打开详情时按需加载。', avatarUrl: text(f['头像地址']), avatarStatus: text(f['头像提取状态']), editableWordUrl: '', tags: tagRows.map((item) => ({ name: text(item.fields['标签名称']), category: text(item.fields['标签分类']), source: text(item.fields['标签来源']), confidence: num(item.fields['置信度']), evidence: '', reviewStatus: text(item.fields['人工确认状态']), status: text(item.fields['标签状态']) || '当前' })),
-      skills: activeSkills.length ? activeSkills : json<string[]>(f['技能JSON'], []), matches, bestMatchScore: matches[0]?.score || num(application?.fields['AI匹配分']), bestMatchRole: matches[0]?.positionName || text(f['期望职位']),
+      skills: activeSkills.length ? activeSkills : json<string[]>(f['技能JSON'], []), matches, bestMatchScore: matches[0]?.score || num(application?.fields['AI匹配分']) || Number(effectiveAnalysis?.scores?.overall || 0), bestMatchRole: matches[0]?.positionName || text(f['期望职位']),
       analysis: assessment && effectiveAnalysis ? { id: assessmentId, reviewStatus: text(assessment.fields['人工确认状态']) || '待人工确认', scores: effectiveAnalysis.scores, scoreDimensions: effectiveAnalysis.scoreDimensions || null, confidence: effectiveAnalysis.confidence, strengths: effectiveAnalysis.strengths || [], summary: effectiveAnalysis.summary || '' } : null,
       _access: { candidateId, ownerUserId: text(application?.fields['负责人用户ID']) || text(f['负责人用户ID']), departmentIds, businessUnitId: text(demand?.fields['事业部ID']), interviewerUserIds: index.interviewerUserIds.get(candidateId) || [], stage: text(application?.fields['当前阶段']) || text(f['候选人状态']) } satisfies TalentAccessContext,
     }
@@ -3421,7 +3421,7 @@ export class TalentsService implements OnModuleInit {
         return activeSkills.length ? activeSkills : json<string[]>(f['技能JSON'], []).length ? json<string[]>(f['技能JSON'], []) : this.extractSkills(text(resume?.fields['技能证书']))
       })(),
       tags: data.tags.filter((item) => text(item.fields['候选人ID']) === candidateId && !['历史', '人工移除'].includes(text(item.fields['标签状态']))).map((item) => ({ name: text(item.fields['标签名称']), category: text(item.fields['标签分类']), source: text(item.fields['标签来源']), confidence: num(item.fields['置信度']), evidence: text(item.fields['证据']), reviewStatus: text(item.fields['人工确认状态']), status: text(item.fields['标签状态']) || '当前' })),
-      matches, bestMatchScore: matches[0]?.score || num(application?.fields['AI匹配分']), bestMatchRole: matches[0]?.positionName || text(f['期望职位']),
+      matches, bestMatchScore: matches[0]?.score || num(application?.fields['AI匹配分']) || Number(effectiveAnalysis?.scores?.overall || 0), bestMatchRole: matches[0]?.positionName || text(f['期望职位']),
       referralPositionId, referralPositionName: text(referralPosition?.fields['职位名称']),
       analysis: assessment && effectiveAnalysis ? { id: assessmentId, version: num(assessment.fields['版本号']) || 1, versionName: text(assessment.fields['分析版本']) || 'talent-v1', parentId: text(assessment.fields['父分析记录ID']), type: text(assessment.fields['分析类型']), rerunReason: text(assessment.fields['重跑原因']), promptVersion: text(assessment.fields['提示词版本']), modelVersion: text(assessment.fields['模型版本']), runStatus: text(assessment.fields['运行状态']), durationMs: num(assessment.fields['耗时毫秒']), runError: text(assessment.fields['运行错误']), createdAt: text(assessment.fields['创建时间']), ...effectiveAnalysis, aiOriginal: originalAnalysis, corrected: Boolean(analysisCorrection), correction: analysisCorrection ? { changedFields: analysisCorrection.changedFields || [], reason: text(assessment.fields['人工修正原因']) || analysisCorrection.reason, operator: text(assessment.fields['修正人']) || analysisCorrection.operator, correctedAt: text(assessment.fields['修正时间']) || analysisCorrection.correctedAt } : null, reviewStatus: text(assessment.fields['人工确认状态']) || '待人工确认', humanNote: text(assessment.fields['人工修正内容']) } : null,
       _access: { candidateId, ownerUserId: text(application?.fields['负责人用户ID']) || text(f['负责人用户ID']), departmentIds, businessUnitId: text(demand?.fields['事业部ID']), interviewerUserIds, stage: text(application?.fields['当前阶段']) || text(f['候选人状态']) } satisfies TalentAccessContext,
