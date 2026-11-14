@@ -9440,6 +9440,50 @@ body.rf-public-communication-body .rf-public-communication-scroll::-webkit-scrol
 #page-jobs .rf-job-summary [data-rf-pending-approvals]:disabled { cursor: default; }
 #page-jobs .rf-job-summary [data-rf-pending-approvals]:disabled:hover { background: transparent; }
 
+.rf-approval-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 2px 0 16px;
+}
+.rf-approval-tabs button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 7px 10px;
+  border: 1px solid #e4d7bf;
+  border-radius: 999px;
+  background: #fffdf8;
+  color: #6d6458;
+  font-size: 13px;
+  font-weight: 750;
+  cursor: pointer;
+}
+.rf-approval-tabs button b {
+  min-width: 18px;
+  padding: 0 6px;
+  border-radius: 99px;
+  background: #f3eee4;
+  color: #6d6458;
+  font-size: 12px;
+  line-height: 18px;
+  text-align: center;
+}
+.rf-approval-tabs button.active { border-color: #c9a15a; background: #fff4df; color: #8a5a12; }
+.rf-approval-tabs button.active b { background: #c9a15a; color: #fff; }
+.rf-approval-workbench.is-approved .rf-approval-tabs button.active { border-color: #8fbe9d; background: #eef8f1; color: #1f7a45; }
+.rf-approval-workbench.is-approved .rf-approval-tabs button.active b { background: #1f7a45; }
+.rf-approval-workbench.is-rejected .rf-approval-tabs button.active { border-color: #e3b3ad; background: #fdf3f1; color: #a83229; }
+.rf-approval-workbench.is-rejected .rf-approval-tabs button.active b { background: #a83229; }
+.rf-approval-workbench.is-approved .rf-pending-approval-list button { border-color: #cfe6d6; background: #f7fcf8; }
+.rf-approval-workbench.is-approved .rf-pending-approval-list span { color: #1f7a45; }
+.rf-approval-workbench.is-rejected .rf-pending-approval-list button { border-color: #efd2cd; background: #fffaf9; }
+.rf-approval-workbench.is-rejected .rf-pending-approval-list span { color: #a83229; }
+.rf-approval-workbench.is-approved .rf-pending-approval-list em,
+.rf-approval-workbench.is-rejected .rf-pending-approval-list em { white-space: normal; }
+
 .rf-pending-approval-list {
   display: grid;
   gap: 10px;

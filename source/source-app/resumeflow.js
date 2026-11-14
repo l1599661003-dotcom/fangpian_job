@@ -6306,7 +6306,7 @@ if (!root) return;
           ? `${Number(item.headcount || 0)}人`
           : `${item.month ? `${item.month} · ` : ''}${Number(item.headcount || 0)}人 · ${item.demandType || '新增需求'}`,
       }))
-      .sort((left, right) => String(status === '已驳回' ? right.decidedAt || right.submittedAt : right.submittedAt).localeCompare(String(status === '已驳回' ? left.decidedAt || left.submittedAt : left.submittedAt)));
+      .sort((left, right) => String(status === '待审批' ? right.submittedAt : right.decidedAt || right.submittedAt).localeCompare(String(status === '待审批' ? left.submittedAt : left.decidedAt || left.submittedAt)));
   }
 
   function pendingRecruitmentApprovals() {
@@ -6324,7 +6324,7 @@ if (!root) return;
   }
 
   function approvalCard(item, actionText) {
-    const role = item.canDecide ? '待我审批' : item.mine ? '我提交的' : item.cc ? '抄送我的' : '可查看';
+    const role = item.canDecide ? '待我审批' : item.mine ? '我提交的' : item.cc ? '抄送我的' : '管理员查看';
     return `<button type="button" data-rf-open-approval="${escapeHtml(item.type)}:${escapeHtml(item.id)}"><span>${item.type === 'position' ? '岗位' : '需求'} · ${escapeHtml(role)}</span><strong>${escapeHtml(item.title)}</strong><small>${escapeHtml(item.department)} · ${escapeHtml(item.detail)}</small><em>${escapeHtml(actionText)}</em></button>`;
   }
 
@@ -6338,19 +6338,36 @@ if (!root) return;
     }));
   }
 
-  function showPendingApprovals(doneTitle = '') {
-    const items = pendingRecruitmentApprovals();
-    const rejected = recruitmentApprovalItems('已驳回');
-    const summary = doneTitle
-      ? `${escapeHtml(doneTitle)}已处理。${items.length ? `还有 ${items.length} 条待审批，点开即可继续。` : '待审批已全部处理完。'}`
-      : '点开一条查看信息，确认后再通过或驳回。';
-    const cards = items.length
-      ? items.map((item) => approvalCard(item, `${item.applicant} · ${formatShanghaiDateTime(item.submittedAt) || '刚刚提交'}`)).join('')
-      : '<div class="rf-dialog-empty"><strong>没有待审批</strong><p>新的岗位和招聘需求提交后，会再次出现在这里。</p></div>';
-    const rejectedCards = rejected.length
-      ? `<section class="rf-rejected-approvals"><header><span>已驳回</span><b>${rejected.length}</b></header><div class="rf-pending-approval-list">${rejected.map((item) => approvalCard(item, `驳回原因：${item.opinion || '未填写'} · ${item.applicant}${formatShanghaiDateTime(item.decidedAt) ? ` · ${formatShanghaiDateTime(item.decidedAt)}` : ''}`)).join('')}</div></section>`
-      : '';
-    showTalentDialog(`<section class="rf-approval-workbench"><header class="rf-approval-head"><div><span>${doneTitle ? '已处理' : '待审批'}</span><h2>${doneTitle ? '继续处理' : '待审批'}</h2><p>${summary}</p></div><b>${items.length}</b></header><div class="rf-pending-approval-list">${cards}</div>${rejectedCards}</section>`, 'wide');
+  function approvalListText(status, item) {
+    if (status === '已通过') return `${item.opinion || '申请已通过'} · ${item.applicant}${formatShanghaiDateTime(item.decidedAt) ? ` · ${formatShanghaiDateTime(item.decidedAt)}` : ''}`;
+    if (status === '已驳回') return `驳回原因：${item.opinion || '未填写'} · ${item.applicant}${formatShanghaiDateTime(item.decidedAt) ? ` · ${formatShanghaiDateTime(item.decidedAt)}` : ''}`;
+    return `${item.applicant} · ${formatShanghaiDateTime(item.submittedAt) || '刚刚提交'}`;
+  }
+
+  function showPendingApprovals(doneTitle = '', activeStatus = state.approvalListStatus || '待审批') {
+    const tabs = [
+      { status: '待审批', empty: '没有待审批', hint: '新的岗位和招聘需求提交后，会再次出现在这里。' },
+      { status: '已通过', empty: '没有已通过记录', hint: '通过后的岗位和招聘需求会显示在这里。' },
+      { status: '已驳回', empty: '没有已驳回记录', hint: '驳回后的申请会显示在这里，可以回看原因。' },
+    ];
+    const current = tabs.some((item) => item.status === activeStatus) ? activeStatus : '待审批';
+    state.approvalListStatus = current;
+    const groups = Object.fromEntries(tabs.map((item) => [item.status, recruitmentApprovalItems(item.status)]));
+    const rows = groups[current];
+    const tab = tabs.find((item) => item.status === current);
+    const summary = doneTitle && current === '待审批'
+      ? `${escapeHtml(doneTitle)}已处理。${rows.length ? `还有 ${rows.length} 条待审批，点开即可继续。` : '待审批已全部处理完。'}`
+      : current === '待审批'
+        ? '点开一条查看信息，确认后再通过或驳回。'
+        : '点开一条可以回看申请内容和处理结果。';
+    const cards = rows.length
+      ? rows.map((item) => approvalCard(item, approvalListText(current, item))).join('')
+      : `<div class="rf-dialog-empty"><strong>${tab.empty}</strong><p>${tab.hint}</p></div>`;
+    const switches = tabs.map((item) => `<button type="button" class="${item.status === current ? 'active' : ''}" data-rf-approval-tab="${escapeHtml(item.status)}">${escapeHtml(item.status)}<b>${groups[item.status].length}</b></button>`).join('');
+    showTalentDialog(`<section class="rf-approval-workbench is-${current === '已通过' ? 'approved' : current === '已驳回' ? 'rejected' : 'pending'}"><header class="rf-approval-head"><div><span>${doneTitle ? '已处理' : '招聘审批'}</span><h2>${escapeHtml(current)}</h2><p>${summary}</p></div><b>${rows.length}</b></header><nav class="rf-approval-tabs">${switches}</nav><div class="rf-pending-approval-list">${cards}</div></section>`, 'wide');
+    document.querySelectorAll('#rf-talent-dialog [data-rf-approval-tab]').forEach((button) => button.addEventListener('click', () => {
+      if (button.dataset.rfApprovalTab !== state.approvalListStatus) showPendingApprovals('', button.dataset.rfApprovalTab);
+    }));
     bindApprovalCards();
   }
 
@@ -6387,10 +6404,10 @@ if (!root) return;
       const decisionBar = canDecide
         ? `<footer class="rf-approval-decision"><label><span>审批意见</span><textarea id="rf-recruitment-approval-opinion" placeholder="通过可不填；驳回必须说明原因"></textarea></label><div><p id="rf-recruitment-approval-message"></p><div><button class="rf-approval-reject" data-rf-recruitment-decision="驳回" type="button">驳回</button><button class="rf-approval-pass" data-rf-recruitment-decision="通过" type="button">通过</button></div></div></footer>`
         : pending
-          ? `<div class="rf-approval-finished pending"><strong>等待${escapeHtml(item.approver || '当前审批人')}处理</strong><p>你是这条申请的提出人，可以查看进度，通过和驳回只由当前审批人操作。</p></div>`
+          ? `<div class="rf-approval-finished pending"><strong>等待${escapeHtml(item.approver || '当前审批人')}处理</strong><p>${item.mine ? '你是这条申请的提出人，可以查看进度。' : '你可以查看这条审批。'}通过和驳回只由当前审批人操作。</p></div>`
           : `<div class="rf-approval-finished ${item.approvalStatus === '已通过' ? 'passed' : 'rejected'}"><strong>${escapeHtml(item.approvalStatus || '已处理')}</strong><p>${escapeHtml(item.opinion || (item.approvalStatus === '已通过' ? '申请已通过。' : '申请已驳回。'))}</p></div>`;
       showTalentDialog(`<section class="rf-approval-workbench"><header class="rf-approval-head"><div><span>${isPosition ? '岗位审批' : '需求审批'}</span><h2>${escapeHtml(item.title || (isPosition ? '未命名岗位' : '招聘需求'))}</h2><p>确认信息后，在页面底部通过或驳回。</p></div><b class="${pending ? 'pending' : item.approvalStatus === '已通过' ? 'passed' : 'rejected'}">${escapeHtml(item.approvalStatus || '待审批')}</b></header><div class="rf-approval-facts">${facts}</div>${notes}${decisionBar}</section>`, 'wide');
-      document.querySelector('[data-rf-back-approvals]')?.addEventListener('click', () => showPendingApprovals());
+      document.querySelector('[data-rf-back-approvals]')?.addEventListener('click', () => showPendingApprovals('', state.approvalListStatus || '待审批'));
       document.querySelectorAll('#rf-talent-dialog [data-rf-recruitment-decision]').forEach((button) => button.addEventListener('click', async () => {
         const decision = button.dataset.rfRecruitmentDecision;
         const opinion = document.getElementById('rf-recruitment-approval-opinion')?.value.trim() || '';
@@ -6404,7 +6421,7 @@ if (!root) return;
           const result = await request(`api/recruitment/approvals/${encodeURIComponent(type)}/${encodeURIComponent(id)}/decision`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ decision, opinion }), initiator: button });
           notifyUser(decision === '通过' ? (isPosition ? '岗位审批已通过' : result.positionAutoPublished ? '招聘需求审批已通过，岗位已自动发布' : '招聘需求审批已通过，岗位已处于招聘中') : '申请已驳回', decision === '通过' ? 'success' : 'error');
           await loadJobsPage();
-          showPendingApprovals(item.title || (isPosition ? '岗位申请' : '招聘需求'));
+          showPendingApprovals(item.title || (isPosition ? '岗位申请' : '招聘需求'), '待审批');
         } catch (error) {
           buttons.forEach((itemButton) => { itemButton.disabled = false; });
           message.textContent = conciseError(error);

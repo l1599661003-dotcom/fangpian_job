@@ -868,10 +868,10 @@ export class RecruitmentService implements OnApplicationBootstrap {
     }
   }
 
-  async getRecruitmentApproval(typeInput: string, id: string, actor: { userId: string; userName: string }) {
+  async getRecruitmentApproval(typeInput: string, id: string, actor: { userId: string; userName: string }, profile?: RoleAccessProfile) {
     const type = this.recruitmentApprovalType(typeInput)
     const { row } = await this.recruitmentApprovalRow(type, id)
-    await this.assertApprovalViewer(row, actor.userId)
+    await this.assertApprovalViewer(row, actor.userId, profile)
     const { wecomUserId } = await this.approvalActor(actor.userId)
     const approvalStatus = text(row.fields['审批状态']) || '待审批'
     return {
@@ -1608,11 +1608,17 @@ export class RecruitmentService implements OnApplicationBootstrap {
     throw new ForbiddenException('这条审批没有配置当前审批人，不能由其他账号处理')
   }
 
-  /** 只有申请人、配置的审批人和抄送人能看详情。通过和驳回仍只属于当前审批人。 */
-  private async assertApprovalViewer(row: TeableRecord, actorUserId: string) {
+  /** 系统管理员和全量数据范围只增加查看权限。通过和驳回仍只属于当前审批人。 */
+  private canViewAllApprovals(profile?: RoleAccessProfile) {
+    return Boolean(profile && (profile.roleCodes.includes('system_admin') || profile.dataScopes.some((scope) => scope.type === 'all')))
+  }
+
+  /** 申请人、配置的审批人、抄送人看自己相关的审批；管理员可以查看全部。 */
+  private async assertApprovalViewer(row: TeableRecord, actorUserId: string, profile?: RoleAccessProfile) {
     const { wecomUserId } = await this.approvalActor(actorUserId)
     if (this.approvalInvolvesActor(row, actorUserId, wecomUserId, 'any')) return
-    throw new ForbiddenException('这条审批只对申请人、配置的审批人和抄送人可见')
+    if (this.canViewAllApprovals(profile)) return
+    throw new ForbiddenException('这条审批只对申请人、配置的审批人、抄送人和管理员可见')
   }
 
   private approvalInvolvesActor(row: TeableRecord, actorUserId: string, actorWecomUserId: string, relation: 'applicant' | 'approver' | 'cc' | 'any') {
@@ -1629,9 +1635,10 @@ export class RecruitmentService implements OnApplicationBootstrap {
     return isApplicant || isCc || isCurrentApprover || progress.some((step) => step.role === '审批人' && this.approvalPersonMatches(actorUserId, actorWecomUserId, step))
   }
 
-  /** 审批列表不看角色、也不走部门范围。只有申请人、配置的审批人和抄送人能看见自己相关的审批。 */
-  async listRecruitmentApprovals(actor: { userId: string; userName: string }, status = '') {
+  /** 普通账号只看自己提交、审核或被抄送的审批。管理员可以查看全部，但不能代替当前审批人处理。 */
+  async listRecruitmentApprovals(actor: { userId: string; userName: string }, status = '', profile?: RoleAccessProfile) {
     const { wecomUserId } = await this.approvalActor(actor.userId)
+    const canViewAll = this.canViewAllApprovals(profile)
     const sources: Array<{ type: 'position' | 'demand'; table: 'recruitment_positions' | 'recruitment_monthly_demands' }> = [
       { type: 'position', table: 'recruitment_positions' },
       { type: 'demand', table: 'recruitment_monthly_demands' },
@@ -1650,7 +1657,7 @@ export class RecruitmentService implements OnApplicationBootstrap {
         const row = text(summary.fields['审批进度JSON'])
           ? summary
           : (await this.recruitmentApprovalRow(source.type, id).catch(() => undefined))?.row || summary
-        if (!this.approvalInvolvesActor(row, actor.userId, wecomUserId, 'any')) continue
+        if (!canViewAll && !this.approvalInvolvesActor(row, actor.userId, wecomUserId, 'any')) continue
         const item = this.mapRecruitmentApproval(source.type, row) as Record<string, unknown>
         item.canDecide = approvalStatus === '待审批' && this.approvalInvolvesActor(row, actor.userId, wecomUserId, 'approver')
         item.mine = this.approvalInvolvesActor(row, actor.userId, wecomUserId, 'applicant')
