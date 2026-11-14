@@ -3591,43 +3591,42 @@ body .rf-dialog.rf-feedback-dialog .rf-feedback-submit-actions {
 
 @media (min-width: 761px) {
   #page-resume-archive .rf-talent-cards {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    width: 100% !important;
+    min-width: 0 !important;
     overflow-x: hidden !important;
     padding-bottom: 16px !important;
   }
-}
 
-@media (min-width: 761px) {
   #page-resume-archive .rf-talent-cards .rf-talent-candidate {
-    grid-template-columns: 66px minmax(0, .82fr) minmax(0, 1fr) minmax(126px, 154px) !important;
+    display: grid !important;
+    grid-template-columns: 66px minmax(0, .82fr) minmax(0, 1fr) minmax(0, 154px) !important;
+    grid-template-areas: "avatar main resume side" !important;
+    width: 100% !important;
     min-width: 0 !important;
     max-width: 100% !important;
     height: auto !important;
-    min-height: 196px !important;
+    min-height: 152px !important;
+    margin: 0 !important;
     overflow: hidden !important;
     white-space: normal !important;
-    padding-bottom: 30px !important;
-  }
-}
-
-@media (max-width: 1180px) {
-  @media (min-width: 761px) and (max-width: 1180px) {
-    #page-resume-archive .rf-talent-cards .rf-talent-candidate {
-      grid-template-columns: 58px minmax(0, 1fr) minmax(120px, 150px) !important;
-      grid-template-areas: "avatar main side" "avatar resume resume" !important;
-    }
+    box-sizing: border-box !important;
   }
 
+  #page-resume-archive .rf-talent-card-main { grid-area: main !important; }
   #page-resume-archive .rf-talent-card-resume {
-    border-left: 0 !important;
+    grid-area: resume !important;
+    border-left: 1px solid #eee7da !important;
+    border-top: 0 !important;
+    padding: 0 0 0 18px !important;
   }
-
-  @media (min-width: 761px) and (max-width: 1180px) {
-    @media (min-width: 761px) and (min-width: 761px) and (max-width: 1180px) {
-      #page-resume-archive .rf-talent-card-resume {
-        padding-top: 8px !important;
-        padding-left: 0 !important;
-      }
-    }
+  #page-resume-archive .rf-talent-card-side {
+    grid-area: side !important;
+    border-left: 1px solid #eee7da !important;
+    border-top: 0 !important;
   }
 }
 
