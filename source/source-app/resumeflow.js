@@ -1971,7 +1971,7 @@
         <strong>${escapeHtml(row.company)}</strong>
         ${row.role ? `<span>${escapeHtml(row.role)}</span>` : ''}
       </article>`).join('');
-    return `<button class="rf-candidate rf-talent-candidate ${active ? 'active' : ''}" data-rf-talent="${escapeHtml(item.id)}" type="button">
+    return `<article class="rf-candidate rf-talent-candidate ${active ? 'active' : ''}" data-rf-talent="${escapeHtml(item.id)}" role="button" tabindex="0">
       ${profileAvatar(item, 'rf-candidate-avatar')}
       <span class="rf-talent-card-main">
         <span class="rf-candidate-name"><strong>${escapeHtml(item.name || '未识别姓名')}</strong><span class="rf-employment-status${employmentStatusClass}">${escapeHtml(employmentStatus)}</span><time datetime="${escapeHtml(item.createdTime || '')}">${escapeHtml(formatTalentEntryTime(item.createdTime))}</time></span>
@@ -1981,7 +1981,7 @@
       </span>
       <span class="rf-talent-card-resume"><span class="rf-talent-card-title">工作经历</span>${workRows}</span>
       <span class="rf-talent-card-side"><b class="rf-match-score ${scoreTone(item.bestMatchScore)}">${Number(item.bestMatchScore || 0)}分</b><span>${escapeHtml(matchedRole || '岗位待匹配')}</span><em class="rf-talent-stage-action" data-rf-stage-action="${escapeHtml(item.id)}" data-rf-stage-kind="${escapeHtml(stageAction.kind)}">${escapeHtml(stageAction.label)}</em></span>
-    </button>`;
+    </article>`;
   }
 
   function scoreCard(label, value, evidence) {

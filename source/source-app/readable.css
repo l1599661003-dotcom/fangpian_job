@@ -3614,6 +3614,10 @@ body .rf-dialog.rf-feedback-dialog .rf-feedback-submit-actions {
     overflow: hidden !important;
     white-space: normal !important;
     box-sizing: border-box !important;
+    border: 0 !important;
+    color: inherit !important;
+    font: inherit !important;
+    text-align: left !important;
   }
 
   #page-resume-archive .rf-talent-card-main { grid-area: main !important; }
