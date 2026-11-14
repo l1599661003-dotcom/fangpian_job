@@ -307,6 +307,11 @@ export class RecruitmentService implements OnApplicationBootstrap {
   }
 
   onApplicationBootstrap() {
+    void this.closeDemandsForClosedPositions()
+      .then((result) => {
+        if (result.closed) this.logger.log(`已关闭岗位的开放需求已对齐：停用 ${result.closed} 条，涉及 ${result.positions} 个岗位`)
+      })
+      .catch((error) => this.logger.error(`已关闭岗位需求对齐失败：${error instanceof Error ? error.message : String(error)}`))
     void this.publishExistingDemandPositions()
       .then((result) => {
         if (result.published) this.logger.log(`已有招聘需求岗位自动发布完成：发布 ${result.published} 个，跳过 ${result.skipped} 个`)
@@ -317,6 +322,36 @@ export class RecruitmentService implements OnApplicationBootstrap {
         if (result.scanned) this.logger.log(`岗位审批通知补发完成：检查 ${result.scanned} 条，成功 ${result.sent} 条，失败 ${result.failed} 条`)
       })
       .catch((error) => this.logger.error(`岗位审批通知补发失败：${error instanceof Error ? error.message : String(error)}`))
+  }
+
+  /** 历史关岗只改了岗位状态。启动时把这些岗位当月和上月仍开放的需求标成已停用，让首页和岗位页重新对齐。 */
+  async closeDemandsForClosedPositions() {
+    const demandTableId = await this.verify('recruitment_monthly_demands', ['月度需求ID', '职位ID', '需求月份', '需求状态', '审批状态', '变更原因', '更新时间'])
+    const positionTableId = await this.verify('recruitment_positions', ['职位ID', '发布状态', '招聘状态'])
+    const [demands, positions] = await Promise.all([teable.listAllRecords(demandTableId), teable.listAllRecords(positionTableId)])
+    const closedPositionIds = new Set(positions.filter((row) => {
+      const publishStatus = text(row.fields['发布状态'])
+      const recruitmentStatus = text(row.fields['招聘状态'])
+      return publishStatus === '已下线' || publishStatus === '已关闭' || ['暂停招聘', '已关闭'].includes(recruitmentStatus)
+    }).flatMap((row) => [text(row.fields['职位ID']), row.id]).filter(Boolean))
+    const currentMonth = currentShanghaiMonth()
+    const previousMonth = previousDemandMonth(currentMonth)
+    const openRows = demands.filter((row) => {
+      const month = text(row.fields['需求月份'])
+      const positionId = text(row.fields['职位ID'])
+      return closedPositionIds.has(positionId) && (month === currentMonth || month === previousMonth) && isCountableDemand(row)
+    })
+    if (!openRows.length) return { closed: 0, positions: 0 }
+    const now = timestamp()
+    const changeReason = '岗位已关闭，启动时对齐停用开放需求'
+    for (const row of openRows) {
+      const fields = { 需求状态: '已停用', 变更原因: changeReason, 更新时间: now }
+      await teable.updateRecord(demandTableId, row.id, fields)
+    }
+    this.monthlyDemandCache = undefined
+    this.monthlyHiringCache.clear()
+    this.invalidateTables(['recruitment_monthly_demands'])
+    return { closed: openRows.length, positions: new Set(openRows.map((row) => text(row.fields['职位ID'])).filter(Boolean)).size }
   }
 
   async publishExistingDemandPositions() {
@@ -527,7 +562,11 @@ export class RecruitmentService implements OnApplicationBootstrap {
     const candidateNamesById = new Map(activeCandidates.map((row) => [text(row.fields['候选人ID']) || row.id, text(row.fields['姓名']) || text(row.fields['候选人ID'])]))
     const positionId = (row: TeableRecord) => text(row.fields['职位ID'])
     const positionsById = new Map(scopedPositions.map((row) => [positionId(row) || row.id, row]))
-    const isOpenPosition = (id: string) => text(positionsById.get(id)?.fields['发布状态']) === '招聘中' && text(positionsById.get(id)?.fields['招聘状态']) !== '暂停招聘'
+    const isOpenPosition = (id: string) => {
+      const position = positionsById.get(id)
+      return text(position?.fields['发布状态']) === '招聘中'
+        && !['暂停招聘', '已关闭'].includes(text(position?.fields['招聘状态']))
+    }
     const monthDemands = demandRows.filter((row) => text(row.fields['需求月份']) === month && isCountableDemand(row) && isOpenPosition(text(row.fields['职位ID'])))
     const previousDemands = demandRows.filter((row) => text(row.fields['需求月份']) === previousMonth && isCountableDemand(row) && isOpenPosition(text(row.fields['职位ID'])))
     const inMonth = (value: unknown) => {
@@ -621,7 +660,7 @@ export class RecruitmentService implements OnApplicationBootstrap {
       target.completed += candidateIds.size
       for (const candidateId of candidateIds) target.completedNames.add(candidateNamesById.get(candidateId) || candidateId)
     }
-    const departmentRows = [...rows.values()].filter((row) => row.demand > 0 || row.completed > 0)
+    const departmentRows = [...rows.values()].filter((row) => isOpenPosition(row.positionId) && (row.demand > 0 || row.completed > 0))
       .map((row) => ({
         ...row,
         completedNames: [...row.completedNames],
@@ -806,7 +845,7 @@ export class RecruitmentService implements OnApplicationBootstrap {
     ])
     const visiblePositions = await this.filterPositionRows(positions, profile, scopeMode)
     const visiblePositionIds = new Set(visiblePositions.map((row) => text(row.fields['职位ID']) || row.id))
-    const openPositionIds = new Set(visiblePositions.filter((row) => text(row.fields['发布状态']) === '招聘中' && text(row.fields['招聘状态']) !== '暂停招聘').map((row) => text(row.fields['职位ID']) || row.id))
+    const openPositionIds = new Set(visiblePositions.filter((row) => text(row.fields['发布状态']) === '招聘中' && !['暂停招聘', '已关闭'].includes(text(row.fields['招聘状态']))).map((row) => text(row.fields['职位ID']) || row.id))
     const activeCandidateIds = new Set(candidates.filter((row) => text(row.fields['候选人状态']) !== '已删除').map((row) => text(row.fields['候选人ID']) || row.id))
     const unsentOfferStatuses = new Set(['', '待人工发送', '生成中', '生成失败', '发送失败'])
     const previousCompletedByPosition = new Map<string, Set<string>>()
@@ -1139,11 +1178,38 @@ export class RecruitmentService implements OnApplicationBootstrap {
     const recruitmentStatus = status === '已下线' ? '暂停招聘' : status === '已关闭' ? '已关闭' : '待启动'
     const fields = { 发布状态: status, 招聘状态: recruitmentStatus, 下线时间: status === '待发布' ? '' : timestamp(), 更新时间: timestamp() }
     await teable.updateRecord(tableId, row.id, fields)
+    const positionId = text(row.fields['职位ID']) || row.id
+    const demandsClosed = status === '待发布' ? 0 : await this.closeOpenDemandsForPosition(positionId, reason, operator)
     this.overviewCache.clear()
     this.monthlyHiringCache.clear()
-    this.invalidateTables(['recruitment_positions'])
+    this.monthlyDemandCache = undefined
+    this.invalidateTables(['recruitment_positions', 'recruitment_monthly_demands'])
     this.auditAsync(`职位状态变更：${current}→${status}`, '职位', id, row.fields, fields, operator, reason)
-    return this.getPosition(id)
+    const position = await this.getPosition(id)
+    return { ...position, demandsClosed }
+  }
+
+  /** 岗位暂停或关闭后，把仍开放的需求标成已停用。记录保留，重新提需求时仍可覆盖。 */
+  private async closeOpenDemandsForPosition(positionId: string, reason: string, operator: string) {
+    if (!positionId) return 0
+    const tableId = await this.verify('recruitment_monthly_demands', ['月度需求ID', '职位ID', '需求月份', '需求状态', '审批状态', '变更原因', '更新时间'])
+    const rows = await teable.listByField(tableId, '职位ID', positionId, 500)
+    const currentMonth = currentShanghaiMonth()
+    const previousMonth = previousDemandMonth(currentMonth)
+    const openRows = rows.filter((row) => {
+      const month = text(row.fields['需求月份'])
+      return (month === currentMonth || month === previousMonth)
+        && isCountableDemand(row)
+    })
+    if (!openRows.length) return 0
+    const now = timestamp()
+    const changeReason = text(reason) ? `岗位关闭联动停用需求：${text(reason)}` : '岗位关闭联动停用需求'
+    for (const row of openRows) {
+      const fields = { 需求状态: '已停用', 变更原因: changeReason, 更新时间: now }
+      await teable.updateRecord(tableId, row.id, fields)
+      this.auditAsync('岗位关闭联动停用需求', '月度需求', text(row.fields['月度需求ID']) || row.id, row.fields, fields, operator, changeReason)
+    }
+    return openRows.length
   }
 
   async batchPublishPositions(ids: string[], operator = '当前用户') {
@@ -1185,16 +1251,23 @@ export class RecruitmentService implements OnApplicationBootstrap {
     const tableId = await this.verify('recruitment_positions', ['职位ID', '发布状态', '招聘状态', '下线时间', '更新时间'])
     const rows = await teable.listAllRecords(tableId)
     const now = timestamp()
-    const result = { offline: 0, skipped: 0, failed: 0, errors: [] as Array<{ id: string; message: string }> }
+    const result = { offline: 0, skipped: 0, failed: 0, demandsClosed: 0, errors: [] as Array<{ id: string; message: string }> }
     for (const id of ids) {
       const row = rows.find((r) => text(r.fields['职位ID']) === id || r.id === id)
       if (!row) { result.failed += 1; result.errors.push({ id, message: '岗位不存在' }); continue }
       const current = text(row.fields['发布状态']) || '待发布'
       if (current !== '招聘中') { result.skipped += 1; continue }
+      const positionId = text(row.fields['职位ID']) || row.id
       await teable.updateRecord(tableId, row.id, { 发布状态: '已下线', 招聘状态: '暂停招聘', 下线时间: now, 更新时间: now })
+      result.demandsClosed += await this.closeOpenDemandsForPosition(positionId, reason, operator)
       result.offline += 1
     }
-    if (result.offline) { this.overviewCache.clear(); this.monthlyHiringCache.clear(); this.invalidateTables(['recruitment_positions']) }
+    if (result.offline) {
+      this.overviewCache.clear()
+      this.monthlyHiringCache.clear()
+      this.monthlyDemandCache = undefined
+      this.invalidateTables(['recruitment_positions', 'recruitment_monthly_demands'])
+    }
     await this.audit('批量暂停岗位', '岗位批次', ids.join(','), {}, result, operator, reason)
     return result
   }

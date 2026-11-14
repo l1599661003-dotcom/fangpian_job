@@ -55,7 +55,7 @@ export function buildHiringDashboardData(input: {
   const normalizePriority = (value: unknown) => priorityAliases[text(value)] || text(value) || '储备'
   const priorityRank = (value: unknown) => ({ 紧急: 0, 重要: 1, 储备: 2 }[normalizePriority(value)] ?? 3)
   const positionsById = new Map(input.positions.map((row) => [text(row.fields['职位ID']) || row.id, row]))
-  const publishedPositionIds = new Set(input.positions.filter((row) => text(row.fields['发布状态']) === '招聘中' && text(row.fields['招聘状态']) !== '暂停招聘').map((row) => text(row.fields['职位ID']) || row.id))
+  const publishedPositionIds = new Set(input.positions.filter((row) => text(row.fields['发布状态']) === '招聘中' && !['暂停招聘', '已关闭'].includes(text(row.fields['招聘状态']))).map((row) => text(row.fields['职位ID']) || row.id))
   const previousMonth = previousDemandMonth(input.month)
   const countableDemand = (row: TeableRecord) => number(row.fields['需求数量']) > 0
     && ['', '已通过'].includes(text(row.fields['审批状态']))

@@ -6110,7 +6110,8 @@ if (!root) return;
     const selectedDepartments = new Set(state.jobDepartmentFilters || []);
     const demandsFor = (positionId) => (state.monthlyDemands || []).filter((item) => item.positionId === positionId && (!selectedMonth || item.month === selectedMonth));
     const isRejectedDemand = (demand) => demand.status === '审批驳回' || demand.approvalStatus === '已驳回';
-    const activeDemandsFor = (item) => demandsFor(item.id).filter((demand) => Number(demand.headcount || 0) > 0 && demand.status !== '已停用' && !isRejectedDemand(demand));
+    const isOpenDemand = (demand) => Number(demand.headcount || 0) > 0 && !['已停用', '待审批', '审批驳回'].includes(demand.status) && !['待审批', '已驳回'].includes(demand.approvalStatus);
+    const activeDemandsFor = (item) => demandsFor(item.id).filter(isOpenDemand);
     const demandPriorityRank = (priority) => ({ 紧急: 0, 高: 0, 重要: 1, 中: 1, 储备: 2, 一般: 2, 低: 2 }[priority] ?? 3);
     const demandPriority = (item) => {
       const demands = activeDemandsFor(item);
@@ -6130,7 +6131,7 @@ if (!root) return;
     const totalPositions = approvedJobs.length;
     const recruitingPositions = approvedJobs.filter((item) => item.status === '招聘中').length;
     const pendingApprovals = pendingRecruitmentApprovals().length;
-    const demandHeadcount = (state.monthlyDemands || []).filter((item) => (!selectedMonth || item.month === selectedMonth) && !isRejectedDemand(item) && item.status !== '待审批' && item.approvalStatus !== '待审批' && item.status !== '已停用').reduce((total, item) => total + Number(item.headcount || 0), 0);
+    const demandHeadcount = (state.monthlyDemands || []).filter((item) => (!selectedMonth || item.month === selectedMonth) && isOpenDemand(item)).reduce((total, item) => total + Number(item.headcount || 0), 0);
     const selectedRange = selectedMonth ? window.companyCalendar?.monthRange(selectedMonth) : null;
     const monthLabel = selectedMonth ? `${selectedMonth.slice(0, 4)}年${Number(selectedMonth.slice(5, 7))}月${selectedRange ? `（${selectedRange.label}）` : ''}` : '当前月份';
     if (summary) summary.innerHTML = `
@@ -6257,7 +6258,7 @@ if (!root) return;
   function openJobBatchPauseDialog() {
     const count = state.jobSelectedIds.size;
     if (!count) return notifyUser('请先选择需要暂停的岗位', 'info');
-    showTalentDialog(`<header class="rf-dialog-head"><div><span>BATCH POSITION ACTION</span><h2>批量暂停招聘</h2><p>将暂停已选择的 ${count} 个岗位。暂停属于招聘运营操作，不发送审批消息。</p></div></header><div class="rf-dialog-form"><label class="wide"><span>暂停原因</span><textarea id="rf-job-batch-reason" placeholder="例如：本月编制已满，暂时停止招聘"></textarea></label></div><div class="rf-dialog-actions"><button class="btn-soft" data-rf-dialog-cancel type="button">取消</button><button class="btn-primary" data-rf-job-batch-confirm type="button">确认暂停</button></div><p class="rf-dialog-message" id="rf-job-batch-message"></p>`, 'wide');
+    showTalentDialog(`<header class="rf-dialog-head"><div><span>BATCH POSITION ACTION</span><h2>批量暂停招聘</h2><p>将暂停已选择的 ${count} 个岗位，并同步停用这些岗位当月和上月仍开放的需求。暂停属于招聘运营操作，不发送审批消息。</p></div></header><div class="rf-dialog-form"><label class="wide"><span>暂停原因</span><textarea id="rf-job-batch-reason" placeholder="例如：本月编制已满，暂时停止招聘"></textarea></label></div><div class="rf-dialog-actions"><button class="btn-soft" data-rf-dialog-cancel type="button">取消</button><button class="btn-primary" data-rf-job-batch-confirm type="button">确认暂停</button></div><p class="rf-dialog-message" id="rf-job-batch-message"></p>`, 'wide');
     document.querySelector('[data-rf-dialog-cancel]')?.addEventListener('click', () => closeTalentDialog());
     document.querySelector('[data-rf-job-batch-confirm]')?.addEventListener('click', (event) => {
       const reason = document.getElementById('rf-job-batch-reason')?.value.trim() || '';
@@ -6274,14 +6275,10 @@ if (!root) return;
       : `api/recruitment/positions/${encodeURIComponent(id)}/offline`;
     const body = action === 'publish' ? { operator } : { reason: '手动暂停', operator };
     try {
-      const result = await request(actionUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), initiator: button });
-      const position = result.position || (state.jobs || []).find((item) => item.id === id) || {};
-      position.status = action === 'publish' ? (position.status || result.position?.status || '招聘中') : (position.status || '已下线');
-      const target = (state.jobs || []).find((item) => item.id === id);
-      if (target) target.status = action === 'publish' ? '招聘中' : '已下线';
+      await request(actionUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), initiator: button });
       state.jobSelectedIds.delete(id);
-      notifyUser(action === 'publish' ? '岗位已开放，招聘需求已生效' : '岗位已暂停，无需审批', 'success');
-      renderJobsTable();
+      notifyUser(action === 'publish' ? '岗位已开放，招聘需求已生效' : '岗位已暂停，对应开放需求已停用', 'success');
+      await refreshJobsPage();
     } catch (error) {
       notifyUser(conciseError(error), 'error', () => handlePositionAction(action, id, button));
     }
