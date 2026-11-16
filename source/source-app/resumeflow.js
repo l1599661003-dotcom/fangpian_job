@@ -6644,6 +6644,13 @@ if (!root) return;
     });
   }
 
+  function canAdjustApprovedDemand() {
+    const access = state.currentAccess || window.recruitmentAccess || {};
+    const roleCodes = Array.isArray(access.roleCodes) ? access.roleCodes : [];
+    const dataScopes = Array.isArray(access.dataScopes) ? access.dataScopes : [];
+    return roleCodes.includes('system_admin') || dataScopes.some((scope) => scope?.type === 'all');
+  }
+
   function demandSelectableJob(item) {
     const status = item?.approvalStatus || (item?.approvalSubmittedAt ? '待审批' : '已通过');
     return status === '已通过' || status === '';
@@ -6698,15 +6705,20 @@ if (!root) return;
       const currentUserId = window.recruitmentCurrentUser?.id || '';
       const mine = Boolean(currentUserId && demand.approvalApplicantUserId && demand.approvalApplicantUserId === currentUserId)
         || Boolean(!demand.approvalApplicantUserId && applicant && window.recruitmentCurrentUser?.name && applicant === window.recruitmentCurrentUser.name);
+      const administrator = canAdjustApprovedDemand();
       if (approvalStatus === '待审批' || demand.status === '待审批') {
         return mine
           ? `你已提交${demand.month}的${demandType}，目前还在审批中。继续保存会更新原申请并重新送审。`
-          : `${demand.month}的${demandType}已由${applicant}提交，当前还在审批中，请勿重复提交。`;
+          : administrator
+            ? `${demand.month}的${demandType}已由${applicant}提交，当前还在审批中。你是管理员，继续保存会更新原申请并重新送审。`
+            : `${demand.month}的${demandType}已由${applicant}提交，当前还在审批中，请勿重复提交。`;
       }
       if (approvalStatus === '已通过' && !['审批驳回', '已停用'].includes(demand.status)) {
         return mine
           ? `你已提交的${demand.month}${demandType}已通过。继续保存会按新人数重新送审。`
-          : `${demand.month}的${demandType}已由${applicant}提交并通过审批。如需调整人数，请联系原申请人或管理员，不要重复新建。`;
+          : administrator
+            ? `${demand.month}的${demandType}已由${applicant}提交并通过审批。你是管理员，继续保存会按新人数重新送审。`
+            : `${demand.month}的${demandType}已由${applicant}提交并通过审批。如需调整人数，请联系原申请人或管理员，不要重复新建。`;
       }
       if (approvalStatus === '已驳回') return `${demand.month}的${demandType}上次由${applicant}提交后被驳回${demand.approvalOpinion ? `：${demand.approvalOpinion}` : ''}。可以修改后重新提交。`;
       return '';
@@ -6718,7 +6730,7 @@ if (!root) return;
       if (!hint) return text;
       hint.hidden = !text;
       hint.textContent = text;
-      hint.classList.toggle('is-blocked', Boolean(text) && !text.startsWith('你已提交') && !text.includes('可以修改后重新提交'));
+      hint.classList.toggle('is-blocked', Boolean(text) && !text.startsWith('你已提交') && !text.includes('你是管理员') && !text.includes('可以修改后重新提交'));
       return text;
     };
     const existingDemand = demandForSelection(month, document.getElementById('rf-demand-position').value, '');
@@ -6796,7 +6808,7 @@ if (!root) return;
         ].filter(([, value]) => !value).map(([id, , text]) => [id, text]);
         if (latestArrivalDate && expectedArrivalDate && latestArrivalDate < expectedArrivalDate) issues.push(['rf-demand-latest-arrival', '不能早于期望到岗日期']);
         const conflictText = refreshDemandConflict();
-        if (conflictText && !conflictText.startsWith('你已提交') && !conflictText.includes('可以修改后重新提交')) issues.push(['rf-demand-position', conflictText]);
+        if (conflictText && !conflictText.startsWith('你已提交') && !conflictText.includes('你是管理员') && !conflictText.includes('可以修改后重新提交')) issues.push(['rf-demand-position', conflictText]);
         if (issues.length) { showDemandValidation(issues); if (message) message.textContent = ''; return; }
         button.disabled = true; button.textContent = '正在保存…';
         const result = await request(context?.endpoint || 'api/recruitment/monthly-demands', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({

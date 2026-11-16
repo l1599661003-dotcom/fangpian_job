@@ -65,7 +65,7 @@ export class RecruitmentController {
   async saveDepartmentDemand(@Headers() headers: Record<string, string | string[] | undefined>, @Body() body: MonthlyDemandInput) {
     const actor = await this.actor(headers)
     const scope = await this.recruitment.departmentDemandScope(actor.profile)
-    return this.recruitment.saveMonthlyDemand({ ...body, operator: actor.identity.userName }, actor.identity.userId, scope.profile)
+    return this.recruitment.saveMonthlyDemand({ ...body, operator: actor.identity.userName }, actor.identity.userId, scope.profile, actor.profile)
   }
 
   @Post('department-demands/transcript-extract')

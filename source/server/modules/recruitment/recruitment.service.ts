@@ -763,7 +763,7 @@ export class RecruitmentService implements OnApplicationBootstrap {
     }
   }
 
-  async saveMonthlyDemand(input: MonthlyDemandInput, operatorUserId = '', profile?: RoleAccessProfile) {
+  async saveMonthlyDemand(input: MonthlyDemandInput, operatorUserId = '', profile?: RoleAccessProfile, authorityProfile?: RoleAccessProfile) {
     if (!/^\d{4}-\d{2}$/.test(text(input.month))) throw new BadRequestException('需求月份格式必须是 YYYY-MM')
     const headcount = Math.round(number(input.headcount))
     if (headcount <= 0) throw new BadRequestException('需求人数必须大于0')
@@ -780,7 +780,7 @@ export class RecruitmentService implements OnApplicationBootstrap {
     const demandType = text(input.demandType) || '新增需求'
     if (!['新增需求', '储备需求'].includes(demandType)) throw new BadRequestException('需求类型只能是新增需求或储备需求')
     const existing = rows.find((row) => text(row.fields['需求月份']) === text(input.month) && text(row.fields['职位ID']) === position.id && (text(row.fields['需求类型']) || '新增需求') === demandType)
-    if (existing) this.assertDemandResubmittable(existing, operatorUserId)
+    if (existing) this.assertDemandResubmittable(existing, operatorUserId, authorityProfile || profile)
     const dates = this.arrivalDates(input, existing?.fields || { 期望到岗日期: position.expectedArrivalDate, 最晚到岗日期: position.latestArrivalDate })
     const priorityAliases: Record<string, string> = { 高: '紧急', 中: '重要', 低: '储备', 一般: '储备' }
     const priority = priorityAliases[text(input.priority)] || text(input.priority) || '储备'
@@ -788,13 +788,17 @@ export class RecruitmentService implements OnApplicationBootstrap {
     const note = text(input.note)
     if (!note) throw new BadRequestException('请填写审批用的需求说明')
     const approvalStart = await this.approvalSubmissionFields('demand')
+    const existingApplicantUserId = text(existing?.fields['审批申请人用户ID']) || text(existing?.fields['创建人用户ID'])
+    const administratorAdjusting = Boolean(existing && existingApplicantUserId && this.canAdjustApprovedDemand(authorityProfile || profile) && operatorUserId && operatorUserId !== existingApplicantUserId)
+    const applicantUserId = administratorAdjusting ? text(existing?.fields['审批申请人用户ID']) || text(existing?.fields['创建人用户ID']) || operatorUserId : operatorUserId
+    const applicantName = administratorAdjusting ? text(existing?.fields['审批申请人']) || text(existing?.fields['创建人']) || text(input.operator) || '当前用户' : text(input.operator) || '当前用户'
     const fields = {
       需求月份: text(input.month), 职位ID: position.id, 职位名称: position.name, 部门: position.department || '未分配部门',
       负责人: position.owner, 需求数量: headcount, 需求类型: demandType, 需求状态: '待审批', 优先级: priority,
       期望到岗日期: dates.expectedArrivalDate, 最晚到岗日期: dates.latestArrivalDate, 需求说明: note, 需求要求: text(input.demandRequirement),
-      变更原因: existing ? '调整需求' : '新建月度需求', 审批状态: '待审批', 审批通过后状态: '已确认',
-      审批提交时间: timestampNow, 审批申请人用户ID: operatorUserId, 审批申请人: text(input.operator) || '当前用户', ...approvalStart,
-      创建人用户ID: operatorUserId, 创建人: text(input.operator) || '当前用户',
+      变更原因: administratorAdjusting ? `管理员调整需求：${text(input.operator) || operatorUserId}` : existing ? '调整需求' : '新建月度需求', 审批状态: '待审批', 审批通过后状态: '已确认',
+      审批提交时间: timestampNow, 审批申请人用户ID: applicantUserId, 审批申请人: applicantName, ...approvalStart,
+      创建人用户ID: existing ? text(existing.fields['创建人用户ID']) || applicantUserId : operatorUserId, 创建人: existing ? text(existing.fields['创建人']) || applicantName : text(input.operator) || '当前用户',
       更新时间: timestampNow,
     }
     const result = existing
@@ -2030,8 +2034,8 @@ export class RecruitmentService implements OnApplicationBootstrap {
       : `岗位“${name}”还在审批中，审批通过后才能新建招聘需求`)
   }
 
-  /** 同一岗位同一月份同一类型只保留一条。待审批和已通过都不能被其他人覆盖；原申请人可以调整后重新送审。 */
-  private assertDemandResubmittable(row: TeableRecord, operatorUserId: string) {
+  /** 同一岗位同一月份同一类型只保留一条。待审批和已通过都不能被其他人覆盖；原申请人和全量管理员可以调整后重新送审。 */
+  private assertDemandResubmittable(row: TeableRecord, operatorUserId: string, profile?: RoleAccessProfile) {
     const approvalStatus = text(row.fields['审批状态']) || '待审批'
     const demandStatus = text(row.fields['需求状态'])
     const applicantId = text(row.fields['审批申请人用户ID']) || text(row.fields['创建人用户ID'])
@@ -2040,14 +2044,20 @@ export class RecruitmentService implements OnApplicationBootstrap {
     const month = text(row.fields['需求月份'])
     const positionName = text(row.fields['职位名称']) || '该岗位'
     const sameApplicant = !applicantId || Boolean(operatorUserId && applicantId === operatorUserId)
+    const administrator = this.canAdjustApprovedDemand(profile)
     if (approvalStatus === '待审批' || demandStatus === '待审批') {
-      if (sameApplicant) return
+      if (sameApplicant || administrator) return
       throw new BadRequestException(`${month}「${positionName}」的${demandType}已由${applicant}提交，当前还在审批中，请勿重复提交`)
     }
     if (approvalStatus === '已通过' && !['审批驳回', '已停用'].includes(demandStatus)) {
-      if (sameApplicant) return
+      if (sameApplicant || administrator) return
       throw new BadRequestException(`${month}「${positionName}」的${demandType}已由${applicant}提交并通过审批。如需调整人数，请联系原申请人或管理员处理，不要重复新建`)
     }
+  }
+
+  /** 部门入口会把角色收窄，所以管理员身份必须看原始角色，不能看收窄后的 profile。 */
+  private canAdjustApprovedDemand(profile?: RoleAccessProfile) {
+    return Boolean(profile?.roleCodes.includes('system_admin') || profile?.dataScopes.some((scope) => scope.type === 'all'))
   }
 
   private async find(tableId: string, field: string, id: string, message: string) {
