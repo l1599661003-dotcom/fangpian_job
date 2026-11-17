@@ -786,18 +786,25 @@ export class RecruitmentService implements OnApplicationBootstrap {
     const priority = priorityAliases[text(input.priority)] || text(input.priority) || '储备'
     if (!['紧急', '重要', '储备'].includes(priority)) throw new BadRequestException('优先级只能是紧急、重要或储备')
     const note = text(input.note)
-    if (!note) throw new BadRequestException('请填写审批用的需求说明')
-    const approvalStart = await this.approvalSubmissionFields('demand')
+    if (!note) throw new BadRequestException('请填写需求说明')
+    const existingApprovalStatus = text(existing?.fields['审批状态'])
+    const existingDemandStatus = text(existing?.fields['需求状态'])
+    const rejectedDemand = !existing || existingApprovalStatus === '已驳回' || existingDemandStatus === '审批驳回'
+    const pendingApproval = Boolean(existing && !rejectedDemand && (existingApprovalStatus === '待审批' || existingDemandStatus === '待审批' || !existingApprovalStatus))
+    const approvalStart = rejectedDemand ? await this.approvalSubmissionFields('demand') : null
     const existingApplicantUserId = text(existing?.fields['审批申请人用户ID']) || text(existing?.fields['创建人用户ID'])
     const administratorAdjusting = Boolean(existing && existingApplicantUserId && this.canAdjustApprovedDemand(authorityProfile || profile) && operatorUserId && operatorUserId !== existingApplicantUserId)
     const applicantUserId = administratorAdjusting ? text(existing?.fields['审批申请人用户ID']) || text(existing?.fields['创建人用户ID']) || operatorUserId : operatorUserId
     const applicantName = administratorAdjusting ? text(existing?.fields['审批申请人']) || text(existing?.fields['创建人']) || text(input.operator) || '当前用户' : text(input.operator) || '当前用户'
     const fields = {
       需求月份: text(input.month), 职位ID: position.id, 职位名称: position.name, 部门: position.department || '未分配部门',
-      负责人: position.owner, 需求数量: headcount, 需求类型: demandType, 需求状态: '待审批', 优先级: priority,
+      负责人: position.owner, 需求数量: headcount, 需求类型: demandType, 优先级: priority,
       期望到岗日期: dates.expectedArrivalDate, 最晚到岗日期: dates.latestArrivalDate, 需求说明: note, 需求要求: text(input.demandRequirement),
-      变更原因: administratorAdjusting ? `管理员调整需求：${text(input.operator) || operatorUserId}` : existing ? '调整需求' : '新建月度需求', 审批状态: '待审批', 审批通过后状态: '已确认',
-      审批提交时间: timestampNow, 审批申请人用户ID: applicantUserId, 审批申请人: applicantName, ...approvalStart,
+      变更原因: administratorAdjusting ? `管理员调整需求：${text(input.operator) || operatorUserId}` : existing ? '调整需求' : '新建月度需求',
+      需求状态: rejectedDemand || pendingApproval ? '待审批' : existingDemandStatus || '已确认',
+      审批状态: rejectedDemand || pendingApproval ? '待审批' : existingApprovalStatus || '已通过',
+      审批通过后状态: rejectedDemand || pendingApproval ? '已确认' : text(existing?.fields['审批通过后状态']) || '已确认',
+      ...(rejectedDemand ? { 审批提交时间: timestampNow, 审批申请人用户ID: applicantUserId, 审批申请人: applicantName, ...approvalStart } : {}),
       创建人用户ID: existing ? text(existing.fields['创建人用户ID']) || applicantUserId : operatorUserId, 创建人: existing ? text(existing.fields['创建人']) || applicantName : text(input.operator) || '当前用户',
       更新时间: timestampNow,
     }
@@ -809,8 +816,10 @@ export class RecruitmentService implements OnApplicationBootstrap {
     this.auditAsync(existing ? '调整月度招聘需求' : '新建月度招聘需求', '月度需求', text(result.fields?.['月度需求ID']) || result.id, existing?.fields || {}, fields, text(input.operator) || '当前用户', fields.变更原因)
     const approvalId = text(result.fields?.['月度需求ID']) || result.id
     const approvalRow = { ...result, fields: { ...result.fields, ...fields } }
-    const canSendInBackground = Boolean(this.messages && approvalStart.当前审批人用户ID)
-    const notification = canSendInBackground ? { status: '发送中', error: '' } : await this.sendRecruitmentApprovalRequest('demand', approvalId, approvalRow, text(input.operator) || '当前用户')
+    const canSendInBackground = Boolean(rejectedDemand && this.messages && approvalStart?.当前审批人用户ID)
+    const notification = !rejectedDemand
+      ? { status: '无需审批', error: '' }
+      : canSendInBackground ? { status: '发送中', error: '' } : await this.sendRecruitmentApprovalRequest('demand', approvalId, approvalRow, text(input.operator) || '当前用户')
     if (canSendInBackground) {
       void this.sendRecruitmentApprovalRequest('demand', approvalId, approvalRow, text(input.operator) || '当前用户')
         .catch((error) => this.logger.error(`招聘需求审批通知后台发送失败：${error instanceof Error ? error.message : String(error)}`))

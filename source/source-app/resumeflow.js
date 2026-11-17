@@ -6708,16 +6708,16 @@ if (!root) return;
       const administrator = canAdjustApprovedDemand();
       if (approvalStatus === '待审批' || demand.status === '待审批') {
         return mine
-          ? `你已提交${demand.month}的${demandType}，目前还在审批中。继续保存会更新原申请并重新送审。`
+          ? `你已提交${demand.month}的${demandType}，目前还在审批中。继续保存会直接更新原申请，不重新送审。`
           : administrator
-            ? `${demand.month}的${demandType}已由${applicant}提交，当前还在审批中。你是管理员，继续保存会更新原申请并重新送审。`
+            ? `${demand.month}的${demandType}已由${applicant}提交，当前还在审批中。你是管理员，继续保存会直接更新原申请，不重新送审。`
             : `${demand.month}的${demandType}已由${applicant}提交，当前还在审批中，请勿重复提交。`;
       }
       if (approvalStatus === '已通过' && !['审批驳回', '已停用'].includes(demand.status)) {
         return mine
-          ? `你已提交的${demand.month}${demandType}已通过。继续保存会按新人数重新送审。`
+          ? `你已提交的${demand.month}${demandType}已通过。继续保存会直接更新，不重新审批。`
           : administrator
-            ? `${demand.month}的${demandType}已由${applicant}提交并通过审批。你是管理员，继续保存会按新人数重新送审。`
+            ? `${demand.month}的${demandType}已由${applicant}提交并通过审批。你是管理员，继续保存会直接更新，不重新审批。`
             : `${demand.month}的${demandType}已由${applicant}提交并通过审批。如需调整人数，请联系原申请人或管理员，不要重复新建。`;
       }
       if (approvalStatus === '已驳回') return `${demand.month}的${demandType}上次由${applicant}提交后被驳回${demand.approvalOpinion ? `：${demand.approvalOpinion}` : ''}。可以修改后重新提交。`;
@@ -6826,6 +6826,12 @@ if (!root) return;
         const notificationStatus = result.approvalNotification?.status || '未发送';
         const notificationError = result.approvalNotification?.error ? `：${String(result.approvalNotification.error).slice(0, 120)}` : '';
         const notificationPending = ['待发送', '发送中'].includes(notificationStatus);
+        if (notificationStatus === '无需审批') {
+          notifyUser(`${result.month} ${result.positionName} 需求已直接保存，无需重新审批。`, 'success');
+          if (context) { if (isTalentDialogCurrent(demandDialogToken)) await context.onSaved(result); }
+          else { await refreshJobsPage(result.month); openDemandDepartmentSummary(result.month, result.positionId); }
+          return;
+        }
         const openText = result.positionAutoPublished ? '，岗位已默认开放招聘' : '';
         notifyUser(notificationStatus === '已发送' ? `${result.month} ${result.positionName} 需求已保存${openText}，企微已通知审批人` : notificationPending ? `${result.month} ${result.positionName} 需求已保存${openText}，企微通知正在后台发送` : `${result.month} ${result.positionName} 需求已保存${openText}；企微通知${notificationStatus}${notificationError}`, notificationStatus === '已发送' || notificationPending ? 'success' : 'error');
         if (context) { if (isTalentDialogCurrent(demandDialogToken)) await context.onSaved(result); }
