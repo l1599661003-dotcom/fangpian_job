@@ -3371,6 +3371,14 @@ export class TalentsService implements OnModuleInit {
       if (!currentApplicationId) return text(item.fields['候选人ID']) === candidateId
       return text(item.fields['应聘记录ID']) === currentApplicationId
     }
+    // 改名、补简历会让“最新应聘”切到另一条记录。约面和评价仍按候选人保留，
+    // 不能因为应聘 ID 没跟着改名而把已经发生的流程显示成未开始。
+    const candidateInterviewIds = new Set(data.interviews
+      .filter((item) => text(item.fields['候选人ID']) === candidateId)
+      .flatMap((item) => [item.id, text(item.fields['面试ID'])])
+      .filter(Boolean))
+    const belongsToCandidateFlow = (item: TeableRecord) => belongsToCurrentApplication(item) || text(item.fields['候选人ID']) === candidateId
+    const belongsToCandidateInterview = (item: TeableRecord) => belongsToCandidateFlow(item) || candidateInterviewIds.has(text(item.fields['面试ID']))
     const referrals = 'referrals' in data ? data.referrals : []
     const candidateReferrals = referrals.filter((item) => text(item.fields['候选人ID']) === candidateId)
     const referral = (referralId
@@ -3442,12 +3450,12 @@ export class TalentsService implements OnModuleInit {
         if (!preceding.length || (preceding[1] && applicationStart(preceding[0]) === applicationStart(preceding[1]))) return false
         return (text(preceding[0].fields['应聘记录ID']) || preceding[0].id) === currentApplicationId
       })
-      const currentInterviews = data.interviews.filter(belongsToCurrentApplication)
-      const currentFeedback = data.interviewFeedback.filter(belongsToCurrentApplication)
-      const currentOffers = data.offers.filter(belongsToCurrentApplication)
-      const currentBackgroundChecks = data.backgroundChecks.filter(belongsToCurrentApplication)
-      const currentOnboardings = data.onboardings.filter(belongsToCurrentApplication)
-      const currentOffboardings = data.offboardings.filter(belongsToCurrentApplication)
+      const currentInterviews = data.interviews.filter(belongsToCandidateFlow)
+      const currentFeedback = data.interviewFeedback.filter(belongsToCandidateInterview)
+      const currentOffers = data.offers.filter(belongsToCandidateFlow)
+      const currentBackgroundChecks = data.backgroundChecks.filter(belongsToCandidateFlow)
+      const currentOnboardings = data.onboardings.filter(belongsToCandidateFlow)
+      const currentOffboardings = data.offboardings.filter(belongsToCandidateFlow)
       const currentReviewShares = data.reviewShares.filter(belongsToCurrentApplication)
       const latestInterview = currentInterviews
         .sort((a, b) => text(b.fields['开始时间']).localeCompare(text(a.fields['开始时间'])))[0]

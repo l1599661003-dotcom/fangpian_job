@@ -6,13 +6,20 @@ import { TalentsService } from '../dist/modules/talents/talents.service.js';
 
 function memoryStore() {
   const records = new Map(RECRUITMENT_TABLES.map((table) => [table.name, []]));
-  const originals = {}, methods = ['listByField', 'findOneByField', 'createRecord', 'updateRecord'];
+  const originals = {}, methods = ['listAllRecords', 'listByField', 'listByAnyField', 'listRecords', 'getRecord', 'findOneByField', 'createRecord', 'updateRecord'];
   for (const method of methods) originals[method] = teable[method];
   let sequence = 0;
+  const matchesField = (row, field, value) => String(row.fields[field] ?? '') === String(value ?? '');
+  teable.listAllRecords = async (tableId) => records.get(tableId) || [];
   teable.listByField = async (tableId, field, value, take = 100) =>
-    (records.get(tableId) || []).filter((row) => String(row.fields[field] ?? '') === String(value ?? '')).slice(0, take);
+    (records.get(tableId) || []).filter((row) => matchesField(row, field, value)).slice(0, take);
+  teable.listByAnyField = async (tableId, field, values, take = 100) =>
+    (records.get(tableId) || []).filter((row) => values.some((value) => matchesField(row, field, value))).slice(0, take);
+  teable.listRecords = async () => [];
+  teable.getRecord = async (tableId, recordId) =>
+    (records.get(tableId) || []).find((row) => row.id === recordId) || null;
   teable.findOneByField = async (tableId, field, value) =>
-    (records.get(tableId) || []).find((row) => String(row.fields[field] ?? '') === String(value ?? '')) || null;
+    (records.get(tableId) || []).find((row) => matchesField(row, field, value)) || null;
   teable.createRecord = async (tableId, fields) => {
     const row = { id: `${tableId}_record_${++sequence}`, fields: { ...fields }, createdTime: new Date().toISOString() };
     records.get(tableId).push(row);
@@ -55,6 +62,41 @@ test('talent name update syncs the current resume and writes an audit log', asyn
 
     await assert.rejects(() => service.updateName('talent_name', { name: '' }), /请填写人才姓名/);
     await assert.rejects(() => service.updateName('talent_name', { name: 'x'.repeat(51) }), /不能超过50个字符/);
+  } finally {
+    memory.restore();
+  }
+});
+
+test('renaming a talent keeps interviews on a different application visible', async () => {
+  const memory = memoryStore();
+  try {
+    await teable.createRecord('recruitment_candidates', {
+      候选人ID: 'talent_flow', 姓名: '于女士', 最新简历记录ID: 'resume_new', 合并状态: '独立档案', 更新时间: '2026-11-20T10:00:00.000Z',
+    });
+    await teable.createRecord('resume_extraction_records', {
+      解析记录ID: 'resume_new', 候选人ID: 'talent_flow', 姓名: '于女士', 应聘记录ID: 'application_new', 更新时间: '2026-11-20T10:00:00.000Z',
+    });
+    await teable.createRecord('recruitment_applications', {
+      应聘记录ID: 'application_old', 候选人ID: 'talent_flow', 当前阶段: '面试评价', 更新时间: '2026-11-19T10:00:00.000Z',
+    });
+    await teable.createRecord('recruitment_applications', {
+      应聘记录ID: 'application_new', 候选人ID: 'talent_flow', 当前阶段: 'AI分析中', 更新时间: '2026-11-20T09:00:00.000Z',
+    });
+    await teable.createRecord('recruitment_interviews', {
+      面试ID: 'interview_old', 候选人ID: 'talent_flow', 应聘记录ID: 'application_old', 面试状态: '已完成', 开始时间: '2026-11-19T02:00:00.000Z',
+    });
+    await teable.createRecord('recruitment_interview_feedback', {
+      评价ID: 'feedback_old', 面试ID: 'interview_old', 候选人ID: 'talent_flow', 评价状态: '已提交', 提交时间: '2026-11-19T04:00:00.000Z',
+    });
+    const service = new TalentsService({ requireTableId: (name) => name }, {});
+    service.detailCache = { get: async (_id, _ttl, _tables, loader) => loader(), clear() {} };
+
+    const renamed = await service.updateName('talent_flow', { name: '于明', operator: '王HR' });
+
+    assert.equal(renamed.talent.name, '于明');
+    assert.equal(renamed.talent.flowEvidence.interviews, 1);
+    assert.equal(renamed.talent.flowEvidence.interview.id, 'interview_old');
+    assert.equal(renamed.talent.flowEvidence.interviewFeedback, 1);
   } finally {
     memory.restore();
   }
