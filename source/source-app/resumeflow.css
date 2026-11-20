@@ -1345,7 +1345,7 @@ html {
   box-shadow: 0 28px 80px #181105;
 }
 
-.rf-dialog.wide { width: min(980px, 100%); }
+.rf-dialog.wide { width: min(1180px, calc(100vw - 48px)); }
 .rf-dialog.full { width: min(1240px, calc(100vw - 40px)); max-height: min(880px, calc(100vh - 48px)); padding: 0; overflow: hidden; }
 .rf-dialog-close { position: sticky; z-index: 2; top: 0; float: right; width: 31px; height: 31px; color: #7d786f; border: 1px solid #ece0c8; border-radius: 9px; background: #fff; font-size: 20px; line-height: 1; cursor: pointer; }
 .rf-dialog-head { display: flex; justify-content: space-between; gap: 20px; padding-right: 38px; }
@@ -2529,6 +2529,12 @@ body.rf-public-communication-body .rf-public-communication-ai-tools button {
   font-weight: 850;
   transition: transform .16s ease, box-shadow .16s ease, opacity .16s ease;
 }
+body.rf-public-communication-body .rf-public-communication-ai-tools [data-rf-public-communication-voice] {
+  color: #4b3a1e;
+  border: 1px solid #d8c9aa;
+  background: #fffaf0;
+  box-shadow: none;
+}
 body.rf-public-communication-body .rf-public-communication-ai-tools button:hover {
   transform: translateY(-1px);
   box-shadow: 0 10px 22px rgba(76, 56, 25, .24);
@@ -2894,6 +2900,13 @@ body .rf-dialog .rf-dialog-form .rf-comm-hr-picker > label { display: block; mar
 .rf-comm-history-detail > div { padding: 10px 0; border-top: 1px solid #eee7db; }
 .rf-comm-history-detail dt { color: #847e75; font-size: 12px; }
 .rf-comm-history-detail dd { margin: 6px 0 0; color: #30271c; white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.7; }
+.rf-communication-log .rf-comm-history { display: grid; gap: 8px; padding: 14px; }
+.rf-communication-log .rf-comm-history button { justify-self: start; min-height: 32px; padding: 0 12px; color: #5d4a28; border: 1px solid #e5d8bd; border-radius: 8px; background: #fff; cursor: pointer; font-size: 12px; font-weight: 700; }
+.rf-comm-history-page { min-height: min(680px, calc(100vh - 220px)); padding: 8px 4px 18px; }
+.rf-comm-history-page .rf-comm-history-detail { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 18px; margin: 0; }
+.rf-comm-history-page .rf-comm-history-detail > div { min-width: 0; padding: 14px 16px; border: 1px solid #eee7db; border-radius: 12px; background: #fffdf8; }
+.rf-comm-history-page .rf-comm-history-detail dt { color: #847e75; font-size: 12px; }
+.rf-comm-history-page .rf-comm-history-detail dd { margin-top: 8px; color: #30271c; font-size: 15px; line-height: 1.75; }
 @media (max-width: 1024px) {
   body .rf-communication-layout { grid-template-columns: minmax(0, 1fr); }
   body .rf-communication-layout > section,

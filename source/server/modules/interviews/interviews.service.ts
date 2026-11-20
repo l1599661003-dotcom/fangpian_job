@@ -831,14 +831,14 @@ export class InterviewsService {
     const link = await this.resolvePublicLink(token, '意向沟通')
     const candidateId = text(link.fields['候选人ID'])
     if (text(body.candidateId) && text(body.candidateId) !== candidateId) throw new BadRequestException('提交的候选人与沟通链接不一致，请重新打开原链接')
-    const channel = text(body.channel)
-    const answerStatus = text(body.answerStatus)
+    const channel = text(body.channel) || '电话'
+    const answerStatus = text(body.answerStatus) || '已接通'
     const interestLevel = text(body.interestLevel)
-    const jobStatus = text(body.jobStatus)
+    const jobStatus = text(body.jobStatus) || '已离职'
     const result = text(body.result)
-    if (!['电话', '微信', '邮件', '短信', '当面', '其他'].includes(channel)) throw new BadRequestException('请选择有效的沟通渠道')
-    if (!['已接通', '未接听', '拒接', '关机', '空号', '微信回复'].includes(answerStatus)) throw new BadRequestException('请选择有效的接通状态')
-    if (!['高', '中', '低', '拒绝'].includes(interestLevel)) throw new BadRequestException('请选择有效的兴趣度')
+    if (text(body.channel) && !['电话', '微信', '邮件', '短信', '当面', '其他'].includes(channel)) throw new BadRequestException('请选择有效的沟通渠道')
+    if (text(body.answerStatus) && !['已接通', '未接听', '拒接', '关机', '空号', '微信回复'].includes(answerStatus)) throw new BadRequestException('请选择有效的接通状态')
+    if (interestLevel && !['高', '中', '低', '拒绝'].includes(interestLevel)) throw new BadRequestException('请选择有效的兴趣度')
     if (!['已离职', '在职已提离职', '在职未提离职', '应届生'].includes(jobStatus)) throw new BadRequestException('请选择有效的在职状态')
     if (!['推进面试', '放入人才库', '淘汰', '二次沟通'].includes(result)) throw new BadRequestException('请选择有效的沟通结果')
     const candidates = await teable.listAllRecords(this.table('recruitment_candidates'))
@@ -852,7 +852,7 @@ export class InterviewsService {
       沟通渠道: channel, 沟通方向: text(body.direction) || '呼出', 沟通摘要: text(body.summary) || '群链接填写',
       沟通结果: result, 接通状态: answerStatus, 兴趣度: interestLevel,
       在职状态: jobStatus, 到岗时间: text(body.entryTime), 离职原因: text(body.leaveReason), 离职原因详情: text(body.leaveReasonDetail),
-      婚姻状况: text(body.maritalStatus), 居住区域: text(body.homeAddress), 主要职责: text(body.workContent),
+      婚姻状况: text(body.maritalStatus) || '未婚', 居住区域: text(body.homeAddress), 主要职责: text(body.workContent),
       当前薪酬整体情况: text(body.currentSalaryInfo), 候选人关注点: text(body.candidateConcerns), 当前加班强度: text(body.overtimeIntensity),
       加班接受度: text(body.overtimeAttitude), 约面形式: text(body.interviewType), 约面时间: text(body.interviewTime), 沟通备注: text(body.notes),
       操作人: text(body.operator) || '意向沟通填写', 发生时间: now(), 创建时间: now(),

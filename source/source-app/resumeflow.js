@@ -37,7 +37,7 @@
   let dialogReturnFocus = null;
   let interviewerOutsideClickHandler = null;
   const requiredDialogFieldIds = new Set([
-    'rf-owner-name','rf-owner-reason','rf-review-opinion','rf-review-evidence','rf-comm-channel','rf-comm-result','rf-comm-summary',
+    'rf-owner-name','rf-owner-reason','rf-review-opinion','rf-review-evidence','rf-comm-result','rf-comm-summary',
     'rf-question-category','rf-question-title','rf-question-score','rf-template-assessment-name','rf-template-assessment-category','rf-template-assessment-duration',
     'rf-interviewer-user-id','rf-interviewer-name','rf-interviewer-department','rf-availability-interviewer','rf-availability-start','rf-availability-end',
     'rf-room-name','rf-room-location','rf-interview-start','rf-interview-end','rf-feedback-user-id','rf-feedback-name','rf-feedback-candidate-rating','rf-feedback-ai-summary','rf-feedback-interviewer-evaluation',
@@ -2705,16 +2705,15 @@
     const operator = record.operator && !['当前用户', '意向沟通填写', '候选人自填'].includes(record.operator) ? record.operator : '未记录明确人员';
     const fields = [
       ['沟通HR', operator], ...(passed ? [['通过HR（本次沟通）', operator]] : []),
-      ['沟通结果', record.result], ['沟通时间', record.occurredAt], ['沟通方式', record.channel], ['沟通方向', record.direction],
-      ['完整摘要', record.summary], ['接通状态', record.answerStatus], ['兴趣度', record.interestLevel], ['在职状态', record.jobStatus],
-      ['到岗时间', record.entryTime], ['离职原因', record.leaveReason], ['离职原因详情', record.leaveReasonDetail],
-      ['婚姻状况', record.maritalStatus], ['居住区域', record.homeAddress], ['主要职责', record.workContent],
+      ['沟通结果', record.result], ['沟通时间', record.occurredAt], ['沟通方向', record.direction],
+      ['完整摘要', record.summary], ['在职状态', record.jobStatus], ['离职原因详情', record.leaveReasonDetail],
+      ['婚育状况', record.maritalStatus], ['居住区域', record.homeAddress], ['主要职责', record.workContent],
       ['当前薪酬整体情况', record.currentSalaryInfo], ['候选人关注点', record.candidateConcerns],
-      ['当前加班强度', record.overtimeIntensity], ['加班接受度', record.overtimeAttitude], ['约面形式', record.interviewType],
-      ['约面时间', record.interviewTime], ['淘汰/拒绝原因', record.rejectionReason], ['下一步行动', record.nextAction],
+      ['当前加班强度', record.overtimeIntensity], ['加班接受度', record.overtimeAttitude],
+      ['淘汰/拒绝原因', record.rejectionReason], ['下一步行动', record.nextAction],
       ['下次跟进时间', record.nextFollowUpAt], ['再联系时间', record.recontactAt], ['沟通备注', record.notes],
     ];
-    return `<dl class="rf-comm-history-detail">${fields.map(([label, value]) => `<div><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value || '未记录')}</dd></div>`).join('')}</dl>`;
+    return `<dl class="rf-comm-history-detail">${fields.filter(([, value]) => String(value || '').trim()).map(([label, value]) => `<div><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd></div>`).join('') || '<div><dt>记录</dt><dd>这条历史记录没有可展示的详细内容。</dd></div>'}</dl>`;
   }
 
   function communicationPrefill(history) {
@@ -2740,17 +2739,27 @@
     };
   }
 
+  function currentCommunicationHr(hrOptions) {
+    const account = accessAccount(state.currentAccess || window.recruitmentAccess || {});
+    const currentId = account.id || window.recruitmentCurrentUser?.id || '';
+    const currentName = account.name || window.recruitmentCurrentUser?.name || '';
+    const matched = hrOptions.find((item) => item.id === currentId)
+      || hrOptions.find((item) => currentName && item.name === currentName);
+    if (matched) return matched;
+    if (!currentId && !currentName) return null;
+    return { id: currentId, name: currentName || '当前登录账号', department: account.organization || '当前登录账号' };
+  }
+
   function renderCommunicationDialog(talent, history) {
     const previous = communicationPrefill(history);
-    const defaultHr = state.communicationDefaultHr || {};
     const hrOptions = [...(state.communicationHrOptions || [])];
-    const rememberedHrId = previous.operatorUserId || defaultHr.id;
-    if (rememberedHrId && !hrOptions.some((item) => item.id === rememberedHrId)) hrOptions.unshift({ id: rememberedHrId, name: defaultHr.name || rememberedHrId, department: '上次沟通HR' });
-    if (defaultHr.id && !hrOptions.some((item) => item.id === defaultHr.id)) hrOptions.unshift({ id: defaultHr.id, name: defaultHr.name || defaultHr.id, department: '岗位负责HR' });
-    const selectedHr = hrOptions.find((item) => item.id === rememberedHrId);
+    const selectedHr = currentCommunicationHr(hrOptions);
+    if (selectedHr?.id && !hrOptions.some((item) => item.id === selectedHr.id)) hrOptions.unshift(selectedHr);
     state.communicationHrOptions = hrOptions;
+    const jobStatusDefault = previous.jobStatus || '已离职';
+    const maritalDefault = previous.maritalStatus || '未婚';
     showTalentDialog(`
-      <header class="rf-dialog-head"><div><span>INTENT COMMUNICATION</span><h2>记录与 ${escapeHtml(talent.name || '候选人')} 的沟通</h2><p>${previous.sourceAt ? `已带回 ${escapeHtml(previous.sourceAt.slice(0, 16).replace('T', ' '))} 的基本信息，可直接修改后再保存。沟通时间、接通状态和本次结果需要重新填写。` : '保存事实摘要、沟通结果和下一步时间。可粘贴电话或沟通文字，AI解析后仍需人工确认。'}</p></div></header>
+      <header class="rf-dialog-head"><div><span>INTENT COMMUNICATION</span><h2>记录与 ${escapeHtml(talent.name || '候选人')} 的沟通</h2><p>${previous.sourceAt ? `已带回 ${escapeHtml(previous.sourceAt.slice(0, 16).replace('T', ' '))} 的基本信息，可直接修改后再保存。沟通时间和本次结果需要重新填写。` : '保存事实摘要和沟通结果。可粘贴电话或沟通文字，AI解析后仍需人工确认。'}</p></div></header>
       <section class="rf-comm-transcript">
         <label for="rf-comm-transcript-text"><span>AI解析沟通原文</span></label>
         <textarea id="rf-comm-transcript-text" rows="4" placeholder="例如：候选人已提离职，对岗位感兴趣，希望12月后到岗，目前薪资14k..."></textarea>
@@ -2758,35 +2767,27 @@
       </section>
       <div class="rf-communication-layout"><section><div class="rf-dialog-form">
 <label><span>沟通时间 <b>*</b></span><input id="rf-comm-time" type="datetime-local" value="${new Date().toISOString().slice(0,16)}"></label>
-	<div class="rf-comm-hr-picker"><label for="rf-comm-hr"><span>沟通HR <b>*</b></span></label><select id="rf-comm-hr"><option value="">请选择沟通HR</option>${hrOptions.map((item) => `<option value="${escapeHtml(item.id)}" ${item.id === selectedHr?.id ? 'selected' : ''}>${escapeHtml(item.name)}${item.department ? ` · ${escapeHtml(item.department)}` : ''}</option>`).join('')}</select></div>
-<label><span>沟通方式 <b>*</b></span><select id="rf-comm-channel"><option value="">请选择</option>${['电话', '微信', '邮件', '短信', '当面', '其他'].map((option) => `<option ${option === previous.channel ? 'selected' : ''}>${option}</option>`).join('')}</select></label>
-<label><span>接通状态 <b>*</b></span><select id="rf-comm-answer-status"><option value="">请选择</option><option>已接通</option><option>未接听</option><option>拒接</option><option>关机</option><option>空号</option><option>微信回复</option></select></label>
-<label><span>兴趣度 <b>*</b></span><select id="rf-comm-interest"><option value="">请选择</option>${['高', '中', '低', '拒绝'].map((option) => `<option ${option === previous.interestLevel ? 'selected' : ''}>${option}</option>`).join('')}</select></label>
-<label><span>在职状态 <b>*</b></span><select id="rf-comm-job-status"><option value="">请选择</option>${['已离职', '在职已提离职', '在职未提离职', '应届生'].map((option) => `<option ${option === previous.jobStatus ? 'selected' : ''}>${option}</option>`).join('')}</select></label>
-<label><span>到岗时间 <b>*</b></span><select id="rf-comm-entry-time"><option value="">请选择</option>${['随时', '一周内', '两周内', '一个月内', '不确定'].map((option) => `<option ${option === previous.entryTime ? 'selected' : ''}>${option}</option>`).join('')}</select></label>
-<label><span>离职原因 <b>*</b></span><select id="rf-comm-leave-reason"><option value="">请选择</option>${['薪资', '发展', '管理', '家庭', '通勤', '公司变动', '其他'].map((option) => `<option ${option === previous.leaveReason ? 'selected' : ''}>${option}</option>`).join('')}</select></label>
-<label class="wide"><span>离职原因详情 <b>*</b></span><textarea id="rf-comm-leave-detail" rows="2" placeholder="打字记录具体离职背景和细节">${escapeHtml(previous.leaveReasonDetail)}</textarea></label>
-<label><span>婚姻状况 <b>*</b></span><select id="rf-comm-marital"><option value="">请选择</option>${['已婚', '未婚', '其他'].map((option) => `<option ${option === previous.maritalStatus ? 'selected' : ''}>${option}</option>`).join('')}</select></label>
+	<div class="rf-comm-hr-picker"><label for="rf-comm-hr"><span>沟通HR <b>*</b></span></label><select id="rf-comm-hr"><option value="">请选择沟通HR</option>${hrOptions.map((item) => `<option value="${escapeHtml(item.id)}" ${item.id === selectedHr?.id ? 'selected' : ''}>${escapeHtml(item.name)}${item.department ? ` · ${escapeHtml(item.department)}` : ''}</option>`).join('')}</select><small>已按当前登录账号自动匹配，可改选。</small></div>
+<label><span>在职状态 <b>*</b></span><select id="rf-comm-job-status"><option value="">请选择</option>${['已离职', '在职已提离职', '在职未提离职', '应届生'].map((option) => `<option ${option === jobStatusDefault ? 'selected' : ''}>${option}</option>`).join('')}</select></label>
+<label class="wide"><span>离职原因详情</span><textarea id="rf-comm-leave-detail" rows="2" placeholder="打字记录具体离职背景和细节">${escapeHtml(previous.leaveReasonDetail)}</textarea></label>
+<label><span>婚育状况 <b>*</b></span><select id="rf-comm-marital"><option value="">请选择</option>${['未婚', '已婚', '其他'].map((option) => `<option ${option === maritalDefault ? 'selected' : ''}>${option}</option>`).join('')}</select></label>
 <label class="wide"><span>居住区域 <b>*</b></span><textarea id="rf-comm-home" rows="2" placeholder="打字记录大致区域，用于判断通勤">${escapeHtml(previous.homeAddress)}</textarea></label>
 <label class="wide"><span>主要职责 <b>*</b></span><textarea id="rf-comm-work" rows="3" placeholder="记录主要职责、是否带团队、项目成果">${escapeHtml(previous.workContent)}</textarea></label>
 <label class="wide"><span>当前薪酬整体情况 <b>*</b></span><textarea id="rf-comm-salary" rows="3" placeholder="请填写底薪、提成/绩效、奖金、年终奖等完整薪酬总包信息">${escapeHtml(previous.currentSalaryInfo)}</textarea></label>
-<label class="wide"><span>候选人关注点/顾虑 <b>*</b></span><textarea id="rf-comm-concerns" rows="3" placeholder="最关心的2-3个问题、犹豫点、底线条件">${escapeHtml(previous.candidateConcerns)}</textarea></label>
+<label class="wide"><span>候选人关注点/顾虑</span><textarea id="rf-comm-concerns" rows="3" placeholder="最关心的2-3个问题、犹豫点、底线条件，没有提到可以留空">${escapeHtml(previous.candidateConcerns)}</textarea></label>
 <label class="wide"><span>当前公司加班强度 <b>*</b></span><textarea id="rf-comm-overtime-intensity" rows="2" placeholder="上下班时间、加班频率、调休情况">${escapeHtml(previous.overtimeIntensity)}</textarea></label>
 <label class="wide"><span>对加班的看法/接受度 <b>*</b></span><textarea id="rf-comm-overtime-attitude" rows="2" placeholder="能接受什么强度、底线、期望补偿方式">${escapeHtml(previous.overtimeAttitude)}</textarea></label>
-<label><span>约面形式 <b>*</b></span><select id="rf-comm-interview-type"><option>待定</option><option>暂定</option><option>线上</option><option>线下</option></select></label>
-<label><span>约面时间 <b>*</b></span><input id="rf-comm-interview-time" type="datetime-local"></label>
 <label><span>沟通结果 <b>*</b></span><select id="rf-comm-result"><option value="">请选择</option><option>推进面试</option><option>放入人才库</option><option>淘汰</option><option>二次沟通</option></select></label>
 <label class="wide"><span>淘汰原因 <b data-rf-comm-reject-star hidden>*</b></span><select id="rf-comm-reject-reason"><option value="">请选择</option><option>薪资不匹配</option><option>地点不匹配</option><option>已入职</option><option>无兴趣</option><option>经验不足</option><option>其他</option></select></label>
 <label class="wide"><span>微信号（选填）</span><input id="rf-comm-wechat" value="${escapeHtml(previous.wechat || talent.wechat || '')}" placeholder="录入后自动检查是否与其他人才重复"><small id="rf-wechat-check"></small></label>
 <label class="wide"><span>沟通备注</span><textarea id="rf-comm-notes" rows="2" placeholder="一句话总结关键信息，便于快速回顾"></textarea></label>
-</div><div class="rf-dialog-actions"><button class="btn-primary" data-rf-save-communication type="button">保存沟通记录</button></div><p class="rf-dialog-message" id="rf-comm-message"></p></section><aside><div class="rf-review-title"><strong>历史沟通</strong><small>${history.length}条</small></div><div class="rf-communication-log">${history.length ? history.map((record) => `<details class="rf-comm-history"><summary><strong>${escapeHtml(record.result || record.type)} · ${escapeHtml(record.channel)}</strong><p>${escapeHtml(record.summary)}</p><small>${escapeHtml(record.occurredAt || '')} · ${escapeHtml(record.operator || '未记录')}</small><span class="rf-comm-history-open">查看完整记录</span></summary>${communicationHistoryDetail(record)}</details>`).join('') : '<div class="rf-dialog-empty"><p>暂无历史沟通记录。</p></div>'}</div></aside></div>`, 'wide');
-    document.querySelectorAll('#rf-comm-time, #rf-comm-hr, #rf-comm-channel, #rf-comm-answer-status, #rf-comm-interest, #rf-comm-job-status, #rf-comm-entry-time, #rf-comm-leave-reason, #rf-comm-leave-detail, #rf-comm-marital, #rf-comm-home, #rf-comm-work, #rf-comm-salary, #rf-comm-concerns, #rf-comm-overtime-intensity, #rf-comm-overtime-attitude, #rf-comm-interview-type, #rf-comm-interview-time, #rf-comm-result, #rf-comm-reject-reason').forEach((node) => {
+</div><div class="rf-dialog-actions"><button class="btn-primary" data-rf-save-communication type="button">保存沟通记录</button></div><p class="rf-dialog-message" id="rf-comm-message"></p></section><aside><div class="rf-review-title"><strong>历史沟通</strong><small>${history.length}条</small></div><div class="rf-communication-log">${history.length ? history.map((record, index) => `<article class="rf-comm-history"><strong>${escapeHtml(record.result || record.type || '沟通记录')}</strong><p>${escapeHtml(record.summary || '暂无摘要')}</p><small>${escapeHtml(record.occurredAt || '')} · ${escapeHtml(record.operator || '未记录')}</small><button type="button" data-rf-comm-history="${index}">查看完整记录</button></article>`).join('') : '<div class="rf-dialog-empty"><p>暂无历史沟通记录。</p></div>'}</div></aside></div>`, 'wide');
+    document.querySelectorAll('#rf-comm-time, #rf-comm-hr, #rf-comm-job-status, #rf-comm-marital, #rf-comm-home, #rf-comm-work, #rf-comm-salary, #rf-comm-overtime-intensity, #rf-comm-overtime-attitude, #rf-comm-result, #rf-comm-reject-reason').forEach((node) => {
       node.closest('label, .rf-comm-hr-picker')?.insertAdjacentHTML('beforeend', '<small class="rf-schedule-error" hidden></small>');
       node.addEventListener('input', () => clearScheduleFieldError(node));
       node.addEventListener('change', () => clearScheduleFieldError(node));
     });
-    document.getElementById('rf-comm-interview-type')?.querySelector('option')?.setAttribute('value', '');
-    document.getElementById('rf-comm-interview-type').value = '';
+    document.querySelectorAll('[data-rf-comm-history]').forEach((button) => button.addEventListener('click', () => openCommunicationHistory(talent, history, Number(button.dataset.rfCommHistory))));
     document.getElementById('rf-comm-result')?.addEventListener('change', () => {
       const rejectStar = document.querySelector('[data-rf-comm-reject-star]');
       if (rejectStar) rejectStar.hidden = document.getElementById('rf-comm-result')?.value !== '淘汰';
@@ -2794,6 +2795,19 @@
     document.getElementById('rf-comm-wechat')?.addEventListener('blur', checkCommunicationWechat);
     document.querySelector('[data-rf-comm-transcript-extract]')?.addEventListener('click', extractCommunicationTranscript);
     document.querySelector('[data-rf-save-communication]')?.addEventListener('click', saveCommunication);
+  }
+
+  function openCommunicationHistory(talent, history, index) {
+    const record = history[index];
+    if (!record) return;
+    showTalentDialog(`
+      <header class="rf-dialog-head rf-comm-history-page-head"><div><button class="rf-dialog-back" data-rf-comm-history-back type="button">← 返回沟通记录</button><span>COMMUNICATION HISTORY</span><h2>${escapeHtml(talent.name || '候选人')} · ${escapeHtml(record.result || record.type || '历史沟通')}</h2><p>${escapeHtml(record.occurredAt || '时间未记录')} · ${escapeHtml(record.operator || '未记录沟通HR')}</p></div></header>
+      <section class="rf-comm-history-page">${communicationHistoryDetail(record)}</section>
+    `, 'wide', true);
+    document.querySelector('[data-rf-comm-history-back]')?.addEventListener('click', () => {
+      closeTalentDialog(false);
+      renderCommunicationDialog(talent, history);
+    });
   }
 
   async function waitForBackgroundJob(jobId, progress = () => {}, options = {}) {
@@ -2861,17 +2875,10 @@
         const node = document.getElementById(id);
         if (node && value && !String(node.value || '').trim()) node.value = value;
       };
-      setSelect('rf-comm-channel', extraction.channel);
-      setSelect('rf-comm-answer-status', extraction.answerStatus);
-      setSelect('rf-comm-interest', extraction.interestLevel);
       setSelect('rf-comm-job-status', extraction.jobStatus);
-      setSelect('rf-comm-entry-time', extraction.entryTime);
-      setSelect('rf-comm-leave-reason', extraction.leaveReason);
       setSelect('rf-comm-marital', extraction.maritalStatus);
-      setSelect('rf-comm-interview-type', extraction.interviewType);
       setSelect('rf-comm-result', extraction.result);
       setSelect('rf-comm-reject-reason', extraction.rejectionReason);
-      setText('rf-comm-interview-time', extraction.interviewTime);
       setText('rf-comm-leave-detail', extraction.leaveReasonDetail);
       setText('rf-comm-home', extraction.homeAddress);
       setText('rf-comm-work', extraction.workContent);
@@ -2940,62 +2947,47 @@
     const submit = document.querySelector('[data-rf-save-communication]');
     if (submit?.disabled) return;
     const resultValue = document.getElementById('rf-comm-result')?.value || '';
-    const channel = document.getElementById('rf-comm-channel')?.value || '';
-    const interestLevel = document.getElementById('rf-comm-interest')?.value || '';
-    const jobStatus = document.getElementById('rf-comm-job-status')?.value || '';
-    const leaveReason = document.getElementById('rf-comm-leave-reason')?.value || '';
-    const answerStatus = document.getElementById('rf-comm-answer-status')?.value || '';
+    const jobStatus = document.getElementById('rf-comm-job-status')?.value || '已离职';
     const rejectReason = document.getElementById('rf-comm-reject-reason')?.value || '';
     const transcript = document.getElementById('rf-comm-transcript-text')?.value.trim() || '';
     const summary = [
-      interestLevel ? `兴趣度:${interestLevel}` : '',
       jobStatus ? `在职状态:${jobStatus}` : '',
-      document.getElementById('rf-comm-entry-time')?.value ? `到岗时间:${document.getElementById('rf-comm-entry-time').value}` : '',
       document.getElementById('rf-comm-salary')?.value.trim() ? `薪酬:${document.getElementById('rf-comm-salary').value.trim()}` : '',
       document.getElementById('rf-comm-concerns')?.value.trim() ? `关注点:${document.getElementById('rf-comm-concerns').value.trim()}` : '',
       document.getElementById('rf-comm-notes')?.value.trim() ? `备注:${document.getElementById('rf-comm-notes').value.trim()}` : '',
     ].filter(Boolean).join('；');
     const payload = {
-      type: '意向沟通', channel, direction: '呼出',
-      summary: summary, result: resultValue,
-      nextAction: '', nextFollowUpAt: document.getElementById('rf-comm-interview-time')?.value || '',
+      type: '意向沟通', channel: '电话', direction: '呼出',
+      summary: summary || '意向沟通已记录', result: resultValue,
+      nextAction: '', nextFollowUpAt: '',
       wechat: document.getElementById('rf-comm-wechat')?.value.trim() || '', templateId: '',
       rejectionReason: resultValue === '淘汰' ? rejectReason : '', recontactAt: '',
       operatorUserId: document.getElementById('rf-comm-hr')?.value || '',
       operator: (state.communicationHrOptions || []).find((item) => item.id === document.getElementById('rf-comm-hr')?.value)?.name || '',
-      answerStatus, interestLevel, jobStatus, entryTime: document.getElementById('rf-comm-entry-time')?.value || '',
-      leaveReason, leaveReasonDetail: document.getElementById('rf-comm-leave-detail')?.value.trim() || '',
-      maritalStatus: document.getElementById('rf-comm-marital')?.value || '',
+      answerStatus: '已接通', interestLevel: '', jobStatus, entryTime: '',
+      leaveReason: '', leaveReasonDetail: document.getElementById('rf-comm-leave-detail')?.value.trim() || '',
+      maritalStatus: document.getElementById('rf-comm-marital')?.value || '未婚',
       homeAddress: document.getElementById('rf-comm-home')?.value.trim() || '',
       workContent: document.getElementById('rf-comm-work')?.value.trim() || '',
       currentSalaryInfo: document.getElementById('rf-comm-salary')?.value.trim() || '',
       candidateConcerns: document.getElementById('rf-comm-concerns')?.value.trim() || '',
       overtimeIntensity: document.getElementById('rf-comm-overtime-intensity')?.value.trim() || '',
       overtimeAttitude: document.getElementById('rf-comm-overtime-attitude')?.value.trim() || '',
-      interviewType: document.getElementById('rf-comm-interview-type')?.value || '',
-      interviewTime: document.getElementById('rf-comm-interview-time')?.value || '',
+      interviewType: '',
+      interviewTime: '',
       notes: transcript || document.getElementById('rf-comm-notes')?.value.trim() || '',
     };
     const message = document.getElementById('rf-comm-message');
     const communicationChecks = [
       ['rf-comm-time', '请选择沟通时间'],
       ['rf-comm-hr', '请选择沟通HR'],
-      ['rf-comm-channel', '请选择沟通方式'],
-      ['rf-comm-answer-status', '请选择接通状态'],
-      ['rf-comm-interest', '请选择兴趣度'],
       ['rf-comm-job-status', '请选择在职状态'],
-      ['rf-comm-entry-time', '请选择到岗时间'],
-      ['rf-comm-leave-reason', '请选择离职原因'],
-      ['rf-comm-leave-detail', '请填写离职原因详情'],
-      ['rf-comm-marital', '请选择婚姻状况'],
+      ['rf-comm-marital', '请选择婚育状况'],
       ['rf-comm-home', '请填写居住区域'],
       ['rf-comm-work', '请填写主要职责'],
       ['rf-comm-salary', '请填写当前薪酬整体情况'],
-      ['rf-comm-concerns', '请填写候选人关注点或顾虑'],
       ['rf-comm-overtime-intensity', '请填写当前公司加班强度'],
       ['rf-comm-overtime-attitude', '请填写对加班的看法或接受度'],
-      ['rf-comm-interview-type', '请选择约面形式'],
-      ['rf-comm-interview-time', '请选择约面时间'],
       ['rf-comm-result', '请选择沟通结果'],
     ];
     if (resultValue === '淘汰') communicationChecks.push(['rf-comm-reject-reason', '请选择淘汰原因']);
@@ -7252,21 +7244,16 @@ if (!root) return;
       const groups = [
         {
           title: '联系结果',
-          description: '先记录本次联系是否有效，以及候选人的基础意向。',
+          description: '先确认候选人当前状态和本次沟通结果。',
           fields: [
-            ['channel','沟通渠道','select',['电话','微信','邮件','短信','当面','其他']],
-            ['answerStatus','接通状态','select',['已接通','未接听','拒接','关机','空号','微信回复']],
-            ['interestLevel','兴趣度','select',['高','中','低','拒绝']],
             ['jobStatus','在职状态','select',['已离职','在职已提离职','在职未提离职','应届生']],
             ['result','沟通结果','select',['推进面试','放入人才库','淘汰','二次沟通']],
           ],
         },
         {
-          title: '到岗与离职',
-          description: '了解候选人的变动原因和可到岗节奏。',
+          title: '离职背景',
+          description: '记录候选人提到的离职背景，没有提到可以留空。',
           fields: [
-            ['entryTime','可到岗时间','text'],
-            ['leaveReason','离职原因','select',['薪资','发展','管理','家庭','通勤','公司变动','其他']],
             ['leaveReasonDetail','离职原因详情','textarea'],
           ],
         },
@@ -7274,6 +7261,7 @@ if (!root) return;
           title: '经历与关注点',
           description: '补充岗位判断需要的事实，未提到的内容可以留空。',
           fields: [
+            ['maritalStatus','婚育状况','select',['未婚','已婚','其他']],
             ['homeAddress','居住区域','textarea'],
             ['workContent','主要职责','textarea'],
             ['currentSalaryInfo','当前薪酬整体情况','textarea'],
@@ -7281,13 +7269,11 @@ if (!root) return;
           ],
         },
         {
-          title: '工作节奏与约面',
-          description: '确认工作节奏接受度，并记录候选人的面试安排。',
+          title: '工作节奏',
+          description: '确认候选人目前的工作节奏和接受度。',
           fields: [
             ['overtimeIntensity','当前公司加班强度','textarea'],
             ['overtimeAttitude','对加班的看法/接受度','textarea'],
-            ['interviewType','约面形式','select',['待定','暂定','线上','线下']],
-            ['interviewTime','方便面试时间','text'],
             ['notes','沟通备注','textarea'],
           ],
         },
@@ -7304,13 +7290,14 @@ if (!root) return;
         overtimeAttitude: '记录候选人对工作节奏的真实态度',
         notes: '补充本次沟通的重点、语气或后续事项',
       };
-      const requiredFields = new Set(['channel', 'answerStatus', 'interestLevel', 'jobStatus', 'result']);
+      const requiredFields = new Set(['jobStatus', 'result']);
+      const defaults = { jobStatus: '已离职', maritalStatus: '未婚' };
       const previous = item.previous || {};
-      const previousValue = (key) => String(previous[key] || '');
+      const previousValue = (key) => String(previous[key] || defaults[key] || '');
       const control = ([key,label,type,options]) => {
         const required = requiredFields.has(key);
         const title = `${label}${required ? ' <b>*</b>' : ''}`;
-        const current = ['answerStatus', 'result', 'interviewType', 'interviewTime', 'notes'].includes(key) ? '' : previousValue(key);
+        const current = ['result', 'notes'].includes(key) ? '' : previousValue(key);
         if (type === 'select') return `<label><span>${title}</span><select name="${key}" ${required ? 'required' : ''}><option value="">请选择</option>${(options||[]).map(x=>`<option value="${x}" ${x === current ? 'selected' : ''}>${x}</option>`).join('')}</select></label>`;
         if (type === 'textarea') return `<label class="rf-public-textarea"><span>${title}</span><textarea name="${key}" ${required ? 'required' : ''} placeholder="${escapeHtml(placeholders[key] || '请记录沟通中提到的内容')}">${escapeHtml(current)}</textarea></label>`;
         return `<label><span>${title}</span><input name="${key}" type="text" value="${escapeHtml(current)}" ${required ? 'required' : ''} placeholder="${escapeHtml(placeholders[key] || '')}"></label>`;
@@ -7322,7 +7309,7 @@ if (!root) return;
           <div>
             <span class="rf-public-communication-eyebrow"><i></i> RECRUITMENT WORKFLOW</span>
             <h1>意向沟通记录</h1>
-            <p>${previous.occurredAt ? `已带回上次沟通的基本信息，可直接修改。接通状态、沟通结果和约面安排需要按本次重新填写。` : '把通话或其他沟通方式中确认到的信息快速沉淀下来，为后续约面提供依据。'}</p>
+            <p>${previous.occurredAt ? `已带回上次沟通的基本信息，可直接修改。沟通结果需要按本次重新填写。` : '把本次沟通中确认到的信息快速沉淀下来，为后续约面提供依据。'}</p>
           </div>
           <aside class="rf-public-communication-candidate">
             <small>当前候选人</small>
@@ -7341,6 +7328,7 @@ if (!root) return;
               <label class="rf-public-communication-ai-label" for="rf-public-communication-transcript">AI解析沟通原文</label>
               <textarea id="rf-public-communication-transcript" maxlength="20000" placeholder="例如：电话已接通，候选人目前在职已提离职，对岗位兴趣较高，预计两周内到岗，目前薪资……"></textarea>
               <div class="rf-public-communication-ai-tools">
+                <button type="button" data-rf-public-communication-voice>开始口述</button>
                 <button type="button" data-rf-public-communication-extract><span>AI解析并填充</span></button>
               </div>
               <p id="rf-public-communication-extract-status" aria-live="polite">解析后请人工检查，未提到的字段会保持为空。</p>
@@ -7363,6 +7351,57 @@ if (!root) return;
       const transcript = document.getElementById('rf-public-communication-transcript');
       const extractStatus = document.getElementById('rf-public-communication-extract-status');
       const extractButton = document.querySelector('[data-rf-public-communication-extract]');
+      const voiceButton = document.querySelector('[data-rf-public-communication-voice]');
+      let communicationRecognition = null;
+      const stopCommunicationVoice = () => {
+        communicationRecognition?.stop();
+      };
+      voiceButton?.addEventListener('click', () => {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!transcript || !extractStatus || !voiceButton) return;
+        if (communicationRecognition) {
+          stopCommunicationVoice();
+          return;
+        }
+        if (!SpeechRecognition) {
+          extractStatus.textContent = '当前浏览器不支持语音输入，请使用手机输入法语音键，或直接粘贴文字。';
+          extractStatus.classList.add('error');
+          extractStatus.classList.remove('success');
+          return;
+        }
+        const recognition = new SpeechRecognition();
+        const originalText = transcript.value.trim();
+        let finalText = '';
+        communicationRecognition = recognition;
+        recognition.lang = 'zh-CN';
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        recognition.onstart = () => {
+          voiceButton.textContent = '停止口述';
+          extractStatus.textContent = '请直接口述本次沟通内容，说完后可点击“AI解析并填充”。';
+          extractStatus.classList.remove('error', 'success');
+        };
+        recognition.onresult = (event) => {
+          let interimText = '';
+          for (let index = event.resultIndex; index < event.results.length; index += 1) {
+            const value = event.results[index][0]?.transcript || '';
+            if (event.results[index].isFinal) finalText += value;
+            else interimText += value;
+          }
+          transcript.value = [originalText, finalText, interimText].filter(Boolean).join(originalText ? '\n' : '');
+        };
+        recognition.onerror = (event) => {
+          extractStatus.textContent = event.error === 'not-allowed' ? '未获得麦克风权限，请允许后重试。' : '语音输入中断，请重试或使用手机输入法语音键。';
+          extractStatus.classList.add('error');
+          extractStatus.classList.remove('success');
+        };
+        recognition.onend = () => {
+          communicationRecognition = null;
+          voiceButton.textContent = '开始口述';
+          if (!extractStatus.classList.contains('error')) extractStatus.textContent = transcript.value.trim() ? '口述已转为文字，可点击“AI解析并填充”。' : '没有识别到内容，请重试。';
+        };
+        recognition.start();
+      });
       extractButton?.addEventListener('click', async () => {
         const content = transcript?.value.trim() || '';
         if (!content) {
@@ -7387,7 +7426,7 @@ if (!root) return;
             field.closest('label')?.classList.add('is-ai-filled');
             filled += 1;
           };
-          ['channel','answerStatus','interestLevel','jobStatus','result','entryTime','leaveReason','leaveReasonDetail','homeAddress','workContent','currentSalaryInfo','candidateConcerns','overtimeIntensity','overtimeAttitude','interviewType','interviewTime','notes'].forEach((name) => fill(name, extraction[name]));
+          ['jobStatus','result','leaveReasonDetail','maritalStatus','homeAddress','workContent','currentSalaryInfo','candidateConcerns','overtimeIntensity','overtimeAttitude','notes'].forEach((name) => fill(name, extraction[name]));
           if (extractStatus) {
             extractStatus.textContent = filled ? `解析完成，已自动填写 ${filled} 项。请检查后再提交。` : '解析完成，但文本中没有识别到可填写的信息。';
             extractStatus.classList.toggle('success', filled > 0);
@@ -7402,6 +7441,11 @@ if (!root) return;
         event.preventDefault();
         const submittedForm = event.currentTarget, message = document.getElementById('rf-public-communication-message'), button = submittedForm.querySelector('button[type="submit"]');
         const payload = Object.fromEntries(new FormData(submittedForm).entries());
+        payload.channel = payload.channel || '电话';
+        payload.answerStatus = payload.answerStatus || '已接通';
+        payload.jobStatus = payload.jobStatus || '已离职';
+        payload.maritalStatus = payload.maritalStatus || '未婚';
+        payload.summary = [payload.jobStatus ? `在职状态:${payload.jobStatus}` : '', payload.currentSalaryInfo ? `薪酬:${payload.currentSalaryInfo}` : '', payload.candidateConcerns ? `关注点:${payload.candidateConcerns}` : '', payload.notes ? `备注:${payload.notes}` : ''].filter(Boolean).join('；') || '意向沟通已记录';
         const transcript = document.getElementById('rf-public-communication-transcript')?.value.trim() || '';
         if (transcript) payload.notes = transcript;
         try { button.disabled=true; message.textContent='正在提交…'; const saved = await request(`api/public/interviews/communication?token=${encodeURIComponent(token)}`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ ...payload, candidateId:item.candidateId }) }); submittedForm.dataset.mobileDirty = 'false'; document.querySelector('.rf-public-assessment').innerHTML = '<div class="rf-public-success"><i aria-hidden="true">✓</i><strong>意向沟通已提交</strong><p id="rf-public-communication-message">已提交，请留意系统消息</p></div>'; window.scrollTo({ top: 0, behavior: 'auto' }); showCommunicationCompletion(saved.candidateId || item.candidateId, true); } catch (error) { message.textContent=conciseError(error); button.disabled=false; }

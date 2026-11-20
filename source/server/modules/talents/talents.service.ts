@@ -1786,10 +1786,10 @@ export class TalentsService implements OnModuleInit {
     const answerStatuses = ['已接通', '未接听', '拒接', '关机', '空号', '微信回复']
     const interestLevels = ['高', '中', '低', '拒绝']
     const jobStatuses = ['已离职', '在职已提离职', '在职未提离职', '应届生']
-    if (!channels.includes(text(input.channel))) throw new BadRequestException('请选择有效的沟通渠道')
-    if (!answerStatuses.includes(text(input.answerStatus))) throw new BadRequestException('请选择有效的接通状态')
-    if (!interestLevels.includes(text(input.interestLevel))) throw new BadRequestException('请选择有效的兴趣度')
-    if (!jobStatuses.includes(text(input.jobStatus))) throw new BadRequestException('请选择有效的在职状态')
+    if (text(input.channel) && !channels.includes(text(input.channel))) throw new BadRequestException('请选择有效的沟通渠道')
+    if (text(input.answerStatus) && !answerStatuses.includes(text(input.answerStatus))) throw new BadRequestException('请选择有效的接通状态')
+    if (text(input.interestLevel) && !interestLevels.includes(text(input.interestLevel))) throw new BadRequestException('请选择有效的兴趣度')
+    if (text(input.jobStatus) && !jobStatuses.includes(text(input.jobStatus))) throw new BadRequestException('请选择有效的在职状态')
     if (!text(input.summary)) throw new BadRequestException('请填写沟通摘要')
     if (!text(input.result)) throw new BadRequestException('请选择沟通结果')
     if (text(input.result).includes('拒绝') && !text(input.rejectionReason)) throw new BadRequestException('候选人拒绝时必须记录拒绝原因')
@@ -1804,12 +1804,12 @@ export class TalentsService implements OnModuleInit {
     const communicationId = id('comm')
     await teable.createRecord(this.table('recruitment_communications'), {
       沟通记录ID: communicationId, 候选人ID: candidateId, 应聘记录ID: text(application?.fields['应聘记录ID']) || application?.id || '',
-      沟通类型: text(input.type) || '意向沟通', 沟通渠道: input.channel, 沟通方向: text(input.direction) || '呼出',
+      沟通类型: text(input.type) || '意向沟通', 沟通渠道: text(input.channel) || '电话', 沟通方向: text(input.direction) || '呼出',
       沟通摘要: input.summary, 下一步行动: text(input.nextAction), 下次跟进时间: text(input.nextFollowUpAt), 沟通结果: input.result,
       微信号: text(input.wechat), 微信重复状态: wechatCheck.duplicate ? '疑似与其他人才重复' : input.wechat ? '未发现重复' : '',
       使用模板ID: text(input.templateId), 拒绝原因: text(input.rejectionReason), 再联系时间: text(input.recontactAt),
-      接通状态: text(input.answerStatus), 兴趣度: text(input.interestLevel), 在职状态: text(input.jobStatus), 到岗时间: text(input.entryTime),
-      离职原因: text(input.leaveReason), 离职原因详情: text(input.leaveReasonDetail), 婚姻状况: text(input.maritalStatus), 居住区域: text(input.homeAddress),
+      接通状态: text(input.answerStatus) || '已接通', 兴趣度: text(input.interestLevel), 在职状态: text(input.jobStatus) || '已离职', 到岗时间: text(input.entryTime),
+      离职原因: text(input.leaveReason), 离职原因详情: text(input.leaveReasonDetail), 婚姻状况: text(input.maritalStatus) || '未婚', 居住区域: text(input.homeAddress),
       主要职责: text(input.workContent), 当前薪酬整体情况: text(input.currentSalaryInfo), 候选人关注点: text(input.candidateConcerns),
       当前加班强度: text(input.overtimeIntensity), 加班接受度: text(input.overtimeAttitude), 约面形式: text(input.interviewType), 约面时间: text(input.interviewTime),
       沟通备注: text(input.notes),
@@ -1984,7 +1984,7 @@ export class TalentsService implements OnModuleInit {
     if (rows.length) return
     const timestamp = now()
     const defaults = [
-      { name: '首次意向沟通', category: '意向沟通', channel: '电话', content: '你好，我是方片招聘团队的{{招聘负责人}}。我们正在招聘{{岗位名称}}，你的经历与岗位有较高匹配，希望和你用几分钟了解当前求职意向、期望城市和到岗时间。' },
+      { name: '首次意向沟通', category: '意向沟通', channel: '电话', content: '你好，我是方片招聘团队的{{招聘负责人}}。我们正在招聘{{岗位名称}}，你的经历与岗位有较高匹配。先确认你目前是否已离职、婚育情况和期望城市；如果方便，再了解主要职责、当前薪酬、加班节奏和你最关心的问题。' },
       { name: '公司与岗位介绍', category: '公司介绍', channel: '微信', content: '你好，补充发送方片及{{岗位名称}}的介绍。岗位核心目标是{{岗位目标}}，团队目前处于{{团队阶段}}。内容仅供你了解，如有关注点可以随时沟通。' },
       { name: '约定下次沟通', category: '跟进提醒', channel: '微信', content: '感谢今天的沟通。我们约定在{{下次跟进时间}}继续确认{{下一步行动}}，如你的安排有变化，也可以提前告诉我。' },
       { name: '暂不考虑回访', category: '拒绝回访', channel: '微信', content: '理解你目前暂不考虑机会。我们会在{{再联系时间}}前后再礼貌确认一次；如果你不希望后续联系，也可以直接告诉我。' },
