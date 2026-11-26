@@ -2047,9 +2047,7 @@
         ? ` data-rf-candidate-id="${escapeHtml(candidate.candidateId || candidate.id || '')}" data-rf-interview-id="${escapeHtml(flow.interview?.id || '')}"`
         : '';
       const push = `<button type="button" class="rf-flow-push" data-rf-flow-wecom="${escapeHtml(step.pushStep || step.name)}" ${step.pushDisabled ? 'disabled' : ''} title="通知企微">通知企微</button>`;
-      const connector = index < flowSteps.length - 1 ? '<i class="rf-flow-link" aria-hidden="true"></i>' : '';
       return `<article class="rf-flow-node ${stateClass}${step.disabled ? ' is-locked' : ''}">
-        ${connector}
         <button type="button" class="rf-flow-card" ${step.actionType}${contextAttrs} ${step.disabled ? 'disabled' : ''} title="${escapeHtml(step.detail)}" aria-label="${escapeHtml(`${index + 1} ${step.name}，${stateLabel}。${step.detail}`)}">
           <b aria-hidden="true">${stateClass === 'done' ? '✓' : index + 1}</b>
           <strong>${escapeHtml(step.name)}</strong>
