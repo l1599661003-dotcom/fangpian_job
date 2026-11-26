@@ -20,7 +20,7 @@ export const TALENT_DIRECTORY_FIELDS: Record<string, string[]> = {
   ],
   recruitment_candidate_tags: ['候选人ID', '标签状态', '标签分类', '标签名称', '标签来源', '置信度', '人工确认状态'],
   recruitment_interviews: ['候选人ID', '面试官用户IDJSON'],
-  recruitment_positions: ['职位ID', '部门ID'],
+  recruitment_positions: ['职位ID', '职位名称', '部门ID'],
   recruitment_users: ['手机', '天玑人事状态'],
   recruitment_referrals: ['候选人ID', '内推记录ID', '职位ID', '推荐人用户ID', '推荐人', '推荐人部门', '推荐时间', '更新时间', '创建时间'],
   resume_extraction_records: ['候选人ID', '工作经历', '源文件名', '源文件地址', '创建时间', '更新时间'],
@@ -30,7 +30,7 @@ export const TALENT_DIRECTORY_FILTER_FIELDS: Record<string, string[]> = {
   recruitment_applications: ['候选人ID', '职位ID', '负责人用户ID', '当前阶段', 'AI匹配分', '创建时间', '更新时间'],
   recruitment_ai_assessments: ['候选人ID', '分析记录ID', '版本号', '创建时间', '人工确认状态'],
   recruitment_job_matches: ['候选人ID', '匹配状态', '分析记录ID', '职位ID', '职位名称', '匹配总分'],
-  recruitment_positions: ['职位ID', '部门ID'],
+  recruitment_positions: ['职位ID', '职位名称', '部门ID'],
   recruitment_candidate_tags: ['候选人ID', '标签状态', '标签分类', '标签名称'],
   recruitment_referrals: ['候选人ID', '推荐人用户ID', '推荐人', '推荐时间', '创建时间'],
 }

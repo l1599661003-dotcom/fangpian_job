@@ -174,6 +174,35 @@ test('complex directory filters use a light index and hydrate only the current p
   } finally { Object.assign(teable, originals); }
 });
 
+test('assigned position filter separates uploaded selections from unmatched candidates', async () => {
+  const originals = { listAllRecords: teable.listAllRecords, listByAnyField: teable.listByAnyField };
+  const candidates = [
+    { id: 'assigned_record', fields: { 候选人ID: 'assigned', 姓名: '已指定', 候选人状态: '待业务群评审', 合并状态: '独立档案', 当前简历文件名: 'assigned.pdf', 当前简历地址: 'https://files.example.test/assigned.pdf', 创建时间: '2026-10-02T00:00:00.000Z' } },
+    { id: 'unassigned_record', fields: { 候选人ID: 'unassigned', 姓名: '未指定', 候选人状态: '待业务群评审', 合并状态: '独立档案', 当前简历文件名: 'unassigned.pdf', 当前简历地址: 'https://files.example.test/unassigned.pdf', 创建时间: '2026-10-01T00:00:00.000Z' } },
+  ];
+  teable.listAllRecords = async (table) => {
+    if (table === 'recruitment_candidates') return candidates;
+    if (table === 'recruitment_applications') return [{ id: 'application_assigned', fields: { 候选人ID: 'assigned', 职位ID: 'position_pm', 当前阶段: '待业务群评审', 更新时间: '2026-10-02T00:00:00.000Z' } }];
+    if (table === 'recruitment_positions') return [{ id: 'position_record', fields: { 职位ID: 'position_pm', 职位名称: '产品执行PM', 部门ID: 'department_1' } }];
+    return [];
+  };
+  teable.listByAnyField = async (table, _field, ids) => {
+    assert.ok(ids.length === 1);
+    if (table === 'recruitment_applications' && ids.includes('assigned')) return [{ id: 'page_application', fields: { 候选人ID: 'assigned', 职位ID: 'position_pm', 当前阶段: '待业务群评审', 更新时间: '2026-10-02T00:00:00.000Z' } }];
+    return [];
+  };
+  try {
+    const service = new TalentsService({ requireTableId: name => name }, {}, {});
+    const assigned = await service.list({ assignedPosition: '有指定岗位', pageSize: '10' });
+    assert.deepEqual(assigned.talents.map(item => item.id), ['assigned']);
+    assert.equal(assigned.talents[0].assignedPositionId, 'position_pm');
+    assert.equal(assigned.talents[0].assignedPositionName, '产品执行PM');
+    const unassigned = await service.list({ assignedPosition: '无指定岗位', pageSize: '10' });
+    assert.deepEqual(unassigned.talents.map(item => item.id), ['unassigned']);
+    assert.equal(unassigned.talents[0].assignedPositionId, '');
+  } finally { Object.assign(teable, originals); }
+});
+
 test('legacy resume work history fallback requests OCR only when extracted work history is missing', async () => {
   const original = teable.listByAnyField;
   const calls = [];

@@ -75,7 +75,7 @@ const mapLegacyStage = (value: unknown) => LEGACY_STAGE_MAP[text(value)] || text
 const DIRECTORY_CACHE_TTL_MS = 60000
 const EMPLOYEE_CACHE_TTL_MS = 60000
 type AnalysisRun = { analysis: TalentAnalysis; status: '成功' | '规则降级'; durationMs: number; error: string; promptVersion: string; modelVersion: string; inputChars: number; outputChars: number; startedAt: string; completedAt: string }
-type TalentDirectoryQuery = { q?: string; job?: string; status?: string; source?: string; tag?: string; importer?: string; minScore?: string; age?: string; region?: string; score?: string; page?: string; pageSize?: string; refresh?: string }
+type TalentDirectoryQuery = { q?: string; job?: string; status?: string; source?: string; tag?: string; importer?: string; minScore?: string; age?: string; region?: string; score?: string; assignedPosition?: string; page?: string; pageSize?: string; refresh?: string }
 
 @Injectable()
 export class TalentsService implements OnModuleInit {
@@ -600,7 +600,9 @@ export class TalentsService implements OnModuleInit {
     const page = Math.max(1, Math.round(num(query.page) || 1))
     const importerKeywords = this.importerKeywords(query.importer)
     const referralCandidateIds = importerKeywords.length ? await this.importerReferralCandidateIds(importerKeywords) : []
-    const hasRelationFilter = Boolean((query.job && query.job !== '全部岗位') || (query.tag && query.tag !== '全部标签') || query.minScore || (query.age && query.age !== '全部年龄') || (query.region && query.region !== '全部地区') || (query.score && query.score !== '全部评分'))
+    const assignedPositionFilter = text(query.assignedPosition)
+    const hasAssignedPositionFilter = assignedPositionFilter === '有指定岗位' || assignedPositionFilter === '无指定岗位'
+    const hasRelationFilter = Boolean((query.job && query.job !== '全部岗位') || (query.tag && query.tag !== '全部标签') || query.minScore || (query.age && query.age !== '全部年龄') || (query.region && query.region !== '全部地区') || (query.score && query.score !== '全部评分') || hasAssignedPositionFilter)
     const hasComplexFilter = Boolean(hasRelationFilter || query.status === '未入职')
     const serverFilter = this.directoryFilter(query, referralCandidateIds)
     const canScopePositions = accessProfile && typeof (this.recruitment as any).positionOptions === 'function'
@@ -664,6 +666,7 @@ export class TalentsService implements OnModuleInit {
         && rangeMatches(Number(item.age || 0), query.age)
         && this.regionMatches(item.address, query.region)
         && rangeMatches(Number(item.bestMatchScore || 0), query.score)
+        && (!hasAssignedPositionFilter || (assignedPositionFilter === '有指定岗位') === Boolean(text(item.assignedPositionId)))
     })
     candidates.sort((a, b) => (b.createdTime || '').localeCompare(a.createdTime || ''))
     // total 必须与当前权限下实际可见的数据一致；否则无人才档案权限的角色仍会看到“总数”。
@@ -2597,6 +2600,7 @@ export class TalentsService implements OnModuleInit {
       id: text(row.fields['候选人ID']) || row.id, recordId: row.id,
       name: text(row.fields['姓名']), phone: text(row.fields['电话']), email: text(row.fields['邮箱']), wechat: text(row.fields['微信']),
       currentCompany: text(row.fields['当前公司']), currentRole: text(row.fields['当前职位']), owner: text(row.fields['负责人']),
+      sourceFileName: text(row.fields['当前简历文件名']), sourceFileUrl: text(row.fields['当前简历地址']),
       updatedTime: text(row.fields['更新时间']), createdTime: text(row.fields['创建时间']),
       ...row.fields,
     }
@@ -3049,10 +3053,10 @@ export class TalentsService implements OnModuleInit {
     return rows.filter(row => !excluded(row)).length
   }
 
-  private complexFilterCacheKey(query: Pick<TalentDirectoryQuery, 'q' | 'job' | 'status' | 'source' | 'tag' | 'importer' | 'minScore' | 'age' | 'region' | 'score'>) {
+  private complexFilterCacheKey(query: Pick<TalentDirectoryQuery, 'q' | 'job' | 'status' | 'source' | 'tag' | 'importer' | 'minScore' | 'age' | 'region' | 'score' | 'assignedPosition'>) {
     return [
       text(query.q), text(query.job), text(query.status), text(query.source), text(query.tag), text(query.importer),
-      text(query.minScore), text(query.age), text(query.region), text(query.score),
+      text(query.minScore), text(query.age), text(query.region), text(query.score), text(query.assignedPosition),
     ].join('\u0001')
   }
 
@@ -3340,6 +3344,7 @@ export class TalentsService implements OnModuleInit {
       // 列表不传输 OCR 正文；文件名/地址来自主档缓存，详情再按最新简历校准。
       sourceFileName: text(f['当前简历文件名']) || text(index.resumes.get(candidateId)?.fields['源文件名']) || '', sourceFileUrl: text(f['当前简历地址']) || text(index.resumes.get(candidateId)?.fields['源文件地址']) || '', rawText: '完整简历原文将在打开详情时按需加载。', avatarUrl: text(f['头像地址']), avatarStatus: text(f['头像提取状态']), editableWordUrl: '', tags: tagRows.map((item) => ({ name: text(item.fields['标签名称']), category: text(item.fields['标签分类']), source: text(item.fields['标签来源']), confidence: num(item.fields['置信度']), evidence: '', reviewStatus: text(item.fields['人工确认状态']), status: text(item.fields['标签状态']) || '当前' })),
       skills: activeSkills.length ? activeSkills : json<string[]>(f['技能JSON'], []), matches, bestMatchScore: matches[0]?.score || num(application?.fields['AI匹配分']) || Number(effectiveAnalysis?.scores?.overall || 0), bestMatchRole: matches[0]?.positionName || text(f['期望职位']),
+      assignedPositionId: selectedPositionId, assignedPositionName: text(position?.fields['职位名称']),
       analysis: assessment && effectiveAnalysis ? { id: assessmentId, reviewStatus: text(assessment.fields['人工确认状态']) || '待人工确认', scores: effectiveAnalysis.scores, scoreDimensions: effectiveAnalysis.scoreDimensions || null, confidence: effectiveAnalysis.confidence, strengths: effectiveAnalysis.strengths || [], summary: effectiveAnalysis.summary || '' } : null,
       _access: { candidateId, ownerUserId: text(application?.fields['负责人用户ID']) || text(f['负责人用户ID']), departmentIds, businessUnitId: text(demand?.fields['事业部ID']), interviewerUserIds: index.interviewerUserIds.get(candidateId) || [], stage: text(application?.fields['当前阶段']) || text(f['候选人状态']) } satisfies TalentAccessContext,
     }
@@ -3450,6 +3455,7 @@ export class TalentsService implements OnModuleInit {
       })(),
       tags: data.tags.filter((item) => text(item.fields['候选人ID']) === candidateId && !['历史', '人工移除'].includes(text(item.fields['标签状态']))).map((item) => ({ name: text(item.fields['标签名称']), category: text(item.fields['标签分类']), source: text(item.fields['标签来源']), confidence: num(item.fields['置信度']), evidence: text(item.fields['证据']), reviewStatus: text(item.fields['人工确认状态']), status: text(item.fields['标签状态']) || '当前' })),
       matches, bestMatchScore: matches[0]?.score || num(application?.fields['AI匹配分']) || Number(effectiveAnalysis?.scores?.overall || 0), bestMatchRole: matches[0]?.positionName || text(f['期望职位']),
+      assignedPositionId: selectedPositionId, assignedPositionName: text(position?.fields['职位名称']),
       referralPositionId, referralPositionName: text(referralPosition?.fields['职位名称']),
       analysis: assessment && effectiveAnalysis ? { id: assessmentId, version: num(assessment.fields['版本号']) || 1, versionName: text(assessment.fields['分析版本']) || 'talent-v1', parentId: text(assessment.fields['父分析记录ID']), type: text(assessment.fields['分析类型']), rerunReason: text(assessment.fields['重跑原因']), promptVersion: text(assessment.fields['提示词版本']), modelVersion: text(assessment.fields['模型版本']), runStatus: text(assessment.fields['运行状态']), durationMs: num(assessment.fields['耗时毫秒']), runError: text(assessment.fields['运行错误']), createdAt: text(assessment.fields['创建时间']), ...effectiveAnalysis, aiOriginal: originalAnalysis, corrected: Boolean(analysisCorrection), correction: analysisCorrection ? { changedFields: analysisCorrection.changedFields || [], reason: text(assessment.fields['人工修正原因']) || analysisCorrection.reason, operator: text(assessment.fields['修正人']) || analysisCorrection.operator, correctedAt: text(assessment.fields['修正时间']) || analysisCorrection.correctedAt } : null, reviewStatus: text(assessment.fields['人工确认状态']) || '待人工确认', humanNote: text(assessment.fields['人工修正内容']) } : null,
       _access: { candidateId, ownerUserId: text(application?.fields['负责人用户ID']) || text(f['负责人用户ID']), departmentIds, businessUnitId: text(demand?.fields['事业部ID']), interviewerUserIds, stage: text(application?.fields['当前阶段']) || text(f['候选人状态']) } satisfies TalentAccessContext,

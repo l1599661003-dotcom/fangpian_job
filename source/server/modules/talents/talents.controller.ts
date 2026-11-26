@@ -11,7 +11,7 @@ export class TalentsController {
   constructor(private readonly talents: TalentsService, private readonly access: RoleAccessService) {}
 
   @Get()
-  async list(@Query() query: { q?: string; job?: string; status?: string; source?: string; tag?: string; importer?: string; minScore?: string; age?: string; region?: string; score?: string; page?: string; pageSize?: string }, @Headers() headers: Record<string, string | string[] | undefined>) {
+  async list(@Query() query: { q?: string; job?: string; status?: string; source?: string; tag?: string; importer?: string; minScore?: string; age?: string; region?: string; score?: string; assignedPosition?: string; page?: string; pageSize?: string }, @Headers() headers: Record<string, string | string[] | undefined>) {
     const requestAccess = await this.access.getRequestAccess(headers)
     if (requestAccess) this.access.assertPage(requestAccess.profile, 'candidates')
     try { return await this.talents.list(query, requestAccess?.profile) } catch (error: any) { const stack = error?.stack || String(error); await appendFile('/tmp/talents-error.log', `${new Date().toISOString()}\nquery=${JSON.stringify(query)}\n${stack}\n\n`).catch(() => undefined); console.error('[TalentsListError]', stack); throw error }

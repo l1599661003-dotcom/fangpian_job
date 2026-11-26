@@ -75,7 +75,7 @@ export class ResumesService implements OnModuleInit {
   private batchConcurrency = 4
   // 整批先持久化原文件。这样解析运行数十分钟时即使 Pod 重启，也不会丢掉尚未解析的文件。
   private batchStorageConcurrency = 4
-  private batchItemTimeoutMs = 90_000
+  private batchItemTimeoutMs = 180_000
 
   constructor(
     private readonly files: ResumeFileService,

@@ -21,7 +21,7 @@
   const state = {
     file: null, resumes: [], talents: [], talentOverview: null, jobMap: [], talentDetails: {}, activeId: '',
     talentPageSize: 25,
-    talentFilters: { q: '', job: '全部岗位', status: '全部状态', source: '全部来源', tag: '全部标签', importer: '', age: '全部年龄', region: '全部地区', score: '全部评分' }, talentSearchDraft: '', talentFacets: null, archiveTotal: 0,
+    talentFilters: { q: '', job: '全部岗位', status: '全部状态', source: '全部来源', tag: '全部标签', importer: '', age: '全部年龄', region: '全部地区', score: '全部评分', assignedPosition: '全部' }, talentSearchDraft: '', talentFacets: null, archiveTotal: 0,
     archiveMode: 'api', archiveMessage: '', apiConfig: null, codeTab: 'curl', resumeVersionData: null, resumeBatchId: '', resumeBatchConfirmItems: [], analysisVersionData: null, analysisComparison: null,
     duplicateCases: [], duplicateCase: null, duplicateResult: null,
     reviewQueue: null, communicationTemplates: [], activeCommunicationCandidateId: '',
@@ -303,7 +303,13 @@
         const contentType = response.headers.get('content-type') || '';
         data = contentType.includes('json') ? await response.json() : { message: await response.text() };
       } catch (error) {
-        if (error?.name === 'AbortError') throw new Error(writing ? '请求等待超时，处理结果暂未确认，请先查看记录，勿重复提交' : '查询暂时超时，请稍后重试');
+        if (error?.name === 'AbortError') {
+          const timeoutError = new Error(writing ? '请求等待超时，处理结果暂未确认，请先查看记录，勿重复提交' : '查询暂时超时，请稍后重试');
+          timeoutError.status = 0;
+          timeoutError.code = 'TIMEOUT';
+          throw timeoutError;
+        }
+        if (error instanceof Error) error.status = Number(error.status || 0);
         throw error;
       } finally {
         window.clearTimeout(timeout);
@@ -450,9 +456,9 @@
             <p>上传后自动解析、评分和匹配岗位；如需人工指定岗位，可在完成后修正并重跑。</p>
           </div>
         </header>
-        <div class="rf-parse-layout ${inDialog ? 'is-compact' : ''}">
+        <div class="rf-parse-layout ${inDialog ? 'is-dialog' : ''}">
           <section class="rf-upload-panel">
-            <div class="rf-upload-title"><div><span>单份解析</span><h2>选择简历文件</h2></div><small>单份最大 10MB</small></div>
+            <div class="rf-upload-title"><div><span>单份解析</span><h2>选择简历文件</h2></div><small>单份最大 10MB · 网络中断自动重试</small></div>
             <input id="rf-file-input" type="file" hidden accept="${supported.join(',')}" />
             <div class="rf-drop" id="rf-drop" tabindex="0" role="button" aria-label="选择简历文件">
               <div class="rf-upload-icon">↑</div>
@@ -476,8 +482,7 @@
               <div id="rf-batch-history-list" aria-live="polite">正在获取最近批次…</div>
             </section>
           </section>
-          ${inDialog ? '' : `
-            <aside class="rf-parse-guide" aria-label="解析说明">
+          <aside class="rf-parse-guide" aria-label="解析说明">
               <div class="rf-parse-guide-head"><span>处理说明</span><strong>解析后确认岗位</strong><p>可人工指定目标岗位，也可交给 AI 根据岗位库推荐。</p></div>
               <ol class="rf-parse-flow">
                 <li><b>01</b><div><strong>核验文件</strong><small>检查格式、大小与可读取性</small></div></li>
@@ -487,7 +492,6 @@
               </ol>
               <div class="rf-parse-formats"><span>支持格式</span><p>PDF · DOC · DOCX · ODT · RTF · TXT · JPG · PNG</p></div>
             </aside>
-          `}
         </div>
       </div>
       ${inDialog ? '' : '<section class="rf-result-panel" id="rf-result"><div><span>PARSE RESULT</span><h2>解析结果</h2></div><p>完成后会在这里显示已提取的字段，并同步进入人才档案。</p></section>'}`;
@@ -552,6 +556,24 @@
     if (result) result.innerHTML = `<div><span>PARSE ERROR</span><h2>解析未完成</h2></div><div class="rf-error">${escapeHtml(message)}，请重新选择文件。</div>`;
   }
 
+  function isRetryableUploadError(error) {
+    const status = Number(error?.status || 0);
+    if ([400, 401, 403, 404, 413, 422].includes(status)) return false;
+    return status >= 500 || /超时|网络|Failed to fetch|NetworkError|ECONN|ETIMEDOUT|502|503|504/.test(String(error?.message || error || ''));
+  }
+
+  async function requestWithRetry(path, options, progress, label) {
+    const attempts = 3;
+    for (let attempt = 1; attempt <= attempts; attempt += 1) {
+      try { return await request(path, options); }
+      catch (error) {
+        if (attempt === attempts || !isRetryableUploadError(error)) throw error;
+        progress(`${label}暂时失败，正在自动重试（${attempt}/${attempts - 1}）…`);
+        await new Promise((resolve) => setTimeout(resolve, 1200 * attempt));
+      }
+    }
+  }
+
   async function parseFile(surface = 'page') {
     if (!state.file) return;
     const button = document.getElementById('rf-start');
@@ -566,7 +588,9 @@
       form.append('operator', identity.name || '');
       form.append('operatorUserId', identity.id || '');
       form.append('suppressGroupPush', document.getElementById('rf-suppress-group-push')?.checked ? 'true' : 'false');
-      const started = await request('api/resumes/parse-upload', { method: 'POST', body: form });
+      const started = await requestWithRetry('api/resumes/parse-upload', { method: 'POST', body: form, timeoutMs: 60000 }, (message) => {
+        if (progress.isConnected) progress.innerHTML = stepsHtml(0, message);
+      }, '上传');
       const result = await waitForBackgroundJob(started.jobId, message => {
         const index = /保存|上传/.test(message) ? 0 : /OCR|文字|PDF|Office|转换/.test(message) ? 1 : /提取/.test(message) ? 2 : /数据库|写入|人才档案/.test(message) ? 3 : 1;
         if (progress.isConnected) progress.innerHTML = stepsHtml(index);
@@ -850,7 +874,9 @@
         form.append('finalize', isFinalChunk ? 'true' : 'false');
         const identity = window.recruitmentCurrentUser || {};
         form.append('operator', identity.name || ''); form.append('operatorUserId', identity.id || ''); form.append('suppressGroupPush', suppressGroupPush ? 'true' : 'false');
-        const started = await request('api/resumes/batch-upload', { method: 'POST', body: form, timeoutMs: 120000 });
+        const started = await requestWithRetry('api/resumes/batch-upload', { method: 'POST', body: form, timeoutMs: 180000 }, (retryMessage) => {
+          if (message?.isConnected) message.textContent = `第${index + 1}/${chunks.length}组${retryMessage}`;
+        }, '批量上传');
         batchId = started.batchId;
         state.resumeBatchId = batchId;
         const uploadedCount = Math.min((index + 1) * 20, files.length);
@@ -1512,7 +1538,8 @@
         && (state.talentFilters.tag === '全部标签' || item.tags?.some((tag) => tag.name === state.talentFilters.tag))
         && rangeMatches(item.age, state.talentFilters.age)
         && regionMatches(item.address, state.talentFilters.region)
-        && rangeMatches(item.bestMatchScore, state.talentFilters.score);
+        && rangeMatches(item.bestMatchScore, state.talentFilters.score)
+        && (state.talentFilters.assignedPosition === '全部' || (state.talentFilters.assignedPosition === '有指定岗位') === Boolean(item.assignedPositionId));
     });
   }
 
@@ -1784,8 +1811,8 @@
     return state.importerFilterOptionsPromise;
   }
 
-  const TALENT_FILTER_DEFAULTS = { q: '', job: '全部岗位', status: '全部状态', source: '全部来源', tag: '全部标签', importer: '', age: '全部年龄', region: '全部地区', score: '全部评分' };
-  const TALENT_FILTER_LABELS = { q: '姓名', job: '岗位', status: '在职状态', source: '来源', importer: '导入人', age: '年龄', region: '地区', score: '评分' };
+  const TALENT_FILTER_DEFAULTS = { q: '', job: '全部岗位', status: '全部状态', source: '全部来源', tag: '全部标签', importer: '', age: '全部年龄', region: '全部地区', score: '全部评分', assignedPosition: '全部' };
+  const TALENT_FILTER_LABELS = { q: '姓名', job: '岗位', status: '在职状态', source: '来源', importer: '导入人', age: '年龄', region: '地区', score: '评分', assignedPosition: '指定岗位' };
 
   function activeTalentFilters() {
     return Object.entries(state.talentFilters).flatMap(([key, value]) => {
@@ -1836,9 +1863,6 @@
     const jobFilterValues = mergeFacetValues(facets.jobs, state.positionOptions.map((position) => position.name));
     const filtered = activeFilters.length > 0;
     const archiveTotal = Number(state.archiveTotal || 0);
-    const resultLabel = filtered ? '筛选结果' : '当前人才';
-    const rangeStart = state.talentTotal ? (state.talentPage - 1) * state.talentPageSize + 1 : 0;
-    const rangeEnd = Math.min(state.talentTotal, state.talentPage * state.talentPageSize);
     root.innerHTML = `
       ${state.archiveMessage ? `<div class="rf-inline-warning">${escapeHtml(state.archiveMessage)}</div>` : ''}
       <header class="page-head rf-talent-page-head">
@@ -1848,8 +1872,6 @@
       <section class="rf-talent-command" aria-label="人才档案查询">
         <div class="rf-talent-metrics" aria-label="人才数量">
           <article class="is-primary"><span>人才库总数</span><strong>${archiveTotal || state.talentTotal}</strong><small>不含已删除和已合并档案</small></article>
-          <article class="${filtered ? 'is-active' : ''}"><span>${resultLabel}</span><strong>${state.talentTotal}</strong><small>${state.talentTotal ? `本页 ${rangeStart}–${rangeEnd}` : '没有符合条件的人才'}</small></article>
-          <article><span>本页待确认</span><strong>${overview.pendingReview}</strong><small>当前列表中的 AI 结果</small></article>
           <button type="button" data-rf-duplicates><span>疑似重复</span><strong>${overview.duplicatePending}</strong><small>打开重复处理</small></button>
         </div>
         <form class="rf-talent-filter-panel" id="rf-talent-filter-form">
@@ -1866,6 +1888,7 @@
             <label><span>年龄</span><select id="rf-age-filter">${talentOptions(['18-25岁','26-30岁','31-35岁','36岁以上'], state.talentFilters.age, '全部年龄')}</select></label>
             <label><span>地区</span><input id="rf-region-filter" type="search" value="${escapeHtml(state.talentFilters.region === '全部地区' ? '' : state.talentFilters.region)}" placeholder="输入城市，支持模糊查询" autocomplete="off" enterkeyhint="search"></label>
             <label><span>AI 评分</span><select id="rf-score-filter">${talentOptions(['90-100分','80-89分','70-79分','60-69分','0-59分'], state.talentFilters.score, '全部评分')}</select></label>
+            <label><span>指定岗位</span><select id="rf-assigned-position-filter">${talentOptions(['有指定岗位','无指定岗位'], state.talentFilters.assignedPosition, '全部')}</select></label>
           </div>
           <div class="rf-talent-active-filters" ${activeFilters.length ? '' : 'hidden'}>${activeFilters.map((item) => `<button type="button" data-rf-clear-filter="${escapeHtml(item.key)}"><span>${escapeHtml(item.label)}</span><strong>${escapeHtml(item.value)}</strong><i aria-hidden="true">×</i></button>`).join('')}</div>
         </form>
@@ -2052,7 +2075,7 @@
       <section class="rf-evaluation-workbench" id="rf-detail-evaluation">
         <div class="rf-section-title"><div><span>TALENT DECISION FLOW</span><strong>招聘流程</strong></div><small>${flowSteps.filter((step) => step.done).length} / ${flowSteps.length} 已完成 · 点击步骤直接处理</small></div>
         <div class="rf-flow-legend"><span class="done">已完成</span><span class="current">下一步</span><span class="pending">未开始</span></div>
-        <div class="rf-flow-track">${flowSteps.map((step, index) => flowStepHtml(step, index, item)).join('')}</div>
+        <div class="rf-flow-track" style="--rf-flow-columns:${flowSteps.length}">${flowSteps.map((step, index) => flowStepHtml(step, index, item)).join('')}</div>
       </section>
       <section class="rf-resume-detail-panel" id="rf-detail-resume">
         <div class="rf-section-title"><div><span>RESUME DETAILS</span><strong>简历详细信息</strong></div><small>按原始简历结构整理，便于快速阅读与人工复核</small></div>
@@ -2099,6 +2122,7 @@
         age: filterValue('rf-age-filter', '全部年龄'),
         region: filterValue('rf-region-filter', '').trim() || '全部地区',
         score: filterValue('rf-score-filter', '全部评分'),
+        assignedPosition: filterValue('rf-assigned-position-filter', '全部'),
       };
       state.talentPage = 1;
       void loadTalentArchive(false);
@@ -2454,12 +2478,25 @@
     } catch (error) { dialogFailure('字段对比读取失败', error, () => openDuplicateCase(caseId), token); }
   }
 
+  function duplicateResumePreview(person, side) {
+    const name = person.name || (side === 'left' ? '人才A' : '人才B');
+    const fileName = person.sourceFileName || person['当前简历文件名'] || '';
+    const fileUrl = person.sourceFileUrl || person['当前简历地址'] || '';
+    const facts = [person.phone, person.currentCompany, person.currentRole].filter(Boolean).map((value) => escapeHtml(value)).join(' · ');
+    return `<article class="rf-duplicate-resume">
+      <header><span>${side === 'left' ? '左侧简历' : '右侧简历'}</span><strong>${escapeHtml(name)}</strong><small>${escapeHtml(fileName || '简历文件名待补充')}</small></header>
+      ${fileUrl ? `<iframe title="${escapeHtml(name)}的简历" src="${escapeHtml(fileUrl)}" loading="lazy"></iframe><a href="${escapeHtml(fileUrl)}" target="_blank" rel="noopener">新窗口打开原件</a>` : '<div class="rf-dialog-empty"><strong>这份档案没有可预览的原始简历</strong><p>仍可按下方字段对比后决定合并或保留。</p></div>'}
+      ${facts ? `<p>${facts}</p>` : ''}
+    </article>`;
+  }
+
   function renderDuplicateCase() {
     const item = state.duplicateCase;
     const left = item.left || {};
     const right = item.right || {};
     showTalentDialog(`
-      <header class="rf-dialog-head"><div><button class="rf-dialog-back" data-rf-duplicate-back type="button">← 返回队列</button><span>人工查重 · ${Number(item.score || 0)} 相似分</span><h2>${escapeHtml(left.name || '人才A')} 与 ${escapeHtml(right.name || '人才B')}</h2><p>先选择保留的主档，再为有差异的字段决定采用哪一份。所有关联简历、应聘和流程记录会迁移到主档。</p></div></header>
+      <header class="rf-dialog-head"><div><button class="rf-dialog-back" data-rf-duplicate-back type="button">← 返回队列</button><span>人工查重 · ${Number(item.score || 0)} 相似分</span><h2>${escapeHtml(left.name || '人才A')} 与 ${escapeHtml(right.name || '人才B')}</h2><p>左右同时查看两份原始简历，再选择保留的主档和字段。所有关联简历、应聘和流程记录会迁移到主档。</p></div></header>
+      <section class="rf-duplicate-resumes" aria-label="两份原始简历">${duplicateResumePreview(left, 'left')}${duplicateResumePreview(right, 'right')}</section>
       <div class="rf-primary-choice"><span>保留为人才主档</span><label><input type="radio" name="rf-primary" value="${escapeHtml(left.id)}" checked> ${escapeHtml(left.name || left.id)} · ${escapeHtml(left.updatedTime || '时间待补充')}</label><label><input type="radio" name="rf-primary" value="${escapeHtml(right.id)}"> ${escapeHtml(right.name || right.id)} · ${escapeHtml(right.updatedTime || '时间待补充')}</label></div>
       <div class="rf-compare-table"><div class="rf-compare-head"><span>字段</span><strong>${escapeHtml(left.name || '人才A')}</strong><strong>${escapeHtml(right.name || '人才B')}</strong></div>${(item.comparison || []).map((field) => `<div class="${field.same ? 'same' : ''}"><span>${escapeHtml(field.label)}</span><label><input type="radio" name="rf-field-${escapeHtml(field.key)}" value="primary" checked><b>${escapeHtml(Array.isArray(field.left) ? field.left.join('、') : field.left || '空')}</b></label><label><input type="radio" name="rf-field-${escapeHtml(field.key)}" value="secondary"><b>${escapeHtml(Array.isArray(field.right) ? field.right.join('、') : field.right || '空')}</b></label></div>`).join('')}</div>
       <label class="rf-dialog-note"><span>人工判断依据 <b>*</b></span><textarea id="rf-duplicate-reason" placeholder="例如：手机号一致，工作经历为同一人的新旧版本；或姓名相同但学校和联系方式完全不同。"></textarea></label>
