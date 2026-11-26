@@ -2144,7 +2144,7 @@
       loadTalentArchive(false);
     }));
     document.querySelectorAll('[data-rf-talent-page]:not([disabled])').forEach((button) => button.addEventListener('click', () => { state.talentPage = Number(button.dataset.rfTalentPage); loadTalentArchive(); }));
-    document.querySelector('[data-rf-duplicates]')?.addEventListener('click', openDuplicateWorkbench);
+    document.querySelector('#resumeflow-archive-root [data-rf-duplicates]')?.addEventListener('click', openDuplicateWorkbench);
     const talentButtons = rootQueryAll('[data-rf-talent]');
     talentButtons.forEach((button, index) => {
       button.addEventListener('click', () => openTalentDetailDialog(button.dataset.rfTalent));

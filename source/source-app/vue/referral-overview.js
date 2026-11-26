@@ -60,17 +60,20 @@ function validityClass(value) {
 }
 
 const REVIEW_FILTERS = [
-  { value: '全部', label: '全部审核' },
-  { value: '待审核', label: '待审核' },
-  { value: '已通过', label: '已通过' },
-  { value: '未通过', label: '未通过' },
+  { value: '全部', label: '全部' },
+  { value: '待确认', label: '待确认' },
+  { value: '有效', label: '有效' },
+  { value: '无效', label: '无效' },
 ];
 
-function reviewBucket(item) {
-  const stage = [item.status, item.progress].map(text).join(' ');
-  if (/未通过|不通过|已淘汰|淘汰|解析失败/.test(stage)) return '未通过';
-  if (/待HR审核|待有效性复核|待审核|解析中|HR审核$|有效性复核/.test(stage) || !stage.trim()) return '待审核';
-  return '已通过';
+function reviewResult(item) {
+  const validity = text(item.validity);
+  if (validity === '有效' || validity === '无效') return validity;
+  return '待确认';
+}
+
+function pendingDuplicate(item) {
+  return text(item.validity) === '疑似重复' || text(item.duplicateStatus).includes('重复');
 }
 
 const ReferralOverviewPage = {
@@ -80,29 +83,26 @@ const ReferralOverviewPage = {
     const loading = ref(true);
     const error = ref('');
     const keyword = ref('');
-    const validity = ref('全部');
     const review = ref('全部');
+    const duplicateOnly = ref(false);
     const page = ref(1);
     const pageSize = 8;
     let requestController = null;
     let disposed = false;
 
     const summary = computed(() => [
-      { label: '内推简历', value: Number(analytics.value.total || 0), note: '全部提交记录', tone: '' },
-      { label: '有效内推', value: Number(analytics.value.valid || 0), note: `${Number(analytics.value.total || 0) ? Math.round((Number(analytics.value.valid || 0) / Number(analytics.value.total)) * 100) : 0}% 有效率`, tone: 'ok' },
-      { label: '重复待判断', value: Number(analytics.value.duplicate || 0), note: '需要负责人确认', tone: 'warn' },
-      { label: '奖励待发放', value: Number(analytics.value.rewardPending || 0), note: '已满足规则待处理', tone: '' },
-      { label: '已发放金额', value: Number(analytics.value.rewardPaid || 0), note: '累计奖励金额（元）', tone: 'ok' },
+      { label: '内推简历', value: Number(analytics.value.total || 0), note: '全部提交记录', tone: '', action: '' },
+      { label: '有效内推', value: Number(analytics.value.valid || 0), note: `${Number(analytics.value.total || 0) ? Math.round((Number(analytics.value.valid || 0) / Number(analytics.value.total)) * 100) : 0}% 有效率`, tone: 'ok', action: '' },
+      { label: '重复待判断', value: referrals.value.filter(pendingDuplicate).length, note: '点击核对重复简历', tone: 'warn', action: 'duplicates' },
     ]);
 
     const filteredReferrals = computed(() => {
       const query = keyword.value.trim().toLowerCase();
       return referrals.value.filter((item) => {
-        const validityPass = validity.value === '全部' || text(item.validity || '待确认') === validity.value;
-        const reviewPass = review.value === '全部' || reviewBucket(item) === review.value;
+        const reviewPass = duplicateOnly.value ? pendingDuplicate(item) : review.value === '全部' || reviewResult(item) === review.value;
         const haystack = [item.candidateName, item.role, item.referrer, item.department, item.status, item.progress]
           .map((value) => text(value).toLowerCase()).join(' ');
-        return validityPass && reviewPass && (!query || haystack.includes(query));
+        return reviewPass && (!query || haystack.includes(query));
       });
     });
 
@@ -149,7 +149,7 @@ const ReferralOverviewPage = {
 
     activeLoad = load;
 
-    watch([keyword, validity, review], () => { page.value = 1; });
+    watch([keyword, review, duplicateOnly], () => { page.value = 1; });
 
     onMounted(() => { load(false); });
     onBeforeUnmount(() => {
@@ -164,7 +164,7 @@ const ReferralOverviewPage = {
           <div class="rf-ref-overview-loading" role="status">
             <i aria-hidden="true"></i>
             <strong>正在读取内推数据…</strong>
-            <small>同时获取记录与奖励统计</small>
+            <small>同时获取记录与审核统计</small>
           </div>
         );
       }
@@ -180,17 +180,14 @@ const ReferralOverviewPage = {
 
       return (
         <div class="rf-ref-overview">
-          <section class="rf-ref-hero">
-            <div>
-              <span>EMPLOYEE REFERRAL</span>
-              <h2>内推动态一屏掌握</h2>
-              <p>候选人扫码或员工直接上传后，系统自动归属推荐人、进入查重和评审流程。</p>
-            </div>
-            <button class="btn-soft" type="button" data-ref-overview-refresh disabled={loading.value} onClick={() => load(true)}>刷新数据</button>
-          </section>
-
           <div class="rf-ref-metrics">
-            {summary.value.map((metric) => (
+            {summary.value.map((metric) => metric.action ? (
+              <button class={[metric.tone, 'rf-ref-metric-action', duplicateOnly.value ? 'active' : ''].filter(Boolean).join(' ')} type="button" aria-pressed={duplicateOnly.value} key={metric.label} aria-label={[metric.label, metric.value, metric.note].join('，')} onClick={() => { duplicateOnly.value = !duplicateOnly.value; }}>
+                <span>{metric.label}</span>
+                <strong>{metric.value}</strong>
+                <small>{metric.note}</small>
+              </button>
+            ) : (
               <article class={metric.tone} key={metric.label}>
                 <span>{metric.label}</span>
                 <strong>{metric.value}</strong>
@@ -203,7 +200,7 @@ const ReferralOverviewPage = {
             <header>
               <div>
                 <strong>内推记录</strong>
-                <small>{filteredReferrals.value.length} 条 · 第 {Math.min(page.value, totalPages.value)} / {totalPages.value} 页</small>
+                <small>{duplicateOnly.value ? '重复待判断 · ' : ''}{filteredReferrals.value.length} 条 · 第 {Math.min(page.value, totalPages.value)} / {totalPages.value} 页</small>
               </div>
               <label>
                 <span>搜索</span>
@@ -221,13 +218,7 @@ const ReferralOverviewPage = {
               <div class="rf-ref-filters" role="group" aria-label="审核结果筛选">
                 <span>审核</span>
                 {REVIEW_FILTERS.map((item) => (
-                  <button class={review.value === item.value ? 'active' : ''} type="button" aria-pressed={review.value === item.value} onClick={() => { review.value = item.value; }}>{item.label}</button>
-                ))}
-              </div>
-              <div class="rf-ref-filters" role="group" aria-label="有效性筛选">
-                <span>有效性</span>
-                {['全部', '待确认', '有效', '无效'].map((item) => (
-                  <button class={validity.value === item ? 'active' : ''} type="button" aria-pressed={validity.value === item} onClick={() => { validity.value = item; }}>{item}</button>
+                  <button class={!duplicateOnly.value && review.value === item.value ? 'active' : ''} type="button" aria-pressed={!duplicateOnly.value && review.value === item.value} onClick={() => { duplicateOnly.value = false; review.value = item.value; }}>{item.label}</button>
                 ))}
               </div>
             </div>
@@ -236,7 +227,7 @@ const ReferralOverviewPage = {
               <div class="rf-ref-table-shell">
                 <table class="rf-ref-table">
                   <thead>
-                    <tr><th>候选人</th><th>内推岗位</th><th>推荐人</th><th>部门</th><th>有效性</th><th>状态</th><th>推荐时间</th></tr>
+                    <tr><th>候选人</th><th>内推岗位</th><th>推荐人</th><th>部门</th><th>审核</th><th>状态</th><th>推荐时间</th></tr>
                   </thead>
                   <tbody>
                     {visibleReferrals.value.map((item, index) => (
@@ -247,7 +238,7 @@ const ReferralOverviewPage = {
                         data-ref-record-candidate={item.candidateId || undefined}
                         data-ref-record-role={item.role || undefined}
                         tabindex={item.candidateId ? 0 : undefined}
-                        aria-label={item.candidateId ? `点击查看${item.candidateName || '候选人'}的简历` : undefined}
+                        aria-label={item.candidateId ? ['查看', item.candidateName || '候选人', '的简历'].join('') : undefined}
                       >
                         <td>
                           <strong>{item.candidateName || '解析中'}</strong>
@@ -259,7 +250,7 @@ const ReferralOverviewPage = {
                           {maskPhone(item.referrerMobile) ? <small>{maskPhone(item.referrerMobile)}</small> : null}
                         </td>
                         <td>{item.department || '—'}</td>
-                        <td><span class={`rf-ref-validity ${validityClass(item.validity)}`}>{item.validity || '待确认'}</span></td>
+                        <td><span class={['rf-ref-validity', validityClass(reviewResult(item))].join(' ')}>{reviewResult(item)}</span></td>
                         <td>
                           {item.status || '—'}
                           {item.progress ? <small>{item.progress}</small> : null}
@@ -273,7 +264,7 @@ const ReferralOverviewPage = {
             ) : (
               <div class="rf-ref-empty">
                 <strong>{referrals.value.length ? '没有符合筛选条件的记录' : '暂无内推记录'}</strong>
-                <p>{referrals.value.length ? '调整搜索关键词、审核结果或有效性条件后再试。' : '候选人扫码上传或员工直接上传后，记录会自动出现在这里。'}</p>
+                <p>{duplicateOnly.value ? '当前没有仍待判断的重复内推。' : referrals.value.length ? '调整搜索关键词或审核条件后再试。' : '候选人扫码上传或员工直接上传后，记录会自动出现在这里。'}</p>
               </div>
             )}
 

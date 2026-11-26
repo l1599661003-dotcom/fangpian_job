@@ -70,11 +70,12 @@
 
 .rf-ref-metrics {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
 }
 
-.rf-ref-metrics article {
+.rf-ref-metrics article,
+.rf-ref-metrics .rf-ref-metric-action {
   min-height: 111px;
   padding: 16px 18px;
   border: 1px solid var(--line);
@@ -84,7 +85,26 @@
   transition: transform .18s ease, box-shadow .18s ease;
 }
 
-.rf-ref-metrics article:hover {
+.rf-ref-metrics .rf-ref-metric-action {
+  width: 100%;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.rf-ref-metrics .rf-ref-metric-action.active {
+  border-color: #e2b15a;
+  box-shadow: 0 0 0 3px rgba(226, 177, 90, .18);
+}
+
+.rf-ref-metrics .rf-ref-metric-action:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 3px;
+}
+
+.rf-ref-metrics article:hover,
+.rf-ref-metrics .rf-ref-metric-action:hover {
   transform: translateY(-2px);
   box-shadow: var(--shadow-hover);
 }

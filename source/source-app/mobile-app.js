@@ -20,7 +20,6 @@
     { page: 'jobs', label: '岗位', access: 'positions', icon: 'jobs', group: '招聘工作', tab: true },
     { page: 'resume-archive', label: '人才', access: 'candidates', icon: 'people', group: '招聘工作', tab: true },
     { page: 'interviews', label: '面试', access: 'interviews', icon: 'calendar', group: '招聘工作', tab: true },
-    { page: 'question-bank', label: '题库', access: 'interviews', icon: 'grid', group: '招聘工作' },
     { page: 'offers', label: 'Offer 管理', access: 'offers', icon: 'offer', group: '招聘工作' },
     { page: 'referral', label: '内部推荐', access: 'referrals', icon: 'referral', group: '招聘工作' },
     { page: 'points', label: '积分排行', access: 'points', icon: 'analytics', group: '招聘工作' },
