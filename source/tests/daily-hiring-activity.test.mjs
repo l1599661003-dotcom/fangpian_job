@@ -58,7 +58,39 @@ test('daily hiring activity counts interview sessions, sent offers, and actual a
     ],
   });
 
-  assert.deepEqual(result.summary, { resumes: 0, interviews: 2, offers: 2, arrived: 1 });
+  assert.deepEqual(result.summary, { resumes: 0, interviews: 1, offers: 2, arrived: 1 });
+  assert.equal(result.interviewDetails[0].candidateId, 'candidate_a');
+  assert.equal(result.interviewDetails[0].count, 2);
+  assert.equal(result.offerDetails.length, 2);
+});
+
+test('daily hiring activity counts each person once across resumes, interviews, and offers', () => {
+  const result = buildDailyHiringActivity({
+    date, from, to, allAccess: true, allowedCandidateIds: new Set(), allowedPositionIds: new Set(),
+    candidates: [
+      row('candidate_a', { 候选人ID: 'candidate_a', 姓名: '张晓霞' }),
+      row('candidate_b', { 候选人ID: 'candidate_b', 姓名: '张杰' }),
+    ],
+    resumeVersions: [
+      row('resume_a1', { 候选人ID: 'candidate_a', 简历记录ID: 'resume_a1', 文件名: '张晓霞-1.pdf', 创建人: '招聘HR', 创建时间: '2026-10-14T01:00:00.000Z', 解析状态: '已完成' }),
+      row('resume_a2', { 候选人ID: 'candidate_a', 简历记录ID: 'resume_a2', 文件名: '张晓霞-2.pdf', 创建人: '招聘HR', 创建时间: '2026-10-14T02:00:00.000Z', 解析状态: '已完成' }),
+      row('resume_b', { 候选人ID: 'candidate_b', 简历记录ID: 'resume_b', 文件名: '张杰.pdf', 创建人: '招聘HR', 创建时间: '2026-10-14T03:00:00.000Z', 解析状态: '已完成' }),
+    ],
+    interviews: [
+      row('interview_a1', { 面试ID: 'interview_a1', 候选人ID: 'candidate_a', 开始时间: '2026-10-14T04:00:00.000Z', 面试状态: '已确认' }),
+      row('interview_a2', { 面试ID: 'interview_a2', 候选人ID: 'candidate_a', 开始时间: '2026-10-14T05:00:00.000Z', 面试状态: '已确认' }),
+    ],
+    offers: [
+      row('offer_b1', { OfferID: 'offer_b1', 候选人ID: 'candidate_b', 发送时间: '2026-10-14T06:00:00.000Z', 发送状态: '已发送' }),
+      row('offer_b2', { OfferID: 'offer_b2', 候选人ID: 'candidate_b', 发送时间: '2026-10-14T07:00:00.000Z', 发送状态: '已发送' }),
+    ],
+    onboardings: [],
+  });
+
+  assert.deepEqual(result.summary, { resumes: 2, interviews: 1, offers: 1, arrived: 0 });
+  assert.deepEqual(result.resumeUploads.map(item => [item.candidateName, item.count]), [['张杰', 1], ['张晓霞', 2]]);
+  assert.equal(result.interviewDetails[0].count, 2);
+  assert.equal(result.offerDetails[0].count, 2);
 });
 
 test('daily hiring activity groups referral resumes without exposing referrers', () => {
@@ -88,6 +120,7 @@ test('daily hiring activity groups referral resumes without exposing referrers',
     department: '商务',
     uploadedAt: '2026-10-14T02:00:00.000Z',
     source: '内推',
+    count: 1,
   });
   assert.ok(result.uploaders.some(row => row.name === '内推' && row.count === 1));
   assert.ok(!result.uploaders.some(row => row.name === '顾承均'));
@@ -188,7 +221,8 @@ test('weekly hiring activity includes Monday through Sunday and excludes the nex
 
   assert.equal(result.period, 'week');
   assert.equal(result.hiringActivity.date, `${mondayKey} 至 ${sundayKey}`);
-  assert.deepEqual(result.hiringActivity.summary, { resumes: 2, interviews: 1, offers: 1, arrived: 1 });
+  assert.deepEqual(result.hiringActivity.summary, { resumes: 1, interviews: 1, offers: 1, arrived: 1 });
+  assert.equal(result.hiringActivity.resumeUploads[0].count, 2);
   assert.deepEqual(result.hiringActivity.uploaders.map(item => item.name).sort(), ['张晓霞', '李思奇'].sort());
 });
 
@@ -224,4 +258,35 @@ test('monthly hiring activity follows the selected company-calendar month', asyn
   assert.equal(result.period, 'month');
   assert.equal(result.hiringActivity.date, '2026-08-23 至 2026-09-26');
   assert.deepEqual(result.hiringActivity.summary, { resumes: 1, interviews: 1, offers: 1, arrived: 1 });
+});
+
+test('monthly demand report type follows how long ago the demand was submitted', async context => {
+  const originalListAllRecords = teable.listAllRecords;
+  context.after(() => { teable.listAllRecords = originalListAllRecords; });
+  const now = Date.now();
+  const isoDaysAgo = (days) => new Date(now - days * 24 * 60 * 60 * 1000).toISOString();
+  const position = (id, department, role) => row(id, { 职位ID: id, 部门: department, 职位名称: role, 发布状态: '招聘中', 招聘状态: '招聘中' });
+  const demand = (id, positionId, submittedAt) => row(id, { 月度需求ID: id, 需求月份: '2026-09', 职位ID: positionId, 需求数量: 1, 审批状态: '已通过', 需求状态: '进行中', 创建时间: submittedAt });
+  const records = new Map([
+    ['recruitment_positions', [
+      position('position_new', '内容', '生成师'),
+      position('position_month', '商务', '商务专员'),
+      position('position_old', '运营', '运营专员'),
+    ]],
+    ['recruitment_monthly_demands', [
+      demand('demand_new', 'position_new', isoDaysAgo(10)),
+      demand('demand_month', 'position_month', isoDaysAgo(20)),
+      demand('demand_old', 'position_old', isoDaysAgo(40)),
+    ]],
+    ['recruitment_applications', []], ['recruitment_interviews', []], ['recruitment_offers', []],
+    ['recruitment_candidates', []], ['resume_extraction_records', []], ['recruitment_resume_versions', []], ['recruitment_onboarding_cases', []],
+  ]);
+  teable.listAllRecords = async tableId => records.get(tableId) || [];
+
+  const service = new RecruitmentService({ requireTableId: name => name });
+  const admin = { userId: 'admin', roleCodes: ['system_admin'], dataScopes: [{ type: 'all', departmentIds: [] }] };
+  const result = await service.monthlyHiring('2026-09', admin);
+  const typeByRole = Object.fromEntries(result.departments.map(item => [item.role, item.reportType]));
+
+  assert.deepEqual(typeByRole, { 生成师: '新增提报', 商务专员: '本月提报', 运营专员: '上月提报' });
 });

@@ -1395,8 +1395,8 @@ export class TalentsService implements OnModuleInit {
     const matches = await teable.listAllRecords(this.table('recruitment_job_matches'))
     const activeMatches = matches.filter((row) =>
       text(row.fields['候选人ID']) === candidateId && !['历史', '已失效'].includes(text(row.fields['匹配状态'])),
-    ).sort((first, second) => num(second.fields['匹配总分']) - num(first.fields['匹配总分']))
-    const currentMatch = activeMatches[0]
+    )
+    const currentMatch = await this.displayedMatch(candidateId, activeMatches)
     if (currentMatch && (text(currentMatch.fields['职位ID']) === positionId || text(currentMatch.fields['职位名称']) === positionName)) {
       throw new BadRequestException('新的适配岗位与当前岗位一致，无需重复保存')
     }
@@ -2859,12 +2859,32 @@ export class TalentsService implements OnModuleInit {
     this.logSlow('saveTags', start)
   }
 
-  /** 导入时选择的岗位始终排在最前，其余匹配仍按分数从高到低。 */
+  /** 人工修正优先于导入岗位，其余匹配仍按分数从高到低。 */
   private orderedMatches(rows: TeableRecord[], selectedPositionId = '') {
     return [...rows].sort((a, b) => {
+      const manual = (row: TeableRecord) => text(row.fields['人工修正原因']) || text(row.fields['人工确认状态']) === '人工已修正' ? 1 : 0
       const selected = (row: TeableRecord) => selectedPositionId && (text(row.fields['职位ID']) === selectedPositionId || row.id === selectedPositionId) ? 1 : 0
-      return selected(b) - selected(a) || num(b.fields['匹配总分']) - num(a.fields['匹配总分'])
+      return manual(b) - manual(a) || selected(b) - selected(a) || num(b.fields['匹配总分']) - num(a.fields['匹配总分'])
     })
+  }
+
+  /** 和档案页使用同一条当前匹配，避免用最高分岗位拦截实际显示的岗位。 */
+  private async displayedMatch(candidateId: string, activeMatches: TeableRecord[]) {
+    const [applications, assessments] = await Promise.all([
+      teable.listAllRecords(this.table('recruitment_applications')),
+      teable.listAllRecords(this.table('recruitment_ai_assessments')),
+    ])
+    const application = applications
+      .filter((row) => text(row.fields['候选人ID']) === candidateId)
+      .sort((a, b) => (text(b.fields['更新时间']) || text(b.fields['创建时间'])).localeCompare(text(a.fields['更新时间']) || text(a.fields['创建时间'])))[0]
+    const assessment = assessments
+      .filter((row) => text(row.fields['候选人ID']) === candidateId)
+      .sort((a, b) => (num(b.fields['版本号']) || 1) - (num(a.fields['版本号']) || 1) || text(b.fields['创建时间']).localeCompare(text(a.fields['创建时间'])))[0]
+    const assessmentId = text(assessment?.fields['分析记录ID']) || assessment?.id || ''
+    const visible = assessmentId && activeMatches.some((row) => text(row.fields['分析记录ID']) === assessmentId)
+      ? activeMatches.filter((row) => text(row.fields['分析记录ID']) === assessmentId)
+      : activeMatches
+    return this.orderedMatches(visible, text(application?.fields['职位ID']))[0]
   }
 
   private async saveMatches(candidateId: string, assessmentId: string, resume: ResumeTalentInput, analysis: TalentAnalysis, selectedPositionId = '') {

@@ -23,7 +23,20 @@ const stringArray = (value: unknown) => {
   try { return value ? JSON.parse(String(value)) as unknown[] : [] } catch { return [] }
 }
 
-export function buildDailyHiringActivity(input: DailyHiringActivityInput) {
+export function groupByCandidate(rows: Record<string, string>[], timeField: string, summarize: (rows: Record<string, string>[]) => Record<string, unknown>) {
+  const grouped = new Map<string, Record<string, string>[]>()
+  for (const row of rows) {
+    const key = text(row.candidateId) || text(row.candidateName) || JSON.stringify(row)
+    grouped.set(key, [...(grouped.get(key) || []), row])
+  }
+  return [...grouped.values()].map((items) => {
+    const latest = [...items].sort((left, right) => text(right[timeField]).localeCompare(text(left[timeField])))[0]
+    return { ...latest, ...summarize(items) }
+  }).sort((left, right) => text(right[timeField]).localeCompare(text(left[timeField]))
+    || text(left.candidateName).localeCompare(text(right.candidateName), 'zh-CN'))
+}
+
+function buildDailyHiringActivity(input: DailyHiringActivityInput) {
   const isToday = (value: unknown) => {
     const raw = text(value)
     if (!raw) return false
@@ -100,15 +113,23 @@ export function buildDailyHiringActivity(input: DailyHiringActivityInput) {
     })
   }
 
-  const resumeUploads = [...resumeUploadsById.values()].sort((left, right) => right.uploadedAt.localeCompare(left.uploadedAt))
+  const resumeUploads = groupByCandidate([...resumeUploadsById.values()], 'uploadedAt', (rows) => ({
+    fileName: rows.map((row) => row.fileName).filter(Boolean).join('、'),
+    sourceUrl: rows.find((row) => row.sourceUrl)?.sourceUrl || '',
+    uploader: [...new Set(rows.map((row) => row.uploader).filter(Boolean))].join('、'),
+    department: [...new Set(rows.map((row) => row.department).filter(Boolean))].join('、'),
+    source: [...new Set(rows.map((row) => row.source).filter(Boolean))].join('、'),
+    count: rows.length,
+  }))
+  const resumeUploadEvents = [...resumeUploadsById.values()]
   const uploaderCounts = new Map<string, { name: string; count: number; department: string }>()
-  for (const row of resumeUploads) {
+  for (const row of resumeUploadEvents) {
     const current = uploaderCounts.get(row.uploader) || { name: row.uploader, count: 0, department: row.department }
     current.count += 1
     uploaderCounts.set(row.uploader, current)
   }
   const departmentUploaders = new Map<string, Map<string, number>>()
-  for (const row of resumeUploads) {
+  for (const row of resumeUploadEvents) {
     const uploaders = departmentUploaders.get(row.department) || new Map<string, number>()
     uploaders.set(row.uploader, (uploaders.get(row.uploader) || 0) + 1)
     departmentUploaders.set(row.department, uploaders)
@@ -137,7 +158,17 @@ export function buildDailyHiringActivity(input: DailyHiringActivityInput) {
       status: text(row.fields['面试状态']) || '待确认',
     })
   }
-  const interviewDetails = [...interviewDetailsById.values()].sort((left, right) => right.startsAt.localeCompare(left.startsAt))
+  const interviewDetails = groupByCandidate([...interviewDetailsById.values()], 'startsAt', (rows) => ({
+    interviewId: rows.map((row) => row.interviewId).filter(Boolean).join('、'),
+    position: [...new Set(rows.map((row) => row.position).filter(Boolean))].join('、'),
+    department: [...new Set(rows.map((row) => row.department).filter(Boolean))].join('、'),
+    round: rows.map((row) => row.round).filter(Boolean).join('、'),
+    method: [...new Set(rows.map((row) => row.method).filter(Boolean))].join('、'),
+    location: [...new Set(rows.map((row) => row.location).filter(Boolean))].join('、'),
+    interviewers: [...new Set(rows.flatMap((row) => row.interviewers.split('、')).filter(Boolean))].join('、') || '待定',
+    status: [...new Set(rows.map((row) => row.status).filter(Boolean))].join('、'),
+    count: rows.length,
+  }))
 
   const offerDetailsById = new Map<string, Record<string, string>>()
   for (const row of input.offers) {
@@ -156,7 +187,14 @@ export function buildDailyHiringActivity(input: DailyHiringActivityInput) {
       status: text(row.fields['发送状态']) || '待发送',
     })
   }
-  const offerDetails = [...offerDetailsById.values()].sort((left, right) => right.sentAt.localeCompare(left.sentAt))
+  const offerDetails = groupByCandidate([...offerDetailsById.values()], 'sentAt', (rows) => ({
+    offerId: rows.map((row) => row.offerId).filter(Boolean).join('、'),
+    offerNo: rows.map((row) => row.offerNo).filter(Boolean).join('、'),
+    position: [...new Set(rows.map((row) => row.position).filter(Boolean))].join('、'),
+    department: [...new Set(rows.map((row) => row.department).filter(Boolean))].join('、'),
+    status: [...new Set(rows.map((row) => row.status).filter(Boolean))].join('、'),
+    count: rows.length,
+  }))
 
   const arrivalDetailsByCandidate = new Map<string, Record<string, string>>()
   for (const row of input.onboardings) {

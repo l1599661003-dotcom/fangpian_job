@@ -6167,6 +6167,21 @@ body{color:var(--fd-ink);background:radial-gradient(circle at 90% -10%,rgba(189,
 #page-overview .overview-analysis-foot b{color:#58492e;font-size:9px;}
 #page-overview .overview-analysis-foot time{margin-left:auto;color:#a6a29b;font-size:7px;white-space:nowrap;}
 #page-overview .overview-analysis-empty{margin:14px 0;color:#a4a098;font-size:9px;text-align:center;}
+#page-overview .overview-daily-metrics{grid-template-columns:repeat(4,minmax(0,1fr));}
+.overview-demand-dialog{width:min(1180px,96vw);}
+.overview-demand-dialog .rf-dialog-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;}
+.overview-demand-sheet{display:grid;gap:18px;max-height:min(72vh,760px);overflow:auto;}
+.overview-demand-group h3{margin:0 0 8px;padding:7px 12px;color:#fff;font-size:15px;font-weight:800;}
+.overview-demand-group.is-pending h3{background:#f4b183;}
+.overview-demand-group.is-completed h3{background:#70ad47;}
+.overview-demand-group table{width:100%;border-collapse:collapse;background:#fff;font-size:13px;}
+.overview-demand-group th,.overview-demand-group td{padding:8px 10px;border:1px solid #eadfce;text-align:center;vertical-align:middle;}
+.overview-demand-group th{background:#fff7ea;color:#6d5840;font-weight:800;}
+.overview-demand-group td:nth-child(6){display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-start;text-align:left;}
+.overview-demand-group td span{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:999px;background:#e8f6ea;color:#2f7d46;font-style:normal;}
+.overview-demand-group td span::before{content:"✓";font-weight:900;}
+.overview-demand-group em{padding:2px 7px;border-radius:6px;background:#fff1d6;color:#9a5b12;font-style:normal;font-weight:700;}
+.overview-demand-group tr.is-total td{background:#f8efe4;font-weight:800;}
 #page-overview .overview-hiring-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;margin-bottom:10px;padding:5px 0;border:1px solid #e6e9e3;border-radius:11px;background:#f7f9f6;}
 #page-overview .overview-hiring-summary>div{min-width:0;padding:7px 13px;border-right:1px solid #e5e9e2;}
 #page-overview .overview-hiring-summary>div:last-child{border-right:0;}

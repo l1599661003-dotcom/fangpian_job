@@ -477,6 +477,15 @@ export class RecruitmentService implements OnApplicationBootstrap {
   }
 
   /** 首页按日、周或公司月统计招聘动态，并返回目标公司的月度岗位达成。 */
+  private demandReportType(submittedAt: string) {
+    const submitted = Date.parse(submittedAt)
+    if (!Number.isFinite(submitted)) return '本月提报'
+    const age = Date.now() - submitted
+    if (age <= 15 * 24 * 60 * 60 * 1000) return '新增提报'
+    if (age <= 30 * 24 * 60 * 60 * 1000) return '本月提报'
+    return '上月提报'
+  }
+
   async monthlyHiring(monthInput = '', profile?: RoleAccessProfile, periodInput = 'day') {
     const month = /^\d{4}-\d{2}$/.test(monthInput) ? monthInput : currentShanghaiMonth()
     const period = ['day', 'week', 'month'].includes(periodInput) ? periodInput : 'day'
@@ -512,7 +521,7 @@ export class RecruitmentService implements OnApplicationBootstrap {
       : prefixFilter('实际到岗日期', onboardingPrefixes)
     const previousMonth = previousDemandMonth(month)
     const [demandRows, positions, applications, interviews, offers, candidates, resumes, resumeVersions, todayOnboardings, users, organizations] = await Promise.all([
-      teable.listAllRecords(this.table('recruitment_monthly_demands'), { filterByTql: previousMonth ? `{需求月份} = "${month}" OR {需求月份} = "${previousMonth}"` : `{需求月份} = "${month}"` }),
+      teable.listAllRecords(this.table('recruitment_monthly_demands'), { filterByTql: previousMonth ? `{需求月份} = "${month}" OR {需求月份} = "${previousMonth}"` : `{需求月份} = "${month}"`, fields: ['月度需求ID', '需求月份', '职位ID', '职位名称', '部门', '需求数量', '需求类型', '需求状态', '优先级', '期望到岗日期', '最晚到岗日期', '创建时间', '更新时间'] }),
       teable.listAllRecords(this.table('recruitment_positions')),
       teable.listAllRecords(this.table('recruitment_applications'), { fields: ['候选人ID', '职位ID', '简历记录ID', '当前阶段', '更新时间', '创建时间'] }),
       teable.listAllRecords(this.table('recruitment_interviews'), { fields: ['面试ID', '候选人ID', '职位ID', '面试轮次', '面试方式', '开始时间', '面试地点', '会议地址', '面试官姓名JSON', '面试状态'] }),
@@ -611,10 +620,10 @@ export class RecruitmentService implements OnApplicationBootstrap {
     const priorityAliases: Record<string, string> = { 高: '紧急', 中: '重要', 低: '储备', 一般: '储备' }
     const normalizePriority = (value: unknown) => priorityAliases[text(value)] || text(value) || '储备'
     const priorityRank = (value: unknown) => ({ 紧急: 0, 重要: 1, 储备: 2 }[normalizePriority(value)] ?? 3)
-    const rows = new Map<string, { positionId: string; department: string; role: string; demand: number; currentMonthDemand: number; carriedDemand: number; carriedFromMonth: string; completed: number; completedNames: Set<string>; status: string; priority: string; expectedArrivalDate: string; latestArrivalDate: string }>()
+    const rows = new Map<string, { positionId: string; department: string; role: string; demand: number; currentMonthDemand: number; carriedDemand: number; carriedFromMonth: string; completed: number; completedNames: Set<string>; status: string; priority: string; expectedArrivalDate: string; latestArrivalDate: string; submittedAt: string; reportType: string }>()
     const rowFor = (positionIdValue: string, department: string, role: string) => {
       const key = `${department}|${role}`
-      if (!rows.has(key)) rows.set(key, { positionId: positionIdValue, department: department || '未分配部门', role: role || '未命名岗位', demand: 0, currentMonthDemand: 0, carriedDemand: 0, carriedFromMonth: '', completed: 0, completedNames: new Set(), status: '进行中', priority: '储备', expectedArrivalDate: '', latestArrivalDate: '' })
+      if (!rows.has(key)) rows.set(key, { positionId: positionIdValue, department: department || '未分配部门', role: role || '未命名岗位', demand: 0, currentMonthDemand: 0, carriedDemand: 0, carriedFromMonth: '', completed: 0, completedNames: new Set(), status: '进行中', priority: '储备', expectedArrivalDate: '', latestArrivalDate: '', submittedAt: '', reportType: '' })
       return rows.get(key)!
     }
     for (const row of monthDemands) {
@@ -634,6 +643,11 @@ export class RecruitmentService implements OnApplicationBootstrap {
       }
       const demandPriority = normalizePriority(row.fields['优先级'])
       if (priorityRank(demandPriority) < priorityRank(target.priority)) target.priority = demandPriority
+      const submittedAt = text(row.fields['创建时间'])
+      if (submittedAt && (!target.submittedAt || submittedAt < target.submittedAt)) {
+        target.submittedAt = submittedAt
+        target.reportType = this.demandReportType(submittedAt)
+      }
     }
     const previousDemandByPosition = new Map<string, { headcount: number; priority: string }>()
     for (const row of previousDemands) {

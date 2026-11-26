@@ -252,6 +252,42 @@ test('manual match correction stores the reason and preserves AI history', async
   assert.equal(memory.records.get('recruitment_audit_logs').at(-1).fields['操作类型'], '人工修改适配岗位');
 });
 
+test('manual match correction follows the position shown on the profile', async (context) => {
+  const memory = installMemoryTeable();
+  context.after(() => memory.restore());
+  const talents = new TalentsService({ requireTableId: name => name }, {}, {});
+  await teable.createRecord('recruitment_candidates', { 候选人ID: 'candidate_visible_match', 姓名: '纪佰韬' });
+  await teable.createRecord('recruitment_ai_assessments', { 分析记录ID: 'assessment_visible_match', 候选人ID: 'candidate_visible_match', 版本号: 1, 综合建议分: 74 });
+  await teable.createRecord('recruitment_positions', { 职位ID: 'pos_video', 职位名称: '短视频编导/PM' });
+  await teable.createRecord('recruitment_positions', { 职位ID: 'pos_creator', 职位名称: '生成师', 部门: '自孵' });
+  await teable.createRecord('recruitment_applications', {
+    应聘记录ID: 'application_visible_match', 候选人ID: 'candidate_visible_match', 职位ID: 'pos_video', 当前状态: '进行中', 更新时间: '2026-11-25T10:00:00.000Z',
+  });
+  await teable.createRecord('recruitment_job_matches', {
+    匹配记录ID: 'match_video', 候选人ID: 'candidate_visible_match', 职位ID: 'pos_video', 职位名称: '短视频编导/PM',
+    分析记录ID: 'assessment_visible_match', 匹配总分: 70, 匹配状态: '当前',
+  });
+  await teable.createRecord('recruitment_job_matches', {
+    匹配记录ID: 'match_creator', 候选人ID: 'candidate_visible_match', 职位ID: 'pos_creator', 职位名称: '生成师',
+    分析记录ID: 'assessment_visible_match', 匹配总分: 90, 匹配状态: '当前',
+  });
+
+  const before = await talents.detail('candidate_visible_match');
+  assert.equal(before.matches[0].positionName, '短视频编导/PM');
+  const result = await talents.correctMatch('candidate_visible_match', {
+    positionId: 'pos_creator', reason: '当前按照生成师面试的岗位', operator: '李胜男',
+  });
+  assert.equal(result.previousPositionName, '短视频编导/PM');
+  assert.equal(result.talent.matches.length, 1);
+  assert.equal(result.talent.matches[0].positionName, '生成师');
+  assert.equal(result.talent.bestMatchRole, '生成师');
+  assert.equal(result.talent.matches[0].manualCorrection.reason, '当前按照生成师面试的岗位');
+  const rows = memory.records.get('recruitment_job_matches');
+  assert.equal(rows.filter((row) => row.fields['匹配状态'] === '当前').length, 1);
+  assert.equal(rows.find((row) => row.fields['匹配记录ID'] === 'match_video').fields['匹配状态'], '历史');
+  assert.equal(rows.find((row) => row.fields['匹配记录ID'] === 'match_creator').fields['匹配状态'], '历史');
+});
+
 test('review claims are one-time per resume and notify the selected HR', async (context) => {
   const memory = installMemoryTeable();
   context.after(() => memory.restore());

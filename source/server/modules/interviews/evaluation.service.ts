@@ -348,17 +348,16 @@ export class EvaluationService{
  private async createPublicEvaluationLink(interview: TeableRecord, interviewerUserId: string, existingLinks: TeableRecord[]) {
   const interviewId = text(interview.fields['面试ID']) || interview.id
   const objectId = `${interviewId}:${interviewerUserId}`
-  const active = existingLinks.find(row => text(row.fields['链接类型']) === '面试评价' && text(row.fields['对象ID']) === objectId && text(row.fields['链接状态']) === '有效' && Date.parse(text(row.fields['过期时间'])) > Date.now())
+  const active = existingLinks.find(row => text(row.fields['链接类型']) === '面试评价' && text(row.fields['对象ID']) === objectId && text(row.fields['链接状态']) === '有效')
   if (active) return { url: text(active.fields['访问路径']) }
   const token = randomBytes(32).toString('base64url')
-  const expiresAt = new Date(Math.max(Date.now(), Date.parse(text(interview.fields['结束时间'])) || 0) + 3 * 86_400_000).toISOString()
   const base = text(process.env.APP_PUBLIC_URL).replace(/\/+$/, '')
   if (!base) throw new BadRequestException('未配置应用公开地址，无法生成面试评价链接')
   const url = `${base}/evaluation?evaluation_token=${encodeURIComponent(token)}`
   const created = await teable.createRecord(this.table('recruitment_public_links'), {
     链接ID: id('link'), 候选人ID: text(interview.fields['候选人ID']), 链接类型: '面试评价', 对象类型: '面试评价', 对象ID: objectId,
     访问Token哈希: createHash('sha256').update(token).digest('hex'), Token前缀: token.slice(0, 8), 访问路径: url,
-    链接状态: '有效', 过期时间: expiresAt, 创建人: '面试流程自动通知', 创建时间: now(), 更新时间: now(),
+    链接状态: '有效', 过期时间: '', 创建人: '面试流程自动通知', 创建时间: now(), 更新时间: now(),
   })
   existingLinks.push(created)
   return { url }
@@ -425,7 +424,6 @@ export class EvaluationService{
   const link = rows.find(row => text(row.fields['链接类型']) === '面试评价' && text(row.fields['访问Token哈希']) === hash)
   if (!link) throw new NotFoundException('面试评价链接不存在')
   if (text(link.fields['链接状态']) !== '有效'&&!(allowCompleted&&text(link.fields['链接状态'])==='已完成')) throw new ConflictException('面试评价链接已使用或已失效')
-  if (Date.parse(text(link.fields['过期时间'])) <= Date.now()) throw new ConflictException('面试评价链接已过期')
   return link
  }
 

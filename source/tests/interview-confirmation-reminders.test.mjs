@@ -175,11 +175,14 @@ test('interview creation pre-generates questions and only sends concise access a
     assert.equal(initialMessageCount, 2);
     const links = memory.records.get('recruitment_public_links');
     assert.equal(links.length, 2);
+    assert.equal(links.every(row => row.fields['过期时间'] === ''), true);
     const linkA = links.find(row=>row.fields['对象ID']==='interview:manager_a');
+    linkA.fields['过期时间'] = '2000-01-01T00:00:00.000Z';
     const tokenA = new URL(linkA.fields['访问路径']).searchParams.get('evaluation_token');
     const tokenB = new URL(links.find(row=>row.fields['对象ID']==='interview:manager_b').fields['访问路径']).searchParams.get('evaluation_token');
     interview.fields['面试题快照JSON'] = JSON.stringify([{question:'公共题'}, {question:'甲的专属题',interviewerIds:['manager_a']}, {question:'乙的专属题',interviewerIds:['manager_b']}]);
     await evaluation.savePublicEvaluationDraft(tokenA, {transcript:'会议全程记录',comment:'甲的评价草稿',questionAnswers:{公共题:{answer:'项目数据'}}});
+    assert.equal(links.length, 2);
     assert.equal((await evaluation.publicEvaluationDetail(tokenA)).draft.transcript, '会议全程记录');
     assert.equal((await evaluation.publicEvaluationDetail(tokenB)).draft, null);
     assert.deepEqual((await evaluation.publicEvaluationDetail(tokenA)).questionSnapshot.map(item=>item.question), ['公共题','甲的专属题']);
