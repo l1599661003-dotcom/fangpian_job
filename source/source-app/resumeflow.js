@@ -141,12 +141,15 @@
       '[data-action="save-settings"]', '[data-system-status]', '[data-system-refresh]', '[data-system-db-retry]', '[data-ai-monitoring]', '[data-ai-rerun-all]',
       '[data-task-create]', '[data-task-select]', '#rf-task-create-btn', '#rf-task-edit-save', '[data-task-edit]', '[data-task-run]', '[data-task-toggle]',
     ],
+    delete_position: ['[data-rf-job-delete]'],
   };
   let accessPermissionObserver = null;
 
   function hasAccessAction(action) {
-    const actions = Array.isArray(state.currentAccess?.actions) ? state.currentAccess.actions : [];
-    return actions.includes('*') || actions.includes(action);
+    const access = state.currentAccess || window.recruitmentAccess || {};
+    const actions = Array.isArray(access.actions) ? access.actions : [];
+    const roleCodes = Array.isArray(access.roleCodes) ? access.roleCodes : [];
+    return actions.includes('*') || actions.includes(action) || (action === 'delete_position' && roleCodes.includes('system_admin'));
   }
 
   function permissionMatches(root, selector) {
@@ -6120,17 +6123,14 @@ if (!root) return;
       const haystack = [item.name, item.code, item.department, item.owner, item.recruiter, item.backupRecruiter, item.responsibilities, item.requirements, (item.tags || []).join(' '), ...demandNames].join('|').toLowerCase();
       return haystack.includes(keyword);
     });
-    const totalPositions = approvedJobs.length;
-    const recruitingPositions = approvedJobs.filter((item) => item.status === '招聘中').length;
     const pendingApprovals = pendingRecruitmentApprovals().length;
-    const demandHeadcount = (state.monthlyDemands || []).filter((item) => (!selectedMonth || item.month === selectedMonth) && isOpenDemand(item)).reduce((total, item) => total + Number(item.headcount || 0), 0);
     const selectedRange = selectedMonth ? window.companyCalendar?.monthRange(selectedMonth) : null;
     const monthLabel = selectedMonth ? `${selectedMonth.slice(0, 4)}年${Number(selectedMonth.slice(5, 7))}月${selectedRange ? `（${selectedRange.label}）` : ''}` : '当前月份';
-    if (summary) summary.innerHTML = `
-      <article><span class="rf-job-summary-mark total" aria-hidden="true">岗</span><div><small>岗位总数</small><strong>${totalPositions}</strong><em>公司岗位库</em></div></article>
-      <article><span class="rf-job-summary-mark active" aria-hidden="true">招</span><div><small>招聘中</small><strong>${recruitingPositions}</strong><em>正在接收候选人</em></div></article>
-      <article><button type="button" data-rf-pending-approvals><span class="rf-job-summary-mark pending" aria-hidden="true">审</span><div><small>待审批</small><strong>${pendingApprovals}</strong><em>${pendingApprovals ? '点击查看我的审批' : '暂无我的待审批'}</em></div></button></article>
-      <article><span class="rf-job-summary-mark demand" aria-hidden="true">需</span><div><small>${escapeHtml(monthLabel)}需求</small><strong>${demandHeadcount}</strong><em>计划招聘人数</em></div></article>`;
+    document.querySelectorAll('[data-rf-pending-approvals]').forEach((button) => {
+      button.classList.toggle('has-badge', pendingApprovals > 0);
+      button.dataset.count = pendingApprovals > 99 ? '99+' : String(pendingApprovals);
+      button.setAttribute('aria-label', pendingApprovals ? `查看待审批，${pendingApprovals}条未审` : '查看待审批');
+    });
     if (resultCount) resultCount.textContent = keyword || selectedDepartments.size ? `找到 ${rows.length} 个岗位` : `共 ${rows.length} 个岗位 · 按紧急、重要、储备排序`;
     renderJobDepartmentFilter([...approvedJobs, ...rejectedJobs]);
     document.querySelector('[data-rf-pending-approvals]')?.addEventListener('click', () => openPendingApprovals());
@@ -6187,6 +6187,7 @@ if (!root) return;
             <button type="button" data-rf-demand-edit="${escapeHtml(item.id)}">编辑需求</button>
             <button type="button" data-rf-job-edit="${escapeHtml(item.id)}">编辑岗位</button>
             ${publishButton}
+            <button type="button" class="danger" data-rf-job-delete="${escapeHtml(item.id)}">删除岗位</button>
           </footer>
         </article>`;
       }).join('')}
@@ -6224,6 +6225,31 @@ if (!root) return;
       event.stopPropagation();
       handlePositionAction('offline', button.dataset.rfJobOffline, button);
     }));
+    document.querySelectorAll('[data-rf-job-delete]').forEach((button) => button.addEventListener('click', (event) => {
+      event.stopPropagation();
+      const position = state.jobs.find((item) => item.id === button.dataset.rfJobDelete);
+      if (position) openDeletePositionDialog(position);
+    }));
+    applyActionPermissions(wrap);
+  }
+
+  function openDeletePositionDialog(position) {
+    showTalentDialog(`<header class="rf-dialog-head"><div><span>DELETE POSITION</span><h2>删除岗位</h2><p>删除「${escapeHtml(position.name || '未命名岗位')}」后，岗位不再出现在岗位库和需求选择中，当月及上月仍开放的需求会同步停用。已有候选人、面试和 Offer 记录会保留。</p></div></header><div class="rf-dialog-actions"><button class="btn-soft" data-rf-dialog-cancel type="button">取消</button><button class="btn-primary danger" data-rf-job-delete-confirm type="button">确认删除</button></div><p class="rf-dialog-message" id="rf-job-delete-message"></p>`, 'normal');
+    document.querySelector('[data-rf-dialog-cancel]')?.addEventListener('click', () => closeTalentDialog());
+    document.querySelector('[data-rf-job-delete-confirm]')?.addEventListener('click', async (event) => {
+      const button = event.currentTarget;
+      const message = document.getElementById('rf-job-delete-message');
+      try {
+        button.disabled = true;
+        await request(`api/recruitment/positions/${encodeURIComponent(position.id)}`, { method: 'DELETE', initiator: button });
+        closeTalentDialog();
+        notifyUser(`岗位「${position.name || '未命名岗位'}」已删除`, 'success');
+        await refreshJobsPage();
+      } catch (error) {
+        if (message) { message.textContent = conciseError(error); message.classList.add('error'); }
+        button.disabled = false;
+      }
+    });
   }
 
   async function handleJobBatchAction(action, button, reason = '') {
@@ -6658,7 +6684,7 @@ if (!root) return;
     if (!jobs.length) return notifyUser(allJobs.length ? '当前部门的岗位都还没审批通过，审批通过后才能新建招聘需求。' : '当前部门暂无可选择的岗位，请联系管理员确认岗位归属。', 'info');
     const month = context?.month || document.getElementById('job-month-filter')?.value || document.getElementById('overview-month-filter')?.value || currentMonthValue();
     showTalentDialog(`
-      <header class="rf-dialog-head"><div><span>MONTHLY DEMAND</span><h2>${position ? '编辑需求' : '新建需求'}</h2><p>${context?.month && !context?.endpoint ? `正在修改 ${escapeHtml(context.month)} 的需求。卡片上的上月延续来自这个月份，改完保存即可，不用再去页面顶部切换月份。` : '要改哪个月，直接选下面的需求月份。卡片上看到的上月延续，也可以点卡片里的修改按钮直接进来。'}</p></div></header>
+      <header class="rf-dialog-head"><div><span>MONTHLY DEMAND</span><h2>${position ? '编辑需求' : '新建需求'}</h2><p>一次填写本月的新增需求、上月延续和储备需求。上月延续数量按上个月未完成人数带出，三类都可以按实际情况调整。</p></div></header>
       <div class="rf-dialog-form rf-demand-dialog-form">
         <section class="wide rf-demand-ai-panel">
           <div class="rf-demand-ai-head"><i>AI</i><div><strong>口述需求，自动填表</strong><p>例如：下个月商务开发要3个人，比较紧急，希望10月15日前到岗，因为新业务线要启动。</p></div></div>
@@ -6671,11 +6697,8 @@ if (!root) return;
           <small id="rf-demand-transcript-file-status"></small>
           <small id="rf-demand-transcript-status">支持手机浏览器语音输入；如果浏览器不支持，可直接使用手机输入法的语音键。</small>
         </section>
-        <label data-demand-field="rf-demand-month"><span>需求月份 <b>*</b></span><input id="rf-demand-month" type="month" value="${escapeHtml(month)}" required><small>改本月选当前月，改上个月选上一个月。保存后对应月份的人数会更新。</small><small class="rf-demand-error" hidden></small></label>
         <label data-demand-field="rf-demand-position"><span>岗位 <b>*</b></span><select id="rf-demand-position" required><option value="">请选择岗位</option>${jobs.map(item => `<option value="${escapeHtml(item.id)}" ${item.id === position?.id ? 'selected' : ''}>${escapeHtml(item.department || '未分配部门')} · ${escapeHtml(item.name || '未命名岗位')}</option>`).join('')}</select><small class="rf-demand-error" hidden></small><small id="rf-demand-existing" class="rf-demand-existing" hidden></small></label>
-        <label data-demand-field="rf-demand-headcount"><span>需求数量 <b>*</b></span><input id="rf-demand-headcount" type="number" min="1" step="1" value="" placeholder="请输入人数" required><small class="rf-demand-error" hidden></small></label>
-        <label data-demand-field="rf-demand-type"><span>需求类型 <b>*</b></span><select id="rf-demand-type" required><option value="">请选择需求类型</option><option value="新增需求">新增需求</option><option value="储备需求">储备需求</option></select><small class="rf-demand-error" hidden></small></label>
-        <label data-demand-field="rf-demand-priority"><span>优先级 <b>*</b></span><select id="rf-demand-priority" required><option value="">请选择优先级</option>${['紧急','重要','储备'].map(item => `<option value="${item}">${item}</option>`).join('')}</select><small class="rf-demand-error" hidden></small></label>
+        ${[['new', '新增需求'], ['carried', '上月延续'], ['reserve', '储备需求']].map(([key, label]) => `<div class="wide rf-demand-type-row" data-demand-row="${key}"><label data-demand-field="rf-demand-${key}-headcount"><span>需求数量</span><input id="rf-demand-${key}-headcount" type="number" min="0" step="1" value="" placeholder="人数"><small class="rf-demand-error" hidden></small></label><label><span>需求类型</span><input value="${label}" readonly></label><label data-demand-field="rf-demand-${key}-priority"><span>优先级</span><select id="rf-demand-${key}-priority"><option value="">请选择优先级</option>${['紧急','重要','储备'].map(item => `<option value="${item}">${item}</option>`).join('')}</select><small class="rf-demand-error" hidden></small></label></div>`).join('')}<small class="wide rf-demand-carry-note" id="rf-demand-carry-note"></small>
         <label data-demand-field="rf-demand-arrival"><span>期望到岗日期 <b>*</b></span><input id="rf-demand-arrival" type="date" value="" required><small class="rf-demand-error" hidden></small></label>
         <label data-demand-field="rf-demand-latest-arrival"><span>最晚到岗日期 <b>*</b></span><input id="rf-demand-latest-arrival" type="date" value="" required><small class="rf-demand-error" hidden></small></label>
         <label class="wide" data-demand-field="rf-demand-requirement"><span>需求要求（本月岗位定向要求） <b>*</b></span><textarea id="rf-demand-requirement" required placeholder="只填本月这个岗位的定向要求，例如业务方向、重点项目、优先能力或到岗节奏"></textarea><small>和岗位库里的工作职责、任职要求分开维护，用于本次招聘。</small><small class="rf-demand-error" hidden></small></label>
@@ -6685,9 +6708,20 @@ if (!root) return;
       <p class="rf-dialog-message" id="rf-demand-message"></p>
     `, 'wide');
     document.querySelector('#rf-talent-dialog .rf-dialog')?.classList.add('rf-demand-dialog');
-    const demandForSelection = (monthValue, positionId, demandType) => {
-      const rows = (context?.demands || state.allMonthlyDemands || state.monthlyDemands || []).filter((item) => item.month === monthValue && item.positionId === positionId && item.demandType !== '延续需求');
-      return rows.find((item) => demandType && (item.demandType || '新增需求') === demandType) || (demandType ? null : rows[0]) || null;
+    const demandRowsFor = (monthValue, positionId) => (context?.demands || state.allMonthlyDemands || state.monthlyDemands || []).filter((item) => item.month === monthValue && item.positionId === positionId);
+    const demandForSelection = (monthValue, positionId, demandType) => demandRowsFor(monthValue, positionId).find((item) => (item.demandType || '新增需求') === demandType) || null;
+    const previousMonthValue = (monthValue) => {
+      const match = /^(\d{4})-(0[1-9]|1[0-2])$/.exec(monthValue || '');
+      if (!match) return '';
+      const year = Number(match[1]);
+      const monthNumber = Number(match[2]);
+      return monthNumber === 1 ? `${year - 1}-12` : `${year}-${String(monthNumber - 1).padStart(2, '0')}`;
+    };
+    const carriedHeadcountFor = (positionId) => {
+      const previous = previousMonthValue(month);
+      const previousRows = demandRowsFor(previous, positionId).filter((item) => Number(item.headcount || 0) > 0 && !['已停用', '审批驳回', '待审批'].includes(item.status) && !['待审批', '已驳回'].includes(item.approvalStatus));
+      const carried = demandRowsFor(month, positionId).find((item) => item.demandType === '延续需求');
+      return carried ? Number(carried.headcount || 0) : previousRows.reduce((total, item) => total + Number(item.headcount || 0), 0);
     };
     const demandConflictText = (demand) => {
       if (!demand) return '';
@@ -6717,40 +6751,40 @@ if (!root) return;
     };
     const refreshDemandConflict = () => {
       const hint = document.getElementById('rf-demand-existing');
-      const demand = demandForSelection(document.getElementById('rf-demand-month')?.value, document.getElementById('rf-demand-position')?.value, document.getElementById('rf-demand-type')?.value);
-      const text = demandConflictText(demand);
+      const positionId = document.getElementById('rf-demand-position')?.value;
+      const text = ['新增需求', '储备需求'].map((type) => demandConflictText(demandForSelection(month, positionId, type))).filter(Boolean).join(' ');
       if (!hint) return text;
       hint.hidden = !text;
       hint.textContent = text;
       hint.classList.toggle('is-blocked', Boolean(text) && !text.startsWith('你已提交') && !text.includes('你是管理员') && !text.includes('可以修改后重新提交'));
       return text;
     };
-    const existingDemand = demandForSelection(month, document.getElementById('rf-demand-position').value, '');
-    if (existingDemand) {
-      document.getElementById('rf-demand-headcount').value = Number(existingDemand.headcount || 1);
-      document.getElementById('rf-demand-type').value = existingDemand.demandType || '新增需求';
-      document.getElementById('rf-demand-priority').value = ({ 高: '紧急', 中: '重要', 低: '储备', 一般: '储备' }[existingDemand.priority] || existingDemand.priority || '储备');
-      document.getElementById('rf-demand-arrival').value = existingDemand.expectedArrivalDate || '';
-      document.getElementById('rf-demand-latest-arrival').value = existingDemand.latestArrivalDate || '';
-      document.getElementById('rf-demand-requirement').value = existingDemand.demandRequirement || '';
-      document.getElementById('rf-demand-note').value = existingDemand.note || '';
-    }
+    const priorityValue = (value) => ({ 高: '紧急', 中: '重要', 低: '储备', 一般: '储备' })[value] || value || '';
     const fillSelectedDemand = () => {
-      const selected = jobs.find(item => item.id === document.getElementById('rf-demand-position').value);
-      const demand = demandForSelection(document.getElementById('rf-demand-month').value, selected?.id, document.getElementById('rf-demand-type').value);
-      document.getElementById('rf-demand-headcount').value = demand?.headcount ?? '';
-      if (demand?.demandType) document.getElementById('rf-demand-type').value = demand.demandType;
-      document.getElementById('rf-demand-priority').value = ({ 一般: '储备', 高: '紧急', 中: '重要', 低: '储备' })[demand?.priority] || demand?.priority || '';
-      document.getElementById('rf-demand-arrival').value = demand?.expectedArrivalDate || '';
-      document.getElementById('rf-demand-latest-arrival').value = demand?.latestArrivalDate || '';
-      document.getElementById('rf-demand-requirement').value = demand?.demandRequirement || '';
-      document.getElementById('rf-demand-note').value = demand?.note || '';
+      const positionId = document.getElementById('rf-demand-position').value;
+      const rowsByType = {
+        new: demandForSelection(month, positionId, '新增需求'),
+        carried: demandForSelection(month, positionId, '上月延续'),
+        reserve: demandForSelection(month, positionId, '储备需求'),
+      };
+      for (const [key, demand] of Object.entries(rowsByType)) {
+        const fallback = key === 'carried' ? carriedHeadcountFor(positionId) : '';
+        document.getElementById(`rf-demand-${key}-headcount`).value = demand ? Number(demand.headcount || 0) : fallback;
+        document.getElementById(`rf-demand-${key}-priority`).value = priorityValue(demand?.priority);
+      }
+      const shared = rowsByType.new || rowsByType.reserve || rowsByType.carried;
+      document.getElementById('rf-demand-arrival').value = shared?.expectedArrivalDate || '';
+      document.getElementById('rf-demand-latest-arrival').value = shared?.latestArrivalDate || '';
+      document.getElementById('rf-demand-requirement').value = shared?.demandRequirement || '';
+      document.getElementById('rf-demand-note').value = shared?.note || '';
+      const carryNote = document.getElementById('rf-demand-carry-note');
+      const previous = previousMonthValue(month);
+      const carriedCount = carriedHeadcountFor(positionId);
+      if (carryNote) carryNote.textContent = previous ? `${previous} 未完成 ${carriedCount} 人，已回显到上月延续。` : '';
       refreshDemandConflict();
     };
     document.getElementById('rf-demand-position').addEventListener('change', fillSelectedDemand);
-    document.getElementById('rf-demand-month').addEventListener('change', fillSelectedDemand);
-    document.getElementById('rf-demand-type').addEventListener('change', fillSelectedDemand);
-    refreshDemandConflict();
+    fillSelectedDemand();
     document.getElementById('rf-demand-transcript-file')?.addEventListener('change', importDemandTranscriptFile);
     document.querySelector('[data-rf-demand-voice]')?.addEventListener('click', startDemandVoiceInput);
     document.querySelector('[data-rf-demand-transcript-extract]')?.addEventListener('click', () => extractDemandTranscript(context ? `${context.endpoint}/transcript-extract` : undefined));
@@ -6780,41 +6814,49 @@ if (!root) return;
       if (button.disabled) return;
       const message = document.getElementById('rf-demand-message');
       try {
-        const demandMonth = document.getElementById('rf-demand-month')?.value.trim() || '';
+        const demandMonth = month;
         const expectedArrivalDate = document.getElementById('rf-demand-arrival')?.value || '';
         const latestArrivalDate = document.getElementById('rf-demand-latest-arrival')?.value || '';
         const demandRequirement = document.getElementById('rf-demand-requirement')?.value.trim() || '';
         const note = document.getElementById('rf-demand-note')?.value.trim() || '';
-        const headcountValue = document.getElementById('rf-demand-headcount')?.value || '';
-        const headcount = Number(headcountValue);
+        const positionId = document.getElementById('rf-demand-position')?.value || '';
+        const demandEntries = [['new', '新增需求'], ['carried', '上月延续'], ['reserve', '储备需求']].map(([key, type]) => {
+          const raw = document.getElementById(`rf-demand-${key}-headcount`)?.value ?? '';
+          return { key, type, raw: String(raw).trim(), headcount: Number(raw), priority: document.getElementById(`rf-demand-${key}-priority`)?.value || '' };
+        });
+        const activeEntries = demandEntries.filter((entry) => entry.raw !== '' && entry.headcount > 0);
         const issues = [
-          ['rf-demand-month', demandMonth, '请选择需求月份'],
-          ['rf-demand-position', document.getElementById('rf-demand-position')?.value, '请选择岗位'],
-          ['rf-demand-headcount', headcountValue && Number.isInteger(headcount) && headcount >= 1, '请填写大于 0 的整数'],
-          ['rf-demand-type', document.getElementById('rf-demand-type')?.value, '请选择需求类型'],
-          ['rf-demand-priority', document.getElementById('rf-demand-priority')?.value, '请选择优先级'],
+          ['rf-demand-position', positionId, '请选择岗位'],
           ['rf-demand-arrival', expectedArrivalDate, '请选择期望到岗日期'],
           ['rf-demand-latest-arrival', latestArrivalDate, '请选择最晚到岗日期'],
           ['rf-demand-requirement', demandRequirement, '请填写本月岗位定向要求'],
           ['rf-demand-note', note, '请填写审批用的需求说明'],
         ].filter(([, value]) => !value).map(([id, , text]) => [id, text]);
+        if (!activeEntries.length) issues.push(['rf-demand-new-headcount', '至少填写一类大于 0 的需求数量']);
+        for (const entry of demandEntries) {
+          if (entry.raw !== '' && (!Number.isInteger(entry.headcount) || entry.headcount < 0)) issues.push([`rf-demand-${entry.key}-headcount`, '请填写 0 或正整数']);
+          if (entry.headcount > 0 && !entry.priority) issues.push([`rf-demand-${entry.key}-priority`, '请选择优先级']);
+        }
         if (latestArrivalDate && expectedArrivalDate && latestArrivalDate < expectedArrivalDate) issues.push(['rf-demand-latest-arrival', '不能早于期望到岗日期']);
         const conflictText = refreshDemandConflict();
         if (conflictText && !conflictText.startsWith('你已提交') && !conflictText.includes('你是管理员') && !conflictText.includes('可以修改后重新提交')) issues.push(['rf-demand-position', conflictText]);
         if (issues.length) { showDemandValidation(issues); if (message) message.textContent = ''; return; }
         button.disabled = true; button.textContent = '正在保存…';
-        const result = await request(context?.endpoint || 'api/recruitment/monthly-demands', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({
-          month: demandMonth,
-          positionId: document.getElementById('rf-demand-position')?.value,
-          headcount,
-          demandType: document.getElementById('rf-demand-type')?.value,
-          priority: document.getElementById('rf-demand-priority')?.value,
-          expectedArrivalDate: document.getElementById('rf-demand-arrival')?.value,
-          latestArrivalDate,
-          demandRequirement,
-          note,
-          operator: window.recruitmentCurrentUser?.name || '当前用户',
-        }) });
+        let result = null;
+        for (const entry of activeEntries) {
+          result = await request(context?.endpoint || 'api/recruitment/monthly-demands', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({
+            month: demandMonth,
+            positionId,
+            headcount: entry.headcount,
+            demandType: entry.type,
+            priority: entry.priority,
+            expectedArrivalDate,
+            latestArrivalDate,
+            demandRequirement,
+            note,
+            operator: window.recruitmentCurrentUser?.name || '当前用户',
+          }) });
+        }
         const notificationStatus = result.approvalNotification?.status || '未发送';
         const notificationError = result.approvalNotification?.error ? `：${String(result.approvalNotification.error).slice(0, 120)}` : '';
         const notificationPending = ['待发送', '发送中'].includes(notificationStatus);
@@ -6896,10 +6938,7 @@ if (!root) return;
       if (!state.jobCatalogLoaded) await loadJobsPage();
       openJobDialog('new');
     });
-    document.querySelector('[data-action="monthly-demand"]')?.addEventListener('click', async () => {
-      if (!state.jobCatalogLoaded) await loadJobsPage();
-      openMonthlyDemandDialog(null);
-    });
+    document.querySelector('.rf-job-head-actions [data-rf-pending-approvals]')?.addEventListener('click', () => openPendingApprovals());
   }
 
   async function loadScheduledTasks() {

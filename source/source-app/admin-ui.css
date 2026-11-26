@@ -9412,6 +9412,33 @@ body.rf-public-communication-body .rf-public-communication-scroll::-webkit-scrol
   box-shadow: 0 6px 16px rgba(63, 97, 69, .22);
 }
 
+#page-jobs .rf-job-approval-entry {
+  position: relative;
+  width: 42px;
+  min-width: 42px;
+  height: 42px;
+  padding: 0;
+  border-radius: 12px;
+  font-weight: 850;
+}
+
+#page-jobs .rf-job-approval-entry.has-badge::after {
+  content: attr(data-count);
+  position: absolute;
+  top: -7px;
+  right: -7px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border: 2px solid #fff;
+  border-radius: 999px;
+  background: #d92d20;
+  color: #fff;
+  font-size: 10px;
+  line-height: 14px;
+  text-align: center;
+}
+
 #page-jobs .rf-job-summary {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -9917,6 +9944,24 @@ body.rf-public-communication-body .rf-public-communication-scroll::-webkit-scrol
   padding: 6px 8px;
   border-radius: 8px;
   font-size: 10px;
+}
+
+body .rf-demand-type-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
+  gap: 12px;
+  margin: 0;
+}
+
+body .rf-demand-type-row input[readonly] {
+  background: #f6f4ef;
+  color: #6d675e;
+}
+
+body .rf-demand-carry-note {
+  margin: -4px 0 8px;
+  color: #8a5a12;
+  font-size: 12px;
 }
 
 body .rf-demand-dialog-form {

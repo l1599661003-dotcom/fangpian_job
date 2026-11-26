@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Headers, Param, Patch, Post, Query, UnauthorizedException } from '@nestjs/common'
+import { Body, Controller, Delete, Get, Headers, Param, Patch, Post, Query, UnauthorizedException } from '@nestjs/common'
 import { RoleAccessService } from '../database/role-access.service'
 import { RecruitmentService } from './recruitment.service'
 import { jobs } from '../../platform/jobs'
@@ -171,6 +171,15 @@ export class RecruitmentController {
   @Post('positions/company-catalog/sync')
   syncCompanyPositionCatalog(@Body() body: { operator?: string }) {
     return this.recruitment.syncCompanyPositionCatalog(body.operator)
+  }
+
+  @Delete('positions/:id')
+  async deletePosition(@Headers() headers: Record<string, string | string[] | undefined>, @Param('id') id: string) {
+    const actor = await this.actor(headers)
+    if (!actor.profile.roleCodes.includes('system_admin') && !actor.profile.actions.includes('*') && !actor.profile.actions.includes('delete_position')) {
+      throw new UnauthorizedException('只有管理员可以删除岗位')
+    }
+    return this.recruitment.deletePosition(id, actor.identity.userName, actor.profile)
   }
 
   @Patch('positions/:id')

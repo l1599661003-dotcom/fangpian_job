@@ -192,7 +192,7 @@ export class RecruitmentService implements OnApplicationBootstrap {
         .map((row) => normalizeDepartmentName(row.fields['组织名称']))
         .filter(Boolean))
     }
-    return rows.filter((row) => {
+    return rows.filter((row) => text(row.fields['发布状态']) !== '已删除').filter((row) => {
       const positionDepartmentId = text(row.fields['部门ID'])
       if (positionDepartmentId && departmentIds.has(positionDepartmentId)) return true
       const positionDepartmentRow = positionDepartmentId ? organizationById.get(positionDepartmentId) : undefined
@@ -792,7 +792,7 @@ export class RecruitmentService implements OnApplicationBootstrap {
     const timestampNow = timestamp()
     const rows = await teable.listByField(tableId, '职位ID', position.id, 200)
     const demandType = text(input.demandType) || '新增需求'
-    if (!['新增需求', '储备需求'].includes(demandType)) throw new BadRequestException('需求类型只能是新增需求或储备需求')
+    if (!['新增需求', '储备需求', '上月延续'].includes(demandType)) throw new BadRequestException('需求类型只能是新增需求、上月延续或储备需求')
     const existing = rows.find((row) => text(row.fields['需求月份']) === text(input.month) && text(row.fields['职位ID']) === position.id && (text(row.fields['需求类型']) || '新增需求') === demandType)
     if (existing) this.assertDemandResubmittable(existing, operatorUserId, authorityProfile || profile)
     const dates = this.arrivalDates(input, existing?.fields || { 期望到岗日期: position.expectedArrivalDate, 最晚到岗日期: position.latestArrivalDate })
@@ -1193,6 +1193,24 @@ export class RecruitmentService implements OnApplicationBootstrap {
     const task = await this.createCollectionTask(id, input, operator)
     this.auditAsync('发布职位并创建采集任务', '职位', id, row.fields, fields, operator)
     return { position: await this.getPosition(id), collectionTask: task }
+  }
+
+  async deletePosition(id: string, operator = '当前用户', profile?: RoleAccessProfile) {
+    const tableId = await this.verify('recruitment_positions', ['职位ID', '发布状态', '招聘状态', '更新时间'])
+    const row = await this.find(tableId, '职位ID', id, '职位不存在')
+    if (!(await this.filterPositionRows([row], profile)).length) throw new ForbiddenException('只能删除所属部门的岗位')
+    if (text(row.fields['发布状态']) === '已删除') throw new BadRequestException('岗位已经删除')
+    const now = timestamp()
+    const fields = { 发布状态: '已删除', 招聘状态: '已关闭', 下线时间: now, 更新时间: now }
+    await teable.updateRecord(tableId, row.id, fields)
+    const positionId = text(row.fields['职位ID']) || row.id
+    const demandsClosed = await this.closeOpenDemandsForPosition(positionId, '岗位已删除', operator)
+    this.overviewCache.clear()
+    this.monthlyHiringCache.clear()
+    this.monthlyDemandCache = undefined
+    this.invalidateTables(['recruitment_positions', 'recruitment_monthly_demands'])
+    this.auditAsync('删除岗位', '职位', id, row.fields, fields, operator, '管理员删除岗位')
+    return { id: positionId, deleted: true, demandsClosed }
   }
 
   async changePositionStatus(id: string, status: '已下线' | '已关闭' | '待发布', reason: string, operator = '当前用户') {
