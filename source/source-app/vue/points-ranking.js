@@ -23,13 +23,15 @@ function identityHeaders() {
   return headers;
 }
 
-async function requestJson(path, { signal, timeoutMs = 15000 } = {}) {
+async function requestJson(path, { method = 'GET', body, signal, timeoutMs = 15000 } = {}) {
   const controller = new AbortController();
   const timer = window.setTimeout(() => controller.abort(), timeoutMs);
   const abort = () => controller.abort();
   signal?.addEventListener('abort', abort, { once: true });
   try {
-    const response = await fetch(apiUrl(path), { headers: identityHeaders(), signal: controller.signal });
+    const headers = identityHeaders();
+    if (body) headers.set('Content-Type', 'application/json');
+    const response = await fetch(apiUrl(path), { method, headers, body: body ? JSON.stringify(body) : undefined, signal: controller.signal });
     const contentType = response.headers.get('content-type') || '';
     const data = contentType.includes('json') ? await response.json() : { message: await response.text() };
     if (!response.ok) {
@@ -68,9 +70,18 @@ const PointsRankingPage = {
     const data = ref(null);
     const loading = ref(true);
     const error = ref('');
+    const selectedUserId = ref('');
+    const rosterMessage = ref('');
+    const rosterBusy = ref(false);
     let requestController = null;
     let disposed = false;
 
+    const canManage = computed(() => Boolean(data.value?.canManageRoster));
+    const roster = computed(() => data.value?.roster || { eligible: [], participants: [], excluded: [] });
+    const addablePeople = computed(() => {
+      const participating = new Set((roster.value.participants || []).map((person) => person.userId));
+      return (roster.value.eligible || []).filter((person) => !participating.has(person.userId));
+    });
     const summary = computed(() => data.value?.summary || {});
     const ranking = computed(() => data.value?.ranking || []);
     const rules = computed(() => data.value?.rules || []);
@@ -107,6 +118,20 @@ const PointsRankingPage = {
 
     function forceRefresh() {
       loadRanking(true);
+    }
+
+    async function changeRoster(userId, action) {
+      if (!userId || rosterBusy.value) return;
+      rosterBusy.value = true;
+      rosterMessage.value = '';
+      try {
+        data.value = await requestJson('api/points/roster', { method: 'POST', body: { userId, action }, timeoutMs: 20000 });
+        selectedUserId.value = '';
+      } catch (requestError) {
+        rosterMessage.value = conciseError(requestError);
+      } finally {
+        rosterBusy.value = false;
+      }
     }
 
     onMounted(() => {
@@ -195,6 +220,28 @@ const PointsRankingPage = {
                 <div class="points-empty"><strong>暂无积分记录</strong><p>候选人通过内推进入面试后，积分会自动进入排行。</p></div>
               )}
             </section>
+            {canManage.value ? (
+              <aside class="points-roster">
+                <header><strong>排名人员</strong><small>默认仅 HRBP 和招聘专员</small></header>
+                <label>
+                  <span>加入其他人</span>
+                  <select value={selectedUserId.value} onChange={(event) => { selectedUserId.value = event.target.value; }}>
+                    <option value="">选择人员</option>
+                    {addablePeople.value.map((person) => <option key={person.userId} value={person.userId}>{person.name}</option>)}
+                  </select>
+                </label>
+                <button class="btn-primary" type="button" disabled={rosterBusy.value || !selectedUserId.value} onClick={() => changeRoster(selectedUserId.value, 'add')}>加入排名</button>
+                <div class="points-roster-list">
+                  {(roster.value.participants || []).map((person) => (
+                    <article key={person.userId}>
+                      <span><strong>{person.name}</strong><small>{person.source === '管理员加入' ? '管理员加入' : '招聘角色'}</small></span>
+                      <button type="button" disabled={rosterBusy.value} onClick={() => changeRoster(person.userId, 'remove')}>移除</button>
+                    </article>
+                  ))}
+                </div>
+                {rosterMessage.value ? <p class="points-roster-error">{rosterMessage.value}</p> : null}
+              </aside>
+            ) : null}
             <aside class="points-rules">
               <header><strong>积分规则</strong><small>同一候选人同一岗位只计最早一次</small></header>
               {rules.value.map((rule) => (

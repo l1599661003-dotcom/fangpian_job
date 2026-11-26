@@ -13,7 +13,14 @@ export class OffersController {
   ) {}
 
   @Get()
-  list(@Query() query: { status?: string; candidateId?: string }) { return this.offers.list(query) }
+  async list(@Headers() headers: Record<string, string | string[] | undefined>, @Query() query: { status?: string; candidateId?: string }) {
+    const actor = await this.access.getRequestAccess(headers)
+    if (!actor) throw new UnauthorizedException('查看Offer必须启用可信登录身份')
+    const scope = actor.profile.roleCodes.includes('system_admin')
+      ? { all: true, userId: actor.identity.userId, userName: actor.identity.userName }
+      : { all: false, userId: actor.identity.userId, userName: actor.identity.userName }
+    return this.offers.list(query, scope)
+  }
 
   @Get('templates')
   templates() { return this.offers.templates() }
@@ -87,7 +94,11 @@ export class OffersController {
   file(@Param('id') id: string, @Body() body: { operator?: string }) { return this.offers.generateFile(id, body) }
 
   @Post(':id/send-email')
-  email(@Param('id') id: string, @Body() body: { recipient?: string; expiresHours?: number; note?: string; operator?: string; operatorUserId?: string }) { return this.offers.sendEmail(id, body) }
+  async email(@Headers() headers: Record<string, string | string[] | undefined>, @Param('id') id: string, @Body() body: { recipient?: string; expiresHours?: number; note?: string; operator?: string; operatorUserId?: string }) {
+    const actor = await this.access.getRequestAccess(headers)
+    if (!actor) throw new UnauthorizedException('发送Offer必须启用可信登录身份')
+    return this.offers.sendEmail(id, { ...body, operator: actor.identity.userName, operatorUserId: actor.identity.userId })
+  }
 
   @Post(':id/response-link')
   link(@Param('id') id: string, @Body() body: any) { return this.offers.createResponseLink(id, body) }

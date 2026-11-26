@@ -11586,6 +11586,16 @@ body .rf-dialog .rf-access-dialog-head p {
 .points-summary small { display: block; margin-top: 5px; color: #8a7f6d; font-size: 11px; }
 
 .points-layout { display: grid; grid-template-columns: minmax(0, 1.48fr) minmax(280px, .52fr); gap: 16px; align-items: start; }
+.points-roster { display: grid; gap: 12px; margin-bottom: 16px; padding: 16px; border: 1px solid #eadfc9; border-radius: 14px; background: #fffdf9; }
+.points-roster header { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+.points-roster header small, .points-roster-list small { color: #81796b; }
+.points-roster label { display: grid; gap: 6px; color: #655c4d; font-size: 12px; }
+.points-roster select { min-height: 36px; border: 1px solid #e4d7bf; border-radius: 8px; background: #fff; }
+.points-roster-list { display: grid; gap: 8px; max-height: 280px; overflow: auto; }
+.points-roster-list article { display: flex; justify-content: space-between; gap: 10px; align-items: center; padding: 8px 0; border-bottom: 1px solid #f0e7d6; }
+.points-roster-list span { display: grid; }
+.points-roster-list button { border: 0; background: transparent; color: #a34f42; cursor: pointer; }
+.points-roster-error { margin: 0; color: #a34f42; font-size: 12px; }
 .points-board,
 .points-rules {
   display: grid;

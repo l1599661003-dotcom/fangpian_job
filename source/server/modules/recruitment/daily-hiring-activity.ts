@@ -37,7 +37,7 @@ export function groupByCandidate(rows: Record<string, string>[], timeField: stri
     || text(left.candidateName).localeCompare(text(right.candidateName), 'zh-CN'))
 }
 
-function buildDailyHiringActivity(input: DailyHiringActivityInput) {
+export function buildDailyHiringActivity(input: DailyHiringActivityInput) {
   const isToday = (value: unknown) => {
     const raw = text(value)
     if (!raw) return false

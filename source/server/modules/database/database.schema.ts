@@ -413,7 +413,7 @@ export const RECRUITMENT_TABLES: RecruitmentTableDefinition[] = [
     name: 'recruitment_offer_send_events',
     fields: [
       text('发送事件ID'), text('OfferID'), text('发送渠道'), text('接收地址'), text('发送状态'), longText('内容摘要JSON'),
-      longText('错误信息'), text('操作人'), text('发生时间'),
+      longText('邮件正文'), longText('错误信息'), text('操作人用户ID'), text('操作人'), text('发生时间'),
     ],
   },
   {
@@ -555,6 +555,13 @@ export const RECRUITMENT_TABLES: RecruitmentTableDefinition[] = [
       longText('无效原因'), text('推荐时间'), text('关联状态'), text('来源记录ID'), text('内推活动ID'), text('推荐人手机号'),
       text('源文件名'), text('源文件地址'), text('解析任务ID'), text('解析状态'), longText('解析错误'), text('查重状态'),
       text('进度Token哈希'), text('进度Token前缀'), text('进度查询过期时间'), text('创建时间'), text('更新时间'),
+    ],
+  },
+  {
+    name: 'recruitment_points_roster',
+    fields: [
+      text('名单ID'), text('用户ID'), text('姓名'), text('来源'), text('名单状态'),
+      text('操作人用户ID'), text('操作人'), longText('调整原因'), text('创建时间'), text('更新时间'),
     ],
   },
   {

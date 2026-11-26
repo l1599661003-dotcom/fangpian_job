@@ -4861,7 +4861,7 @@
     root.querySelector('[data-template-add-field]')?.addEventListener('click',()=>{const key=root.querySelector('[data-template-add-select]')?.value,definition=catalog.find(field=>field.key===key);if(!definition)return;const draft=currentDraft();draft.fields.push({...definition,enabled:true});showOfferTemplateEditor(draft,templates,{isNew})});
     root.querySelector('[data-rf-save-offer-template]')?.addEventListener('click',async()=>{const message=root.querySelector('#rf-template-message'),draft=currentDraft();if(!draft.name){message.textContent='请填写模板名称';message.classList.add('error');return}showGlobalLoading(isNew?'正在创建 Offer 模板…':'正在保存 Offer 模板…');try{const saved=await request(isNew?'api/offers/templates':`api/offers/templates/${encodeURIComponent(selected.id)}`,{method:isNew?'POST':'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:draft.name,type:draft.type,description:draft.description,fields:draft.fields,operator:'当前用户'})});hideGlobalLoading();notifyUser(isNew?'Offer 模板已创建':'Offer 模板已保存','success');await openOfferManagement();openOfferTemplateManager(saved.id)}catch(error){hideGlobalLoading();if(message){message.textContent=error.message||(isNew?'模板创建失败':'模板保存失败');message.classList.add('error')}}})
   }
-  function offerActionButtons(item){if(!item.fileUrl)return`<button data-offer-action="file" data-offer-id="${escapeHtml(item.id)}">重新生成PDF</button>`;const view=`<a href="${escapeHtml(item.fileUrl)}" target="_blank" rel="noopener">查看PDF</a>`;if(item.response||['已发送','候选人已答复'].includes(item.sendStatus))return view;return`${view}<button data-offer-action="send" data-offer-id="${escapeHtml(item.id)}">${item.sendStatus==='发送失败'?'重试发送':'发送给候选人'}</button><button class="soft" data-offer-action="edit" data-offer-id="${escapeHtml(item.id)}">调整薪资</button>`}
+  function offerActionButtons(item){const mail=item.emailHtml?`<button class="soft" data-offer-action="mail" data-offer-id="${escapeHtml(item.id)}">查看邮件</button>`:'';if(!item.fileUrl)return`<button data-offer-action="file" data-offer-id="${escapeHtml(item.id)}">重新生成PDF</button>${mail}`;const view=`<a href="${escapeHtml(item.fileUrl)}" target="_blank" rel="noopener">查看PDF</a>${mail}`;if(item.response||['已发送','候选人已答复'].includes(item.sendStatus))return view;return`${view}<button data-offer-action="send" data-offer-id="${escapeHtml(item.id)}">${item.sendStatus==='发送失败'?'重试发送':'发送给候选人'}</button><button class="soft" data-offer-action="edit" data-offer-id="${escapeHtml(item.id)}">调整薪资</button>`}
   async function loadOfferTemplates() {
     if (state.offerData?.templates?.length) return;
     const result = await request('api/offers/templates');
@@ -5150,7 +5150,8 @@ if (!root) return;
     });
     root.querySelectorAll('[data-offer-preview-later]').forEach(button => button.addEventListener('click', openOfferManagement));
   }
-  async function handleOfferAction(offerId,action){showGlobalLoading(action==='file'?'正在生成录用通知书 PDF…':'正在处理Offer…');try{if(action==='submit')await request(`api/offers/${offerId}/submit`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({operator:'当前用户'})});else if(action.startsWith('approve-'))await request(`api/offers/${offerId}/approval`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'approve',node:action.replace('approve-',''),opinion:'审批信息已核对，同意进入下一节点',operator:'当前用户'})});else if(action==='file')await request(`api/offers/${offerId}/generate-file`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({operator:'当前用户'})});else if(action==='send'){hideGlobalLoading();return openOfferEmailForm(offerId)}else if(action==='edit'){hideGlobalLoading();return openOfferEditForm(offerId)}hideGlobalLoading();await openOfferManagement()}catch(error){hideGlobalLoading();notifyUser(error.message||'Offer操作失败','error')}}
+  function openOfferMailPreview(offerId){const offer=(state.offerData?.offers||[]).find(item=>item.id===offerId)||{};showTalentDialog(`<header class="rf-dialog-head"><div><button class="rf-dialog-back" data-rf-offer-back type="button">← 返回 Offer 管理</button><span>OFFER EMAIL</span><h2>${escapeHtml(offer.emailSubject||'录用通知邮件')}</h2><p>收件人 ${escapeHtml(offer.candidateName||'候选人')} · 发送人 ${escapeHtml(offer.senderName||'未记录')}</p></div></header><iframe class="rf-offer-mail-frame" sandbox data-offer-mail-frame></iframe>`,'wide');const frame=document.querySelector('[data-offer-mail-frame]');if(frame)frame.srcdoc=offer.emailHtml||'<p style="font-family:sans-serif">这封 Offer 发送时没有保存邮件正文。</p>';document.querySelector('[data-rf-offer-back]')?.addEventListener('click',openOfferManagement)}
+  async function handleOfferAction(offerId,action){if(action==='mail')return openOfferMailPreview(offerId);showGlobalLoading(action==='file'?'正在生成录用通知书 PDF…':'正在处理Offer…');try{if(action==='submit')await request(`api/offers/${offerId}/submit`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({operator:'当前用户'})});else if(action.startsWith('approve-'))await request(`api/offers/${offerId}/approval`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'approve',node:action.replace('approve-',''),opinion:'审批信息已核对，同意进入下一节点',operator:'当前用户'})});else if(action==='file')await request(`api/offers/${offerId}/generate-file`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({operator:'当前用户'})});else if(action==='send'){hideGlobalLoading();return openOfferEmailForm(offerId)}else if(action==='edit'){hideGlobalLoading();return openOfferEditForm(offerId)}hideGlobalLoading();await openOfferManagement()}catch(error){hideGlobalLoading();notifyUser(error.message||'Offer操作失败','error')}}
   function openOfferEmailForm(offerId){const offer=(state.offerData?.offers||[]).find(item=>item.id===offerId)||{};showTalentDialog(`<header class="rf-dialog-head"><div><button class="rf-dialog-back" data-offer-back>← 返回 Offer 管理</button><span>SEND OFFER</span><h2>发送录用通知书</h2><p>邮件会发送安全答复链接，候选人可在线查看完整 Offer 并确认答复。</p></div></header><div class="rf-dialog-form"><label><span>候选人邮箱 *</span><input id="rf-offer-email" value="${escapeHtml(offer.candidateEmail||'')}"></label><label><span>答复有效期（小时）</span><input id="rf-offer-expiry" type="number" value="72" min="1" max="168"></label><label class="wide"><span>邮件备注</span><textarea id="rf-offer-note" placeholder="可补充报到联系人或其他提醒"></textarea></label></div><div class="rf-dialog-actions"><button class="btn-primary" data-rf-send-offer-email>确认发送邮件</button></div><p class="rf-dialog-message" id="rf-offer-email-message"></p>`,'wide');document.querySelector('[data-offer-back]')?.addEventListener('click',openOfferManagement);document.querySelector('[data-rf-send-offer-email]')?.addEventListener('click',async()=>{const button=document.querySelector('[data-rf-send-offer-email]'),message=document.getElementById('rf-offer-email-message');button.disabled=true;button.textContent='正在发送答复链接…';message.textContent='正在处理，请勿关闭页面。';showGlobalLoading('正在发送 Offer 答复链接…');try{const result=await request(`api/offers/${encodeURIComponent(offerId)}/send-email`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({recipient:document.getElementById('rf-offer-email').value.trim(),expiresHours:Number(document.getElementById('rf-offer-expiry').value||72),note:document.getElementById('rf-offer-note').value.trim(),operator:'当前用户'})});hideGlobalLoading();closeTalentDialog(false);notifyUser(`Offer邮件已发送至 ${result.recipient}`,'success');await openOfferManagement()}catch(error){hideGlobalLoading();message.textContent=error.message||'Offer邮件发送失败';message.classList.add('error');button.disabled=false;button.textContent='确认发送邮件'}})}
   async function openOfferEditForm(offerId) {
     const offer = (state.offerData?.offers || []).find(item => item.id === offerId);
@@ -5708,6 +5709,32 @@ if (!root) return;
     const range = scheduleMonthRange(monthInput?.value || currentMonthValue());
     const items = data.appointments || [];
     const total = Number(data.total ?? items.length);
+    const interviewVisualState = (item) => {
+      const status = item.status || item.confirmationStatus || '';
+      const evaluated = interviewEvaluationState(item).evaluated;
+      if (status === '已取消' || item.confirmationStatus === '已取消') return { key: 'cancelled', label: '已取消', evaluated: false };
+      if (evaluated) return { key: 'evaluated', label: '已评价', evaluated: true };
+      const started = Date.parse(item.startAt) <= Date.now();
+      return started
+        ? { key: 'pending-evaluation', label: '待评价', evaluated: false }
+        : { key: 'upcoming', label: '待面试', evaluated: false };
+    };
+    const interviewOutcome = (item) => {
+      const result = item.result || '';
+      if (result === '通过') return 'passed';
+      if (['不通过', '淘汰'].includes(result)) return 'rejected';
+      return '';
+    };
+    const countableItems = items.filter((item) => item.status !== '已取消' && item.confirmationStatus !== '已取消');
+    const pendingItems = countableItems.filter((item) => interviewVisualState(item).key === 'pending-evaluation');
+    const passedItems = countableItems.filter((item) => interviewOutcome(item) === 'passed');
+    const rejectedItems = countableItems.filter((item) => interviewOutcome(item) === 'rejected');
+    const interviewMetricGroups = [
+      ['interviews', '面试数', countableItems],
+      ['pending', '待评价', pendingItems],
+      ['passed', '通过', passedItems],
+      ['rejected', '淘汰', rejectedItems],
+    ];
     const eventsByDate = new Map();
     items.forEach((item) => {
       const dateKey = shanghaiDateTimeParts(item.startAt).date;
@@ -5724,16 +5751,6 @@ if (!root) return;
     const todayKey = shanghaiDateTimeParts(new Date()).date;
     const selectedId = items.some((item) => item.id === state.selectedInterviewId) ? state.selectedInterviewId : '';
     state.selectedInterviewId = selectedId;
-    const interviewVisualState = (item) => {
-      const status = item.status || item.confirmationStatus || '';
-      const evaluated = interviewEvaluationState(item).evaluated;
-      if (status === '已取消' || item.confirmationStatus === '已取消') return { key: 'cancelled', label: '已取消', evaluated: false };
-      if (evaluated) return { key: 'evaluated', label: '已评价', evaluated: true };
-      const started = Date.parse(item.startAt) <= Date.now();
-      return started
-        ? { key: 'pending-evaluation', label: '待评价', evaluated: false }
-        : { key: 'upcoming', label: '待面试', evaluated: false };
-    };
     const eventHtml = (item) => {
       const visual = interviewVisualState(item);
       const eventClass = ` is-${visual.key}${item.id === selectedId ? ' is-selected' : ''}`;
@@ -5767,6 +5784,7 @@ if (!root) return;
       }).join('')}</div></section>`;
     }).join('');
     root.innerHTML = `
+      <div class="interview-stat-grid" aria-label="本月面试统计">${interviewMetricGroups.map(([key, label, rows]) => `<button type="button" data-interview-stat="${key}"><small>${label}</small><strong>${rows.length}<span>场</span></strong></button>`).join('')}</div>
       <div class="interview-mobile-summary" aria-label="本月面试概况"><div><small>本月安排</small><strong>${Number(total)}<span>场</span></strong></div><div><small>待同步</small><strong>${items.filter(item => !['已取消', '已完成'].includes(item.status) && item.syncStatus === '同步失败').length}<span>场</span></strong></div><div><small>已完成</small><strong>${items.filter(item => item.status === '已完成').length}<span>场</span></strong></div></div>
       <div class="schedule-calendar-head"><strong>${year}年${month}月 · ${range.label}</strong><span>共 ${Number(total)} 场面试</span></div>
       <div class="calendar-shell"><div class="monthly-calendar">
@@ -5774,6 +5792,10 @@ if (!root) return;
         <div class="calendar-days">${cells}</div>
       </div></div>
       <div class="interview-mobile-agenda">${agendaHtml || '<div class="rf-dialog-empty"><strong>本月暂无面试</strong><p>切换月份可查看其他日程。</p></div>'}</div>`;
+    root.querySelectorAll('[data-interview-stat]').forEach((button) => button.addEventListener('click', () => {
+      const group = interviewMetricGroups.find(([key]) => key === button.dataset.interviewStat);
+      if (group) openInterviewStatDetail(group[1], group[2]);
+    }));
     root.querySelectorAll('[data-interview-schedule-id], [data-interview-agenda-id]').forEach((button) => button.addEventListener('click', () => {
       const appointmentId = button.dataset.interviewScheduleId || button.dataset.interviewAgendaId;
       const appointment = items.find((item) => item.id === appointmentId);
@@ -5785,6 +5807,27 @@ if (!root) return;
     } else {
       clearInterviewEvaluationPanel();
     }
+  }
+
+  function openInterviewStatDetail(label, rows) {
+    const grouped = new Map();
+    rows.forEach((item) => {
+      const interviewers = item.interviewers?.length ? item.interviewers : [{ id: '', name: '面试官待分配' }];
+      interviewers.forEach((interviewer) => {
+        const key = interviewer.userId || interviewer.id || interviewer.name || '未分配';
+        const current = grouped.get(key) || { name: interviewer.name || '面试官待分配', count: 0 };
+        current.count += 1;
+        grouped.set(key, current);
+      });
+    });
+    const people = [...grouped.values()].sort((left, right) => right.count - left.count || left.name.localeCompare(right.name, 'zh-CN'));
+    showTalentDialog(`
+      <header class="rf-dialog-head"><div><span>INTERVIEW STATS</span><h2>${escapeHtml(label)}</h2><p>已取消的面试不计入。一场面试有多位面试官时，每位面试官各计一场。</p></div></header>
+      <div class="rf-stat-table" role="table">
+        <div class="rf-stat-head" role="row"><span>面试官</span><span>数量</span></div>
+        ${people.map((person) => `<div role="row"><strong>${escapeHtml(person.name)}</strong><b>${person.count}</b></div>`).join('') || '<div class="rf-dialog-empty"><p>当前月份没有可统计的面试。</p></div>'}
+      </div>
+    `, 'wide');
   }
 
   function clearInterviewEvaluationPanel() {

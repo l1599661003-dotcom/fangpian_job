@@ -1,4 +1,5 @@
-import { Injectable } from '@nestjs/common'
+import { BadRequestException, Injectable } from '@nestjs/common'
+import { randomUUID } from 'node:crypto'
 import { teable } from '../../platform/teable'
 import type { TeableRecord } from '../../platform/teable'
 import { DatabaseService } from '../database/database.service'
@@ -28,6 +29,16 @@ interface PointEvent {
 }
 
 const text = (value: unknown) => String(value ?? '').trim()
+const RANKING_ROLE_CODES = new Set(['hrbp', 'recruiter'])
+const rosterId = () => `points_${randomUUID().replace(/-/g, '').slice(0, 20)}`
+
+export interface PointsRosterChange {
+  userId: string
+  action: 'add' | 'remove'
+  operatorUserId?: string
+  operator?: string
+  reason?: string
+}
 
 @Injectable()
 export class PointsService {
@@ -42,7 +53,9 @@ export class PointsService {
       teable.listAllRecords(this.database.requireTableId('recruitment_offers')),
       teable.listAllRecords(this.database.requireTableId('recruitment_onboarding_cases')),
     ])
+    const roster = await this.participantRoster()
     const events = this.buildEvents({ referrals, applications, positions, interviews, offers, onboardings })
+      .filter(event => roster.allowed.has(event.referrerUserId))
     const people = new Map<string, {
       userId: string
       name: string
@@ -105,8 +118,96 @@ export class PointsService {
         { category: '中高层岗位', interview: POINT_RULES.core.interview, offer: POINT_RULES.core.offer, onboard: POINT_RULES.core.onboard },
         { category: '普通岗位', interview: POINT_RULES.normal.interview, offer: POINT_RULES.normal.offer, onboard: POINT_RULES.normal.onboard },
       ],
+      roster: {
+        eligible: roster.eligible,
+        participants: roster.participants,
+        excluded: roster.excluded,
+      },
       ranking,
     }
+  }
+
+  async updateRoster(input: PointsRosterChange) {
+    const userId = text(input.userId)
+    if (!userId) throw new BadRequestException('请选择要调整的人员')
+    if (!['add', 'remove'].includes(input.action)) throw new BadRequestException('名单调整只能是加入或移除')
+    const roster = await this.participantRoster()
+    const person = roster.people.get(userId)
+    if (!person) throw new BadRequestException('只能调整已有账号的排名资格')
+    if (person.admin) throw new BadRequestException('管理员不参与积分排名')
+    const table = this.database.requireTableId('recruitment_points_roster')
+    const rows = await teable.listAllRecords(table)
+    const existing = rows.find(row => text(row.fields['用户ID']) === userId)
+    const timestamp = new Date().toISOString()
+    const fields = {
+      用户ID: userId,
+      姓名: person.name,
+      来源: input.action === 'add' ? '管理员加入' : '管理员移除',
+      名单状态: input.action === 'add' ? '参与' : '排除',
+      操作人用户ID: text(input.operatorUserId),
+      操作人: text(input.operator) || '管理员',
+      调整原因: text(input.reason),
+      更新时间: timestamp,
+    }
+    if (existing) await teable.updateRecord(table, existing.id, fields)
+    else await teable.createRecord(table, { 名单ID: rosterId(), ...fields, 创建时间: timestamp })
+    return this.ranking()
+  }
+
+  private async participantRoster() {
+    const [users, bindings, overrides] = await Promise.all([
+      teable.listAllRecords(this.database.requireTableId('recruitment_users')),
+      teable.listAllRecords(this.database.requireTableId('recruitment_user_roles')),
+      teable.listAllRecords(this.database.requireTableId('recruitment_points_roster')),
+    ])
+    const roles = new Map<string, Set<string>>()
+    for (const row of bindings) {
+      if (text(row.fields['绑定状态']) && text(row.fields['绑定状态']) !== '启用') continue
+      const userId = text(row.fields['用户ID'])
+      const roleCode = text(row.fields['角色编码'])
+      if (!userId || !roleCode) continue
+      const current = roles.get(userId) || new Set<string>()
+      current.add(roleCode)
+      roles.set(userId, current)
+    }
+    const decisions = new Map(overrides.map(row => [text(row.fields['用户ID']), text(row.fields['名单状态'])]))
+    const people = new Map<string, { userId: string; name: string; admin: boolean; rankingRole: boolean }>()
+    for (const row of users) {
+      const userId = text(row.fields['用户ID']) || row.id
+      const roleCodes = roles.get(userId) || new Set<string>()
+      people.set(userId, {
+        userId,
+        name: text(row.fields['姓名']) || userId,
+        admin: roleCodes.has('system_admin'),
+        rankingRole: [...roleCodes].some(code => RANKING_ROLE_CODES.has(code)),
+      })
+    }
+    const allowed = new Set<string>()
+    const eligible: Array<{ userId: string; name: string; source: string }> = []
+    const participants: Array<{ userId: string; name: string; source: string }> = []
+    const excluded: Array<{ userId: string; name: string }> = []
+    for (const person of people.values()) {
+      if (person.admin || !person.rankingRole) continue
+      eligible.push({ userId: person.userId, name: person.name, source: '角色' })
+      if (decisions.get(person.userId) === '排除') excluded.push({ userId: person.userId, name: person.name })
+      else {
+        allowed.add(person.userId)
+        participants.push({ userId: person.userId, name: person.name, source: '角色' })
+      }
+    }
+    for (const [userId, decision] of decisions) {
+      if (decision !== '参与' || allowed.has(userId)) continue
+      const person = people.get(userId)
+      if (!person || person.admin) continue
+      allowed.add(userId)
+      participants.push({ userId, name: person.name, source: '管理员加入' })
+    }
+    const byName = (left: { name: string }, right: { name: string }) => left.name.localeCompare(right.name, 'zh-CN')
+    const directory = [...people.values()]
+      .filter(person => !person.admin)
+      .map(person => ({ userId: person.userId, name: person.name, source: person.rankingRole ? '角色' : '其他' }))
+      .sort(byName)
+    return { allowed, people, eligible: directory, participants: participants.sort(byName), excluded: excluded.sort(byName) }
   }
 
   private buildEvents(input: {

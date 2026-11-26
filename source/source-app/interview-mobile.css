@@ -1,4 +1,15 @@
+.interview-stat-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-bottom: 16px; }
+.interview-stat-grid button { padding: 14px 12px; border: 1px solid #eadfc9; border-radius: 12px; background: #fffdf9; color: #493e2d; text-align: left; cursor: pointer; }
+.interview-stat-grid button:hover, .interview-stat-grid button:focus-visible { border-color: #c9a15a; outline: none; }
+.interview-stat-grid small { display: block; color: #81796b; font-size: 12px; }
+.interview-stat-grid strong { display: block; margin-top: 6px; font-size: 26px; font-variant-numeric: tabular-nums; }
+.interview-stat-grid strong span { margin-left: 4px; font-size: 12px; font-weight: 500; }
+.rf-stat-table { display: grid; overflow: hidden; border: 1px solid #eadfc9; border-radius: 12px; }
+.rf-stat-table > div { display: grid; grid-template-columns: minmax(0, 1fr) 80px; gap: 12px; align-items: center; padding: 12px 14px; border-top: 1px solid #f0e7d6; }
+.rf-stat-head { border-top: 0; background: #faf6ee; color: #81796b; font-size: 12px; }
+.rf-stat-table b { font-variant-numeric: tabular-nums; text-align: right; }
 .interview-mobile-summary, .interview-month-navigation { display: none; }
+.rf-offer-mail-frame { width: 100%; min-height: 520px; border: 1px solid #eadfc9; border-radius: 12px; background: #fff; }
 .rf-room-auth-help { padding: 16px; border: 1px solid #e4cfa7; border-radius: 14px; background: #fff8eb; color: #624c2a; }
 .rf-room-auth-help strong { font-size: 15px; }
 .rf-room-auth-help p { margin: 8px 0; font-size: 13px; line-height: 1.7; overflow-wrap: anywhere; }

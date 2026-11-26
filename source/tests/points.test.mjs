@@ -12,12 +12,22 @@ function stubRankingData(tables) {
   return async () => { teable.listAllRecords = original; };
 }
 
+function withRankingRoster(tables) {
+  const referrers = (tables.recruitment_referrals || []).map((row) => [row.fields['推荐人用户ID'], row.fields['推荐人']]);
+  return {
+    recruitment_users: referrers.map(([userId, name]) => referral({ 用户ID: userId, 姓名: name })),
+    recruitment_user_roles: referrers.map(([userId, name]) => referral({ 用户ID: userId, 用户姓名: name, 角色编码: 'recruiter', 绑定状态: '启用' })),
+    recruitment_points_roster: [],
+    ...tables,
+  };
+}
+
 function referral(row) {
   return { id: row.id, fields: row };
 }
 
 test('referral points accumulate interview, sent offer, and onboarding milestones by position level', async () => {
-  const restore = stubRankingData({
+  const restore = stubRankingData(withRankingRoster({
     recruitment_positions: [
       referral({ 职位ID: 'position_core', 职位名称: '内容负责人', 部门: '内容部', 负责人用户ID: 'owner_core', 负责人: '负责人甲', 招聘HR用户ID: 'hr_core', 招聘HR: '招聘甲', 岗位层级: '中高层岗位' }),
       referral({ 职位ID: 'position_normal', 职位名称: '内容运营', 部门: '内容部', 负责人用户ID: 'owner_normal', 负责人: '负责人乙', 招聘HR用户ID: 'hr_normal', 招聘HR: '招聘乙', 岗位层级: '普通岗位' }),
@@ -42,7 +52,7 @@ test('referral points accumulate interview, sent offer, and onboarding milestone
       referral({ 应聘记录ID: 'application_core', 候选人ID: 'candidate_core', 职位ID: 'position_core', 实际到岗日期: '2026-10-10' }),
       referral({ 应聘记录ID: 'application_normal', 候选人ID: 'candidate_normal', 职位ID: 'position_normal', 实际到岗日期: '2026-10-11' }),
     ],
-  });
+  }));
   try {
     const ranking = await new PointsService({ requireTableId: name => name }).ranking();
     assert.deepEqual(ranking.rules, [
@@ -57,7 +67,7 @@ test('referral points accumulate interview, sent offer, and onboarding milestone
 });
 
 test('referral points deduplicate one candidate for one position and exclude position owners and HR', async () => {
-  const restore = stubRankingData({
+  const restore = stubRankingData(withRankingRoster({
     recruitment_positions: [
       referral({ 职位ID: 'position_owner', 职位名称: '运营经理', 部门: '运营部', 负责人用户ID: 'referrer_owner', 负责人: '岗位负责人' }),
       referral({ 职位ID: 'position_duplicate', 职位名称: '投放专员', 部门: '投放部', 负责人用户ID: 'owner', 负责人: '负责人' }),
@@ -71,7 +81,7 @@ test('referral points deduplicate one candidate for one position and exclude pos
       referral({ 应聘记录ID: 'application_duplicate', 候选人ID: 'candidate_duplicate', 职位ID: 'position_duplicate', 面试状态: '已预约' }),
       referral({ 应聘记录ID: 'application_owner', 候选人ID: 'candidate_owner', 职位ID: 'position_owner', 面试状态: '已预约' }),
     ],
-  });
+  }));
   try {
     const ranking = await new PointsService({ requireTableId: name => name }).ranking();
     assert.equal(ranking.ranking.length, 1);
@@ -83,16 +93,51 @@ test('referral points deduplicate one candidate for one position and exclude pos
 });
 
 test('unsent offers do not generate points and cancelled interviews are ignored', async () => {
-  const restore = stubRankingData({
+  const restore = stubRankingData(withRankingRoster({
     recruitment_positions: [referral({ 职位ID: 'position_normal', 职位名称: '普通岗位', 部门: '运营部' })],
     recruitment_referrals: [referral({ 内推记录ID: 'referral', 候选人ID: 'candidate', 应聘记录ID: 'application', 职位ID: 'position_normal', 推荐人用户ID: 'referrer', 推荐人: '推荐人', 推荐时间: '2026-10-01T00:00:00.000Z' })],
     recruitment_interviews: [referral({ 应聘记录ID: 'application', 候选人ID: 'candidate', 职位ID: 'position_normal', 面试状态: '已取消' })],
     recruitment_offers: [referral({ 应聘记录ID: 'application', 候选人ID: 'candidate', 职位ID: 'position_normal', 发送状态: '待人工发送', 发送时间: '' })],
-  });
+  }));
   try {
     const ranking = await new PointsService({ requireTableId: name => name }).ranking();
     assert.deepEqual(ranking.ranking, []);
     assert.deepEqual(ranking.summary, { participants: 0, totalPoints: 0, interviews: 0, offers: 0, onboardings: 0 });
+  } finally {
+    await restore();
+  }
+});
+
+test('points ranking only includes HRBP and recruiters unless an administrator changes the roster', async () => {
+  const restore = stubRankingData({
+    recruitment_users: [
+      referral({ 用户ID: 'referrer_hr', 姓名: '招聘专员' }),
+      referral({ 用户ID: 'referrer_hrbp', 姓名: 'HRBP' }),
+      referral({ 用户ID: 'referrer_other', 姓名: '普通员工' }),
+      referral({ 用户ID: 'referrer_admin', 姓名: '管理员' }),
+    ],
+    recruitment_user_roles: [
+      referral({ 用户ID: 'referrer_hr', 角色编码: 'recruiter', 绑定状态: '启用' }),
+      referral({ 用户ID: 'referrer_hrbp', 角色编码: 'hrbp', 绑定状态: '启用' }),
+      referral({ 用户ID: 'referrer_other', 角色编码: 'referrer', 绑定状态: '启用' }),
+      referral({ 用户ID: 'referrer_admin', 角色编码: 'system_admin', 绑定状态: '启用' }),
+    ],
+    recruitment_points_roster: [
+      referral({ 用户ID: 'referrer_hrbp', 名单状态: '排除' }),
+      referral({ 用户ID: 'referrer_other', 名单状态: '参与' }),
+    ],
+    recruitment_positions: [referral({ 职位ID: 'position', 职位名称: '普通岗位', 岗位层级: '普通岗位' })],
+    recruitment_referrals: ['referrer_hr', 'referrer_hrbp', 'referrer_other', 'referrer_admin'].map((userId, index) => referral({
+      内推记录ID: `referral_${index}`, 候选人ID: `candidate_${index}`, 应聘记录ID: `application_${index}`, 职位ID: 'position',
+      推荐人用户ID: userId, 推荐人: userId, 有效性结论: '有效', 推荐时间: `2026-10-0${index + 1}T00:00:00.000Z`,
+    })),
+    recruitment_interviews: ['referrer_hr', 'referrer_hrbp', 'referrer_other', 'referrer_admin'].map((userId, index) => referral({
+      应聘记录ID: `application_${index}`, 候选人ID: `candidate_${index}`, 职位ID: 'position', 面试状态: '已预约',
+    })),
+  });
+  try {
+    const ranking = await new PointsService({ requireTableId: name => name }).ranking();
+    assert.deepEqual(ranking.ranking.map((row) => row.userId), ['referrer_hr', 'referrer_other']);
   } finally {
     await restore();
   }

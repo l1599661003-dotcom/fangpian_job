@@ -256,21 +256,37 @@ export class OffersService {
     return this.database.requireTableId(name)
   }
 
-  async list(query: { status?: string; candidateId?: string }) {
-    return this.listCache.get(JSON.stringify([query.status || '', query.candidateId || '']), 30_000,
-      ['recruitment_offers', 'recruitment_candidates'].map(name => this.table(name)), () => this.loadList(query))
+  async list(query: { status?: string; candidateId?: string }, scope: { all: boolean; userId: string; userName: string } = { all: true, userId: '', userName: '' }) {
+    return this.listCache.get(JSON.stringify([query.status || '', query.candidateId || '', scope.all, scope.userId, scope.userName]), 30_000,
+      ['recruitment_offers', 'recruitment_candidates', 'recruitment_offer_send_events'].map(name => this.table(name)), () => this.loadList(query, scope))
   }
 
-  private async loadList(query: { status?: string; candidateId?: string }) {
-    const offers = (await teable.listAllRecords(this.table('recruitment_offers')))
+  private async loadList(query: { status?: string; candidateId?: string }, scope: { all: boolean; userId: string; userName: string }) {
+    const [offerRows, sendEvents] = await Promise.all([
+      teable.listAllRecords(this.table('recruitment_offers')),
+      teable.listAllRecords(this.table('recruitment_offer_send_events')),
+    ])
+    const latestSend = new Map<string, TeableRecord>()
+    for (const event of sendEvents.filter(row => text(row.fields['发送状态']) === '已发送')) {
+      const offerId = text(event.fields['OfferID'])
+      const current = latestSend.get(offerId)
+      if (!current || text(event.fields['发生时间']) >= text(current.fields['发生时间'])) latestSend.set(offerId, event)
+    }
+    const offers = offerRows
       .filter(row => (!query.status || text(row.fields['Offer状态']) === query.status) && (!query.candidateId || text(row.fields['候选人ID']) === query.candidateId))
+      .filter(row => scope.all || this.offerVisibleTo(row, latestSend.get(text(row.fields['OfferID']) || row.id), scope))
     const candidates = await teable.listAllByAnyField(this.table('recruitment_candidates'), '候选人ID', offers.map(row => row.fields['候选人ID']), ['候选人ID', '姓名', '邮箱'])
     const rows = offers
-      .filter((row) => !query.status || text(row.fields['Offer状态']) === query.status)
-      .filter((row) => !query.candidateId || text(row.fields['候选人ID']) === query.candidateId)
-      .map((row) => this.mapOffer(row, candidates.find((candidate) => text(candidate.fields['候选人ID']) === text(row.fields['候选人ID']))))
+      .map((row) => this.mapOffer(row, candidates.find((candidate) => text(candidate.fields['候选人ID']) === text(row.fields['候选人ID'])), latestSend.get(text(row.fields['OfferID']) || row.id)))
       .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
-    return { total: rows.length, offers: rows }
+    return { total: rows.length, offers: rows, visibility: scope.all ? 'all' : 'mine' }
+  }
+
+  private offerVisibleTo(row: TeableRecord, sendEvent: TeableRecord | undefined, scope: { userId: string; userName: string }) {
+    const senderId = text(sendEvent?.fields['操作人用户ID'])
+    const senderName = text(sendEvent?.fields['操作人'])
+    if (senderId || senderName) return senderId === scope.userId || (!senderId && senderName === scope.userName)
+    return text(row.fields['创建人用户ID']) === scope.userId || (!text(row.fields['创建人用户ID']) && text(row.fields['创建人']) === scope.userName)
   }
 
   async templates() {
@@ -743,15 +759,15 @@ export class OffersService {
       await teable.createRecord(this.table('recruitment_offer_send_events'), {
         发送事件ID: id('send'), OfferID: text(row.fields['OfferID']) || offerId, 发送渠道: '邮件', 接收地址: recipient, 发送状态: '已发送',
         内容摘要JSON: JSON.stringify({ fileUrl: text(row.fields['Offer文件地址']), responseUrl: responseUrl.toString(), expiresAt, subject }),
-        错误信息: '', 操作人: text(body.operator) || '当前用户', 发生时间: timestamp,
+        邮件正文: content, 错误信息: '', 操作人用户ID: text(body.operatorUserId), 操作人: text(body.operator) || '当前用户', 发生时间: timestamp,
       })
       return { offerId: text(row.fields['OfferID']) || offerId, status: '已发送', recipient, subject, expiresAt, responseUrl: responseUrl.toString(), externalId: text(mail.messageId) }
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error)
       await teable.createRecord(this.table('recruitment_offer_send_events'), {
         发送事件ID: id('send'), OfferID: text(row.fields['OfferID']) || offerId, 发送渠道: '邮件', 接收地址: recipient, 发送状态: '发送失败',
-        内容摘要JSON: JSON.stringify({ fileUrl: text(row.fields['Offer文件地址']) }), 错误信息: message.slice(0, 1000),
-        操作人: text(body.operator) || '当前用户', 发生时间: now(),
+        内容摘要JSON: JSON.stringify({ fileUrl: text(row.fields['Offer文件地址']) }), 邮件正文: '', 错误信息: message.slice(0, 1000),
+        操作人用户ID: text(body.operatorUserId), 操作人: text(body.operator) || '当前用户', 发生时间: now(),
       })
       await teable.updateRecord(this.table('recruitment_offers'), row.id, { 发送状态: '发送失败', Offer状态: '待发送', 更新时间: now() })
       throw error
@@ -1217,7 +1233,7 @@ export class OffersService {
     })
   }
 
-  private mapOffer(row: TeableRecord, candidate?: TeableRecord) {
+  private mapOffer(row: TeableRecord, candidate?: TeableRecord, sendEvent?: TeableRecord) {
     const salary = json<StoredSalary>(row.fields['薪资结构JSON'], {}) || {}
     const internshipPay = internshipPayFromSalary(salary)
     const performanceIncluded = salary['绩效'] !== undefined
@@ -1247,6 +1263,10 @@ export class OffersService {
       version: num(row.fields['当前版本']),
       fileUrl: text(row.fields['Offer文件地址']),
       sendStatus: text(row.fields['发送状态']),
+      senderUserId: text(sendEvent?.fields['操作人用户ID']) || text(row.fields['创建人用户ID']),
+      senderName: text(sendEvent?.fields['操作人']) || text(row.fields['创建人']),
+      emailSubject: text(json<{ subject?: string }>(sendEvent?.fields['内容摘要JSON'], {}).subject),
+      emailHtml: text(sendEvent?.fields['邮件正文']),
       response: text(row.fields['候选人答复']),
       positionId: text(row.fields['职位ID']),
       templateId: text(row.fields['模板ID']),
