@@ -181,53 +181,51 @@ const OverviewPage = {
       });
     });
 
-    function metricDetailHtml(metric, row) {
-      const escape = dependencies.escapeHtml || fallbackEscape;
-      const tone = metricDefinitions.findIndex((item) => item.key === metric) + 1;
+    function metricPeopleRows(metric) {
+      const activity = hiringActivity.value || {};
+      const add = (groups, name, count) => {
+        const person = text(name) || '未记录';
+        const current = groups.get(person) || 0;
+        groups.set(person, current + Number(count || 0));
+      };
+      const groups = new Map();
       if (metric === 'resumes') {
-        return `<article class="overview-metric-detail tone-${tone}">
-          <div><strong>${escape(row.candidateName || '未命名候选人')}</strong><span>${escape(row.department || '未归属部门')} · ${escape(row.uploader || '未记录上传人')}</span></div>
-          <dl><div><dt>人数</dt><dd>${Number(row.count || 1)} 人</dd></div><div><dt>简历</dt><dd>${Number(row.count || 1)} 份 · ${escape(row.fileName || '未命名简历')}</dd></div><div><dt>最近时间</dt><dd>${escape(formatShanghaiDateTime(row.uploadedAt) || row.uploadedAt || '未记录')}</dd></div></dl>
-          ${row.sourceUrl ? `<a href="${escape(row.sourceUrl)}" target="_blank" rel="noopener">查看原始简历 ↗</a>` : '<span class="overview-metric-miss">仅统计，原始附件按岗位权限查看</span>'}
-        </article>`;
+        for (const row of activity.resumeUploads || []) add(groups, row.uploader, row.count || 1);
+      } else if (metric === 'interviews') {
+        for (const row of activity.interviewDetails || []) {
+          const names = text(row.interviewers).split(/[、,，]/).map(text).filter(Boolean);
+          for (const name of names.length ? names : ['待定']) add(groups, name, row.count || 1);
+        }
+      } else if (metric === 'offers') {
+        for (const row of activity.offerDetails || []) {
+          const names = text(row.sender).split(/[、,，]/).map(text).filter(Boolean);
+          for (const name of names.length ? names : ['未记录']) add(groups, name, row.count || 1);
+        }
       }
-      if (metric === 'interviews') {
-        return `<article class="overview-metric-detail tone-${tone}">
-          <div><strong>${escape(row.candidateName || '未命名候选人')}</strong><span>${escape(row.department || '未分配部门')} · ${escape(row.position || '未命名岗位')}</span></div>
-          <dl><div><dt>人数</dt><dd>${Number(row.count || 1)} 人</dd></div><div><dt>面试</dt><dd>${Number(row.count || 1)} 场 · ${escape(row.round || '待定轮次')}</dd></div><div><dt>最近时间</dt><dd>${escape(formatShanghaiDateTime(row.startsAt) || row.startsAt || '未记录')}</dd></div><div><dt>面试官</dt><dd>${escape(row.interviewers || '待定')}</dd></div></dl>
-          <em>${escape(row.status || '待确认')}</em>
-        </article>`;
-      }
-      if (metric === 'offers') {
-        return `<article class="overview-metric-detail tone-${tone}">
-          <div><strong>${escape(row.candidateName || '未命名候选人')}</strong><span>${escape(row.department || '未分配部门')} · ${escape(row.position || '未命名岗位')}</span></div>
-          <dl><div><dt>人数</dt><dd>${Number(row.count || 1)} 人</dd></div><div><dt>Offer</dt><dd>${Number(row.count || 1)} 份 · ${escape(row.offerNo || row.offerId || '未生成编号')}</dd></div><div><dt>最近发送</dt><dd>${escape(formatShanghaiDateTime(row.sentAt) || row.sentAt || '未记录')}</dd></div></dl>
-        </article>`;
-      }
-      return `<article class="overview-metric-detail tone-${tone}">
-        <div><strong>${escape(row.candidateName || '未命名候选人')}</strong><span>${escape(row.department || '未分配部门')} · ${escape(row.position || '未命名岗位')}</span></div>
-        <dl><div><dt>到岗日期</dt><dd>${escape(row.arrivalDate || '未记录')}</dd></div><div><dt>状态</dt><dd>${escape(row.status || '已到岗')}</dd></div></dl>
-      </article>`;
+      return [...groups.entries()]
+        .map(([name, count]) => ({ name, count }))
+        .sort((left, right) => right.count - left.count || left.name.localeCompare(right.name, 'zh-CN'));
     }
 
     function renderMetricDialog(dialogState) {
       const escape = dependencies.escapeHtml || fallbackEscape;
       const definition = metricDefinitions.find((item) => item.key === dialogState.metric) || metricDefinitions[0];
-      const details = Array.isArray(hiringActivity.value?.[definition.detailsKey]) ? hiringActivity.value[definition.detailsKey] : [];
-      const pageSize = 10;
-      const pageCount = Math.max(1, Math.ceil(details.length / pageSize));
-      const page = Math.min(Math.max(1, Number(dialogState.page) || 1), pageCount);
-      const rows = details.slice((page - 1) * pageSize, page * pageSize);
-      const rangeStart = details.length ? (page - 1) * pageSize + 1 : 0;
-      const rangeEnd = details.length ? Math.min(page * pageSize, details.length) : 0;
+      const personLabel = definition.key === 'interviews' ? '面试官' : definition.key === 'offers' ? '发Offer人' : '导入人';
+      const countLabel = definition.key === 'interviews' ? '面试场次' : definition.key === 'offers' ? 'Offer数' : '简历数';
+      const rows = metricPeopleRows(definition.key);
+      const total = rows.reduce((sum, row) => sum + row.count, 0);
       dependencies.showTalentDialog(`
-        <header class="rf-dialog-head overview-metric-dialog-head"><div><span>OVERVIEW DETAIL</span><h2>${escape(definition.label)}明细</h2><p>${escape(periodName.value)} · ${escape(hiringActivity.value?.date || '')} · 共 ${details.length} 人</p></div><b>${escape(periodName.value)}</b></header>
-        <div class="overview-metric-list">${rows.length ? rows.map((row) => metricDetailHtml(definition.key, row)).join('') : `<div class="rf-dialog-empty overview-metric-empty"><strong>${escape(definition.label)}暂无明细</strong><p>${escape(definition.empty)}</p></div>`}</div>
-        <footer class="overview-metric-pager"><span>${details.length ? `第 ${rangeStart}-${rangeEnd} 条 · 第 ${page}/${pageCount} 页` : '暂无记录'}</span><div><button type="button" data-overview-metric-page="${page - 1}" ${page <= 1 ? 'disabled' : ''}>上一页</button><button type="button" data-overview-metric-page="${page + 1}" ${page >= pageCount ? 'disabled' : ''}>下一页</button></div></footer>
+        <header class="rf-dialog-head overview-metric-dialog-head"><div><span>OVERVIEW DETAIL</span><h2>${escape(definition.label)}明细</h2><p>${escape(periodName.value)} · ${escape(hiringActivity.value?.date || '')} · 按${escape(personLabel)}汇总</p></div><b>${escape(periodName.value)}</b></header>
+        <div class="overview-demand-sheet overview-people-sheet">
+          <table>
+            <thead><tr><th>${escape(personLabel)}</th><th>${escape(countLabel)}</th></tr></thead>
+            <tbody>
+              ${rows.length ? rows.map((row) => `<tr><td>${escape(row.name)}</td><td>${row.count}</td></tr>`).join('') : `<tr><td colspan="2">${escape(definition.empty)}</td></tr>`}
+              <tr class="is-total"><td>合计</td><td>${total}</td></tr>
+            </tbody>
+          </table>
+        </div>
       `, 'wide overview-metric-dialog');
-      document.querySelectorAll('[data-overview-metric-page]:not([disabled])').forEach((button) => {
-        button.addEventListener('click', () => renderMetricDialog({ ...dialogState, page: Number(button.dataset.overviewMetricPage) }));
-      });
     }
 
     function openMetricDialog(metric) {

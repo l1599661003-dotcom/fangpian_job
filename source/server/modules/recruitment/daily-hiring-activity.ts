@@ -9,6 +9,7 @@ export interface DailyHiringActivityInput {
   candidates: TeableRecord[]
   interviews: TeableRecord[]
   offers: TeableRecord[]
+  offerSendEvents?: TeableRecord[]
   onboardings: TeableRecord[]
   positions?: TeableRecord[]
   users?: TeableRecord[]
@@ -170,6 +171,14 @@ function buildDailyHiringActivity(input: DailyHiringActivityInput) {
     count: rows.length,
   }))
 
+  const offerSenderById = new Map<string, string>()
+  for (const row of input.offerSendEvents || []) {
+    if (text(row.fields['发送状态']) !== '已发送') continue
+    const offerId = text(row.fields['OfferID'])
+    const sender = text(row.fields['操作人']) || '未记录'
+    if (!offerId || offerSenderById.has(offerId)) continue
+    offerSenderById.set(offerId, sender)
+  }
   const offerDetailsById = new Map<string, Record<string, string>>()
   for (const row of input.offers) {
     if (!isToday(row.fields['发送时间']) || !['已发送', '发送成功', '候选人已答复'].includes(text(row.fields['发送状态'])) || !canSee(row)) continue
@@ -183,6 +192,7 @@ function buildDailyHiringActivity(input: DailyHiringActivityInput) {
       candidateName: text(candidates.get(candidateId)?.fields['姓名']) || candidateId || '未命名候选人',
       ...positionInfo(positionId, row),
       offerNo: text(row.fields['Offer编号']) || offerId,
+      sender: offerSenderById.get(offerId) || text(row.fields['创建人']) || '未记录',
       sentAt: text(row.fields['发送时间']),
       status: text(row.fields['发送状态']) || '待发送',
     })
@@ -190,6 +200,7 @@ function buildDailyHiringActivity(input: DailyHiringActivityInput) {
   const offerDetails = groupByCandidate([...offerDetailsById.values()], 'sentAt', (rows) => ({
     offerId: rows.map((row) => row.offerId).filter(Boolean).join('、'),
     offerNo: rows.map((row) => row.offerNo).filter(Boolean).join('、'),
+    sender: [...new Set(rows.map((row) => row.sender).filter(Boolean))].join('、') || '未记录',
     position: [...new Set(rows.map((row) => row.position).filter(Boolean))].join('、'),
     department: [...new Set(rows.map((row) => row.department).filter(Boolean))].join('、'),
     status: [...new Set(rows.map((row) => row.status).filter(Boolean))].join('、'),

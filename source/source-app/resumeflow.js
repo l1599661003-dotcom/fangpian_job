@@ -2027,8 +2027,8 @@
     const overallScore = Number(matches[0]?.score || scores.overall || 0);
     const flow = item.flowEvidence || {};
     const flowSteps = [
-      { name: 'AI分析', done: Boolean(analysis.id), current: !analysis.id, detail: analysis.id ? `已完成 · ${overallScore}分 · ${analysis.confidence || '低'}置信度` : '点击一次生成评分、岗位匹配和标签', action: analysis.id ? '重新AI分析' : '生成分析', actionType: analysis.id ? 'data-rf-ai-versions' : 'data-rf-ai-versions', disabled: false },
-      { name: '业务群评审', done: Boolean(latestWecomReview?.claimedDepartment), current: Boolean(!latestWecomReview?.claimedDepartment), detail: latestWecomReview ? `${latestWecomReview.status || '评审中'} · ${Number(latestWecomReview.responseCount || 0)} 条反馈` : '可直接推送业务群', action: '查看进度', actionType: 'data-rf-wecom', disabled: false },
+      { name: 'AI分析', done: Boolean(analysis.id), current: !analysis.id, detail: analysis.id ? `已完成 · ${overallScore}分 · ${analysis.confidence || '低'}置信度` : '点击一次生成评分、岗位匹配和标签', action: analysis.id ? '重新AI分析' : '生成分析', actionType: analysis.id ? 'data-rf-ai-versions' : 'data-rf-ai-versions', disabled: false, pushStep: 'ai_analysis' },
+      { name: '业务群评审', done: Boolean(latestWecomReview?.claimedDepartment), current: Boolean(!latestWecomReview?.claimedDepartment), detail: latestWecomReview ? `${latestWecomReview.status || '评审中'} · ${Number(latestWecomReview.responseCount || 0)} 条反馈` : '可直接推送业务群', action: '查看进度', actionType: 'data-rf-wecom', disabled: false, pushStep: 'review' },
       { name: '意向沟通', done: Number(flow.communications || 0) > 0, current: false, detail: Number(flow.communications || 0) ? `已完成 · ${Number(flow.communications)} 条沟通记录` : '可直接记录沟通', action: Number(flow.communications || 0) > 0 ? '查看沟通' : '记录沟通', actionType: 'data-rf-communication', disabled: false, pushStep: 'communication' },
       { name: '约面', done: Number(flow.interviews || 0) > 0, current: false, detail: flow.interview ? `${flow.interview.status || '已预约'} · ${flow.interview.startedAt || '时间待补充'}` : '可直接安排面试', action: '安排面试', actionType: 'data-rf-schedule-interview', disabled: false, pushStep: 'interview' },
       { name: '面试题', done: flow.interviewQuestionStatus === '已发布', current: Boolean(flow.interview && flow.interviewQuestionStatus !== '已发布'), detail: flow.interviewQuestionStatus === '已发布' ? '题目已生成，开场提醒已发送链接' : flow.interviewQuestionStatus === '已生成待推送' ? '题目已生成，开始前10分钟发送链接' : flow.interviewQuestionStatus === '生成中' ? '正在自动生成' : flow.interviewQuestionStatus === '生成失败' ? '自动生成失败，可重新触发' : flow.interview ? '面试创建后自动生成' : '创建面试后自动生成', action: ['已发布', '已生成待推送'].includes(flow.interviewQuestionStatus) ? '查看题目' : flow.interviewQuestionStatus === '生成失败' ? '重新生成' : '生成面试题', actionType: ['已发布', '已生成待推送'].includes(flow.interviewQuestionStatus) ? 'data-rf-open-flow-questions' : 'data-rf-generate-flow-questions', disabled: !flow.interview, pushStep: 'interview_question', pushDisabled: !flow.interview },
@@ -2036,8 +2036,8 @@
       { name: '发Offer', done: Boolean(flow.offer), current: false, detail: flow.offer ? `${flow.offer.status || '已创建'} · ${flow.offer.response || '待答复'}` : '可直接创建Offer', action: 'Offer管理', actionType: 'data-action="open-offer"', disabled: false, pushStep: 'offer', pushDisabled: !(flow.offer || Number(flow.interviewFeedback || 0) > 0) },
       { name: '入职', done: Boolean(flow.onboarding?.actualDate), current: false, detail: flow.onboarding ? `${flow.onboarding.actualDate ? `已到岗 ${flow.onboarding.actualDate}` : flow.onboarding.status || '办理中'} · ${flow.onboarding.probation || '试用期待确认'}` : '一键确认候选人已入职', action: flow.onboarding?.actualDate ? '查看入职' : '确认入职', actionType: flow.onboarding?.actualDate ? 'data-rf-lifecycle' : 'data-rf-confirm-onboard', disabled: false, pushStep: 'onboarding', pushDisabled: !flow.onboarding },
       { name: '入职评价', done: flow.onboardingReview?.status === '已完成', current: Boolean(flow.onboarding?.actualDate && flow.onboardingReview?.status !== '已完成'), detail: flow.onboardingReview ? (flow.onboardingReview.status === '已完成' ? `${flow.onboardingReview.performanceRating || '待评级'} · ${flow.onboardingReview.growthLevel || '成长等级待补充'} · ${flow.onboardingReview.actualDate || '已完成'}` : `计划 ${flow.onboardingReview.plannedDate || '入职满一个月'} · 到期自动提醒岗位HR`) : (flow.onboarding?.actualDate ? '到岗满一个月后自动提醒岗位HR' : '确认入职后自动生成'), action: flow.onboardingReview ? (flow.onboardingReview.status === '已完成' ? '查看评价' : '填写评价') : '等待入职', actionType: 'data-rf-lifecycle', disabled: !flow.onboardingReview, pushStep: 'onboarding_evaluation', pushDisabled: !flow.onboarding },
-      { name: '离职', done: Boolean(flow.offboarding?.actualDate), current: false, detail: flow.offboarding ? `${flow.offboarding.actualDate ? `已离职 ${flow.offboarding.actualDate}` : flow.offboarding.status || '办理中'} · ${flow.offboarding.reason || '原因待补充'}` : '可直接进入生命周期', action: '生命周期', actionType: 'data-rf-lifecycle', disabled: false },
-      { name: '回访', done: flow.followup?.status === '已完成', current: false, detail: flow.followup ? `${flow.followup.status || '待回访'} · ${flow.followup.result || flow.followup.plannedDate || '时间待补充'}` : '可直接进入生命周期', action: '查看回访', actionType: 'data-rf-lifecycle', disabled: false },
+      { name: '离职', done: Boolean(flow.offboarding?.actualDate), current: false, detail: flow.offboarding ? `${flow.offboarding.actualDate ? `已离职 ${flow.offboarding.actualDate}` : flow.offboarding.status || '办理中'} · ${flow.offboarding.reason || '原因待补充'}` : '可直接进入生命周期', action: '生命周期', actionType: 'data-rf-lifecycle', disabled: false, pushStep: 'offboarding', pushDisabled: !flow.offboarding },
+      { name: '回访', done: flow.followup?.status === '已完成', current: false, detail: flow.followup ? `${flow.followup.status || '待回访'} · ${flow.followup.result || flow.followup.plannedDate || '时间待补充'}` : '可直接进入生命周期', action: '查看回访', actionType: 'data-rf-lifecycle', disabled: false, pushStep: 'followup', pushDisabled: !flow.followup },
     ];
     const firstOpenIndex = flowSteps.findIndex((step) => !step.done);
     const flowStepHtml = (step, index, candidate) => {
@@ -2046,9 +2046,7 @@
       const contextAttrs = step.actionType === 'data-rf-open-interview-feedback'
         ? ` data-rf-candidate-id="${escapeHtml(candidate.candidateId || candidate.id || '')}" data-rf-interview-id="${escapeHtml(flow.interview?.id || '')}"`
         : '';
-      const push = step.pushStep
-        ? `<button type="button" class="rf-flow-push" data-rf-flow-wecom="${escapeHtml(step.pushStep)}" ${step.pushDisabled ? 'disabled' : ''} title="推送到企微">企微</button>`
-        : '<span class="rf-flow-push is-empty" aria-hidden="true"></span>';
+      const push = `<button type="button" class="rf-flow-push" data-rf-flow-wecom="${escapeHtml(step.pushStep || step.name)}" ${step.pushDisabled ? 'disabled' : ''} title="通知企微">通知企微</button>`;
       const connector = index < flowSteps.length - 1 ? '<i class="rf-flow-link" aria-hidden="true"></i>' : '';
       return `<article class="rf-flow-node ${stateClass}${step.disabled ? ' is-locked' : ''}">
         ${connector}
@@ -3958,7 +3956,7 @@
     } catch (error) {
       notifyUser(`企微推送失败：${conciseError(error)}`, 'error');
     } finally {
-      if (button) { button.disabled = false; button.textContent = originalText || '推送企微'; }
+      if (button) { button.disabled = false; button.textContent = '通知企微'; }
     }
   }
 

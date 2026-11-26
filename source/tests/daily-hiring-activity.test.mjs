@@ -77,12 +77,16 @@ test('daily hiring activity counts each person once across resumes, interviews, 
       row('resume_b', { 候选人ID: 'candidate_b', 简历记录ID: 'resume_b', 文件名: '张杰.pdf', 创建人: '招聘HR', 创建时间: '2026-10-14T03:00:00.000Z', 解析状态: '已完成' }),
     ],
     interviews: [
-      row('interview_a1', { 面试ID: 'interview_a1', 候选人ID: 'candidate_a', 开始时间: '2026-10-14T04:00:00.000Z', 面试状态: '已确认' }),
-      row('interview_a2', { 面试ID: 'interview_a2', 候选人ID: 'candidate_a', 开始时间: '2026-10-14T05:00:00.000Z', 面试状态: '已确认' }),
+      row('interview_a1', { 面试ID: 'interview_a1', 候选人ID: 'candidate_a', 开始时间: '2026-10-14T04:00:00.000Z', 面试状态: '已确认', 面试官姓名JSON: '["王面试官","李面试官"]' }),
+      row('interview_a2', { 面试ID: 'interview_a2', 候选人ID: 'candidate_a', 开始时间: '2026-10-14T05:00:00.000Z', 面试状态: '已确认', 面试官姓名JSON: '["王面试官"]' }),
     ],
     offers: [
-      row('offer_b1', { OfferID: 'offer_b1', 候选人ID: 'candidate_b', 发送时间: '2026-10-14T06:00:00.000Z', 发送状态: '已发送' }),
+      row('offer_b1', { OfferID: 'offer_b1', 候选人ID: 'candidate_b', 发送时间: '2026-10-14T06:00:00.000Z', 发送状态: '已发送', 创建人: '旧创建人' }),
       row('offer_b2', { OfferID: 'offer_b2', 候选人ID: 'candidate_b', 发送时间: '2026-10-14T07:00:00.000Z', 发送状态: '已发送' }),
+    ],
+    offerSendEvents: [
+      row('send_b1', { OfferID: 'offer_b1', 发送状态: '已发送', 操作人: '赵发Offer' }),
+      row('send_b1_failed', { OfferID: 'offer_b1', 发送状态: '发送失败', 操作人: '失败操作人' }),
     ],
     onboardings: [],
   });
@@ -90,7 +94,9 @@ test('daily hiring activity counts each person once across resumes, interviews, 
   assert.deepEqual(result.summary, { resumes: 2, interviews: 1, offers: 1, arrived: 0 });
   assert.deepEqual(result.resumeUploads.map(item => [item.candidateName, item.count]), [['张杰', 1], ['张晓霞', 2]]);
   assert.equal(result.interviewDetails[0].count, 2);
+  assert.equal(result.interviewDetails[0].interviewers, '王面试官、李面试官');
   assert.equal(result.offerDetails[0].count, 2);
+  assert.equal(result.offerDetails[0].sender, '赵发Offer、未记录');
 });
 
 test('daily hiring activity groups referral resumes without exposing referrers', () => {

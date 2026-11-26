@@ -520,12 +520,13 @@ export class RecruitmentService implements OnApplicationBootstrap {
       ? `{实际到岗日期} = "${activityStartDate}"`
       : prefixFilter('实际到岗日期', onboardingPrefixes)
     const previousMonth = previousDemandMonth(month)
-    const [demandRows, positions, applications, interviews, offers, candidates, resumes, resumeVersions, todayOnboardings, users, organizations] = await Promise.all([
+    const [demandRows, positions, applications, interviews, offers, offerSendEvents, candidates, resumes, resumeVersions, todayOnboardings, users, organizations] = await Promise.all([
       teable.listAllRecords(this.table('recruitment_monthly_demands'), { filterByTql: previousMonth ? `{需求月份} = "${month}" OR {需求月份} = "${previousMonth}"` : `{需求月份} = "${month}"`, fields: ['月度需求ID', '需求月份', '职位ID', '职位名称', '部门', '需求数量', '需求类型', '需求状态', '优先级', '期望到岗日期', '最晚到岗日期', '创建时间', '更新时间'] }),
       teable.listAllRecords(this.table('recruitment_positions')),
       teable.listAllRecords(this.table('recruitment_applications'), { fields: ['候选人ID', '职位ID', '简历记录ID', '当前阶段', '更新时间', '创建时间'] }),
       teable.listAllRecords(this.table('recruitment_interviews'), { fields: ['面试ID', '候选人ID', '职位ID', '面试轮次', '面试方式', '开始时间', '面试地点', '会议地址', '面试官姓名JSON', '面试状态'] }),
-      teable.listAllRecords(this.table('recruitment_offers'), { fields: ['OfferID', '候选人ID', '职位ID', 'Offer编号', '岗位名称', '部门', '发送时间', '发送状态'] }),
+      teable.listAllRecords(this.table('recruitment_offers'), { fields: ['OfferID', '候选人ID', '职位ID', 'Offer编号', '岗位名称', '部门', '创建人', '发送时间', '发送状态'] }),
+      teable.listAllRecords(this.table('recruitment_offer_send_events'), { fields: ['OfferID', '发送状态', '操作人', '发生时间'] }).catch(() => []),
       teable.listAllRecords(this.table('recruitment_candidates'), { fields: ['候选人ID', '候选人状态', '姓名', '天玑入职日期'] }),
       teable.listAllRecords(this.table('resume_extraction_records'), { fields: ['候选人ID', '解析记录ID', '解析状态', '创建时间'] }),
       teable.listAllRecords(this.table('recruitment_resume_versions'), {
@@ -556,6 +557,7 @@ export class RecruitmentService implements OnApplicationBootstrap {
       candidates: visibleCandidates,
       interviews: scopedInterviews,
       offers: scopedOffers,
+      offerSendEvents,
       onboardings: todayOnboardings,
       positions,
       users,
